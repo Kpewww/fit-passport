@@ -104,6 +104,13 @@ export default function Home() {
 }
 
 function NewUserGuide() {
+  const [loadingDemo, setLoadingDemo] = useState(false);
+  async function loadDemo() {
+    setLoadingDemo(true);
+    await fetch("/api/demo", { method: "POST" });
+    // Full reload so the dashboard re-fetches populated status.
+    window.location.href = "/closet";
+  }
   const steps = [
     {
       n: "1",
@@ -139,6 +146,15 @@ function NewUserGuide() {
           Set up my passport first
         </LinkButton>
         <LinkButton href="/check">Or just check a product →</LinkButton>
+      </div>
+      <div className="mt-4 text-center">
+        <button
+          onClick={loadDemo}
+          disabled={loadingDemo}
+          className="text-xs text-ink-faint underline hover:text-brand disabled:opacity-50"
+        >
+          {loadingDemo ? "Loading demo…" : "Just exploring? Load demo data →"}
+        </button>
       </div>
     </div>
   );

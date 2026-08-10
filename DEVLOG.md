@@ -28,6 +28,49 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-10 · Session 07 — recovery/email, color wheel, reorder, merge UI, demo data
+
+**Goal:** User feedback after the GitHub push: (1) recovery email + strong
+"save your recovery code" warning; (2) color picker with a color wheel + two
+rows of trendy colors; (3) finish the deferred Phase-2 items (reorder, merge-UI);
+(4) one-click demo data.
+
+### Recovery + email
+- `email` (already on `User`) now collected at claim (optional, unique, lower-cased).
+- `POST /api/auth/recover`: reset password via the one-time recovery code;
+  rotates BOTH password and recovery code (old code invalidated), logs in,
+  returns a fresh recovery code. Verified: old code rejected after use.
+- Claim result screen rewritten as a **red, high-severity warning** with a
+  copy button and a **"I've saved my recovery code" checkbox that gates the
+  Continue button**. Claim form gained a "Recovery email (strongly
+  recommended)" field. `/recover` page + link from `/login`.
+- Email-based reset (send link to stored email) needs mail infra — deferred
+  with an honest "coming soon" note; the recovery-code path works fully today.
+
+### Color picker
+- Expanded to **20 on-trend apparel colors in a 2-row swatch grid** + free-text
+  + a **native color-wheel** (`<input type=color>`) styled as a swatch button.
+  Preset map synced to the public `/u/[code]` view's `ColorDot`.
+
+### Reorder + merge (finished the Phase-2 deferrals)
+- `POST /api/closet/reorder` (assign sortIndex by array order, txn, user-scoped).
+  Up/down arrows on standalone item cards; disabled at ends; reorders within a
+  collection's standalone items.
+- `POST /api/closet/group` (merge selected ids under a shared groupId / ungroup).
+  Closet gained a **"Merge duplicates" select mode**: toggle → checkboxes on
+  cards → Merge. Verified merging two Uniqlo items into one variant group.
+
+### Demo data
+- `POST /api/demo` resets the current user's closet/collections and seeds a
+  chest-95 regular profile + 5 realistic items across collections. Surfaced as
+  a subtle "Load demo data" link in the home new-user guide → redirects to /closet.
+
+### Verified
+- `tsc` clean · `vitest` 15/15 · `next build` clean (29 routes) · live smoke of
+  demo load, email claim, recovery (+ old-code invalidation + relogin), merge.
+
+---
+
 ## 2026-08-10 · Session 06 — closet organization (Phase 2)
 
 **Goal:** The user's closet-organization request: default categories that are

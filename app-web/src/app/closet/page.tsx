@@ -24,16 +24,31 @@ type Collection = { id: string; name: string; sortIndex: number; itemCount: numb
 const CATEGORIES = ["tshirt", "shirt", "sweater", "jacket", "hoodie", "polo", "other"];
 
 // Small preset palette for color tags (plus free text).
+// Two rows of common/on-trend apparel colors. Names are stored as-is; a hex is
+// used for the swatch + dot. Free text and the color wheel still allow anything.
 const COLOR_PRESETS: Array<{ name: string; hex: string }> = [
+  // row 1 — neutrals & core
   { name: "black", hex: "#1a1a1a" },
   { name: "white", hex: "#f5f5f5" },
+  { name: "grey", hex: "#9ca3af" },
+  { name: "charcoal", hex: "#374151" },
   { name: "navy", hex: "#1f2a44" },
   { name: "blue", hex: "#3b82f6" },
-  { name: "grey", hex: "#9ca3af" },
+  { name: "denim", hex: "#4a6fa5" },
   { name: "beige", hex: "#d8c3a5" },
-  { name: "green", hex: "#4b7a53" },
-  { name: "red", hex: "#b03a3a" },
+  { name: "cream", hex: "#f0e9d6" },
   { name: "brown", hex: "#6b4f3a" },
+  // row 2 — accents / trend
+  { name: "olive", hex: "#6b7443" },
+  { name: "green", hex: "#4b7a53" },
+  { name: "sage", hex: "#9caf88" },
+  { name: "teal", hex: "#2f8f83" },
+  { name: "burgundy", hex: "#6d2036" },
+  { name: "red", hex: "#b03a3a" },
+  { name: "rust", hex: "#b5622f" },
+  { name: "mustard", hex: "#d0a028" },
+  { name: "pink", hex: "#dba0b0" },
+  { name: "purple", hex: "#7c5aa8" },
 ];
 
 function colorHex(name: string | null): string | null {
@@ -51,6 +66,9 @@ export default function ClosetPage() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newCollectionName, setNewCollectionName] = useState("");
+  // Merge-select mode
+  const [selectMode, setSelectMode] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
 
   const load = useCallback(async () => {
     const [c, i] = await Promise.all([
@@ -91,6 +109,46 @@ export default function ClosetPage() {
 
   async function remove(id: string) {
     await fetch(`/api/closet?id=${id}`, { method: "DELETE" });
+    load();
+  }
+
+  // Move an item up/down within its collection's ordering.
+  async function move(collectionId: string | null, itemId: string, dir: -1 | 1) {
+    const inBucket = items
+      .filter((it) => it.collectionId === collectionId && !it.groupId)
+      .sort((a, b) => a.sortIndex - b.sortIndex);
+    const idx = inBucket.findIndex((it) => it.id === itemId);
+    const swap = idx + dir;
+    if (idx < 0 || swap < 0 || swap >= inBucket.length) return;
+    const reordered = [...inBucket];
+    [reordered[idx], reordered[swap]] = [reordered[swap], reordered[idx]];
+    // Optimistic: update local order immediately.
+    await fetch("/api/closet/reorder", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ orderedIds: reordered.map((it) => it.id) }),
+    });
+    load();
+  }
+
+  function toggleSelect(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function doMerge() {
+    if (selected.size < 2) return;
+    await fetch("/api/closet/group", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ itemIds: Array.from(selected) }),
+    });
+    setSelected(new Set());
+    setSelectMode(false);
     load();
   }
 
@@ -182,6 +240,29 @@ export default function ClosetPage() {
           </form>
         </Card>
 
+        {/* Merge toolbar */}
+        {count >= 2 && (
+          <div className="mt-6 flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-4 py-2.5">
+            {selectMode ? (
+              <>
+                <span className="text-sm text-ink-soft">
+                  Select items that are the <strong>same garment</strong> (different size/color), then merge.
+                  <span className="ml-2 text-ink-faint">{selected.size} selected</span>
+                </span>
+                <div className="flex gap-2">
+                  <Button size="md" disabled={selected.size < 2} onClick={doMerge}>Merge {selected.size > 0 ? `(${selected.size})` : ""}</Button>
+                  <Button size="md" variant="ghost" onClick={() => { setSelectMode(false); setSelected(new Set()); }}>Cancel</Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <span className="text-sm text-ink-soft">Have the same item in multiple sizes or colors?</span>
+                <Button size="md" variant="secondary" onClick={() => setSelectMode(true)}>Merge duplicates</Button>
+              </>
+            )}
+          </div>
+        )}
+
         {/* Collection sections */}
         {count === 0 ? (
           <div className="mt-6">
@@ -203,6 +284,10 @@ export default function ClosetPage() {
                 onPatch={patch}
                 onRemove={remove}
                 onReload={load}
+                onMove={move}
+                selectMode={selectMode}
+                selected={selected}
+                onToggleSelect={toggleSelect}
               />
             ))}
             {uncategorized.length > 0 && (
@@ -215,6 +300,10 @@ export default function ClosetPage() {
                 onPatch={patch}
                 onRemove={remove}
                 onReload={load}
+                onMove={move}
+                selectMode={selectMode}
+                selected={selected}
+                onToggleSelect={toggleSelect}
                 undeletable
               />
             )}
@@ -265,6 +354,10 @@ function CollectionSection({
   onPatch,
   onRemove,
   onReload,
+  onMove,
+  selectMode,
+  selected,
+  onToggleSelect,
   undeletable,
 }: {
   collection: Collection;
@@ -275,6 +368,10 @@ function CollectionSection({
   onPatch: (id: string, data: Record<string, unknown>) => void;
   onRemove: (id: string) => void;
   onReload: () => void;
+  onMove: (collectionId: string | null, itemId: string, dir: -1 | 1) => void;
+  selectMode: boolean;
+  selected: Set<string>;
+  onToggleSelect: (id: string) => void;
   undeletable?: boolean;
 }) {
   const [renaming, setRenaming] = useState(false);
@@ -352,6 +449,12 @@ function CollectionSection({
                 onEdit={onEdit}
                 onPatch={onPatch}
                 onRemove={onRemove}
+                onMove={(itemId, dir) => onMove(collection.id === "__uncat__" ? null : collection.id, itemId, dir)}
+                canMoveUp={standaloneIndex(groups, g) > 0}
+                canMoveDown={standaloneIndex(groups, g) < standaloneCount(groups) - 1 && standaloneIndex(groups, g) >= 0}
+                selectMode={selectMode}
+                selected={selected}
+                onToggleSelect={onToggleSelect}
               />
             ),
           )}
@@ -387,18 +490,39 @@ function buildGroups(items: Item[]): Group[] {
   return [...grouped, ...singles];
 }
 
+// Index/count among only the standalone (non-variant) groups — reorder applies
+// to those, since variant groups are collapsed.
+function standaloneIndex(groups: Group[], g: Group): number {
+  return groups.filter((x) => !x.isVariant).findIndex((x) => x.key === g.key);
+}
+function standaloneCount(groups: Group[]): number {
+  return groups.filter((x) => !x.isVariant).length;
+}
+
 function ItemCard({
   group,
   collections,
   onEdit,
   onPatch,
   onRemove,
+  onMove,
+  canMoveUp,
+  canMoveDown,
+  selectMode,
+  selected,
+  onToggleSelect,
 }: {
   group: Group;
   collections: Collection[];
   onEdit: (id: string) => void;
   onPatch: (id: string, data: Record<string, unknown>) => void;
   onRemove: (id: string) => void;
+  onMove: (itemId: string, dir: -1 | 1) => void;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  selectMode: boolean;
+  selected: Set<string>;
+  onToggleSelect: (id: string) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const head = group.items[0];
@@ -440,30 +564,67 @@ function ItemCard({
   }
 
   const it = head;
+  const isSel = selected.has(it.id);
   return (
-    <Card className="flex items-center justify-between !p-4 animate-fade-in-up">
-      <div className="min-w-0">
-        <div className="flex items-center gap-2 font-medium text-ink">
-          <ColorDot color={it.color} />
-          <span className="truncate">
-            {it.brand} · <span className="text-ink-soft">{it.category}</span> · size {it.size}
-          </span>
-        </div>
-        <div className="mt-0.5 flex items-center gap-2 text-xs text-ink-faint">
-          <span className="text-amber-500">{"★".repeat(it.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - it.fitRating)}</span></span>
-          {it.color && <span>· {it.color}</span>}
-          {it.areaNotesJson && <span>· {safeNotes(it.areaNotesJson)}</span>}
+    <Card
+      className={`flex items-center justify-between !p-4 animate-fade-in-up ${
+        selectMode ? "cursor-pointer" : ""
+      } ${isSel ? "ring-2 ring-brand" : ""}`}
+    >
+      <div
+        className="flex min-w-0 items-center gap-3"
+        onClick={selectMode ? () => onToggleSelect(it.id) : undefined}
+      >
+        {selectMode && (
+          <input
+            type="checkbox"
+            checked={isSel}
+            onChange={() => onToggleSelect(it.id)}
+            className="h-4 w-4 flex-shrink-0 accent-brand"
+          />
+        )}
+        {/* Reorder arrows (hidden in select mode) */}
+        {!selectMode && (
+          <div className="flex flex-col leading-none">
+            <button
+              onClick={() => onMove(it.id, -1)}
+              disabled={!canMoveUp}
+              className="text-ink-faint hover:text-brand disabled:opacity-30"
+              title="Move up"
+            >▲</button>
+            <button
+              onClick={() => onMove(it.id, 1)}
+              disabled={!canMoveDown}
+              className="text-ink-faint hover:text-brand disabled:opacity-30"
+              title="Move down"
+            >▼</button>
+          </div>
+        )}
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 font-medium text-ink">
+            <ColorDot color={it.color} />
+            <span className="truncate">
+              {it.brand} · <span className="text-ink-soft">{it.category}</span> · size {it.size}
+            </span>
+          </div>
+          <div className="mt-0.5 flex items-center gap-2 text-xs text-ink-faint">
+            <span className="text-amber-500">{"★".repeat(it.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - it.fitRating)}</span></span>
+            {it.color && <span>· {it.color}</span>}
+            {it.areaNotesJson && <span>· {safeNotes(it.areaNotesJson)}</span>}
+          </div>
         </div>
       </div>
-      <div className="flex flex-shrink-0 items-center gap-2 text-xs">
-        <MoveMenu
-          collections={collections}
-          currentId={it.collectionId}
-          onMove={(cid) => onPatch(it.id, { collectionId: cid })}
-        />
-        <button onClick={() => onEdit(it.id)} className="text-ink-soft hover:text-brand">Edit</button>
-        <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-red-600">Remove</button>
-      </div>
+      {!selectMode && (
+        <div className="flex flex-shrink-0 items-center gap-2 text-xs">
+          <MoveMenu
+            collections={collections}
+            currentId={it.collectionId}
+            onMove={(cid) => onPatch(it.id, { collectionId: cid })}
+          />
+          <button onClick={() => onEdit(it.id)} className="text-ink-soft hover:text-brand">Edit</button>
+          <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-red-600">Remove</button>
+        </div>
+      )}
     </Card>
   );
 }
@@ -574,28 +735,47 @@ function EditRow({
 }
 
 function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  // Current swatch color to feed the native wheel (falls back to grey).
+  const wheelValue = colorHex(value) ?? "#9ca3af";
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex gap-1">
+    <div className="space-y-2">
+      {/* Two rows of preset swatches */}
+      <div className="grid grid-cols-10 gap-1.5">
         {COLOR_PRESETS.map((c) => (
           <button
             key={c.name}
             type="button"
             title={c.name}
             onClick={() => onChange(value === c.name ? "" : c.name)}
-            className={`h-6 w-6 rounded-full border transition-transform ${
-              value === c.name ? "scale-110 border-brand ring-2 ring-brand/30" : "border-neutral-300"
+            className={`h-6 w-6 rounded-full border transition-transform hover:scale-110 ${
+              value === c.name ? "scale-110 border-brand ring-2 ring-brand/40" : "border-neutral-300"
             }`}
             style={{ backgroundColor: c.hex }}
           />
         ))}
       </div>
-      <input
-        className={inputClass + " flex-1"}
-        placeholder="or type…"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-      />
+      {/* Free text + color wheel */}
+      <div className="flex items-center gap-2">
+        <input
+          className={inputClass + " flex-1"}
+          placeholder="or type a color…"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+        />
+        <label
+          className="relative flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-neutral-300"
+          title="Pick any color"
+          style={{ backgroundColor: wheelValue }}
+        >
+          <input
+            type="color"
+            value={wheelValue}
+            onChange={(e) => onChange(e.target.value)}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          />
+          <span className="pointer-events-none text-xs mix-blend-difference text-white">🎨</span>
+        </label>
+      </div>
     </div>
   );
 }

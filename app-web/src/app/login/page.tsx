@@ -58,6 +58,12 @@ export default function LoginPage() {
           </form>
         </Card>
         <p className="mt-4 text-xs text-ink-faint">
+          Forgot your password?{" "}
+          <Link href="/recover" className="text-brand hover:underline">
+            Reset it with your recovery code →
+          </Link>
+        </p>
+        <p className="mt-1 text-xs text-ink-faint">
           Just want to peek at a closet?{" "}
           <Link href="/community" className="text-brand hover:underline">
             View one by code →

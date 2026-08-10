@@ -26,13 +26,16 @@ export default function AccountPage() {
   const [form, setForm] = useState({
     username: "",
     password: "",
+    email: "",
     bodyType: "",
     exportPolicy: "owner" as "owner" | "anyone",
   });
   const [err, setErr] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [claimResult, setClaimResult] = useState<{ accountCode: string; recoveryCode: string } | null>(null);
+  const [claimResult, setClaimResult] = useState<{ accountCode: string; recoveryCode: string; hasEmail: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
+  const [copiedRec, setCopiedRec] = useState(false);
+  const [savedConfirmed, setSavedConfirmed] = useState(false);
 
   async function load() {
     const d = await fetch("/api/auth/me").then((r) => r.json());
@@ -51,6 +54,7 @@ export default function AccountPage() {
         body: JSON.stringify({
           username: form.username,
           password: form.password,
+          email: form.email || undefined,
           bodyType: form.bodyType || undefined,
           exportPolicy: form.exportPolicy,
         }),
@@ -65,7 +69,7 @@ export default function AccountPage() {
               : "could not create account";
         throw new Error(msg);
       }
-      setClaimResult({ accountCode: j.accountCode, recoveryCode: j.recoveryCode });
+      setClaimResult({ accountCode: j.accountCode, recoveryCode: j.recoveryCode, hasEmail: j.hasEmail });
       load();
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : "error");
@@ -113,21 +117,61 @@ export default function AccountPage() {
             </div>
           </Card>
 
-          <Card className="mt-4 border-l-4 border-l-amber-400">
-            <p className="text-xs uppercase tracking-widest text-amber-700">
-              Recovery code — shown only once
-            </p>
-            <code className="mt-1 block rounded-lg bg-amber-50 px-3 py-2 text-lg font-bold tracking-wider text-amber-900">
-              {claimResult.recoveryCode}
-            </code>
-            <p className="mt-2 text-sm text-ink-soft">
-              Write this down somewhere safe. We only store a hashed copy and
-              can&apos;t show it again.
-            </p>
+          <Card className="mt-4 border-2 border-red-400 bg-red-50">
+            <div className="flex items-start gap-2">
+              <span className="text-xl leading-none">⚠️</span>
+              <div className="flex-1">
+                <p className="text-sm font-bold uppercase tracking-widest text-red-700">
+                  Recovery code — shown only once, save it NOW
+                </p>
+                <p className="mt-1 text-sm text-red-800">
+                  This is the <strong>only way to reset your password</strong> if you
+                  forget it{claimResult.hasEmail ? " (besides your recovery email)" : ""}.
+                  We store only a hashed copy and <strong>can never show it again</strong>.
+                  Lose it {claimResult.hasEmail ? "and your email" : ""} and your account
+                  is locked forever.
+                </p>
+              </div>
+            </div>
+            <div className="mt-3 flex items-center gap-3">
+              <code className="flex-1 rounded-lg border border-red-200 bg-white px-3 py-2 text-lg font-bold tracking-wider text-red-900">
+                {claimResult.recoveryCode}
+              </code>
+              <button
+                onClick={() => {
+                  navigator.clipboard?.writeText(claimResult.recoveryCode);
+                  setCopiedRec(true);
+                }}
+                className="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
+              >
+                {copiedRec ? "Copied ✓" : "Copy"}
+              </button>
+            </div>
+            {!claimResult.hasEmail && (
+              <p className="mt-3 text-xs text-red-700">
+                Tip: you didn&apos;t add a recovery email. Without one, this code is your
+                <strong> only</strong> way back in.
+              </p>
+            )}
           </Card>
 
-          <div className="mt-6 flex gap-3">
-            <LinkButton href="/closet">Go to my closet →</LinkButton>
+          <label className="mt-5 flex items-center gap-2 text-sm text-ink">
+            <input
+              type="checkbox"
+              checked={savedConfirmed}
+              onChange={(e) => setSavedConfirmed(e.target.checked)}
+              className="h-4 w-4 rounded border-neutral-400 accent-brand"
+            />
+            I&apos;ve saved my recovery code somewhere safe.
+          </label>
+
+          <div className="mt-4 flex gap-3">
+            <LinkButton
+              href="/closet"
+              className={!savedConfirmed ? "pointer-events-none opacity-50" : ""}
+            >
+              Go to my closet →
+            </LinkButton>
             <LinkButton href={`/u/${encodeURIComponent(claimResult.accountCode)}`} variant="secondary">
               Preview my public view
             </LinkButton>
@@ -186,6 +230,11 @@ export default function AccountPage() {
               <input type="password" className={inputClass} value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
                 placeholder="at least 6 characters" />
+            </Field>
+            <Field label="Recovery email" hint="optional but strongly recommended">
+              <input type="email" className={inputClass} value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="you@example.com — so you can reset your password" />
             </Field>
             <Field label="Body type to share" hint="coarse only — precise measurements never shared">
               <select className={inputClass} value={form.bodyType}

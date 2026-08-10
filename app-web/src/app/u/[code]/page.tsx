@@ -159,8 +159,11 @@ function buildSections(data: PublicView) {
 }
 
 const COLOR_PRESETS: Record<string, string> = {
-  black: "#1a1a1a", white: "#f5f5f5", navy: "#1f2a44", blue: "#3b82f6",
-  grey: "#9ca3af", beige: "#d8c3a5", green: "#4b7a53", red: "#b03a3a", brown: "#6b4f3a",
+  black: "#1a1a1a", white: "#f5f5f5", grey: "#9ca3af", charcoal: "#374151",
+  navy: "#1f2a44", blue: "#3b82f6", denim: "#4a6fa5", beige: "#d8c3a5",
+  cream: "#f0e9d6", brown: "#6b4f3a", olive: "#6b7443", green: "#4b7a53",
+  sage: "#9caf88", teal: "#2f8f83", burgundy: "#6d2036", red: "#b03a3a",
+  rust: "#b5622f", mustard: "#d0a028", pink: "#dba0b0", purple: "#7c5aa8",
 };
 
 function ColorDot({ color }: { color: string | null }) {
