@@ -1,0 +1,258 @@
+// Fit Passport — data model
+// Design principle from the proposal: the shopper OWNS their fit identity.
+// One User has one FitProfile (their portable passport), a closet of KnownGoodItems,
+// zero-or-more Products they've checked (each with SizeOptions),
+// FitRecommendations produced by the engine, and FitOutcomes recording what actually happened.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ---------- Identity ----------
+
+model User {
+  id          String   @id @default(cuid())
+  email       String?  @unique
+  displayName String?
+  createdAt   DateTime @default(now())
+
+  // ---- Code-based identity (see docs/design/identity-and-sharing.md) ----
+  // An anonymous session starts unclaimed. Once the user "claims" the account
+  // (sets username + password), it becomes shareable by accountCode.
+  claimed      Boolean @default(false)
+  // High-entropy public identifier. Anyone with it can READ the closet (+coarse
+  // body type), never precise measurements. Nullable until claimed.
+  accountCode  String? @unique
+  username     String? @unique
+  // bcrypt hash of the edit password (the "private key"). Never store plaintext.
+  passwordHash String?
+  // bcrypt hash of a one-time recovery code (no email = need a recovery path).
+  recoveryHash String?
+  // Coarse, shareable body type shown to code viewers, e.g. "slim"|"average"|
+  // "athletic"|"broad". Precise cm measurements live in FitProfile and are
+  // NEVER exposed by code. Default null = viewer sees nothing about the body.
+  bodyType     String?
+  // Export policy for code viewers: "owner" (only password holder) | "anyone".
+  exportPolicy String  @default("owner")
+
+  fitProfile  FitProfile?
+  petProfiles PetProfile[]
+  knownGood   KnownGoodItem[]
+  collections Collection[]
+  products    Product[]
+  outcomes    FitOutcome[]
+  recs        FitRecommendation[]
+}
+
+// ---------- The Passport itself ----------
+
+/// One consolidated body + preference record per user.
+/// Every measurement is optional. Cold-start users can leave everything blank
+/// and rely on KnownGoodItem anchors instead.
+model FitProfile {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Basic body info (all optional, all in metric — cm/kg — for storage)
+  heightCm   Float?
+  weightKg   Float?
+  chestCm    Float?
+  waistCm    Float?
+  hipCm      Float?
+  shoulderCm Float?
+  sleeveCm   Float?
+  inseamCm   Float?
+
+  // Fit preference for tops/jackets. "slim" | "regular" | "relaxed" | "oversized"
+  preferredFit String @default("regular")
+
+  // Region for size chart defaults. e.g. "US","EU","UK","JP","CN"
+  region String @default("US")
+
+  // Optional free-text notes (allergies to fabrics, "long torso", etc)
+  notes String?
+
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+}
+
+/// A user-owned, renamable folder for organizing the closet. This is the
+/// "category" the USER sees and edits (rename / reorder / move items between).
+/// Distinct from KnownGoodItem.category, which is the GARMENT TYPE the fit
+/// engine matches on and must not be renamed by users.
+model Collection {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name      String // "T-Shirts", "Jeans", "Winter", user-editable
+  sortIndex Int      @default(0)
+  createdAt DateTime @default(now())
+
+  items KnownGoodItem[]
+
+  @@index([userId])
+}
+
+/// A garment the user already owns and considers a good fit — the anchor points
+/// the fit engine relies on when the user has no measurements.
+model KnownGoodItem {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  brand         String // e.g. "Uniqlo"
+  category      String // GARMENT TYPE for the engine: "shirt"|"tshirt"|"jacket"|...
+  size          String // as-labeled: "M", "L", "EU 48", "US 32"
+  region        String? // if the label uses a specific region
+  fitRating     Int     @default(4) // 1-5 how well it fits
+  // Optional area-specific notes (JSON string)
+  // shape: {"shoulders":"comfortable","chest":"slightly tight","sleeve":"long"}
+  areaNotesJson String?
+
+  // ---- Phase 2 organization fields ----
+  collectionId String? // which user folder it lives in (null = Uncategorized)
+  collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
+  color        String? // free-text/hex-ish color tag, e.g. "navy", "#1a2b3c"
+  sortIndex    Int         @default(0) // manual order within a collection
+  // Variant grouping: items sharing a groupId are the SAME garment in different
+  // sizes/colors, collapsed into one card in the UI. Null = standalone. The fit
+  // engine still reads every item individually, so grouping is display-only.
+  groupId      String?
+  groupName    String? // optional label for the merged card
+
+  productUrl  String? // optional link so we can back-refer to the source
+  purchasedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([collectionId])
+  @@index([groupId])
+}
+
+// ---------- Products the user has checked ----------
+
+model Product {
+  id     String @id @default(cuid())
+  userId String // owned by whoever imported it (course-MVP model)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  url           String
+  retailer      String? // "uniqlo", "cos", "hm", "amazon", ...
+  brand         String?
+  productName   String?
+  category      String? // shirt/tshirt/jacket/...
+  material      String? // free text; stretch info can live in fitNotes
+  fitNotes      String? // page's own qualitative notes ("slim through the body")
+  modelInfoJson String? // e.g. {"heightCm":183,"wearsSize":"M"}
+  rawJson       String? // full extractor payload for debugging / user review
+
+  createdAt   DateTime            @default(now())
+  sizeOptions SizeOption[]
+  recs        FitRecommendation[]
+  outcomes    FitOutcome[]
+
+  @@index([userId])
+}
+
+/// One row per available size on the product page. Measurements optional
+/// because many retailers only expose alpha labels.
+model SizeOption {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  label          String // "M", "EU 48", "US 10"
+  region         String? // if the size chart mixes regions
+  // Garment (flat) measurements — cm
+  chestCm        Float?
+  waistCm        Float?
+  hipCm          Float?
+  shoulderCm     Float?
+  sleeveCm       Float?
+  lengthCm       Float?
+  // Body-based measurements (some brands publish body ranges instead of garment)
+  bodyChestMinCm Float?
+  bodyChestMaxCm Float?
+  bodyWaistMinCm Float?
+  bodyWaistMaxCm Float?
+
+  @@index([productId])
+}
+
+// ---------- Engine outputs & feedback loop ----------
+
+model FitRecommendation {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  recommendedSizeLabel String
+  confidence           Float // 0..1
+  // Per-size scores + reasoning (JSON string)
+  // { "sizes": [ { "label":"M","score":0.86,"reasons":[...] }, ... ] }
+  breakdownJson        String
+  // Short human explanation ("Closest match to your COS M and Uniqlo L...")
+  explanation          String
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, productId])
+}
+
+/// What actually happened after purchase. This is the ground truth that
+/// makes the profile improve over time — the whole thesis of the product.
+model FitOutcome {
+  id        String  @id @default(cuid())
+  userId    String
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  purchasedSize    String
+  decision         String // "keep" | "return" | "exchange"
+  exchangedForSize String?
+
+  overallFit     Int? // 1-5
+  // Area-specific issues (JSON)
+  // {"shoulders":"tight","chest":"tight","sleeve":"long","length":"short"}
+  areaIssuesJson String?
+  notes          String?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// ---------- Pet extension (prototype only in the MVP) ----------
+
+model PetProfile {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  name          String
+  species       String // "dog" | "cat"
+  breed         String?
+  bodyType      String? // free text: "deep-chested", "long-back", ...
+  weightKg      Float?
+  neckCm        Float?
+  chestGirthCm  Float?
+  backLengthCm  Float?
+  // Known-good gear items for pets, JSON list of {brand,category,size,note}
+  knownGearJson String?
+  notes         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}

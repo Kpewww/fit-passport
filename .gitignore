@@ -1,0 +1,30 @@
+# Node / Next.js
+app-web/node_modules
+app-web/.next
+app-web/out
+app-web/build
+app-web/coverage
+
+# Prisma / SQLite dev DB
+app-web/prisma/dev.db
+app-web/prisma/dev.db-journal
+
+# Env & secrets (do NOT commit real credentials)
+# Ignore all .env variants anywhere, but keep .env.example templates.
+.env
+.env.local
+.env.development
+.env.production
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+
+# OS / IDE
+.DS_Store
+.vscode
+.idea
+
+# Logs
+*.log
+/tmp/*.log
