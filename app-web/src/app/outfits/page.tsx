@@ -10,9 +10,15 @@ import { CategoryPicker } from "@/components/CategoryPicker";
 import { OutfitMannequin, type OutfitLayer } from "@/components/OutfitMannequin";
 import { OutfitCard, type OutfitView } from "@/components/OutfitCard";
 import { deriveBodyType } from "@/lib/bodyType";
+import { garmentGlyph, garmentLabel } from "@/lib/garments";
 
 type Item = { brand: string; category: string; color: string; size: string; onlineAvailable: boolean };
 type Outfit = OutfitView;
+
+type ClosetItem = {
+  id: string; brand: string; displayName: string | null; category: string;
+  color: string | null; size: string; imageDataUrl: string | null; onlineAvailable: boolean;
+};
 
 const BLANK_ITEM: Item = { brand: "", category: "tshirt", color: "", size: "", onlineAvailable: true };
 
@@ -26,6 +32,10 @@ export default function OutfitsPage() {
   const [occasion, setOccasion] = useState("");
   const [items, setItems] = useState<Item[]>([{ ...BLANK_ITEM }]);
   const [saving, setSaving] = useState(false);
+  // Closet picker
+  const [closet, setCloset] = useState<ClosetItem[]>([]);
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [search, setSearch] = useState("");
   // Photoreal preview (optional; falls back to the mannequin when not configured)
   const [photo, setPhoto] = useState<string | null>(null);
   const [genning, setGenning] = useState(false);
@@ -33,6 +43,7 @@ export default function OutfitsPage() {
 
   const load = useCallback(() => {
     fetch("/api/outfits?mine=1").then((r) => r.json()).then((d) => setMine(d.outfits ?? []));
+    fetch("/api/closet").then((r) => r.json()).then((d) => setCloset(d.items ?? []));
     fetch("/api/profile").then((r) => r.json()).then((d) => {
       const p = d.profile;
       if (p) {
@@ -148,7 +159,46 @@ export default function OutfitsPage() {
                   </label>
                 </div>
               ))}
-              <button onClick={() => setItems([...items, { ...BLANK_ITEM }])} className="text-sm text-brand hover:underline">+ Add piece</button>
+              <div className="flex gap-3">
+                <button onClick={() => setItems([...items, { ...BLANK_ITEM }])} className="text-sm text-brand hover:underline">+ Add blank piece</button>
+                <button onClick={() => setPickerOpen((v) => !v)} className="text-sm text-brand hover:underline">
+                  {pickerOpen ? "Close closet" : "+ Add from my closet"}
+                </button>
+              </div>
+
+              {pickerOpen && (
+                <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-2">
+                  <input className={inputClass + " mb-2"} placeholder="Search your closet…"
+                    value={search} onChange={(e) => setSearch(e.target.value)} />
+                  <div className="grid max-h-52 grid-cols-1 gap-1 overflow-y-auto sm:grid-cols-2">
+                    {closet
+                      .filter((c) => {
+                        const q = search.toLowerCase();
+                        return !q || [c.brand, c.displayName, c.category, c.color].some((v) => v?.toLowerCase().includes(q));
+                      })
+                      .map((c) => (
+                        <button key={c.id} type="button"
+                          onClick={() => setItems((prev) => {
+                            const piece: Item = { brand: c.brand, category: c.category, color: c.color ?? "", size: c.size, onlineAvailable: c.onlineAvailable };
+                            // Replace a single untouched blank piece; else append.
+                            const onlyBlank = prev.length === 1 && !prev[0].brand && !prev[0].color && prev[0].category === "tshirt" && !prev[0].size;
+                            return onlyBlank ? [piece] : [...prev, piece];
+                          })}
+                          className="flex items-center gap-2 rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-left text-xs hover:border-brand">
+                          {c.imageDataUrl
+                            ? // eslint-disable-next-line @next/next/no-img-element
+                              <img src={c.imageDataUrl} alt="" className="h-7 w-7 flex-shrink-0 rounded object-cover" />
+                            : <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded bg-neutral-100">{garmentGlyph(c.category)}</span>}
+                          <span className="min-w-0">
+                            <span className="block truncate font-medium text-ink">{c.displayName || c.brand}</span>
+                            <span className="block truncate text-ink-faint">{garmentLabel(c.category)} · {c.size}</span>
+                          </span>
+                        </button>
+                      ))}
+                    {closet.length === 0 && <p className="col-span-2 px-1 py-2 text-xs text-ink-faint">Your closet is empty. <Link href="/closet" className="text-brand hover:underline">Add items →</Link></p>}
+                  </div>
+                </div>
+              )}
             </div>
 
             <Button onClick={post} disabled={saving || !title.trim()}>{saving ? "Posting…" : "Post outfit →"}</Button>
@@ -163,15 +213,25 @@ export default function OutfitsPage() {
             ) : (
               <OutfitMannequin layers={layers} volume={figure.volume as never} shape={figure.shape as never} size={150} />
             )}
-            <button
-              onClick={genPhoto}
-              disabled={genning || layers.length === 0}
-              className="mt-2 rounded-lg border border-neutral-300 px-2.5 py-1 text-[11px] font-medium text-ink-soft hover:border-brand hover:text-brand disabled:opacity-50"
-            >
-              {genning ? "Generating…" : photo ? "↻ Regenerate" : "✨ Photoreal preview"}
-            </button>
+            <div className="mt-2 flex flex-wrap justify-center gap-1.5">
+              <button
+                onClick={genPhoto}
+                disabled={genning || layers.length === 0}
+                className="rounded-lg border border-neutral-300 px-2.5 py-1 text-[11px] font-medium text-ink-soft hover:border-brand hover:text-brand disabled:opacity-50"
+              >
+                {genning ? "Generating…" : photo ? "↻ Regenerate" : "✨ Photoreal preview"}
+              </button>
+              {photo && (
+                <button
+                  onClick={() => { setPhoto(null); setPhotoNote(null); }}
+                  className="rounded-lg border border-neutral-300 px-2.5 py-1 text-[11px] font-medium text-ink-soft hover:border-brand hover:text-brand"
+                >
+                  ← Stylized view
+                </button>
+              )}
+            </div>
             {photoNote && <p className="mt-1 text-center text-[10px] text-ink-faint">{photoNote}</p>}
-            {!photoNote && <p className="mt-1 text-[10px] text-ink-faint">stylized preview</p>}
+            {!photoNote && <p className="mt-1 text-[10px] text-ink-faint">{photo ? "photoreal" : "stylized preview"}</p>}
           </div>
         </Card>
 

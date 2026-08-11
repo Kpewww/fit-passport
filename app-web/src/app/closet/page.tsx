@@ -7,11 +7,13 @@ import { BrandInput } from "@/components/BrandInput";
 import { SizeInput } from "@/components/SizeInput";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { isValidSize } from "@/lib/sizeSystems";
-import { garmentLabel } from "@/lib/garments";
+import { garmentLabel, garmentGlyph } from "@/lib/garments";
+import { resizeImageToDataUrl } from "@/lib/imageResize";
 
 type Item = {
   id: string;
   brand: string;
+  displayName: string | null;
   category: string;
   gender: string | null;
   size: string;
@@ -19,6 +21,7 @@ type Item = {
   fitRating: number;
   areaNotesJson: string | null;
   color: string | null;
+  imageDataUrl: string | null;
   collectionId: string | null;
   sortIndex: number;
   groupId: string | null;
@@ -68,7 +71,7 @@ const GENDERS = [
   { v: "unisex", label: "Unisex" },
 ];
 
-const BLANK = { brand: "", category: "tshirt", gender: "", size: "", fitRating: 5, areaNotes: "", color: "", onlineAvailable: true };
+const BLANK = { brand: "", displayName: "", category: "tshirt", gender: "", size: "", fitRating: 5, areaNotes: "", color: "", onlineAvailable: true, imageDataUrl: "" };
 
 export default function ClosetPage() {
   const [items, setItems] = useState<Item[]>([]);
@@ -80,6 +83,46 @@ export default function ClosetPage() {
   // Merge-select mode
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  // Add-by-URL
+  const [pasteUrl, setPasteUrl] = useState("");
+  const [extracting, setExtracting] = useState(false);
+  const [extractNote, setExtractNote] = useState<string | null>(null);
+  // Closet view mode
+  const [view, setView] = useState<"list" | "grid">("list");
+
+  async function extractFromUrl() {
+    if (!pasteUrl.trim()) return;
+    setExtracting(true);
+    setExtractNote(null);
+    try {
+      const r = await fetch("/api/closet/extract", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url: pasteUrl.trim() }),
+      }).then((r) => r.json());
+      if (r.error) { setExtractNote("Couldn't read that URL — fill the fields in manually."); return; }
+      setForm((f) => ({
+        ...f,
+        brand: r.brand || f.brand,
+        displayName: r.suggestedName || f.displayName,
+        category: r.category || f.category,
+        size: Array.isArray(r.sizes) && r.sizes.length ? "" : f.size, // let user pick a size
+      }));
+      setExtractNote(`Read from ${r.source?.host ?? "the page"} — review and pick your size below.`);
+    } catch {
+      setExtractNote("Couldn't read that URL — fill the fields in manually.");
+    } finally {
+      setExtracting(false);
+    }
+  }
+
+  async function onPickImage(file: File | undefined) {
+    if (!file) return;
+    try {
+      const dataUrl = await resizeImageToDataUrl(file, 320);
+      setForm((f) => ({ ...f, imageDataUrl: dataUrl }));
+    } catch { /* ignore */ }
+  }
 
   const load = useCallback(async () => {
     const [c, i] = await Promise.all([
@@ -99,12 +142,15 @@ export default function ClosetPage() {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        brand: form.brand, category: form.category, gender: form.gender || null, size: form.size,
+        brand: form.brand, displayName: form.displayName || null,
+        category: form.category, gender: form.gender || null, size: form.size,
         fitRating: form.fitRating, color: form.color || null, onlineAvailable: form.onlineAvailable,
+        imageDataUrl: form.imageDataUrl || null,
         areaNotesJson: form.areaNotes ? JSON.stringify({ notes: form.areaNotes }) : null,
       }),
     });
     setForm({ ...BLANK });
+    setPasteUrl(""); setExtractNote(null);
     setSaving(false);
     load();
   }
@@ -208,18 +254,62 @@ export default function ClosetPage() {
                 ↻ Refresh fit
               </LinkButton>
             )}
+            {count > 0 && (
+              <div className="inline-flex overflow-hidden rounded-lg border border-neutral-300 text-xs">
+                <button onClick={() => setView("list")}
+                  className={`px-2.5 py-1 ${view === "list" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>☰ List</button>
+                <button onClick={() => setView("grid")}
+                  className={`px-2.5 py-1 ${view === "grid" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>▦ Folders</button>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Add form */}
         <Card className="mt-6">
+          {/* Paste a product URL → auto-fill */}
+          <div className="mb-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 p-3">
+            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">Add from a link</p>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <input className={inputClass + " flex-1"} placeholder="Paste a product URL to auto-fill…"
+                value={pasteUrl} onChange={(e) => setPasteUrl(e.target.value)} />
+              <Button type="button" variant="secondary" size="md" onClick={extractFromUrl} disabled={extracting || !pasteUrl.trim()}>
+                {extracting ? "Reading…" : "Auto-fill"}
+              </Button>
+            </div>
+            {extractNote && <p className="mt-1.5 text-[11px] text-ink-soft">{extractNote}</p>}
+          </div>
+
           <form onSubmit={add} className="grid gap-3 sm:grid-cols-6">
+            {/* Item photo (user-uploaded — your own photo, not a scraped logo) */}
+            <div className="sm:col-span-6">
+              <Field label="Photo" hint="optional · your own photo">
+                <div className="flex items-center gap-3">
+                  <label className="flex h-16 w-16 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-neutral-300 bg-white text-xl text-ink-faint hover:border-brand">
+                    {form.imageDataUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={form.imageDataUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (garmentGlyph(form.category))}
+                    <input type="file" accept="image/*" className="hidden" onChange={(e) => onPickImage(e.target.files?.[0])} />
+                  </label>
+                  {form.imageDataUrl
+                    ? <button type="button" onClick={() => setForm({ ...form, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-red-600">remove photo</button>
+                    : <span className="text-xs text-ink-faint">Click to upload a picture of this item.</span>}
+                </div>
+              </Field>
+            </div>
             <div className="sm:col-span-2">
               <Field label="Brand">
                 <BrandInput value={form.brand} onChange={(v) => setForm({ ...form, brand: v })} />
               </Field>
             </div>
-            <div className="sm:col-span-1">
+            <div className="sm:col-span-2">
+              <Field label="Name" hint="optional">
+                <input className={inputClass} placeholder="e.g. Blue Oxford"
+                  value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />
+              </Field>
+            </div>
+            <div className="sm:col-span-2">
               <Field label="Type" hint="engine">
                 <CategoryPicker value={form.category}
                   onChange={(v) => setForm({ ...form, category: v, size: "" })} />
@@ -321,6 +411,7 @@ export default function ClosetPage() {
                 selectMode={selectMode}
                 selected={selected}
                 onToggleSelect={toggleSelect}
+                view={view}
               />
             ))}
             {uncategorized.length > 0 && (
@@ -337,6 +428,7 @@ export default function ClosetPage() {
                 selectMode={selectMode}
                 selected={selected}
                 onToggleSelect={toggleSelect}
+                view={view}
                 undeletable
               />
             )}
@@ -391,6 +483,7 @@ function CollectionSection({
   selectMode,
   selected,
   onToggleSelect,
+  view,
   undeletable,
 }: {
   collection: Collection;
@@ -405,6 +498,7 @@ function CollectionSection({
   selectMode: boolean;
   selected: Set<string>;
   onToggleSelect: (id: string) => void;
+  view: "list" | "grid";
   undeletable?: boolean;
 }) {
   const [renaming, setRenaming] = useState(false);
@@ -472,6 +566,10 @@ function CollectionSection({
         <p className="rounded-xl border border-dashed border-neutral-200 px-4 py-3 text-xs text-ink-faint">
           Empty — items of this type will file here automatically.
         </p>
+      ) : view === "grid" && !selectMode ? (
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+          {items.map((it) => <ItemTile key={it.id} item={it} onEdit={(id) => onEdit(id)} />)}
+        </div>
       ) : (
         <div className="space-y-2">
           {groups.map((g) =>
@@ -642,11 +740,12 @@ function ItemCard({
             >▼</button>
           </div>
         )}
+        <ItemThumb item={it} size={36} />
         <div className="min-w-0">
           <div className="flex items-center gap-2 font-medium text-ink">
             <ColorDot color={it.color} />
             <span className="truncate">
-              {it.brand} · <span className="text-ink-soft">{garmentLabel(it.category)}</span> · size {it.size}
+              {it.displayName ? it.displayName : it.brand} · <span className="text-ink-soft">{garmentLabel(it.category)}</span> · size {it.size}
             </span>
             {it.gender && <GenderBadge gender={it.gender} />}
           </div>
@@ -707,10 +806,12 @@ function EditRow({
   onSaved: () => void;
 }) {
   const [f, setF] = useState({
-    brand: item.brand, category: item.category, gender: item.gender ?? "", size: item.size,
+    brand: item.brand, displayName: item.displayName ?? "",
+    category: item.category, gender: item.gender ?? "", size: item.size,
     fitRating: item.fitRating, color: item.color ?? "",
     collectionId: item.collectionId ?? "",
     areaNotes: safeNotes(item.areaNotesJson) ?? "",
+    imageDataUrl: item.imageDataUrl ?? "",
   });
   const [saving, setSaving] = useState(false);
 
@@ -721,9 +822,11 @@ function EditRow({
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        id: item.id, brand: f.brand, category: f.category, gender: f.gender || null, size: f.size,
+        id: item.id, brand: f.brand, displayName: f.displayName || null,
+        category: f.category, gender: f.gender || null, size: f.size,
         fitRating: f.fitRating, color: f.color || null,
         collectionId: f.collectionId || null,
+        imageDataUrl: f.imageDataUrl || null,
         areaNotesJson: f.areaNotes ? JSON.stringify({ notes: f.areaNotes }) : null,
       }),
     });
@@ -731,13 +834,40 @@ function EditRow({
     onSaved();
   }
 
+  async function pickImage(file: File | undefined) {
+    if (!file) return;
+    try { setF((x) => ({ ...x, imageDataUrl: "" })); const d = await resizeImageToDataUrl(file, 320); setF((x) => ({ ...x, imageDataUrl: d })); } catch { /* ignore */ }
+  }
+
   return (
-    <Card className="!p-4 ring-brand/30 animate-fade-in-up">
+    <Card className="relative !p-4 ring-brand/30 animate-fade-in-up">
+      {/* small corner save */}
+      <button onClick={save} disabled={saving || !f.brand || !f.size || !isValidSize(f.category, f.size)}
+        className="absolute right-3 top-3 z-10 rounded-lg bg-brand px-2.5 py-1 text-xs font-semibold text-white shadow-card hover:bg-brand-dark disabled:opacity-50">
+        {saving ? "…" : "Save"}
+      </button>
       <div className="grid gap-3 sm:grid-cols-6">
+        <div className="sm:col-span-6">
+          <Field label="Photo" hint="optional · your own photo">
+            <div className="flex items-center gap-3">
+              <label className="flex h-14 w-14 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-neutral-300 bg-white text-lg text-ink-faint hover:border-brand">
+                {f.imageDataUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={f.imageDataUrl} alt="" className="h-full w-full object-cover" />
+                ) : garmentGlyph(f.category)}
+                <input type="file" accept="image/*" className="hidden" onChange={(e) => pickImage(e.target.files?.[0])} />
+              </label>
+              {f.imageDataUrl && <button type="button" onClick={() => setF({ ...f, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-red-600">remove</button>}
+            </div>
+          </Field>
+        </div>
         <div className="sm:col-span-2">
           <Field label="Brand"><BrandInput value={f.brand} onChange={(v) => setF({ ...f, brand: v })} /></Field>
         </div>
-        <div className="sm:col-span-1">
+        <div className="sm:col-span-2">
+          <Field label="Name" hint="optional"><input className={inputClass} value={f.displayName} placeholder="e.g. Blue Oxford" onChange={(e) => setF({ ...f, displayName: e.target.value })} /></Field>
+        </div>
+        <div className="sm:col-span-2">
           <Field label="Type">
             <CategoryPicker value={f.category} onChange={(v) => setF({ ...f, category: v })} />
           </Field>
@@ -860,4 +990,48 @@ function ColorDot({ color }: { color: string | null }) {
 function safeNotes(json: string | null): string | undefined {
   if (!json) return undefined;
   try { return JSON.parse(json)?.notes ?? undefined; } catch { return undefined; }
+}
+
+// A small square thumbnail: the user's photo if present, else a color-tinted
+// glyph. Used in list rows and (larger) in grid tiles.
+function ItemThumb({ item, size }: { item: Item; size: number }) {
+  const hex = colorHex(item.color);
+  if (item.imageDataUrl) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={item.imageDataUrl} alt="" className="flex-shrink-0 rounded-lg object-cover"
+        style={{ width: size, height: size }} />
+    );
+  }
+  return (
+    <div className="flex flex-shrink-0 items-center justify-center rounded-lg border border-neutral-200"
+      style={{ width: size, height: size, backgroundColor: hex ?? "#f5f5f5", fontSize: size * 0.5 }}>
+      {garmentGlyph(item.category)}
+    </div>
+  );
+}
+
+// A folder-style grid tile: stacked-card look, shows the name; hover reveals a
+// bit of info + the photo (if any).
+function ItemTile({ item, onEdit }: { item: Item; onEdit: (id: string) => void }) {
+  const name = item.displayName || `${item.brand} ${garmentLabel(item.category)}`;
+  return (
+    <button
+      onClick={() => onEdit(item.id)}
+      className="group relative flex h-24 flex-col justify-end overflow-hidden rounded-xl border border-neutral-200 bg-white p-2 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lift"
+    >
+      {/* stacked-paper edge */}
+      <span className="pointer-events-none absolute inset-x-1 -top-1 h-2 rounded-t-lg bg-neutral-100" />
+      <div className="absolute inset-0 flex items-center justify-center opacity-100 transition-opacity group-hover:opacity-0">
+        <ItemThumb item={item} size={44} />
+      </div>
+      {/* hover detail */}
+      <div className="absolute inset-0 flex flex-col justify-center gap-0.5 bg-white/95 px-2 opacity-0 transition-opacity group-hover:opacity-100">
+        <p className="text-xs font-medium text-ink line-clamp-2">{name}</p>
+        <p className="text-[10px] text-ink-faint">{garmentLabel(item.category)} · {item.size}</p>
+        <p className="text-[10px] text-amber-500">{"★".repeat(item.fitRating)}</p>
+      </div>
+      <p className="relative truncate text-[11px] font-medium text-ink">{name}</p>
+    </button>
+  );
 }

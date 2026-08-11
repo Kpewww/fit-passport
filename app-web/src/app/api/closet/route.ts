@@ -8,6 +8,7 @@ import { isValidSize } from "@/lib/sizeSystems";
 const ItemSchema = z
   .object({
     brand: z.string().min(1).max(80),
+    displayName: z.string().max(80).optional().nullable(),
     category: z.string().min(1).max(40),
     gender: z.enum(["mens", "womens", "unisex"]).optional().nullable(),
     size: z.string().min(1).max(20),
@@ -15,6 +16,7 @@ const ItemSchema = z
     fitRating: z.coerce.number().int().min(1).max(5).default(4),
     areaNotesJson: z.string().max(2000).optional().nullable(),
     productUrl: z.string().url().optional().nullable(),
+    imageDataUrl: z.string().max(400_000).regex(/^data:image\/(png|jpeg|webp);base64,/, "must be a small image").optional().nullable(),
     color: z.string().max(40).optional().nullable(),
     collectionId: z.string().optional().nullable(),
     groupId: z.string().optional().nullable(),
@@ -71,6 +73,7 @@ const UpdateSchema = z
   .object({
     id: z.string().min(1),
     brand: z.string().min(1).max(80).optional(),
+    displayName: z.string().max(80).optional().nullable(),
     category: z.string().min(1).max(40).optional(),
     gender: z.enum(["mens", "womens", "unisex"]).optional().nullable(),
     size: z.string().min(1).max(20).optional(),
@@ -78,6 +81,7 @@ const UpdateSchema = z
     fitRating: z.coerce.number().int().min(1).max(5).optional(),
     areaNotesJson: z.string().max(2000).optional().nullable(),
     productUrl: z.string().url().optional().nullable(),
+    imageDataUrl: z.string().max(400_000).regex(/^data:image\/(png|jpeg|webp);base64,/, "must be a small image").optional().nullable(),
     color: z.string().max(40).optional().nullable(),
     collectionId: z.string().optional().nullable(),
     sortIndex: z.coerce.number().int().min(0).optional(),

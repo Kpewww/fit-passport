@@ -171,18 +171,13 @@ export default function PassportPage() {
           <div className="relative bg-gradient-to-br from-brand-dark via-brand to-brand-dark px-6 py-5 text-white">
             {/* subtle shine */}
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent_20%,rgba(255,255,255,0.08)_40%,transparent_60%)]" />
-            <div className="relative flex items-center justify-between">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.3em] opacity-80">
-                  Fit Passport
-                </p>
-                <p className="mt-1 text-lg font-semibold tracking-wide">
-                  International Sizing Identity
-                </p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/40 text-xs font-bold tracking-widest">
-                FP
-              </div>
+            <div className="relative">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] opacity-80">
+                Fit Passport
+              </p>
+              <p className="mt-1 text-lg font-semibold tracking-wide">
+                International Sizing Identity
+              </p>
             </div>
           </div>
 
@@ -452,12 +447,10 @@ function ViewBook({
                 <p className="text-[10px] font-semibold uppercase tracking-[0.3em] opacity-80">Fit Passport</p>
                 <p className="mt-1 text-lg font-semibold tracking-wide">International Sizing Identity</p>
               </div>
-              {sealBadge ? (
+              {/* Only show a seal when the user has actually earned+pinned a badge —
+                  no generic "FP" placeholder. */}
+              {sealBadge && (
                 <BadgeSeal id={sealBadge.id} metal={sealBadge.metal} size={46} title={sealBadge.title} />
-              ) : (
-                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 text-xs font-bold tracking-widest">
-                  FP
-                </div>
               )}
             </div>
           </div>

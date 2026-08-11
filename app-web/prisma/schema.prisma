@@ -204,6 +204,9 @@ model KnownGoodItem {
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   brand         String // e.g. "Uniqlo"
+  // Optional user-chosen name for the piece ("Blue Oxford", "Dad's jacket").
+  // Falls back to "brand + category" in the UI when empty.
+  displayName   String?
   category      String // GARMENT TYPE for the engine: "shirt"|"tshirt"|"jacket"|...
   gender        String? // which line the garment is from: "mens"|"womens"|"unisex". Optional.
   size          String // as-labeled: "M", "L", "EU 48", "US 32"
@@ -225,6 +228,10 @@ model KnownGoodItem {
   groupName    String? // optional label for the merged card
 
   productUrl  String? // optional link so we can back-refer to the source
+  // Optional USER-UPLOADED photo of the item (small client-resized data URL).
+  // We deliberately store the user's own photo, not scraped brand imagery, to
+  // avoid trademark/copyright issues. See DEVLOG Session 19 note.
+  imageDataUrl String?
   // Some garments aren't sold online (local shops, thrift, tailor). When false,
   // the UI shows an "in-store only" note instead of implying a link exists.
   onlineAvailable Boolean @default(true)

@@ -28,6 +28,53 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 19 — Closet add-by-URL + item photos + grid view, outfit closet-picker, bug fixes
+
+**Context:** founder feedback batch — fix the outfits preview dead-end, drop the
+ugly passport "FP" circle, let closet items be added by URL / named / photographed,
+add a folder grid view, let outfits pull from the closet, and a corner Save on edit.
+Plus questions on image-gen recommendation + brand-logo legality.
+
+**Built:**
+- **Bug fix — outfit preview dead-end:** the photoreal preview had no way back to
+  the mannequin. Added a "← Stylized view" button and robust reset when pieces
+  change; the "not set up" note no longer sticks.
+- **Passport banner:** removed the right-side "FP" circle in both view & edit
+  banners. The view banner still shows a real earned+pinned badge seal (that's
+  meaningful), but no generic FP placeholder.
+- **Closet item photos + names:** schema `KnownGoodItem.displayName` +
+  `imageDataUrl` (user-uploaded, client-resized 320px JPEG — deliberately the
+  user's OWN photo, never scraped brand art). Closet add + edit forms gained a
+  photo upload and a Name field; list rows show a thumbnail + the name.
+- **Add-by-URL:** paste a product URL → `/api/closet/extract` (reuses `extractSmart`)
+  pre-fills brand / suggested name / category / sizes; user reviews, picks size,
+  and can add their own photo before saving.
+- **Folder/grid view:** a List ↔ Folders toggle. Grid renders stacked-card tiles
+  showing the name; hover reveals info + photo. (`ItemThumb`, `ItemTile`.)
+- **Outfits from closet:** composer got "+ Add from my closet" — a searchable
+  picker that appends closet items as outfit pieces (with their brand/size/color).
+- **Edit card corner Save:** small "Save" button pinned top-right of the edit card,
+  in addition to the bottom button.
+
+**Founder Q&A recorded:**
+- *Image try-on:* recommend a dedicated **virtual-try-on API** (Google Vertex VTO,
+  Kling/Kolors, FASHN.ai, or Replicate-hosted IDM-VTON) for garment-on-body
+  fidelity; a plain text-to-image (Flux/SDXL/DALL·E via Replicate/Fal) for a
+  cheaper stylized model shot. `/api/tryon` is provider-agnostic — set `TRYON_API_URL`.
+- *Brand logos — LEGAL NOTE:* do **not** ship real brand logos by default.
+  Trademark law permits *nominative* text reference ("this is a Nike item"), but
+  displaying a brand's LOGO implies endorsement/affiliation (many brand guidelines
+  forbid it) and hotlinking their image files adds copyright + bandwidth issues.
+  Chosen safe path: brand shown as **styled text**; imagery is **user-uploaded
+  photos of their own items** only. Revisit only with per-brand permission/official
+  affiliate assets.
+
+**Verify:** `tsc` clean · 55/55 tests · `next build` clean · live smoke: URL
+extract fills brand/name/sizes, displayName + image persist, outfit-from-closet
+posts, all pages 200.
+
+---
+
 ## 2026-08-11 · Session 18 — Badge taxonomy (tracks + rare capstones) + escalating medallion craft
 
 **Context:** founder wanted badges sorted, tiered per category, and rarer at the
