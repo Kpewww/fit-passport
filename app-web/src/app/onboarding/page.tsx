@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { Button, Card, Field, LinkButton, inputClass } from "@/components/ui";
 
 type Profile = {
+  sex: "male" | "female" | "unspecified" | null;
+  shopsFor: string | null; // csv of mens/womens/unisex
   heightCm: number | null;
   weightKg: number | null;
   chestCm: number | null;
@@ -19,10 +21,19 @@ type Profile = {
 };
 
 const EMPTY: Profile = {
+  sex: null, shopsFor: null,
   heightCm: null, weightKg: null, chestCm: null, waistCm: null, hipCm: null,
   shoulderCm: null, sleeveCm: null, inseamCm: null,
   preferredFit: "regular", region: "US", notes: "",
 };
+
+const SEX_OPTIONS: Array<{ v: "male" | "female" | "unspecified"; label: string }> = [
+  { v: "male", label: "Male" },
+  { v: "female", label: "Female" },
+  { v: "unspecified", label: "Prefer not to say" },
+];
+
+const SHOPS_OPTIONS = ["mens", "womens", "unisex"] as const;
 
 const FIT_OPTIONS: Array<{ v: Profile["preferredFit"]; label: string; desc: string }> = [
   { v: "slim", label: "Slim", desc: "Close to the body" },
@@ -104,6 +115,64 @@ export default function OnboardingPage() {
                   </button>
                 );
               })}
+            </div>
+          </Card>
+
+          {/* Sizing reference: biological sex + which departments you shop */}
+          <Card>
+            <p className="text-sm font-medium text-ink">Sizing reference</p>
+            <p className="mt-0.5 text-xs text-ink-faint">
+              Men&apos;s and women&apos;s size charts differ, so this helps map sizes to your
+              body. You can still shop any department&apos;s cut.
+            </p>
+            <div className="mt-3 grid gap-4 sm:grid-cols-2">
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-ink-soft">Biological sex</p>
+                <div className="flex gap-2">
+                  {SEX_OPTIONS.map((o) => {
+                    const active = profile.sex === o.v;
+                    return (
+                      <button
+                        key={o.v}
+                        type="button"
+                        onClick={() => update("sex", active ? null : o.v)}
+                        className={`flex-1 rounded-xl border px-2 py-2 text-xs transition-all ${
+                          active ? "border-brand bg-brand-tint ring-1 ring-brand text-brand" : "border-neutral-300 text-ink hover:border-neutral-400"
+                        }`}
+                      >
+                        {o.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <div>
+                <p className="mb-1.5 text-xs font-medium text-ink-soft">I shop in</p>
+                <div className="flex gap-2">
+                  {SHOPS_OPTIONS.map((s) => {
+                    const set = new Set((profile.shopsFor ?? "").split(",").filter(Boolean));
+                    const active = set.has(s);
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => {
+                          if (active) set.delete(s); else set.add(s);
+                          update("shopsFor", Array.from(set).join(",") || null);
+                        }}
+                        className={`flex-1 rounded-xl border px-2 py-2 text-xs capitalize transition-all ${
+                          active ? "border-brand bg-brand-tint ring-1 ring-brand text-brand" : "border-neutral-300 text-ink hover:border-neutral-400"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-1 text-[11px] text-ink-faint">
+                  e.g. a woman who buys men&apos;s tees can pick both.
+                </p>
+              </div>
             </div>
           </Card>
 

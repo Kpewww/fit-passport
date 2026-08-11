@@ -8,6 +8,7 @@ type Me = {
   claimed: boolean;
   accountCode: string | null;
   username: string | null;
+  email: string | null;
   bodyType: string | null;
   exportPolicy: string;
   canEdit: boolean;
@@ -32,10 +33,8 @@ export default function AccountPage() {
   });
   const [err, setErr] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [claimResult, setClaimResult] = useState<{ accountCode: string; recoveryCode: string; hasEmail: boolean } | null>(null);
+  const [claimResult, setClaimResult] = useState<{ accountCode: string; hasEmail: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
-  const [copiedRec, setCopiedRec] = useState(false);
-  const [savedConfirmed, setSavedConfirmed] = useState(false);
 
   async function load() {
     const d = await fetch("/api/auth/me").then((r) => r.json());
@@ -69,7 +68,7 @@ export default function AccountPage() {
               : "could not create account";
         throw new Error(msg);
       }
-      setClaimResult({ accountCode: j.accountCode, recoveryCode: j.recoveryCode, hasEmail: j.hasEmail });
+      setClaimResult({ accountCode: j.accountCode, hasEmail: j.hasEmail });
       load();
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : "error");
@@ -88,15 +87,15 @@ export default function AccountPage() {
     return <main className="flex-1"><div className="mx-auto max-w-2xl px-6 py-10 text-ink-faint">Loading…</div></main>;
   }
 
-  // Just claimed — show the code + recovery once.
+  // Just claimed — show the account code.
   if (claimResult) {
     return (
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-6 py-10">
           <h1 className="text-3xl font-bold text-ink">Your account is ready 🎉</h1>
           <p className="mt-2 text-ink-soft">
-            Save these now. Your account code is how others view your closet; your
-            recovery code is the only way back in if you forget your password.
+            You can log in later with your <strong>username</strong> or your
+            <strong> account code</strong>, plus your password.
           </p>
 
           <Card className="mt-6">
@@ -115,61 +114,27 @@ export default function AccountPage() {
                 {copied ? "Copied ✓" : "Copy"}
               </button>
             </div>
+            <p className="mt-2 text-xs text-ink-faint">
+              Anyone with your code can view your closet (read-only). Give it to
+              friends who want to browse.
+            </p>
           </Card>
 
-          <Card className="mt-4 border-2 border-red-400 bg-red-50">
-            <div className="flex items-start gap-2">
-              <span className="text-xl leading-none">⚠️</span>
-              <div className="flex-1">
-                <p className="text-sm font-bold uppercase tracking-widest text-red-700">
-                  Recovery code — shown only once, save it NOW
-                </p>
-                <p className="mt-1 text-sm text-red-800">
-                  This is the <strong>only way to reset your password</strong> if you
-                  forget it{claimResult.hasEmail ? " (besides your recovery email)" : ""}.
-                  We store only a hashed copy and <strong>can never show it again</strong>.
-                  Lose it {claimResult.hasEmail ? "and your email" : ""} and your account
-                  is locked forever.
-                </p>
-              </div>
-            </div>
-            <div className="mt-3 flex items-center gap-3">
-              <code className="flex-1 rounded-lg border border-red-200 bg-white px-3 py-2 text-lg font-bold tracking-wider text-red-900">
-                {claimResult.recoveryCode}
-              </code>
-              <button
-                onClick={() => {
-                  navigator.clipboard?.writeText(claimResult.recoveryCode);
-                  setCopiedRec(true);
-                }}
-                className="rounded-lg border border-red-300 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-100"
-              >
-                {copiedRec ? "Copied ✓" : "Copy"}
-              </button>
-            </div>
-            {!claimResult.hasEmail && (
-              <p className="mt-3 text-xs text-red-700">
-                Tip: you didn&apos;t add a recovery email. Without one, this code is your
-                <strong> only</strong> way back in.
+          {!claimResult.hasEmail && (
+            <Card className="mt-4 border-l-4 border-l-amber-400 bg-amber-50">
+              <p className="text-sm font-semibold text-amber-900">
+                ⚠️ You didn&apos;t add a recovery email
               </p>
-            )}
-          </Card>
+              <p className="mt-1 text-sm text-amber-800">
+                Without one, there&apos;s <strong>no way</strong> to reset your password
+                if you forget it. You&apos;d permanently lose editing access to this
+                account. Consider adding an email later from your account page.
+              </p>
+            </Card>
+          )}
 
-          <label className="mt-5 flex items-center gap-2 text-sm text-ink">
-            <input
-              type="checkbox"
-              checked={savedConfirmed}
-              onChange={(e) => setSavedConfirmed(e.target.checked)}
-              className="h-4 w-4 rounded border-neutral-400 accent-brand"
-            />
-            I&apos;ve saved my recovery code somewhere safe.
-          </label>
-
-          <div className="mt-4 flex gap-3">
-            <LinkButton
-              href="/closet"
-              className={!savedConfirmed ? "pointer-events-none opacity-50" : ""}
-            >
+          <div className="mt-6 flex gap-3">
+            <LinkButton href="/closet">
               Go to my closet →
             </LinkButton>
             <LinkButton href={`/u/${encodeURIComponent(claimResult.accountCode)}`} variant="secondary">
@@ -190,6 +155,7 @@ export default function AccountPage() {
           <Card className="mt-6 space-y-3">
             <Row label="Username" value={me.username ?? "—"} />
             <Row label="Account code" value={me.accountCode ?? "—"} mono />
+            <Row label="Recovery email" value={me.email ?? "none — can't reset password"} />
             <Row label="Body type shared" value={me.bodyType ?? "not shared"} />
             <Row label="Export by code" value={me.exportPolicy === "anyone" ? "anyone with code" : "only me"} />
           </Card>

@@ -7,7 +7,7 @@ import { Button, Card, Field, inputClass } from "@/components/ui";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [accountCode, setAccountCode] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -20,7 +20,7 @@ export default function LoginPage() {
       const r = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ accountCode, password }),
+        body: JSON.stringify({ identifier, password }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(typeof j.error === "string" ? j.error : "login failed");
@@ -37,14 +37,15 @@ export default function LoginPage() {
       <div className="mx-auto max-w-md px-6 py-14">
         <h1 className="text-3xl font-bold text-ink">Log in</h1>
         <p className="mt-2 text-ink-soft">
-          Enter your account code and password to edit your closet.
+          Sign in with your username or account code to edit your closet.
         </p>
         <Card className="mt-6">
           <form onSubmit={submit} className="space-y-4">
-            <Field label="Account code">
-              <input className={inputClass} value={accountCode}
-                onChange={(e) => setAccountCode(e.target.value)}
-                placeholder="FP-XXXX-XXXX-XXXXX" autoComplete="username" />
+            <Field label="Username or account code">
+              <input className={inputClass} value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                placeholder="alex_fits  or  FP-XXXX-XXXX-XXXXX"
+                autoComplete="username" />
             </Field>
             <Field label="Password">
               <input type="password" className={inputClass} value={password}
@@ -52,7 +53,7 @@ export default function LoginPage() {
                 autoComplete="current-password" />
             </Field>
             {err && <p className="text-sm text-red-700">{err}</p>}
-            <Button type="submit" size="lg" disabled={busy || !accountCode || !password}>
+            <Button type="submit" size="lg" disabled={busy || !identifier || !password}>
               {busy ? "Logging in…" : "Log in"}
             </Button>
           </form>
@@ -60,7 +61,7 @@ export default function LoginPage() {
         <p className="mt-4 text-xs text-ink-faint">
           Forgot your password?{" "}
           <Link href="/recover" className="text-brand hover:underline">
-            Reset it with your recovery code →
+            Reset it with your recovery email →
           </Link>
         </p>
         <p className="mt-1 text-xs text-ink-faint">

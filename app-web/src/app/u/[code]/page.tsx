@@ -20,6 +20,8 @@ type PublicView = {
   username: string;
   accountCode: string;
   bodyType: string | null;
+  sex: "male" | "female" | "unspecified" | null;
+  shopsFor: string | null;
   canExport: boolean;
   collections: Array<{ id: string; name: string; sortIndex: number }>;
   closet: ClosetItem[];
@@ -74,14 +76,27 @@ export default function ViewByCodePage({
           </span>
         </div>
         <h1 className="mt-3 text-3xl font-bold text-ink">{data.username}</h1>
-        <p className="mt-1 text-ink-soft">
+        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-ink-soft">
+          {data.sex && data.sex !== "unspecified" && (
+            <span>Sex (sizing ref): <strong className="capitalize">{data.sex}</strong></span>
+          )}
           {data.bodyType ? (
-            <>Body type: <strong className="capitalize">{data.bodyType}</strong></>
+            <span>Body type: <strong className="capitalize">{data.bodyType}</strong></span>
           ) : (
             <span className="text-ink-faint">Body type not shared</span>
           )}
-          <span className="text-ink-faint"> · {data.closet.length} items</span>
+          {data.shopsFor && (
+            <span>Shops: <strong>{data.shopsFor.split(",").join(" + ")}</strong></span>
+          )}
+          <span className="text-ink-faint">· {data.closet.length} items</span>
         </p>
+        {data.shopsFor && data.sex && data.sex !== "unspecified" &&
+         ((data.sex === "male" && data.shopsFor.includes("womens")) ||
+          (data.sex === "female" && data.shopsFor.includes("mens"))) && (
+          <p className="mt-1 text-xs text-brand">
+            ⚡ Cross-department shopper — useful reference for anyone doing the same.
+          </p>
+        )}
 
         <p className="mt-2 text-xs text-ink-faint">
           Precise measurements are never shared by code — only the closet and a

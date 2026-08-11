@@ -23,8 +23,12 @@ export async function GET(
       accountCode: true,
       bodyType: true,
       exportPolicy: true,
-      // NOTE: fitProfile is intentionally NOT selected. Precise measurements
-      // must never leave the server through this public endpoint.
+      // Only COARSE profile fields are exposed. Precise measurements
+      // (chest/waist/height/…) are intentionally NOT selected and must never
+      // leave the server through this public endpoint.
+      fitProfile: {
+        select: { sex: true, shopsFor: true },
+      },
       knownGood: {
         orderBy: [{ sortIndex: "asc" }, { createdAt: "desc" }],
         select: {
@@ -55,6 +59,8 @@ export async function GET(
     username: user.username,
     accountCode: user.accountCode,
     bodyType: user.bodyType, // coarse only, may be null
+    sex: user.fitProfile?.sex ?? null,
+    shopsFor: user.fitProfile?.shopsFor ?? null,
     canExport: user.exportPolicy === "anyone",
     collections: user.collections,
     closet: user.knownGood,

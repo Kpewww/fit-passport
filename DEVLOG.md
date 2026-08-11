@@ -28,6 +28,54 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 08 — biological sex, username login, email-only recovery
+
+**Goal:** three founder requests: (1) add biological sex to the profile — as a
+sizing reference AND to support cross-department shopping (men buying women's,
+women buying men's); (2) let people log in by username, not just account code;
+(3) recovery code was too clunky in practice — drop it and use email.
+
+### Sex + cross-department shopping
+- `FitProfile` gains `sex` (`male`/`female`/`unspecified`, all optional) and
+  `shopsFor` (comma-separated of `mens`/`womens`/`unisex`). Onboarding has a
+  new "Sizing reference" card with two rows of chip buttons + copy explaining
+  a user can shop any department regardless of biological sex.
+- Public view `/api/view/[code]` now returns `sex` + `shopsFor` (still no
+  precise measurements — verified live: chest 92 does not leak). The public
+  page surfaces a "⚡ Cross-department shopper — useful reference…" note when
+  the shopper's departments differ from their biological sex.
+
+### Username login
+- `/api/auth/login` accepts `{ identifier }` (username OR account code), with
+  a heuristic (looks like `FP-…`? → accountCode; else → username). Legacy
+  `{ accountCode }` still works for backward compat. Uniform error message.
+- `/login` UI has a single "Username or account code" field with an example
+  showing both formats.
+
+### Recovery = email only (recovery code removed)
+- `/api/auth/claim` no longer generates/returns a recovery code and no longer
+  writes `recoveryHash` (column kept in schema for now; explicitly nulled on
+  claim to purge any residue).
+- The scary red "save this code" warning + confirm checkbox is GONE. Account-
+  ready screen now shows just the account code + (only if no email) a soft
+  amber warning that they can't recover without an email.
+- `/api/auth/recover` reworked: `{ identifier, email, newPassword }` — verifies
+  the account with that identifier has EXACTLY that email on file, then resets
+  and logs in. No emails are actually sent yet (course-MVP; noted in code that
+  real send-token flow is required for prod). Uniform error message.
+- `/recover` UI matches.
+- `/api/auth/me` now exposes the user's own email so the Account status page
+  can show it (with an explicit "none — can't reset password" if missing).
+
+### Verified live
+- profile stores `sex=female shopsFor=womens,mens` · claim response has no
+  `recoveryCode` field · username login works, code login still works · email
+  recovery works and rejects wrong email · public view exposes coarse sex but
+  not chest.
+- `tsc` clean · `vitest` 15/15 · `next build` clean (29 routes).
+
+---
+
 ## 2026-08-10 · Session 07 — recovery/email, color wheel, reorder, merge UI, demo data
 
 **Goal:** User feedback after the GitHub push: (1) recovery email + strong

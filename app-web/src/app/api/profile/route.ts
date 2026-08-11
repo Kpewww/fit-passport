@@ -5,6 +5,8 @@ import { getCurrentUser } from "@/lib/session";
 
 // Onboarding form. Every measurement is optional — cold start is fine.
 const ProfileSchema = z.object({
+  sex: z.enum(["male", "female", "unspecified"]).nullable().optional(),
+  shopsFor: z.string().max(40).nullable().optional(), // csv of mens/womens/unisex
   heightCm: z.coerce.number().min(80).max(260).nullable().optional(),
   weightKg: z.coerce.number().min(20).max(300).nullable().optional(),
   chestCm: z.coerce.number().min(50).max(200).nullable().optional(),

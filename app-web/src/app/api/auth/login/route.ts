@@ -1,7 +1,7 @@
 // POST /api/auth/login
-//   body: { accountCode, password }
-// Verifies the password for the account behind a code and, on success, issues a
-// session with edit rights. This is the "login = enter password" path.
+//   body: { identifier, password }    // identifier = account code OR username
+// Verifies the password for the matching account and, on success, issues a
+// session with edit rights. Backward-compatible: still accepts { accountCode }.
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -10,8 +10,14 @@ import { setSession } from "@/lib/session";
 import { normalizeAccountCode, verifySecret } from "@/lib/auth";
 
 const Body = z.object({
-  accountCode: z.string().min(3).max(40),
+  // New name; either works. Login page sends `identifier`.
+  identifier: z.string().min(2).max(80).optional(),
+  // Legacy name for older callers.
+  accountCode: z.string().min(2).max(80).optional(),
   password: z.string().min(1).max(200),
+}).refine((b) => b.identifier || b.accountCode, {
+  message: "identifier required",
+  path: ["identifier"],
 });
 
 export async function POST(req: Request) {
@@ -19,12 +25,18 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const code = normalizeAccountCode(parsed.data.accountCode);
-  const user = await prisma.user.findUnique({ where: { accountCode: code } });
+  const raw = (parsed.data.identifier ?? parsed.data.accountCode ?? "").trim();
 
-  // Uniform error to avoid leaking whether a code exists.
+  // Heuristic: looks like an account code (starts with FP- or begins with
+  // 4 base32 chars + dash) → look up by accountCode; otherwise → by username.
+  const looksLikeCode = /^FP-/i.test(raw) || /^[A-Z0-9]{4}-/i.test(raw);
+  const user = looksLikeCode
+    ? await prisma.user.findUnique({ where: { accountCode: normalizeAccountCode(raw) } })
+    : await prisma.user.findUnique({ where: { username: raw } });
+
+  // Uniform error so we don't leak whether an identifier exists.
   const fail = () =>
-    NextResponse.json({ error: "invalid code or password" }, { status: 401 });
+    NextResponse.json({ error: "invalid username/code or password" }, { status: 401 });
 
   if (!user || !user.claimed) return fail();
   const ok = await verifySecret(parsed.data.password, user.passwordHash);

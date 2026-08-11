@@ -59,6 +59,15 @@ model FitProfile {
   userId String @unique
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  // Biological sex — used as a sizing reference (men's vs women's size systems
+  // differ). Optional. "male" | "female" | "unspecified". This is about which
+  // size CHARTS map to the body; the user is free to shop any department's cut
+  // (men buying women's, women buying men's), which `shopsFor` captures.
+  sex      String? // biological sex for sizing reference
+  // Which departments the user actually shops (may differ from `sex`).
+  // Comma-separated of "mens","womens","unisex". Null = no preference stated.
+  shopsFor String?
+
   // Basic body info (all optional, all in metric — cm/kg — for storage)
   heightCm   Float?
   weightKg   Float?

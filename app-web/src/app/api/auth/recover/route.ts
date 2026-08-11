@@ -1,27 +1,23 @@
 // POST /api/auth/recover
-//   body: { accountCode, recoveryCode, newPassword }
-// Resets the password using the one-time recovery code. On success, rotates the
-// recovery code (returns a fresh one) and logs the user in.
+//   body: { identifier, email, newPassword }
+//     identifier = account code OR username (either works)
+// Resets the password for the account that has BOTH the given identifier and
+// the given email on record. On success, logs the user in.
 //
-// NOTE: email-based recovery (send a reset link to the stored email) needs mail
-// infrastructure not present in the course MVP. The email is collected at claim
-// time so that flow can be added later; today, the recovery CODE is the working
-// reset path. See docs/design/identity-and-sharing.md.
+// Course-MVP caveat: we don't actually send a magic link — we verify the email
+// on record matches what the user typed. This is acceptable for a private
+// student-run beta; before production this MUST become a real
+// send-email-with-token flow.
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { setSession } from "@/lib/session";
-import {
-  generateRecoveryCode,
-  hashSecret,
-  normalizeAccountCode,
-  verifySecret,
-} from "@/lib/auth";
+import { hashSecret, normalizeAccountCode } from "@/lib/auth";
 
 const Body = z.object({
-  accountCode: z.string().min(3).max(40),
-  recoveryCode: z.string().min(3).max(40),
+  identifier: z.string().min(2).max(80),
+  email: z.string().email().max(200),
   newPassword: z.string().min(6).max(200),
 });
 
@@ -30,36 +26,31 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const code = normalizeAccountCode(parsed.data.accountCode);
-  const user = await prisma.user.findUnique({ where: { accountCode: code } });
+  const { identifier, newPassword } = parsed.data;
+  const email = parsed.data.email.toLowerCase();
 
+  // Identifier could be an account code or a username.
+  const looksLikeCode = /^FP-|^[A-Z0-9]{4}-/i.test(identifier.trim());
+  const user = looksLikeCode
+    ? await prisma.user.findUnique({ where: { accountCode: normalizeAccountCode(identifier) } })
+    : await prisma.user.findUnique({ where: { username: identifier.trim() } });
+
+  // Uniform error so we don't reveal whether the identifier or the email matched.
   const fail = () =>
-    NextResponse.json({ error: "invalid code or recovery code" }, { status: 401 });
+    NextResponse.json(
+      { error: "we couldn't verify that account and email combination" },
+      { status: 401 },
+    );
 
   if (!user || !user.claimed) return fail();
+  if (!user.email || user.email.toLowerCase() !== email) return fail();
 
-  // Recovery codes are compared case-insensitively (we store the hash of the
-  // exact string we generated, which is uppercase base32).
-  const supplied = parsed.data.recoveryCode.trim().toUpperCase().replace(/\s+/g, "");
-  const ok = await verifySecret(supplied, user.recoveryHash);
-  if (!ok) return fail();
-
-  // Rotate both the password and the recovery code (single-use).
-  const newRecovery = generateRecoveryCode();
-  const [passwordHash, recoveryHash] = await Promise.all([
-    hashSecret(parsed.data.newPassword),
-    hashSecret(newRecovery),
-  ]);
+  const passwordHash = await hashSecret(newPassword);
   await prisma.user.update({
     where: { id: user.id },
-    data: { passwordHash, recoveryHash },
+    data: { passwordHash },
   });
 
   setSession({ userId: user.id, canEdit: true });
-  return NextResponse.json({
-    ok: true,
-    username: user.username,
-    // A fresh recovery code — the old one is now invalid.
-    recoveryCode: newRecovery,
-  });
+  return NextResponse.json({ ok: true, username: user.username });
 }

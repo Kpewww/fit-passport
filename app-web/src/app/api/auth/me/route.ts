@@ -11,6 +11,7 @@ export async function GET() {
     claimed: user.claimed,
     accountCode: user.accountCode,
     username: user.username,
+    email: user.email, // fine to show the user their own email
     bodyType: user.bodyType,
     exportPolicy: user.exportPolicy,
     canEdit: canEdit(),
