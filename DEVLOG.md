@@ -28,6 +28,54 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 20 — Security hardening: email reset, rate limits, export, image-gen, account controls
+
+**Context:** founder batch — fix the edit-card corner-save overlap, add email as a
+login method + username rules, then the deferred security/backlog set: real email
+password reset, rate limiting, code-export button, a real image-gen provider, and
+account safety (password reset without changing the code + soft-deactivate).
+
+**Built:**
+- **Bug fix:** edit-card corner "Save" no longer overlaps the Photo helper text —
+  moved to the card's outer top-right (`-right-2 -top-2`) + `pr-14` on the Photo row.
+- **Email login + username rules:** login & reset now accept **username / email /
+  account code** (email detected by "@"). Username claim now rejects anything that
+  looks like an email (would collide with email login); uniqueness already enforced.
+- **Rate limiting** (`lib/rateLimit.ts`, in-memory fixed-window, per-IP): login
+  10/5min, request-reset & recover 5/15min, reset 10/15min, `/api/view` 60/min,
+  export 20/min. Returns 429 + Retry-After. (Per-process; swap for Redis before
+  multi-instance prod.) Verified: 11th login → 429.
+- **Real password reset (token flow):** schema `resetTokenHash` + `resetExpiresAt`.
+  `/api/auth/request-reset` finds by identifier, stores a hashed one-time token
+  (30-min expiry), emails a link via **Resend** (`lib/email.ts`); if email isn't
+  configured it returns a `devLink` so beta can still reset. `/api/auth/reset`
+  verifies token+expiry, sets the new password, logs in. **Account code never
+  changes.** `/recover` rewritten to "send link"; new `/reset` page. Old
+  `/api/auth/recover` kept for back-compat.
+- **Export by code:** `/api/view/[code]/export` returns closet JSON as a download,
+  **only when `exportPolicy === "anyone"`** (else 403); `/u/[code]` shows a
+  "⬇ Export as JSON" button when allowed. Coarse-only, respects showBodyType.
+- **Real image-gen:** `tryonImage.ts` gained a **Replicate FLUX schnell** provider
+  (~$0.003/image) — set `REPLICATE_API_TOKEN` and the "✨ Photoreal preview" works
+  with zero endpoint wiring (async create→poll→output). Generic `TRYON_API_URL`
+  still supported as fallback. `.env.example` documents Replicate + Resend + APP_URL.
+- **Account safety:** `/api/auth/change-password` (logged-in, verifies current pw,
+  code unchanged) and `/api/auth/deactivate` (soft delete: `deactivated=true`,
+  unlists from community, clears session). Deactivated accounts are rejected by
+  login, `/api/view`, export, and the community directory. `/account` gained
+  collapsible "Change password" + a red "Deactivate account" danger zone.
+
+**Cost note (founder asked for cheapest model):** wired **Replicate FLUX schnell**
+as the default photoreal path (~$0.003/img) — but I have no key and won't use a
+fake one; founder adds `REPLICATE_API_TOKEN` to turn it on. Email = Resend free tier.
+
+**Verify:** `tsc` clean · 55/55 tests · `next build` clean · live smoke: email-format
+username rejected, email login works, devLink returned w/o mail provider, export 200
+when policy=anyone, change-password 401/200, deactivate 401/200 → view 404, login
+rate-limit 429 on 11th.
+
+---
+
 ## 2026-08-11 · Session 19 — Closet add-by-URL + item photos + grid view, outfit closet-picker, bug fixes
 
 **Context:** founder feedback batch — fix the outfits preview dead-end, drop the

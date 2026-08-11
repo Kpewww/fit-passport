@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Field, inputClass, LinkButton } from "@/components/ui";
 
@@ -179,6 +180,10 @@ export default function AccountPage() {
             </LinkButton>
             <Button variant="ghost" onClick={logout}>Log out</Button>
           </div>
+
+          <ChangePassword />
+          <DangerZone />
+
           <p className="mt-6 text-xs text-ink-faint">
             Anyone with your code can view your closet and body type (if shared),
             but only someone with your password can edit it.{" "}
@@ -270,5 +275,95 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
       <span className="text-sm text-ink-faint">{label}</span>
       <span className={`text-sm text-ink ${mono ? "font-mono font-semibold" : ""}`}>{value}</span>
     </div>
+  );
+}
+
+// Change password while logged in (account code stays the same).
+function ChangePassword() {
+  const [open, setOpen] = useState(false);
+  const [cur, setCur] = useState("");
+  const [next, setNext] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function save() {
+    setBusy(true); setMsg(null);
+    const r = await fetch("/api/auth/change-password", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ currentPassword: cur, newPassword: next }),
+    });
+    const j = await r.json().catch(() => ({}));
+    setBusy(false);
+    if (r.ok) { setMsg("Password updated ✓"); setCur(""); setNext(""); }
+    else setMsg(typeof j.error === "string" ? j.error : "couldn't update password");
+  }
+
+  return (
+    <Card className="mt-4">
+      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between text-left">
+        <span className="text-sm font-semibold text-ink">Change password</span>
+        <span className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`}>⌄</span>
+      </button>
+      {open && (
+        <div className="mt-3 space-y-3">
+          <p className="text-xs text-ink-faint">Your account code stays the same — only the password changes.</p>
+          <Field label="Current password">
+            <input type="password" className={inputClass} value={cur} onChange={(e) => setCur(e.target.value)} autoComplete="current-password" />
+          </Field>
+          <Field label="New password">
+            <input type="password" className={inputClass} value={next} onChange={(e) => setNext(e.target.value)} placeholder="at least 6 characters" autoComplete="new-password" />
+          </Field>
+          {msg && <p className={`text-sm ${msg.includes("✓") ? "text-green-700" : "text-red-700"}`}>{msg}</p>}
+          <Button onClick={save} disabled={busy || !cur || next.length < 6}>{busy ? "Saving…" : "Update password"}</Button>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// Deactivate the account (soft delete — data retained, hidden from everyone
+// external; support can reverse it).
+function DangerZone() {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function deactivate() {
+    if (!confirm("Deactivate your account? It will be hidden from everyone (public view, community, login). Your data is kept and support can restore it later.")) return;
+    setBusy(true); setMsg(null);
+    const r = await fetch("/api/auth/deactivate", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    const j = await r.json().catch(() => ({}));
+    setBusy(false);
+    if (r.ok) router.push("/");
+    else setMsg(typeof j.error === "string" ? j.error : "couldn't deactivate");
+  }
+
+  return (
+    <Card className="mt-4 ring-red-200">
+      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between text-left">
+        <span className="text-sm font-semibold text-red-700">Deactivate account</span>
+        <span className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`}>⌄</span>
+      </button>
+      {open && (
+        <div className="mt-3 space-y-3">
+          <p className="text-xs text-ink-soft">
+            Hides your account from everyone external — public view, community, and login all stop working.
+            Your data isn&apos;t deleted; support can reactivate it. Confirm with your password.
+          </p>
+          <Field label="Password">
+            <input type="password" className={inputClass} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+          </Field>
+          {msg && <p className="text-sm text-red-700">{msg}</p>}
+          <Button onClick={deactivate} disabled={busy || !password} className="!bg-red-600 hover:!bg-red-700">
+            {busy ? "…" : "Deactivate my account"}
+          </Button>
+        </div>
+      )}
+    </Card>
   );
 }

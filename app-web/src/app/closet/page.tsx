@@ -841,13 +841,14 @@ function EditRow({
 
   return (
     <Card className="relative !p-4 ring-brand/30 animate-fade-in-up">
-      {/* small corner save */}
+      {/* small corner save — pinned to the card's outer top-right so it never
+          overlaps the Photo row's helper text */}
       <button onClick={save} disabled={saving || !f.brand || !f.size || !isValidSize(f.category, f.size)}
-        className="absolute right-3 top-3 z-10 rounded-lg bg-brand px-2.5 py-1 text-xs font-semibold text-white shadow-card hover:bg-brand-dark disabled:opacity-50">
+        className="absolute -right-2 -top-2 z-10 rounded-lg bg-brand px-2.5 py-1 text-xs font-semibold text-white shadow-lift hover:bg-brand-dark disabled:opacity-50">
         {saving ? "…" : "Save"}
       </button>
       <div className="grid gap-3 sm:grid-cols-6">
-        <div className="sm:col-span-6">
+        <div className="sm:col-span-6 pr-14">
           <Field label="Photo" hint="optional · your own photo">
             <div className="flex items-center gap-3">
               <label className="flex h-14 w-14 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-neutral-300 bg-white text-lg text-ink-faint hover:border-brand">

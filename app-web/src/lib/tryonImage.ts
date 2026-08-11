@@ -21,8 +21,12 @@ export type TryonRequest = {
 const TIMEOUT_MS = 20000;
 
 export function tryonConfigured(): boolean {
-  return !!process.env.TRYON_API_URL;
+  return !!process.env.TRYON_API_URL || !!process.env.REPLICATE_API_TOKEN;
 }
+
+// FLUX schnell on Replicate — the most cost-effective text-to-image right now
+// (~$0.003/image, ~1–2s). Cheapest sensible default for a student/beta project.
+const REPLICATE_MODEL = "black-forest-labs/flux-schnell";
 
 /** Build a neutral, privacy-safe prompt from the outfit. */
 export function buildTryonPrompt(req: TryonRequest): string {
@@ -43,6 +47,13 @@ export function buildTryonPrompt(req: TryonRequest): string {
  * feature isn't configured or the call fails (caller falls back to the mannequin).
  */
 export async function generateTryonImage(req: TryonRequest): Promise<string | null> {
+  const prompt = buildTryonPrompt(req);
+  // Prefer Replicate FLUX schnell when a token is set (cheapest photoreal path).
+  if (process.env.REPLICATE_API_TOKEN) {
+    const img = await generateViaReplicate(prompt).catch(() => null);
+    if (img) return img;
+  }
+  // Otherwise, a generic provider endpoint.
   const url = process.env.TRYON_API_URL;
   if (!url) return null;
 
@@ -56,7 +67,7 @@ export async function generateTryonImage(req: TryonRequest): Promise<string | nu
       method: "POST",
       signal: controller.signal,
       headers,
-      body: JSON.stringify({ prompt: buildTryonPrompt(req) }),
+      body: JSON.stringify({ prompt }),
     });
     if (!r.ok) return null;
     const j = (await r.json()) as { url?: string; image?: string; b64?: string };
@@ -69,4 +80,30 @@ export async function generateTryonImage(req: TryonRequest): Promise<string | nu
   } finally {
     clearTimeout(t);
   }
+}
+
+// Replicate runs predictions async: create → poll until succeeded → read output.
+async function generateViaReplicate(prompt: string): Promise<string | null> {
+  const token = process.env.REPLICATE_API_TOKEN!;
+  const headers = { "content-type": "application/json", authorization: `Bearer ${token}` };
+
+  const create = await fetch(`https://api.replicate.com/v1/models/${REPLICATE_MODEL}/predictions`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({ input: { prompt, aspect_ratio: "3:4", output_format: "webp", num_outputs: 1 } }),
+  });
+  if (!create.ok) return null;
+  let pred = (await create.json()) as { id: string; status: string; output?: string[] | string };
+
+  // Poll (FLUX schnell is fast — usually ready within a couple seconds).
+  const deadline = Date.now() + TIMEOUT_MS;
+  while (pred.status !== "succeeded" && pred.status !== "failed" && pred.status !== "canceled") {
+    if (Date.now() > deadline) return null;
+    await new Promise((r) => setTimeout(r, 800));
+    const poll = await fetch(`https://api.replicate.com/v1/predictions/${pred.id}`, { headers });
+    if (!poll.ok) return null;
+    pred = await poll.json();
+  }
+  if (pred.status !== "succeeded" || !pred.output) return null;
+  return Array.isArray(pred.output) ? (pred.output[0] ?? null) : pred.output;
 }

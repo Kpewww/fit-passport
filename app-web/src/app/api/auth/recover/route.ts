@@ -14,6 +14,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { setSession } from "@/lib/session";
 import { hashSecret, normalizeAccountCode } from "@/lib/auth";
+import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 
 const Body = z.object({
   identifier: z.string().min(2).max(80),
@@ -22,6 +23,9 @@ const Body = z.object({
 });
 
 export async function POST(req: Request) {
+  const rl = rateLimit(clientKey(req, "recover"), 5, 15 * 60_000);
+  if (!rl.ok) return tooMany(rl.retryAfterSec);
+
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
@@ -29,11 +33,15 @@ export async function POST(req: Request) {
   const { identifier, newPassword } = parsed.data;
   const email = parsed.data.email.toLowerCase();
 
-  // Identifier could be an account code or a username.
-  const looksLikeCode = /^FP-|^[A-Z0-9]{4}-/i.test(identifier.trim());
+  // Identifier could be an account code, an email, or a username.
+  const id = identifier.trim();
+  const looksLikeCode = /^FP-|^[A-Z0-9]{4}-/i.test(id);
+  const looksLikeEmail = id.includes("@");
   const user = looksLikeCode
-    ? await prisma.user.findUnique({ where: { accountCode: normalizeAccountCode(identifier) } })
-    : await prisma.user.findUnique({ where: { username: identifier.trim() } });
+    ? await prisma.user.findUnique({ where: { accountCode: normalizeAccountCode(id) } })
+    : looksLikeEmail
+      ? await prisma.user.findUnique({ where: { email: id.toLowerCase() } })
+      : await prisma.user.findUnique({ where: { username: id } });
 
   // Uniform error so we don't reveal whether the identifier or the email matched.
   const fail = () =>

@@ -10,7 +10,7 @@ import { earnedBadgeIds, parsePinned } from "@/lib/badges";
 
 export async function GET() {
   const users = await prisma.user.findMany({
-    where: { listedInCommunity: true, claimed: true },
+    where: { listedInCommunity: true, claimed: true, deactivated: false },
     select: {
       id: true,
       username: true,

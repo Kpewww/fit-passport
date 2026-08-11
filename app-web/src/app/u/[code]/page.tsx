@@ -156,6 +156,20 @@ export default function ViewByCodePage({
           )}
         </div>
 
+        {data.canExport && (
+          <div className="mt-6 flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-4 py-3">
+            <p className="text-sm text-ink-soft">
+              {data.username} lets anyone with the code export this closet.
+            </p>
+            <a
+              href={`/api/view/${encodeURIComponent(code)}/export`}
+              className="whitespace-nowrap rounded-lg border border-neutral-300 px-3 py-1.5 text-sm font-medium text-ink-soft hover:border-brand hover:text-brand"
+            >
+              ⬇ Export as JSON
+            </a>
+          </div>
+        )}
+
         <Card className="mt-6 flex items-center justify-between bg-neutral-50">
           <p className="text-sm text-ink-soft">
             Like this closet? Build your own fit profile and get size

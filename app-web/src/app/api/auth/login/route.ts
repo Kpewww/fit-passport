@@ -8,6 +8,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { setSession } from "@/lib/session";
 import { normalizeAccountCode, verifySecret } from "@/lib/auth";
+import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 
 const Body = z.object({
   // New name; either works. Login page sends `identifier`.
@@ -21,24 +22,31 @@ const Body = z.object({
 });
 
 export async function POST(req: Request) {
+  // Brute-force guard: 10 attempts / 5 min per IP.
+  const rl = rateLimit(clientKey(req, "login"), 10, 5 * 60_000);
+  if (!rl.ok) return tooMany(rl.retryAfterSec);
+
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const raw = (parsed.data.identifier ?? parsed.data.accountCode ?? "").trim();
 
-  // Heuristic: looks like an account code (starts with FP- or begins with
-  // 4 base32 chars + dash) → look up by accountCode; otherwise → by username.
+  // Identifier can be: an account code (FP-… / 4 base32 chars + dash), an email
+  // (contains @), or a username. Pick the lookup accordingly.
   const looksLikeCode = /^FP-/i.test(raw) || /^[A-Z0-9]{4}-/i.test(raw);
+  const looksLikeEmail = raw.includes("@");
   const user = looksLikeCode
     ? await prisma.user.findUnique({ where: { accountCode: normalizeAccountCode(raw) } })
-    : await prisma.user.findUnique({ where: { username: raw } });
+    : looksLikeEmail
+      ? await prisma.user.findUnique({ where: { email: raw.toLowerCase() } })
+      : await prisma.user.findUnique({ where: { username: raw } });
 
   // Uniform error so we don't leak whether an identifier exists.
   const fail = () =>
     NextResponse.json({ error: "invalid username/code or password" }, { status: 401 });
 
-  if (!user || !user.claimed) return fail();
+  if (!user || !user.claimed || user.deactivated) return fail();
   const ok = await verifySecret(parsed.data.password, user.passwordHash);
   if (!ok) return fail();
 

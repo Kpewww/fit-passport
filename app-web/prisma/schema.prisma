@@ -33,6 +33,13 @@ model User {
   passwordHash String?
   // bcrypt hash of a one-time recovery code (no email = need a recovery path).
   recoveryHash String?
+  // Password-reset token flow (real email link). We store a HASH of the token
+  // plus its expiry; the plaintext token only lives in the emailed link.
+  resetTokenHash String?
+  resetExpiresAt DateTime?
+  // Soft-deactivation: when true the account is hidden from ALL external access
+  // (public view, community, login) but data is retained. Not a hard delete.
+  deactivated  Boolean @default(false)
   // Coarse, shareable body type shown to code viewers, e.g. "slim"|"average"|
   // "athletic"|"broad". Precise cm measurements live in FitProfile and are
   // NEVER exposed by code. Default null = viewer sees nothing about the body.

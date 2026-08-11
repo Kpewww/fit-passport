@@ -13,8 +13,13 @@ import { getCurrentUser, setSession } from "@/lib/session";
 import { generateAccountCode, hashSecret } from "@/lib/auth";
 
 const Body = z.object({
-  username: z.string().min(2).max(30).regex(/^[a-zA-Z0-9_.-]+$/,
-    "letters, numbers, and . _ - only"),
+  username: z.string().min(2).max(30)
+    .regex(/^[a-zA-Z0-9_.-]+$/, "letters, numbers, and . _ - only")
+    // A username must NOT look like an email — otherwise it'd collide with
+    // email-based login. (No "@", and not a bare "name@domain.tld" shape.)
+    .refine((u) => !u.includes("@") && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(u), {
+      message: "username can't be an email address",
+    }),
   password: z.string().min(6).max(200),
   email: z.string().email().max(200).optional().or(z.literal("")),
   bodyType: z

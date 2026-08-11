@@ -11,17 +11,23 @@ import { prisma } from "@/lib/db";
 import { normalizeAccountCode } from "@/lib/auth";
 import { computeBadgeStats } from "@/lib/badgeStats";
 import { earnedBadgeIds, evaluateBadges, parsePinned } from "@/lib/badges";
+import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 
 export async function GET(
-  _req: Request,
+  req: Request,
   { params }: { params: { code: string } },
 ) {
+  // Anti-scrape: 60 reads / min per IP.
+  const rl = rateLimit(clientKey(req, "view"), 60, 60_000);
+  if (!rl.ok) return tooMany(rl.retryAfterSec);
+
   const code = normalizeAccountCode(decodeURIComponent(params.code));
   const user = await prisma.user.findUnique({
     where: { accountCode: code },
     select: {
       id: true,
       claimed: true,
+      deactivated: true,
       username: true,
       accountCode: true,
       bodyType: true,
@@ -59,7 +65,7 @@ export async function GET(
     },
   });
 
-  if (!user || !user.claimed) {
+  if (!user || !user.claimed || user.deactivated) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 

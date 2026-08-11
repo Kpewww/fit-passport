@@ -37,14 +37,14 @@ export default function LoginPage() {
       <div className="mx-auto max-w-md px-6 py-14">
         <h1 className="text-3xl font-bold text-ink">Log in</h1>
         <p className="mt-2 text-ink-soft">
-          Sign in with your username or account code to edit your closet.
+          Sign in with your username, email, or account code to edit your closet.
         </p>
         <Card className="mt-6">
           <form onSubmit={submit} className="space-y-4">
-            <Field label="Username or account code">
+            <Field label="Username, email, or account code">
               <input className={inputClass} value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="alex_fits  or  FP-XXXX-XXXX-XXXXX"
+                placeholder="alex_fits  ·  you@example.com  ·  FP-XXXX-XXXX-XXXXX"
                 autoComplete="username" />
             </Field>
             <Field label="Password">
