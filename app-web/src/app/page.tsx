@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, LinkButton, Button, AccuracyBadge, Skeleton } from "@/components/ui";
+import { Avatar, PinnedSeals } from "@/components/Badges";
 
 type Step = {
   key: string;
@@ -28,6 +30,11 @@ type Status = {
     productName: string | null;
     brand: string | null;
   } | null;
+  username?: string | null;
+  claimed?: boolean;
+  avatarDataUrl?: string | null;
+  earnedBadgeIds?: string[];
+  pinnedBadges?: string[];
 };
 
 export default function Home() {
@@ -162,8 +169,31 @@ function NewUserGuide() {
 
 function ReturningUserDashboard({ status }: { status: Status }) {
   const pctDone = status.steps.filter((s) => s.done).length / status.steps.length;
+  const initials = (status.username ?? "you").slice(0, 2).toUpperCase();
+  const badgesToShow = (status.pinnedBadges?.length ? status.pinnedBadges : status.earnedBadgeIds) ?? [];
   return (
     <div className="space-y-5 animate-fade-in-up">
+      {/* Identity strip — avatar + earned badges */}
+      <Card className="flex items-center justify-between gap-4">
+        <Link href="/passport" className="flex items-center gap-3 group">
+          <Avatar src={status.avatarDataUrl} initials={initials} size={48} />
+          <div>
+            <p className="font-semibold text-ink group-hover:text-brand">
+              {status.username ?? "Your passport"}
+            </p>
+            <p className="text-xs text-ink-faint">
+              {status.earnedBadgeIds?.length
+                ? `${status.earnedBadgeIds.length} badge${status.earnedBadgeIds.length === 1 ? "" : "s"} earned`
+                : "View your fit passport →"}
+            </p>
+          </div>
+        </Link>
+        <div className="flex items-center gap-3">
+          {badgesToShow.length > 0 && <PinnedSeals ids={badgesToShow.slice(0, 3)} size={34} />}
+          <Link href="/badges" className="text-xs text-ink-faint hover:text-brand">Badges →</Link>
+        </div>
+      </Card>
+
       {/* Accuracy + next step */}
       <Card>
         <div className="flex items-start justify-between gap-4">

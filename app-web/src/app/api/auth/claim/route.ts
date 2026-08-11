@@ -17,7 +17,9 @@ const Body = z.object({
     "letters, numbers, and . _ - only"),
   password: z.string().min(6).max(200),
   email: z.string().email().max(200).optional().or(z.literal("")),
-  bodyType: z.enum(["slim", "average", "athletic", "broad"]).optional(),
+  bodyType: z
+    .enum(["petite", "slim", "lean", "average", "athletic", "curvy", "broad", "tall", "plus"])
+    .optional(),
   exportPolicy: z.enum(["owner", "anyone"]).optional(),
 });
 

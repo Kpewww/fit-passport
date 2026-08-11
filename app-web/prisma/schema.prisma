@@ -40,6 +40,15 @@ model User {
   // Export policy for code viewers: "owner" (only password holder) | "anyone".
   exportPolicy String  @default("owner")
 
+  // Opt-in to the public community directory (browsable list of closets).
+  // Off by default — publishing is always a deliberate choice.
+  listedInCommunity Boolean @default(false)
+
+  // Up to 3 badge IDs the user has pinned to their passport, comma-separated,
+  // in display order. The full earned set is derived on the fly (see badges.ts);
+  // this only records which ones they chose to show off.
+  pinnedBadges String @default("")
+
   fitProfile  FitProfile?
   petProfiles PetProfile[]
   knownGood   KnownGoodItem[]

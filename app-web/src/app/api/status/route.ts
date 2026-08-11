@@ -6,6 +6,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { computeBadgeStats } from "@/lib/badgeStats";
+import { earnedBadgeIds, evaluateBadges, parsePinned } from "@/lib/badges";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -66,6 +68,12 @@ export async function GET() {
 
   const firstUndone = steps.find((s) => !s.done) ?? null;
 
+  // Badges + prestige layer.
+  const badgeStats = await computeBadgeStats(user.id, user.listedInCommunity);
+  const earned = earnedBadgeIds(badgeStats);
+  const allBadges = evaluateBadges(badgeStats);
+  const pinned = parsePinned(user.pinnedBadges).filter((id) => earned.includes(id));
+
   return NextResponse.json({
     profileExists: !!profile,
     hasBody,
@@ -76,6 +84,15 @@ export async function GET() {
     accuracy,
     steps,
     nextStep: firstUndone,
+    // identity + prestige
+    username: user.username,
+    accountCode: user.accountCode,
+    claimed: user.claimed,
+    avatarDataUrl: profile?.avatarDataUrl ?? null,
+    listedInCommunity: user.listedInCommunity,
+    badges: allBadges,
+    earnedBadgeIds: earned,
+    pinnedBadges: pinned,
     lastRecommendation: recentRec
       ? {
           size: recentRec.recommendedSizeLabel,

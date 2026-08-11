@@ -28,6 +28,82 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 15 — Prestige layer: badges, avatars, passport view-mode, community directory
+
+**Context:** founder wants the passport to become a show-off object — an official
+seal, earnable metal-tier badges (bronze→silver→gold→obsidian→diamond→jade),
+titles like "Head Designer", avatars everywhere, a beautiful read-only passport
+card after first fill, and an opt-in community directory with a "post yourself"
+option. Explicitly agreed (AskUserQuestion): build what's real now, stage the
+outfit/like-driven tiers as visible-but-locked; passport defaults to the polished
+card, Edit flips to the form.
+
+**Built:**
+
+*Badge system (transparent, earned from real data — like the fit engine):*
+- [`src/lib/badges.ts`](app-web/src/lib/badges.ts) — 9-badge ladder with metal
+  tiers + a `METAL_STYLE` visual map. Earned badges: Verified Closet (5 items),
+  Curator (12 items/3 collections), Wardrobe Archivist (25 items/6 brands),
+  Truth-Teller (3 outcomes), Calibrated (10 refreshes), Open Closet (listed in
+  community). **Staged/locked** with "coming soon": Stylist (obsidian), Acclaimed
+  (diamond), Head Designer (jade) — these need outfit posts + likes, which don't
+  exist yet, so they're shown locked rather than faked. Every badge has a
+  plain-language blurb + progress text. `evaluateBadges`/`earnedBadgeIds`/`parsePinned`.
+- [`src/lib/badgeStats.ts`](app-web/src/lib/badgeStats.ts) — one server helper
+  computes real stats (closet size, brands, collections, outcomes, refreshes,
+  community-listed) so status/view/community all agree.
+- [`Badges.tsx`](app-web/src/components/Badges.tsx) — shared `Avatar`, `BadgeSeal`
+  (metal medallion), `BadgeChip`, `PinnedSeals`.
+- 8 new badge tests (54 total). Guard tested: locked badges never earn even with
+  maxed stats; unearned badges can't be pinned (server filters).
+
+*Passport view/edit mode:*
+- `/passport` now defaults to a polished READ-ONLY card once it has content
+  (avatar + official seal = your top pinned badge, or "FP" if none; identity
+  lines; an Achievements row of pinned seals; body-type figure). An "✎ Edit"
+  button flips to the existing inline-editable book; "Done editing" flips back.
+  Empty passports open straight into edit.
+
+*Badge library:*
+- New `/badges` page — trophy case grouped into Earned / In progress / Coming
+  soon, with progress text, and **pin up to 3** earned badges to the passport
+  (writes `/api/profile/prefs`).
+
+*Avatars + badges everywhere:*
+- Home dashboard: identity strip (avatar + earned-badge count + pinned seals).
+- `/u/[code]` public view: avatar + pinned/earned seals in the header.
+- Community.
+
+*Community directory + post-yourself:*
+- New `/api/community` (opt-in listing, coarse info only, prestige-sorted).
+- `/community` rewritten: a "Post yourself to the community" toggle (opt-in,
+  claim-gated, unlist anytime), the code lookup, and a public grid of listed
+  closets showing avatar + badges + item counts.
+
+*Misc founder asks:*
+- Coarse body types expanded to petite/slim/lean/average/athletic/curvy/broad/
+  tall/plus (claim form + enum).
+- Post-claim screen now leads with "View my passport →".
+- BMI already removed (Session 14).
+
+**Schema:** `User.listedInCommunity Boolean`, `User.pinnedBadges String`. New
+route `/api/profile/prefs` (write-guarded by canEdit) for pinning + listing.
+
+**Privacy:** re-verified `/api/view/[code]` leaks NO cm measurements even with
+avatar/badges added. Avatar is cosmetic and intentionally public; precise body
+data still never leaves the server.
+
+**Staged for a future session (not faked):** outfit posting + likes + the
+obsidian/diamond/jade "acclaim" tiers, and the Head Designer leaderboard. The
+ladder shows them locked so the aspiration is visible.
+
+**Verify:** `tsc` clean · 54/54 tests · `next build` clean · live smoke: claim →
+add 5 clothes earns "starter" → pin + list → appears in community directory + on
+public view; unearned-badge pin correctly rejected; no measurement leak; all
+pages 200.
+
+---
+
 ## 2026-08-11 · Session 14 — Size module cleanup + passport UX overhaul
 
 **Context:** founder feedback: the size/converter block is the product's core but

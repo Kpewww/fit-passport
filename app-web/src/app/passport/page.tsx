@@ -10,6 +10,8 @@ import Link from "next/link";
 import { Button, Card } from "@/components/ui";
 import { BodyFigure } from "@/components/BodyFigure";
 import { deriveBodyType } from "@/lib/bodyType";
+import { Avatar, BadgeSeal, PinnedSeals } from "@/components/Badges";
+import { badgeById } from "@/lib/badges";
 
 type Sex = "male" | "female" | "unspecified" | null;
 type Fit = "slim" | "regular" | "relaxed" | "oversized";
@@ -54,6 +56,16 @@ function fitList(csv: string): Fit[] {
   return csv.split(",").map((s) => s.trim()).filter(Boolean) as Fit[];
 }
 
+// "Has the user actually filled anything in?" — decides view vs edit default.
+function hasContent(p: Profile): boolean {
+  return (
+    p.sex != null ||
+    p.chestCm != null || p.waistCm != null || p.heightCm != null || p.weightKg != null ||
+    (p.notes != null && p.notes !== "") ||
+    p.avatarDataUrl != null
+  );
+}
+
 export default function PassportPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [me, setMe] = useState<Me | null>(null);
@@ -62,6 +74,8 @@ export default function PassportPage() {
   const [bodyChanged, setBodyChanged] = useState(false); // measurement edited this visit
   const [lengthUnit, setLengthUnit] = useState<"cm" | "in">("cm"); // display unit for lengths
   const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg"); // display unit for weight
+  const [mode, setMode] = useState<"view" | "edit">("view");
+  const [pinnedBadges, setPinnedBadges] = useState<string[]>([]);
 
   useEffect(() => {
     Promise.all([
@@ -69,9 +83,14 @@ export default function PassportPage() {
       fetch("/api/auth/me").then((r) => r.json()),
       fetch("/api/status").then((r) => r.json()).catch(() => ({ closetCount: 0 })),
     ]).then(([p, m, s]) => {
-      setProfile({ ...EMPTY, ...(p.profile ?? {}) });
+      const prof = { ...EMPTY, ...(p.profile ?? {}) };
+      setProfile(prof);
       setMe({ claimed: m.claimed, username: m.username, accountCode: m.accountCode });
       setClosetCount(s.closetCount ?? 0);
+      setPinnedBadges(s.pinnedBadges ?? []);
+      // Default to the polished VIEW card once the passport has real content;
+      // brand-new/empty passports open straight into edit so there's something to do.
+      setMode(p.profile && hasContent(prof) ? "view" : "edit");
     });
   }, []);
 
@@ -110,10 +129,39 @@ export default function PassportPage() {
   const initials = (me.username ?? "you").slice(0, 2).toUpperCase();
   const holder = me.claimed ? me.username : "TEMPORARY BEARER";
   const idLine = me.claimed ? me.accountCode : "UNCLAIMED";
+  const bt = deriveBodyType({
+    heightCm: profile.heightCm, weightKg: profile.weightKg,
+    chestCm: profile.chestCm, waistCm: profile.waistCm, hipCm: profile.hipCm,
+  });
 
+  // ---------- VIEW MODE — the polished, show-off passport card ----------
+  if (mode === "view") {
+    return (
+      <ViewBook
+        profile={profile}
+        me={me}
+        initials={initials}
+        holder={holder ?? "—"}
+        idLine={idLine ?? "—"}
+        bodyLabel={bt.label}
+        figureKey={bt.figureKey}
+        shape={bt.shape}
+        pinnedBadges={pinnedBadges}
+        onEdit={() => setMode("edit")}
+      />
+    );
+  }
+
+  // ---------- EDIT MODE — the existing inline-editable book ----------
   return (
     <main className="flex-1 bg-neutral-100 py-10">
       <div className="mx-auto max-w-2xl px-6">
+        <div className="mb-3 flex items-center justify-between">
+          <button onClick={() => setMode("view")} className="text-sm text-ink-faint hover:text-brand">
+            ← Back to my passport
+          </button>
+          <Button size="md" onClick={() => setMode("view")}>Done editing</Button>
+        </div>
         {/* PASSPORT BOOK */}
         <div className="overflow-hidden rounded-2xl bg-white shadow-lift ring-1 ring-neutral-200">
           {/* Cover strip */}
@@ -341,6 +389,131 @@ function SaveDot({ status }: { status: "idle" | "saving" | "saved" | "error" }) 
     : status === "saving" ? "bg-amber-400 animate-pulse"
     : "bg-green-500";
   return <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${cls}`} />;
+}
+
+// ---------- VIEW MODE: the polished, show-off passport card ----------
+function ViewBook({
+  profile,
+  me,
+  initials,
+  holder,
+  idLine,
+  bodyLabel,
+  figureKey,
+  shape,
+  pinnedBadges,
+  onEdit,
+}: {
+  profile: Profile;
+  me: Me;
+  initials: string;
+  holder: string;
+  idLine: string;
+  bodyLabel: string;
+  figureKey: Parameters<typeof BodyFigure>[0]["volume"];
+  shape: Parameters<typeof BodyFigure>[0]["shape"];
+  pinnedBadges: string[];
+  onEdit: () => void;
+}) {
+  const fits = fitList(profile.preferredFit);
+  // Seal glyph = the highest pinned badge, else the classic "FP".
+  const sealBadge = pinnedBadges.map(badgeById).find(Boolean);
+
+  return (
+    <main className="flex-1 bg-neutral-100 py-10">
+      <div className="mx-auto max-w-2xl px-6">
+        <div className="mb-3 flex items-center justify-end">
+          <Button size="md" variant="secondary" onClick={onEdit}>✎ Edit passport</Button>
+        </div>
+
+        {/* THE CARD */}
+        <div className="overflow-hidden rounded-2xl bg-white shadow-lift ring-1 ring-neutral-200">
+          {/* Cover strip with the official seal */}
+          <div className="relative bg-gradient-to-br from-brand-dark via-brand to-brand-dark px-6 py-6 text-white">
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent_20%,rgba(255,255,255,0.10)_40%,transparent_60%)]" />
+            <div className="relative flex items-center justify-between">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.3em] opacity-80">Fit Passport</p>
+                <p className="mt-1 text-lg font-semibold tracking-wide">International Sizing Identity</p>
+              </div>
+              {sealBadge ? (
+                <BadgeSeal metal={sealBadge.metal} glyph={sealBadge.glyph} size={44} title={sealBadge.title} />
+              ) : (
+                <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 text-xs font-bold tracking-widest">
+                  FP
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Portrait + identity */}
+          <div className="grid gap-6 border-b border-neutral-200 px-6 py-6 sm:grid-cols-[auto,1fr]">
+            <div className="flex flex-col items-center">
+              <Avatar src={profile.avatarDataUrl} initials={initials} size={92} ring={false} />
+              <p className="mt-1 text-[9px] uppercase tracking-widest text-ink-faint">portrait</p>
+            </div>
+            <div className="min-w-0 space-y-2">
+              <Line label="Holder" value={holder} mono />
+              <Line label="Passport no." value={idLine} mono />
+              <Line label="Region of issue" value={profile.region} mono />
+              <Line label="Preferred fit" value={fits.join(", ").toUpperCase() || "—"} mono />
+            </div>
+          </div>
+
+          {/* Pinned badges showcase */}
+          <div className="border-b border-neutral-200 px-6 py-5">
+            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Achievements</p>
+            {pinnedBadges.length > 0 ? (
+              <div className="flex items-center gap-4">
+                <PinnedSeals ids={pinnedBadges} size={48} />
+                <div className="text-xs text-ink-soft">
+                  {pinnedBadges.map((id) => badgeById(id)?.title).filter(Boolean).join(" · ")}
+                </div>
+              </div>
+            ) : (
+              <Link href="/badges" className="text-sm text-brand hover:underline">
+                Earn badges and pin up to 3 here →
+              </Link>
+            )}
+          </div>
+
+          {/* Body snapshot */}
+          <div className="flex items-center gap-4 px-6 py-5">
+            <BodyFigure volume={figureKey} shape={shape} size={64} />
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Body type</p>
+              <p className="text-lg font-semibold text-ink">{bodyLabel}</p>
+              <p className="mt-0.5 text-xs text-ink-faint">
+                Precise measurements stay private — never shared by code.
+              </p>
+            </div>
+          </div>
+
+          {/* MRZ footer */}
+          <div className="border-t border-neutral-200 bg-neutral-50 px-6 py-3">
+            <p className="truncate font-mono text-[10px] tracking-widest text-ink-faint">{mrz(profile, me)}</p>
+          </div>
+        </div>
+
+        {/* actions */}
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+          <div className="flex gap-3">
+            <Link href="/closet" className="text-ink-soft hover:text-brand">My closet →</Link>
+            <Link href="/badges" className="text-ink-soft hover:text-brand">Badge library →</Link>
+          </div>
+          {me.claimed ? (
+            <Link href={`/u/${encodeURIComponent(me.accountCode ?? "")}`} className="text-ink-soft hover:text-brand">
+              Preview public view →
+            </Link>
+          ) : (
+            <Link href="/account" className="font-medium text-brand hover:underline">
+              Claim account to save & share →
+            </Link>
+          )}
+        </div>
+      </div>
+    </main>
+  );
 }
 
 // ---------- pieces ----------

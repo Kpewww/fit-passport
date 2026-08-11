@@ -9,6 +9,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { normalizeAccountCode } from "@/lib/auth";
+import { computeBadgeStats } from "@/lib/badgeStats";
+import { earnedBadgeIds, evaluateBadges, parsePinned } from "@/lib/badges";
 
 export async function GET(
   _req: Request,
@@ -18,16 +20,20 @@ export async function GET(
   const user = await prisma.user.findUnique({
     where: { accountCode: code },
     select: {
+      id: true,
       claimed: true,
       username: true,
       accountCode: true,
       bodyType: true,
       exportPolicy: true,
+      listedInCommunity: true,
+      pinnedBadges: true,
       // Only COARSE profile fields are exposed. Precise measurements
       // (chest/waist/height/…) are intentionally NOT selected and must never
-      // leave the server through this public endpoint.
+      // leave the server through this public endpoint. The avatar is cosmetic
+      // and safe to show.
       fitProfile: {
-        select: { sex: true, shopsFor: true },
+        select: { sex: true, shopsFor: true, avatarDataUrl: true },
       },
       knownGood: {
         orderBy: [{ sortIndex: "asc" }, { createdAt: "desc" }],
@@ -56,14 +62,22 @@ export async function GET(
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
+  // Earned + pinned badges (from real stats).
+  const stats = await computeBadgeStats(user.id, user.listedInCommunity);
+  const earned = earnedBadgeIds(stats);
+  const pinned = parsePinned(user.pinnedBadges).filter((id) => earned.includes(id));
+
   return NextResponse.json({
     username: user.username,
     accountCode: user.accountCode,
+    avatarDataUrl: user.fitProfile?.avatarDataUrl ?? null,
     bodyType: user.bodyType, // coarse only, may be null
     sex: user.fitProfile?.sex ?? null,
     shopsFor: user.fitProfile?.shopsFor ?? null,
     canExport: user.exportPolicy === "anyone",
     collections: user.collections,
     closet: user.knownGood,
+    badges: evaluateBadges(stats).filter((b) => b.earnedNow),
+    pinnedBadges: pinned,
   });
 }

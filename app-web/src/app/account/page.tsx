@@ -16,10 +16,15 @@ type Me = {
 
 const BODY_TYPES = [
   { v: "", label: "Don't share" },
+  { v: "petite", label: "Petite" },
   { v: "slim", label: "Slim" },
+  { v: "lean", label: "Lean" },
   { v: "average", label: "Average" },
   { v: "athletic", label: "Athletic" },
+  { v: "curvy", label: "Curvy" },
   { v: "broad", label: "Broad" },
+  { v: "tall", label: "Tall" },
+  { v: "plus", label: "Plus" },
 ];
 
 export default function AccountPage() {
@@ -133,12 +138,15 @@ export default function AccountPage() {
             </Card>
           )}
 
-          <div className="mt-6 flex gap-3">
-            <LinkButton href="/closet">
-              Go to my closet →
+          <div className="mt-6 flex flex-wrap gap-3">
+            <LinkButton href="/passport">
+              View my passport →
+            </LinkButton>
+            <LinkButton href="/closet" variant="secondary">
+              My closet
             </LinkButton>
             <LinkButton href={`/u/${encodeURIComponent(claimResult.accountCode)}`} variant="secondary">
-              Preview my public view
+              Preview public view
             </LinkButton>
           </div>
         </div>

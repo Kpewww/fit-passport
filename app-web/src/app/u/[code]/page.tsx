@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, EmptyState, LinkButton } from "@/components/ui";
+import { Avatar, PinnedSeals } from "@/components/Badges";
 
 type ClosetItem = {
   id: string;
@@ -20,12 +21,15 @@ type ClosetItem = {
 type PublicView = {
   username: string;
   accountCode: string;
+  avatarDataUrl: string | null;
   bodyType: string | null;
   sex: "male" | "female" | "unspecified" | null;
   shopsFor: string | null;
   canExport: boolean;
   collections: Array<{ id: string; name: string; sortIndex: number }>;
   closet: ClosetItem[];
+  badges: Array<{ id: string; title: string; metal: string }>;
+  pinnedBadges: string[];
 };
 
 export default function ViewByCodePage({
@@ -76,8 +80,18 @@ export default function ViewByCodePage({
             read-only
           </span>
         </div>
-        <h1 className="mt-3 text-3xl font-bold text-ink">{data.username}</h1>
-        <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-ink-soft">
+        <div className="mt-3 flex items-center gap-4">
+          <Avatar src={data.avatarDataUrl} initials={data.username.slice(0, 2).toUpperCase()} size={64} />
+          <div>
+            <h1 className="text-3xl font-bold text-ink">{data.username}</h1>
+            {(data.pinnedBadges.length > 0 || data.badges.length > 0) && (
+              <div className="mt-1.5">
+                <PinnedSeals ids={data.pinnedBadges.length > 0 ? data.pinnedBadges : data.badges.map((b) => b.id).slice(0, 3)} size={30} />
+              </div>
+            )}
+          </div>
+        </div>
+        <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-ink-soft">
           {data.sex && data.sex !== "unspecified" && (
             <span>Sex (sizing ref): <strong className="capitalize">{data.sex}</strong></span>
           )}
