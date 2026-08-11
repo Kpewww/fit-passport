@@ -45,16 +45,25 @@ export default function PassportPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [me, setMe] = useState<Me | null>(null);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [closetCount, setClosetCount] = useState(0);
+  const [bodyChanged, setBodyChanged] = useState(false); // measurement edited this visit
 
   useEffect(() => {
     Promise.all([
       fetch("/api/profile").then((r) => r.json()),
       fetch("/api/auth/me").then((r) => r.json()),
-    ]).then(([p, m]) => {
+      fetch("/api/status").then((r) => r.json()).catch(() => ({ closetCount: 0 })),
+    ]).then(([p, m, s]) => {
       setProfile({ ...EMPTY, ...(p.profile ?? {}) });
       setMe({ claimed: m.claimed, username: m.username, accountCode: m.accountCode });
+      setClosetCount(s.closetCount ?? 0);
     });
   }, []);
+
+  // Keys whose change implies the body changed → clothes may fit differently.
+  const MEASUREMENT_KEYS: Array<keyof Profile> = [
+    "heightCm", "weightKg", "chestCm", "waistCm", "hipCm", "shoulderCm", "sleeveCm", "inseamCm",
+  ];
 
   async function persist(next: Profile) {
     setStatus("saving");
@@ -72,6 +81,11 @@ export default function PassportPage() {
     const next = { ...profile, [k]: v };
     setProfile(next);
     persist(next);
+    // If a body measurement changed and there are clothes to re-rate, surface
+    // the refresh prompt — fit drifts as the body changes.
+    if (MEASUREMENT_KEYS.includes(k) && v !== profile[k] && closetCount > 0) {
+      setBodyChanged(true);
+    }
   }
 
   if (!profile || !me) {
@@ -208,6 +222,26 @@ export default function PassportPage() {
             </p>
           </div>
         </div>
+
+        {/* Body-changed → refresh prompt */}
+        {bodyChanged && (
+          <div className="mt-4 flex items-center gap-3 rounded-2xl border border-brand/30 bg-brand-tint px-4 py-3 animate-fade-in-up">
+            <span className="text-lg">↻</span>
+            <div className="flex-1 text-sm text-ink">
+              <p className="font-semibold">Your measurements changed</p>
+              <p className="text-xs text-ink-soft">
+                Clothes may fit differently now. Do a quick fit refresh to update how they feel.
+              </p>
+            </div>
+            <Link
+              href="/refresh?collections=all"
+              className="whitespace-nowrap rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark"
+            >
+              Refresh →
+            </Link>
+            <button onClick={() => setBodyChanged(false)} className="text-ink-faint hover:text-ink" aria-label="Dismiss">✕</button>
+          </div>
+        )}
 
         {/* Save indicator + next-step */}
         <div className="mt-4 flex items-center justify-between text-xs text-ink-faint">

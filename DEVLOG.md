@@ -28,6 +28,47 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 10 — Fit Refresh (card-stack comfort re-rating)
+
+**Goal:** a delightful way to update how clothes feel as the body changes — a
+Tinder-style card stack, one garment per card, a comfort slider that starts at
+the current rating; swipe right / Save to record, swipe left / Skip = no change.
+Triggerable per-collection, all, or prompted after a passport measurement edit.
+
+### Schema
+- New `ComfortCheck` (itemId, userId, rating 1-5, note?, reason, createdAt).
+  `KnownGoodItem.fitRating` always mirrors the LATEST check; ComfortCheck keeps
+  the full time-series for future trend analysis. `reason` ∈ refresh |
+  measurement-change | add.
+
+### API — `/api/closet/refresh`
+- GET `?collections=<id,id|all>` → ordered items with `currentRating` (slider
+  start) + collection name.
+- POST `{itemId, rating, note?, reason?}` → txn: update item.fitRating +
+  append ComfortCheck. POST `{itemId, skip:true}` → no write.
+
+### UI — `/refresh`
+- Card stack with a peek of the next card. Pointer-drag with rotation; release
+  past ±110px commits save/skip; snap-back otherwise. Exit animation flings the
+  card off-screen. Comfort `<input type=range>` 1–5 with labels
+  (Doesn't fit…Perfect), starts at current, shows "Changed from X → Y".
+  Button fallback (Skip / Save) + keyboard (←/→, number keys 1-5). Progress bar
+  + completion summary (updated N · skipped M). Placeholder `GarmentThumb`
+  (color swatch + emoji glyph) with a clear seam for a future real product image.
+
+### Triggers
+- Closet header: "↻ Refresh fit" button (all). Per-collection "↻ Refresh" link
+  in each collection header (skips the virtual Uncategorized bucket).
+- Passport: editing any body measurement (with ≥1 closet item) surfaces a
+  dismissible "Your measurements changed → Refresh" banner.
+
+### Verified
+- `tsc` clean · `vitest` 15/15 · `next build` clean (32 routes) · live: demo
+  seed → GET 5 items → record 5→3 (writes ComfortCheck, reason recorded) → skip
+  writes nothing → item.fitRating=3 with 1 history row.
+
+---
+
 ## 2026-08-11 · Session 09 — FIX passport persistence, fancy passport UI, garment gender, claim nudge
 
 **Goal:** user report — "passport didn't save; no prompt to claim; even after

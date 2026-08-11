@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { Button, Card, EmptyState, Field, LinkButton, inputClass } from "@/components/ui";
 import { BrandInput } from "@/components/BrandInput";
 
@@ -193,11 +194,18 @@ export default function ClosetPage() {
               auto-file by type — rename, reorder, recolor, and move anything.
             </p>
           </div>
-          <div className="flex-shrink-0 text-right">
-            <div className={`text-2xl font-bold ${goalMet ? "text-green-600" : "text-brand"}`}>
-              {Math.min(count, 3)}/3
+          <div className="flex flex-shrink-0 flex-col items-end gap-2">
+            <div className="text-right">
+              <div className={`text-2xl font-bold ${goalMet ? "text-green-600" : "text-brand"}`}>
+                {Math.min(count, 3)}/3
+              </div>
+              <div className="text-xs text-ink-faint">{goalMet ? "goal met ✓" : "recommended"}</div>
             </div>
-            <div className="text-xs text-ink-faint">{goalMet ? "goal met ✓" : "recommended"}</div>
+            {count > 0 && (
+              <LinkButton href="/refresh?collections=all" variant="secondary" size="md">
+                ↻ Refresh fit
+              </LinkButton>
+            )}
           </div>
         </div>
 
@@ -434,10 +442,19 @@ function CollectionSection({
             </span>
           </h2>
         )}
-        {!undeletable && !renaming && (
+        {!renaming && (
           <div className="flex items-center gap-3 text-xs">
-            <button onClick={() => setRenaming(true)} className="text-ink-faint hover:text-brand">Rename</button>
-            <button onClick={deleteCollection} className="text-ink-faint hover:text-red-600">Delete</button>
+            {items.length > 0 && collection.id !== "__uncat__" && (
+              <Link href={`/refresh?collections=${collection.id}`} className="text-ink-faint hover:text-brand">
+                ↻ Refresh
+              </Link>
+            )}
+            {!undeletable && (
+              <>
+                <button onClick={() => setRenaming(true)} className="text-ink-faint hover:text-brand">Rename</button>
+                <button onClick={deleteCollection} className="text-ink-faint hover:text-red-600">Delete</button>
+              </>
+            )}
           </div>
         )}
       </div>
