@@ -4,6 +4,7 @@
 // public views. Kept dumb (presentational) — earning logic lives in badges.ts.
 
 import { badgeById, METAL_STYLE, type EarnedBadge, type Metal } from "@/lib/badges";
+import { BadgeMedallion } from "@/components/BadgeMedallion";
 
 // Round avatar that shows an uploaded portrait or falls back to initials.
 export function Avatar({
@@ -34,33 +35,25 @@ export function Avatar({
   );
 }
 
-// A circular badge "seal" — the metal-tiered medallion.
+// A circular badge "seal" — now a premium SVG medallion. `id` selects the
+// engraved icon; `glyph` is accepted for backward-compat but no longer used.
 export function BadgeSeal({
+  id,
   metal,
-  glyph,
   size = 44,
   locked = false,
   title,
 }: {
+  id?: string;
   metal: Metal;
-  glyph: string;
+  glyph?: string;
   size?: number;
   locked?: boolean;
   title?: string;
 }) {
-  const st = METAL_STYLE[metal];
   return (
-    <div
-      title={title}
-      className={`relative flex flex-shrink-0 items-center justify-center rounded-full ring-2 ${st.ring} ${
-        locked ? "bg-neutral-200 grayscale" : st.bg
-      }`}
-      style={{ width: size, height: size, fontSize: size * 0.45 }}
-    >
-      <span className={locked ? "opacity-40" : ""}>{glyph}</span>
-      {locked && (
-        <span className="absolute -bottom-0.5 -right-0.5 rounded-full bg-white px-1 text-[8px]">🔒</span>
-      )}
+    <div className="flex flex-shrink-0 items-center justify-center" title={title}>
+      <BadgeMedallion id={id ?? "starter"} metal={metal} size={size} locked={locked} title={title} />
     </div>
   );
 }
@@ -74,7 +67,7 @@ export function BadgeChip({ badge }: { badge: EarnedBadge }) {
         badge.earnedNow ? "border-neutral-200 bg-white" : "border-dashed border-neutral-200 bg-neutral-50 opacity-70"
       }`}
     >
-      <BadgeSeal metal={badge.metal} glyph={badge.glyph} size={30} locked={badge.locked} />
+      <BadgeSeal id={badge.id} metal={badge.metal} size={34} locked={badge.locked} />
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-ink">{badge.title}</p>
         <p className="text-[10px] uppercase tracking-wide text-ink-faint">{st.label}</p>
@@ -90,7 +83,7 @@ export function PinnedSeals({ ids, size = 34 }: { ids: string[]; size?: number }
   return (
     <div className="flex gap-1.5">
       {badges.map((b) => (
-        <BadgeSeal key={b.id} metal={b.metal} glyph={b.glyph} size={size} title={`${b.title} · ${METAL_STYLE[b.metal].label}`} />
+        <BadgeSeal key={b.id} id={b.id} metal={b.metal} size={size} title={`${b.title} · ${METAL_STYLE[b.metal].label}`} />
       ))}
     </div>
   );

@@ -65,7 +65,7 @@ export default function HelpPage() {
           <div className="space-y-2">
             {BADGES.map((b) => (
               <div key={b.id} className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white px-3 py-2.5">
-                <BadgeSeal metal={b.metal} glyph={b.glyph} size={38} title={b.title} />
+                <BadgeSeal id={b.id} metal={b.metal} size={42} title={b.title} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-ink">{b.title}</span>

@@ -28,6 +28,46 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 17 — Premium badge medallions + photoreal try-on integration
+
+**Context:** founder felt the emoji-in-a-circle badges looked cheap and wanted
+designed, glossy medallions; also greenlit wiring the real photoreal try-on path.
+
+**Built:**
+
+*Premium badge medallions:*
+- `components/BadgeMedallion.tsx` — each badge is now a struck-metal SVG coin:
+  metallic radial sheen per tier, a fluted/notched edge (36 notches), a recessed
+  inner disc with rim bevel, a specular gloss arc, and a **custom geometric
+  line-icon per badge** (hanger, shelves, archive, clipboard-check, target,
+  globe, scissors, gem, crown) instead of emoji. Palettes tuned per tier
+  (bronze/silver/gold/obsidian/diamond/jade). Scales cleanly; locked → grayscale
+  + lock chip.
+- `BadgeSeal` now delegates to `BadgeMedallion` (takes `id` for the icon; `glyph`
+  kept for back-compat but unused). All callers (passport seal, badge library,
+  help, chips, pinned seals) pass `id`.
+
+*Photoreal try-on (honest, key-gated — same pattern as the LLM extractor):*
+- `lib/tryonImage.ts` + `/api/tryon` — OFF unless `TRYON_API_URL` is set. When
+  configured, POSTs a privacy-safe prompt (coarse body descriptor + garment list,
+  **never** precise measurements) to a provider-agnostic text-to-image / VTO
+  endpoint and returns an image URL/data-URL. Any failure → null.
+- Outfits composer got a "✨ Photoreal preview" button: shows the generated image
+  when available, otherwise a clear "isn't set up yet — using the stylized view"
+  note. The stylized SVG mannequin remains the default. `.env.example` documents
+  `TRYON_API_URL` / `TRYON_API_KEY`.
+- Verified live: no key → `/api/tryon` returns `{configured:false}`, UI keeps the
+  mannequin.
+
+**Verify:** `tsc` clean · 54/54 tests · `next build` clean · pages 200 · no dev
+runtime errors.
+
+**Note:** photoreal output requires the user/founder to supply an image-gen API
+(cost + provider theirs to choose). The integration + fallback are done; only the
+external endpoint is unconfigured.
+
+---
+
 ## 2026-08-11 · Session 16 — Outfits + likes (top badges made real), stylized try-on preview, passport/privacy polish
 
 **Context:** founder greenlit the outfit-posting + likes line to make the

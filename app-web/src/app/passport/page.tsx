@@ -453,7 +453,7 @@ function ViewBook({
                 <p className="mt-1 text-lg font-semibold tracking-wide">International Sizing Identity</p>
               </div>
               {sealBadge ? (
-                <BadgeSeal metal={sealBadge.metal} glyph={sealBadge.glyph} size={44} title={sealBadge.title} />
+                <BadgeSeal id={sealBadge.id} metal={sealBadge.metal} size={46} title={sealBadge.title} />
               ) : (
                 <div className="flex h-11 w-11 items-center justify-center rounded-full border border-white/40 text-xs font-bold tracking-widest">
                   FP

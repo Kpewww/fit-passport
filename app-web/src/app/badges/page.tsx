@@ -129,7 +129,7 @@ function BadgeCard({
   const st = METAL_STYLE[badge.metal];
   return (
     <Card className={`flex gap-3 !p-4 ${badge.locked ? "opacity-75" : ""}`}>
-      <BadgeSeal metal={badge.metal} glyph={badge.glyph} size={48} locked={badge.locked} title={badge.title} />
+      <BadgeSeal id={badge.id} metal={badge.metal} size={52} locked={badge.locked} title={badge.title} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className="truncate font-semibold text-ink">{badge.title}</p>

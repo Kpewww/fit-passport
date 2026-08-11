@@ -26,6 +26,10 @@ export default function OutfitsPage() {
   const [occasion, setOccasion] = useState("");
   const [items, setItems] = useState<Item[]>([{ ...BLANK_ITEM }]);
   const [saving, setSaving] = useState(false);
+  // Photoreal preview (optional; falls back to the mannequin when not configured)
+  const [photo, setPhoto] = useState<string | null>(null);
+  const [genning, setGenning] = useState(false);
+  const [photoNote, setPhotoNote] = useState<string | null>(null);
 
   const load = useCallback(() => {
     fetch("/api/outfits?mine=1").then((r) => r.json()).then((d) => setMine(d.outfits ?? []));
@@ -42,6 +46,37 @@ export default function OutfitsPage() {
   const layers: OutfitLayer[] = items
     .filter((it) => it.category)
     .map((it) => ({ category: it.category, color: it.color || null }));
+
+  // Reset any stale photoreal render when the composed pieces change.
+  useEffect(() => { setPhoto(null); setPhotoNote(null); }, [JSON.stringify(layers)]);
+
+  async function genPhoto() {
+    if (layers.length === 0) return;
+    setGenning(true);
+    setPhotoNote(null);
+    try {
+      const r = await fetch("/api/tryon", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          garments: layers,
+          bodyDescriptor: `${figure.volume} build`,
+          occasion: occasion || null,
+        }),
+      }).then((r) => r.json());
+      if (!r.configured) {
+        setPhotoNote("Photoreal preview isn't set up yet — using the stylized view. (Add an image-gen API key to enable.)");
+      } else if (r.image) {
+        setPhoto(r.image);
+      } else {
+        setPhotoNote("Couldn't generate a photo this time — showing the stylized view.");
+      }
+    } catch {
+      setPhotoNote("Generation failed — showing the stylized view.");
+    } finally {
+      setGenning(false);
+    }
+  }
 
   async function post() {
     if (!title.trim() || items.length === 0) return;
@@ -122,8 +157,21 @@ export default function OutfitsPage() {
           {/* Live preview */}
           <div className="flex flex-col items-center justify-start rounded-xl bg-neutral-50 p-3">
             <p className="mb-1 text-[10px] uppercase tracking-widest text-ink-faint">Preview on your body</p>
-            <OutfitMannequin layers={layers} volume={figure.volume as never} shape={figure.shape as never} size={150} />
-            <p className="mt-1 text-[10px] text-ink-faint">stylized · photoreal coming later</p>
+            {photo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={photo} alt="photoreal preview" className="w-[150px] rounded-lg" />
+            ) : (
+              <OutfitMannequin layers={layers} volume={figure.volume as never} shape={figure.shape as never} size={150} />
+            )}
+            <button
+              onClick={genPhoto}
+              disabled={genning || layers.length === 0}
+              className="mt-2 rounded-lg border border-neutral-300 px-2.5 py-1 text-[11px] font-medium text-ink-soft hover:border-brand hover:text-brand disabled:opacity-50"
+            >
+              {genning ? "Generating…" : photo ? "↻ Regenerate" : "✨ Photoreal preview"}
+            </button>
+            {photoNote && <p className="mt-1 text-center text-[10px] text-ink-faint">{photoNote}</p>}
+            {!photoNote && <p className="mt-1 text-[10px] text-ink-faint">stylized preview</p>}
           </div>
         </Card>
 
