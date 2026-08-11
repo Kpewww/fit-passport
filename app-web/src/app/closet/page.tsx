@@ -255,11 +255,15 @@ export default function ClosetPage() {
               </LinkButton>
             )}
             {count > 0 && (
-              <div className="inline-flex overflow-hidden rounded-lg border border-neutral-300 text-xs">
-                <button onClick={() => setView("list")}
-                  className={`px-2.5 py-1 ${view === "list" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>☰ List</button>
-                <button onClick={() => setView("grid")}
-                  className={`px-2.5 py-1 ${view === "grid" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>▦ Folders</button>
+              <div className="inline-flex overflow-hidden rounded-lg border border-neutral-300">
+                <button onClick={() => setView("list")} title="List view" aria-label="List view"
+                  className={`flex h-7 w-8 items-center justify-center ${view === "list" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+                </button>
+                <button onClick={() => setView("grid")} title="Folder view" aria-label="Folder view"
+                  className={`flex h-7 w-8 items-center justify-center ${view === "grid" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h8a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" /></svg>
+                </button>
               </div>
             )}
           </div>
@@ -681,20 +685,21 @@ function ItemCard({
           <span className={`text-ink-faint transition-transform ${expanded ? "rotate-180" : ""}`}>⌄</span>
         </button>
         {expanded && (
-          <div className="mt-3 space-y-2 border-t border-neutral-100 pt-3">
+          <div className="mt-3 grid grid-cols-3 gap-2 border-t border-neutral-100 pt-3 sm:grid-cols-4">
             {group.items.map((it) => (
-              <div key={it.id} className="flex items-center justify-between text-sm">
-                <span className="flex items-center gap-2 text-ink-soft">
-                  <ColorDot color={it.color} />
-                  size {it.size}{it.color ? ` · ${it.color}` : ""} ·{" "}
-                  <span className="text-amber-500">{"★".repeat(it.fitRating)}</span>
-                </span>
-                <span className="flex gap-3 text-xs">
-                  <button onClick={() => onEdit(it.id)} className="text-ink-faint hover:text-brand">Edit</button>
-                  <button onClick={() => onPatch(it.id, { groupId: null, groupName: null })}
-                    className="text-ink-faint hover:text-brand">Unmerge</button>
-                  <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-red-600">Remove</button>
-                </span>
+              <div key={it.id} className="group/var relative flex flex-col items-center gap-1 rounded-lg border border-neutral-200 bg-white p-2">
+                <ItemThumb item={it} size={40} />
+                <span className="text-[11px] font-medium text-ink">{it.size}</span>
+                {/* hover popover with the description + actions */}
+                <div className="pointer-events-none absolute -top-1 left-1/2 z-20 w-36 -translate-x-1/2 -translate-y-full rounded-lg border border-neutral-200 bg-white p-2 text-center opacity-0 shadow-lift transition-opacity group-hover/var:pointer-events-auto group-hover/var:opacity-100">
+                  <p className="text-xs font-medium text-ink">size {it.size}{it.color ? ` · ${it.color}` : ""}</p>
+                  <p className="text-[11px] text-amber-500">{"★".repeat(it.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - it.fitRating)}</span></p>
+                  <div className="mt-1 flex justify-center gap-2 text-[11px]">
+                    <button onClick={() => onEdit(it.id)} className="text-ink-faint hover:text-brand">Edit</button>
+                    <button onClick={() => onPatch(it.id, { groupId: null, groupName: null })} className="text-ink-faint hover:text-brand">Unmerge</button>
+                    <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-red-600">Remove</button>
+                  </div>
+                </div>
               </div>
             ))}
           </div>
@@ -841,15 +846,15 @@ function EditRow({
 
   return (
     <Card className="relative !p-4 ring-brand/30 animate-fade-in-up">
-      {/* small corner save — pinned to the card's outer top-right so it never
-          overlaps the Photo row's helper text */}
+      {/* small corner save — inside the card, top-right; the Photo row below
+          reserves right padding (pr-20) so its helper text never sits under it */}
       <button onClick={save} disabled={saving || !f.brand || !f.size || !isValidSize(f.category, f.size)}
-        className="absolute -right-2 -top-2 z-10 rounded-lg bg-brand px-2.5 py-1 text-xs font-semibold text-white shadow-lift hover:bg-brand-dark disabled:opacity-50">
+        className="absolute right-3 top-3 z-10 rounded-lg bg-brand px-3 py-1 text-xs font-semibold text-white shadow-card hover:bg-brand-dark disabled:opacity-50">
         {saving ? "…" : "Save"}
       </button>
       <div className="grid gap-3 sm:grid-cols-6">
-        <div className="sm:col-span-6 pr-14">
-          <Field label="Photo" hint="optional · your own photo">
+        <div className="sm:col-span-6 pr-20">
+          <Field label="Photo" hint="optional">
             <div className="flex items-center gap-3">
               <label className="flex h-14 w-14 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-neutral-300 bg-white text-lg text-ink-faint hover:border-brand">
                 {f.imageDataUrl ? (
@@ -1012,27 +1017,41 @@ function ItemThumb({ item, size }: { item: Item; size: number }) {
   );
 }
 
-// A folder-style grid tile: stacked-card look, shows the name; hover reveals a
-// bit of info + the photo (if any).
+// A manila-folder tile: a tabbed folder that normally shows just the name.
+// On hover, a "file" slides UP and to the RIGHT out of the folder — peeking out
+// of the top-right corner to reveal the item's photo + info, like pulling a
+// document partway out of a folder.
 function ItemTile({ item, onEdit }: { item: Item; onEdit: (id: string) => void }) {
   const name = item.displayName || `${item.brand} ${garmentLabel(item.category)}`;
   return (
     <button
       onClick={() => onEdit(item.id)}
-      className="group relative flex h-24 flex-col justify-end overflow-hidden rounded-xl border border-neutral-200 bg-white p-2 text-left shadow-card transition-all hover:-translate-y-0.5 hover:shadow-lift"
+      className="group relative h-28 w-full text-left [perspective:600px]"
+      title={name}
     >
-      {/* stacked-paper edge */}
-      <span className="pointer-events-none absolute inset-x-1 -top-1 h-2 rounded-t-lg bg-neutral-100" />
-      <div className="absolute inset-0 flex items-center justify-center opacity-100 transition-opacity group-hover:opacity-0">
-        <ItemThumb item={item} size={44} />
+      {/* The file that peeks out — sits BEHIND the folder front, slides out on hover */}
+      <div
+        className="pointer-events-none absolute right-1 top-1 z-0 flex h-[74%] w-[74%] flex-col overflow-hidden rounded-md border border-neutral-200 bg-white opacity-0 shadow-card transition-all duration-300 ease-out group-hover:-translate-y-3 group-hover:translate-x-3 group-hover:opacity-100"
+      >
+        <div className="flex flex-1 items-center justify-center bg-neutral-50">
+          <ItemThumb item={item} size={40} />
+        </div>
+        <div className="border-t border-neutral-100 px-1.5 py-1">
+          <p className="truncate text-[10px] font-medium text-ink">{name}</p>
+          <p className="text-[9px] text-ink-faint">{garmentLabel(item.category)} · {item.size}</p>
+          <p className="text-[9px] text-amber-500">{"★".repeat(item.fitRating)}</p>
+        </div>
       </div>
-      {/* hover detail */}
-      <div className="absolute inset-0 flex flex-col justify-center gap-0.5 bg-white/95 px-2 opacity-0 transition-opacity group-hover:opacity-100">
-        <p className="text-xs font-medium text-ink line-clamp-2">{name}</p>
-        <p className="text-[10px] text-ink-faint">{garmentLabel(item.category)} · {item.size}</p>
-        <p className="text-[10px] text-amber-500">{"★".repeat(item.fitRating)}</p>
+
+      {/* Folder tab */}
+      <span className="absolute left-2 top-1 z-10 h-3 w-10 rounded-t-md bg-amber-200/90 shadow-sm transition-colors group-hover:bg-amber-300" />
+      {/* Folder front face */}
+      <div className="absolute inset-x-0 bottom-0 top-3 z-20 flex flex-col justify-end rounded-lg rounded-tl-none border border-amber-300/70 bg-gradient-to-b from-amber-100 to-amber-200/80 p-2 shadow-card transition-all duration-300 group-hover:shadow-lift">
+        {/* color dot as a tiny label sticker */}
+        <span className="absolute right-2 top-2"><ColorDot color={item.color} /></span>
+        <p className="truncate text-[11px] font-semibold text-amber-900">{name}</p>
+        <p className="truncate text-[9px] text-amber-700/80">{garmentLabel(item.category)}</p>
       </div>
-      <p className="relative truncate text-[11px] font-medium text-ink">{name}</p>
     </button>
   );
 }

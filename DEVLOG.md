@@ -28,6 +28,33 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 21 — Manila-folder tiles, icon view toggle, variant grid, corner-save placement
+
+**Context:** founder UI polish (with a reference image of tabbed folder dividers):
+folder view should look like stacked file folders where hovering makes a "file"
+pop out toward the top-right revealing photo+info; view toggle should be a small
+icon button; merge-variant list should be small tiles with hover-popover
+descriptions; and the edit corner-save belongs INSIDE the card (not on the edge).
+
+**Built:**
+- **`ItemTile` redesigned as a manila folder:** a tab + gradient folder front
+  showing just the name/type; on hover a "file" (photo + name + type + size +
+  stars) slides up-and-right out of the folder's top-right corner (CSS
+  translate + opacity, 300ms). Matches the founder's reference.
+- **View toggle → icon buttons:** list = 3-line glyph, folders = folder glyph
+  (SVG), with tooltips, replacing the "☰ List / ▦ Folders" text pills.
+- **Merge variants → tiles:** the expanded variant list is now a 3–4 col grid of
+  small tiles (thumbnail + size); hovering a tile pops a description card above
+  it (size · color · stars + Edit/Unmerge/Remove).
+- **Edit corner-save back inside the card:** `right-3 top-3` within the card; the
+  Photo row reserves `pr-20` so its helper never sits under the button (the
+  earlier overlap is gone without pushing the button off the edge).
+
+**Verify:** `tsc` clean · `next build` clean · closet renders 200; the two dev-log
+lines are just Fast-Refresh full-reload notices from editing, not runtime errors.
+
+---
+
 ## 2026-08-11 · Session 20 — Security hardening: email reset, rate limits, export, image-gen, account controls
 
 **Context:** founder batch — fix the edit-card corner-save overlap, add email as a
