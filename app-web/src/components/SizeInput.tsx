@@ -9,7 +9,16 @@
 // the server also enforces — so UI and API can't drift.
 
 import { inputClass } from "@/components/ui";
-import { isValidSize, presetSizesFor, sizeHintFor } from "@/lib/sizeSystems";
+import { domainForCategory, isValidSize, presetSizesFor, sizeHintFor } from "@/lib/sizeSystems";
+import { SizeConverter } from "@/components/SizeConverter";
+
+// Plain-language help for domains whose numbers aren't self-explanatory.
+const DOMAIN_HELP: Record<string, string> = {
+  bottom:
+    "Numbers are inches: a single number is your waist (e.g. 32 = 32\" waist ≈ 81cm). " +
+    "32×34 means waist 32\" × inseam 34\" (inseam = inner-leg length).",
+  shoe: "Numbers are the size on the shoe. Use the converter below to switch between EU / US / UK / cm.",
+};
 
 export function SizeInput({
   category,
@@ -22,6 +31,8 @@ export function SizeInput({
 }) {
   const presets = presetSizesFor(category);
   const hint = sizeHintFor(category);
+  const domain = domainForCategory(category);
+  const help = DOMAIN_HELP[domain];
   const trimmed = value.trim();
   const invalid = trimmed.length > 0 && !isValidSize(category, trimmed);
 
@@ -57,6 +68,12 @@ export function SizeInput({
       ) : (
         <p className="text-[11px] text-ink-faint">{hint}</p>
       )}
+      {help && (
+        <p className="rounded-md bg-neutral-100 px-2 py-1.5 text-[11px] leading-relaxed text-ink-soft">
+          💡 {help}
+        </p>
+      )}
+      <SizeConverter category={category} onAdopt={onChange} />
     </div>
   );
 }

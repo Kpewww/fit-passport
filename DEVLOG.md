@@ -28,6 +28,33 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 13 — Size converter + pants-number explainer
+
+**Context:** founder didn't understand what the numeric pants sizes mean, and
+wanted to enter a size in any scale (e.g. "I wear EU 43 shoes") and see the
+equivalents.
+
+**Built:**
+- [`src/lib/sizeConvert.ts`](app-web/src/lib/sizeConvert.ts) — per-domain scale
+  tables. Each domain (shoe / top / bottom) has a set of Scales that parse a raw
+  string into a canonical rung and render it back. `convert(domain, raw, fromScale)`
+  → equivalents in every scale. Shoes: EU ↔ US(men) ↔ UK ↔ cm (EU as canonical,
+  US = EU−33, UK = US−1). Tops: alpha ↔ EU numeric. Bottoms: waist-inches ↔ cm
+  ↔ alpha. Socks/accessories have no converter (returns []). Everything labeled
+  "≈" — cross-scale is approximate.
+- [`SizeConverter`](app-web/src/components/SizeConverter.tsx) — a panel under the
+  size field: pick your scale, type your size, see equivalents as tap-to-adopt
+  chips. Rendered by `SizeInput` for domains that support it.
+- **Pants-number explainer** in `SizeInput`: "Numbers are inches: a single
+  number is your waist (32 = 32″ ≈ 81cm). 32×34 = waist 32″ × inseam 34″
+  (inseam = inner-leg length)." Shown as a 💡 hint for bottoms; a shorter one
+  for shoes points at the converter.
+
+**Verify:** `tsc` clean · 46/46 tests (9 new in `sizeConvert.test.ts`, incl. the
+founder's EU 43 → US 10 / UK 9 / 27cm case) · `next build` clean.
+
+---
+
 ## 2026-08-11 · Session 12 — Multi-garment domains, cross-domain disclaimer, body type + figure, brand-bias learning, LLM extractor scaffold
 
 **Context:** the founder asked to knock out the whole roadmap in one pass so
