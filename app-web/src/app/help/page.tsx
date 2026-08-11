@@ -15,10 +15,13 @@ const HOW_TO_EARN: Record<string, string> = {
   archivist: "Build a 25+ item closet spanning 6+ different brands.",
   "truth-teller": "Record how 3+ purchases actually fit (keep / return / exchange).",
   calibrated: "Log 10+ comfort refreshes over time.",
-  "public-figure": "List your closet in the public community directory.",
+  "open-closet": "List your closet in the public community directory.",
+  "first-look": "Post your first outfit.",
   stylist: "Post 3 outfits to the community.",
+  couturier: "Post 8 outfits and earn 50+ total likes.",
   acclaimed: "Get 100+ likes on a single outfit.",
-  "head-designer": "Reach 500+ total likes across all your outfits.",
+  tastemaker: "Reach 500+ total likes across all your outfits.",
+  "head-designer": "Reach 1000+ total likes across all your outfits.",
 };
 
 export default function HelpPage() {
@@ -74,6 +77,7 @@ export default function HelpPage() {
                     </span>
                   </div>
                   <p className="text-xs text-ink-soft">{HOW_TO_EARN[b.id] ?? b.blurb}</p>
+                  <p className="text-[11px] italic text-ink-faint">{b.lore}</p>
                 </div>
               </div>
             ))}

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui";
 import { BadgeSeal } from "@/components/Badges";
-import { METAL_STYLE, type EarnedBadge } from "@/lib/badges";
+import { badgesByTrack, METAL_STYLE, type EarnedBadge } from "@/lib/badges";
 
 type StatusResp = {
   badges: EarnedBadge[];
@@ -47,9 +47,12 @@ export default function BadgesPage() {
     return <main className="flex-1"><div className="mx-auto max-w-3xl px-6 py-14 text-ink-faint">Loading…</div></main>;
   }
 
-  const earned = data.badges.filter((b) => b.earnedNow);
-  const inProgress = data.badges.filter((b) => !b.earnedNow && !b.locked);
-  const locked = data.badges.filter((b) => b.locked);
+  const earnedCount = data.badges.filter((b) => b.earnedNow).length;
+  const byId = Object.fromEntries(data.badges.map((b) => [b.id, b]));
+  const tracks = badgesByTrack().map((t) => ({
+    ...t,
+    badges: t.badges.map((b) => byId[b.id]).filter(Boolean),
+  }));
 
   return (
     <main className="flex-1">
@@ -58,49 +61,30 @@ export default function BadgesPage() {
           <div>
             <h1 className="text-3xl font-bold text-ink">Badges</h1>
             <p className="mt-1 text-ink-soft">
-              Earn badges by building and sharing your fit identity. Pin up to 3 to
-              show off on your passport.
+              Progress through each track; the Rare Honors sit above them. Pin up
+              to 3 earned badges to show off on your passport.
             </p>
           </div>
           <Link href="/passport" className="text-sm text-ink-faint hover:text-brand">← Passport</Link>
         </div>
 
         <p className="mt-4 text-sm text-ink-soft">
-          <strong className="text-ink">{earned.length}</strong> earned ·{" "}
+          <strong className="text-ink">{earnedCount}</strong> of {data.badges.length} earned ·{" "}
           <span className="text-ink-faint">{pinned.length}/3 pinned{saving ? " · saving…" : ""}</span>
         </p>
 
-        {/* Earned */}
-        <Section title="Earned">
-          {earned.length === 0 ? (
-            <p className="text-sm text-ink-faint">None yet — add clothes, record fit, and share to start earning.</p>
-          ) : (
+        {tracks.map((t) => (
+          <Section key={t.track} title={t.label}>
             <div className="grid gap-3 sm:grid-cols-2">
-              {earned.map((b) => (
-                <BadgeCard key={b.id} badge={b} pinned={pinned.includes(b.id)}
-                  canPin={pinned.length < 3 || pinned.includes(b.id)} onPin={() => togglePin(b.id)} />
+              {t.badges.map((b) => (
+                <BadgeCard key={b.id} badge={b}
+                  pinned={pinned.includes(b.id)}
+                  canPin={b.earnedNow && (pinned.length < 3 || pinned.includes(b.id))}
+                  onPin={b.earnedNow ? () => togglePin(b.id) : undefined} />
               ))}
             </div>
-          )}
-        </Section>
-
-        {/* In progress */}
-        {inProgress.length > 0 && (
-          <Section title="In progress">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {inProgress.map((b) => <BadgeCard key={b.id} badge={b} />)}
-            </div>
           </Section>
-        )}
-
-        {/* Locked / coming soon */}
-        {locked.length > 0 && (
-          <Section title="Coming soon">
-            <div className="grid gap-3 sm:grid-cols-2">
-              {locked.map((b) => <BadgeCard key={b.id} badge={b} />)}
-            </div>
-          </Section>
-        )}
+        ))}
       </div>
     </main>
   );
@@ -127,19 +111,22 @@ function BadgeCard({
   onPin?: () => void;
 }) {
   const st = METAL_STYLE[badge.metal];
+  const dim = !badge.earnedNow;
   return (
-    <Card className={`flex gap-3 !p-4 ${badge.locked ? "opacity-75" : ""}`}>
-      <BadgeSeal id={badge.id} metal={badge.metal} size={52} locked={badge.locked} title={badge.title} />
+    <Card className={`flex gap-3 !p-4 ${dim ? "bg-neutral-50" : ""}`}>
+      <BadgeSeal id={badge.id} metal={badge.metal} size={54} locked={!badge.earnedNow} title={badge.title} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className="truncate font-semibold text-ink">{badge.title}</p>
+          <p className={`truncate font-semibold ${dim ? "text-ink-soft" : "text-ink"}`}>{badge.title}</p>
           <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${st.bg} ${st.text}`}>
             {st.label}
           </span>
+          {badge.earnedNow && <span className="text-[10px] text-green-600">✓ earned</span>}
         </div>
         <p className="mt-0.5 text-xs text-ink-soft">{badge.blurb}</p>
-        {badge.progressText && (
-          <p className="mt-1 text-[11px] text-ink-faint">{badge.progressText}</p>
+        <p className="mt-0.5 text-[11px] italic text-ink-faint">{badge.lore}</p>
+        {badge.progressText && !badge.earnedNow && (
+          <p className="mt-1 text-[11px] font-medium text-brand">{badge.progressText}</p>
         )}
         {onPin && (
           <button

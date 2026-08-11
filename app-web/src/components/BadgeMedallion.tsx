@@ -1,62 +1,49 @@
 "use client";
 
-// BadgeMedallion — a premium, glossy medal rendered entirely in SVG.
+// BadgeMedallion — a premium, escalating medal rendered entirely in SVG.
 //
-// Replaces the old "emoji in a flat circle." Each medallion has:
-//   • a fluted/notched coin edge (like a struck medal),
-//   • a metallic radial sheen per tier (bronze…jade),
-//   • a recessed inner disc with a rim bevel,
-//   • a specular gloss arc across the top,
-//   • a clean custom line-icon per badge (geometric, not emoji).
-// Deterministic + dependency-free; scales cleanly at any size.
+// The FINISH ladder (0..5) is the point: low tiers look like a plain struck coin
+// with a faint sheen; higher tiers gain deeper relief, an engraved guilloché
+// field, a double bevel, richer specular light, and — at the very top — a laurel
+// wreath that overflows the rim. Restraint is deliberate: refined, not gaudy.
+//
+// Each badge also has a `motif` — a small culturally-grounded line engraving
+// (Roman fibula, wax tablet, tailor's shears, imperial crown…), passed from the
+// badge definition so the art carries meaning, not just decoration.
 
-import type { Metal } from "@/lib/badges";
+import { badgeById, type Metal } from "@/lib/badges";
 
-// Metal palettes: [light, mid, dark, rim] used to build the radial gradients.
-const PALETTE: Record<Metal, { light: string; mid: string; dark: string; rim: string; ink: string }> = {
-  bronze:   { light: "#f0c088", mid: "#c17e3f", dark: "#7c4a1e", rim: "#5c3414", ink: "#3d2410" },
-  silver:   { light: "#ffffff", mid: "#c7ced6", dark: "#8b95a1", rim: "#6b747f", ink: "#3a4048" },
-  gold:     { light: "#fff3b0", mid: "#f2c33d", dark: "#b8860b", rim: "#8a6508", ink: "#5c4406" },
-  obsidian: { light: "#6b7280", mid: "#2b2f36", dark: "#0c0d10", rim: "#000000", ink: "#e5e7eb" },
-  diamond:  { light: "#ffffff", mid: "#bfe9f5", dark: "#7cc3dc", rim: "#4a9cbf", ink: "#0e5b73" },
-  jade:     { light: "#c8f5d8", mid: "#4bbf78", dark: "#1f7d4a", rim: "#145c36", ink: "#0b3d23" },
+const PALETTE: Record<Metal, { light: string; mid: string; dark: string; rim: string; ink: string; glow: string }> = {
+  bronze:   { light: "#e7b98a", mid: "#b57838", dark: "#6f421c", rim: "#502f13", ink: "#3d2410", glow: "#f4d3a8" },
+  silver:   { light: "#ffffff", mid: "#c2cad3", dark: "#828d99", rim: "#5f6872", ink: "#333a42", glow: "#eef2f6" },
+  gold:     { light: "#fff1a8", mid: "#e6ب23d".replace("ب","b"), dark: "#a9770a", rim: "#7c5c08", ink: "#5c4406", glow: "#fff6c8" },
+  obsidian: { light: "#7b828c", mid: "#2a2e35", dark: "#0a0b0e", rim: "#000000", ink: "#e9ebef", glow: "#9aa2ad" },
+  diamond:  { light: "#ffffff", mid: "#c4ecf6", dark: "#79bcd6", rim: "#3f93b7", ink: "#0e5b73", glow: "#e9fbff" },
+  jade:     { light: "#d3f6de", mid: "#43b972", dark: "#187041", rim: "#0e5230", ink: "#0b3d23", glow: "#c9f3d7" },
 };
 
-// Custom line-icon per badge id (drawn inside the disc). Coordinates are in a
-// 24×24 box centered later. Kept simple + iconic.
-function BadgeIcon({ id, color, size }: { id: string; color: string; size: number }) {
-  const common = {
-    fill: "none",
-    stroke: color,
-    strokeWidth: 2,
-    strokeLinecap: "round" as const,
-    strokeLinejoin: "round" as const,
+// ---- Motif engravings (drawn in a 24×24 box, centered) ----
+function Motif({ motif, color, size }: { motif: string; color: string; size: number }) {
+  const s = { fill: "none", stroke: color, strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  const M: Record<string, React.ReactNode> = {
+    hanger: <><path d="M12 5.2a1.5 1.5 0 1 1 1.1 2.5c-.8.1-1.1.6-1.1 1.3" {...s} /><path d="M4.5 15.5 12 10l7.5 5.5" {...s} /><path d="M4.5 15.5h15" {...s} /></>,
+    shelves: <><rect x="5" y="6" width="14" height="4" rx="1" {...s} /><rect x="5" y="12" width="14" height="4" rx="1" {...s} /><path d="M8 6v-.5M16 12v-.5" {...s} /></>,
+    archive: <><rect x="4.5" y="5" width="15" height="14" rx="1.5" {...s} /><path d="M4.5 12h15" {...s} /><path d="M10 8.4h4M10 15.4h4" {...s} /></>,
+    tablet: <><rect x="6" y="4.5" width="12" height="15" rx="1.2" {...s} /><path d="M9 9h6M9 12h6M9 15h3" {...s} /></>,
+    gnomon: <><path d="M5 18h14" {...s} /><path d="M7 18 15 7" {...s} /><path d="M7 18l8 0" {...s} opacity={0} /><path d="M9.5 18a5.5 5.5 0 0 1 3-4.8" {...s} /></>,
+    "compass-rose": <><circle cx="12" cy="12" r="7" {...s} /><path d="M12 5v14M5 12h14" {...s} /><path d="M12 5l1.6 5.4L19 12l-5.4 1.6L12 19l-1.6-5.4L5 12l5.4-1.6z" {...s} /></>,
+    needle: <><path d="M5 19 17 7" {...s} /><path d="M15.5 5.5a2 2 0 0 1 3 3L17 10l-3-3z" {...s} /><circle cx="16.2" cy="7.8" r="0.7" fill={color} stroke="none" /></>,
+    shears: <><circle cx="7" cy="7" r="2.1" {...s} /><circle cx="7" cy="17" r="2.1" {...s} /><path d="M8.8 8.5 19 17M8.8 15.5 19 7" {...s} /></>,
+    loom: <><rect x="5" y="5" width="14" height="14" rx="1" {...s} /><path d="M8 5v14M12 5v14M16 5v14" {...s} opacity={0.9} /><path d="M5 10h14M5 14h14" {...s} /></>,
+    gem: <><path d="M6 9.5h12l-6 9.5z" {...s} /><path d="M6 9.5 8.5 6h7L18 9.5" {...s} /><path d="M9 9.5 12 19l3-9.5" {...s} /></>,
+    obelisk: <><path d="M10.5 19h3l-.6-13h-1.8z" {...s} /><path d="M11.4 6 12 3l.6 3" {...s} /><path d="M9 19h6" {...s} /></>,
+    crown: <><path d="M4.5 17 6 7l3.5 3.5L12 5l2.5 5.5L18 7l1.5 10z" {...s} /><path d="M4.5 17h15" {...s} /><circle cx="6" cy="7" r="0.8" fill={color} stroke="none" /><circle cx="12" cy="5" r="0.9" fill={color} stroke="none" /><circle cx="18" cy="7" r="0.8" fill={color} stroke="none" /></>,
   };
-  const paths: Record<string, React.ReactNode> = {
-    // hanger — Verified Closet
-    starter: <><path d="M12 5.5a1.6 1.6 0 1 1 1.2 2.6c-.8.1-1.2.7-1.2 1.4" {...common} /><path d="M4 16l8-5.4 8 5.4" {...common} /><path d="M4 16h16" {...common} /></>,
-    // stacked shelves — Curator
-    curator: <><rect x="5" y="6" width="14" height="4" rx="1" {...common} /><rect x="5" y="12" width="14" height="4" rx="1" {...common} /></>,
-    // archive drawers — Wardrobe Archivist
-    archivist: <><rect x="4" y="5" width="16" height="14" rx="1.5" {...common} /><path d="M4 12h16" {...common} /><path d="M10 8.5h4M10 15.5h4" {...common} /></>,
-    // clipboard check — Truth-Teller
-    "truth-teller": <><rect x="6" y="5" width="12" height="15" rx="1.5" {...common} /><path d="M9 5V4h6v1" {...common} /><path d="M9 12l2 2 4-4" {...common} /></>,
-    // target — Calibrated
-    calibrated: <><circle cx="12" cy="12" r="7" {...common} /><circle cx="12" cy="12" r="3" {...common} /><circle cx="12" cy="12" r="0.6" fill={color} stroke="none" /></>,
-    // globe — Open Closet
-    "public-figure": <><circle cx="12" cy="12" r="7.5" {...common} /><path d="M4.5 12h15M12 4.5c3 3 3 12 0 15M12 4.5c-3 3-3 12 0 15" {...common} /></>,
-    // scissors (stylist)
-    stylist: <><circle cx="7" cy="7" r="2.2" {...common} /><circle cx="7" cy="17" r="2.2" {...common} /><path d="M9 8.5L19 17M9 15.5L19 7" {...common} /></>,
-    // gem — Acclaimed
-    acclaimed: <><path d="M6 9h12l-6 10z" {...common} /><path d="M6 9l2.5-3h7L18 9" {...common} /><path d="M9 9l3 10 3-10" {...common} /></>,
-    // crown — Head Designer
-    "head-designer": <><path d="M4 17l1.5-9 4 4 2.5-6 2.5 6 4-4L20 17z" {...common} /><path d="M4 17h16" {...common} /></>,
-  };
-  const box = size * 0.5;
+  const box = size * 0.46;
   const off = (size - box) / 2;
   return (
     <svg x={off} y={off} width={box} height={box} viewBox="0 0 24 24">
-      {paths[id] ?? <circle cx="12" cy="12" r="6" {...common} />}
+      {M[motif] ?? <circle cx="12" cy="12" r="6" {...s} />}
     </svg>
   );
 }
@@ -67,92 +54,149 @@ export function BadgeMedallion({
   size = 48,
   locked = false,
   title,
+  finish: finishProp,
+  motif: motifProp,
 }: {
   id: string;
   metal: Metal;
   size?: number;
   locked?: boolean;
   title?: string;
+  finish?: number;
+  motif?: string;
 }) {
+  const def = badgeById(id);
+  const finish = finishProp ?? def?.finish ?? 0;
+  const motif = motifProp ?? def?.motif ?? "gem";
   const p = PALETTE[metal];
   const uid = `${id}-${metal}`;
   const c = size / 2;
-  const rOuter = size * 0.47;
-  const rDisc = size * 0.34;
+  const rOuter = size * 0.44;
+  const rDisc = size * 0.31;
   const iconColor = p.ink;
 
-  // Fluted edge: a ring of short notches around the rim.
-  const notches = 36;
+  // Fluted edge — denser + longer notches at higher finishes.
+  const notches = 24 + finish * 6;
+  const notchLen = size * (0.012 + finish * 0.003);
   const notchEls = Array.from({ length: notches }, (_, i) => {
     const a = (i / notches) * Math.PI * 2;
-    const r1 = rOuter - size * 0.02;
-    const r2 = rOuter + size * 0.012;
+    const r1 = rOuter - size * 0.015;
+    const r2 = rOuter + notchLen;
     return (
-      <line
-        key={i}
+      <line key={i}
         x1={c + Math.cos(a) * r1} y1={c + Math.sin(a) * r1}
         x2={c + Math.cos(a) * r2} y2={c + Math.sin(a) * r2}
-        stroke={p.rim} strokeWidth={size * 0.02} strokeLinecap="round" opacity={0.55}
-      />
+        stroke={p.rim} strokeWidth={size * 0.018} strokeLinecap="round" opacity={0.5} />
     );
   });
 
+  // Guilloché engraving ring — appears from finish ≥ 3 (subtle radial ticks).
+  const guilloche = finish >= 3 ? Array.from({ length: 48 }, (_, i) => {
+    const a = (i / 48) * Math.PI * 2;
+    const r1 = rDisc + size * 0.03;
+    const r2 = rOuter - size * 0.07;
+    return (
+      <line key={`g${i}`}
+        x1={c + Math.cos(a) * r1} y1={c + Math.sin(a) * r1}
+        x2={c + Math.cos(a) * r2} y2={c + Math.sin(a) * r2}
+        stroke={p.light} strokeOpacity={0.18} strokeWidth={size * 0.006} />
+    );
+  }) : null;
+
+  // Laurel wreath overflowing the rim — only the top finishes (5), tasteful.
+  const laurel = finish >= 5 ? <Laurel c={c} r={rOuter} size={size} color={p.mid} light={p.light} /> : null;
+  // Small radial star points around the rim for finish 4 (restrained).
+  const points = finish === 4 ? Array.from({ length: 8 }, (_, i) => {
+    const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
+    const rr = rOuter + size * 0.03;
+    return <circle key={`p${i}`} cx={c + Math.cos(a) * rr} cy={c + Math.sin(a) * rr} r={size * 0.012} fill={p.mid} opacity={0.7} />;
+  }) : null;
+
   return (
-    <svg
-      width={size} height={size} viewBox={`0 0 ${size} ${size}`}
-      className={locked ? "grayscale" : ""} style={{ opacity: locked ? 0.55 : 1 }}
-      role="img" aria-label={title}
-    >
+    <svg width={size} height={size * (finish >= 5 ? 1.12 : 1)} viewBox={`0 0 ${size} ${size * (finish >= 5 ? 1.12 : 1)}`}
+      className={locked ? "grayscale" : ""} style={{ opacity: locked ? 0.5 : 1, overflow: "visible" }}
+      role="img" aria-label={title}>
       <defs>
-        {/* metallic body sheen — off-center radial for a lit look */}
-        <radialGradient id={`body-${uid}`} cx="38%" cy="32%" r="72%">
+        <radialGradient id={`body-${uid}`} cx="38%" cy="30%" r="75%">
           <stop offset="0%" stopColor={p.light} />
-          <stop offset="45%" stopColor={p.mid} />
+          <stop offset="42%" stopColor={p.mid} />
           <stop offset="100%" stopColor={p.dark} />
         </radialGradient>
-        {/* recessed inner disc — slightly darker, light from below for bevel */}
-        <radialGradient id={`disc-${uid}`} cx="50%" cy="65%" r="70%">
+        <radialGradient id={`disc-${uid}`} cx="50%" cy="66%" r="72%">
           <stop offset="0%" stopColor={p.mid} />
           <stop offset="100%" stopColor={p.dark} />
         </radialGradient>
-        {/* gloss highlight */}
         <linearGradient id={`gloss-${uid}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.75" />
-          <stop offset="55%" stopColor="#ffffff" stopOpacity="0.05" />
-          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+          <stop offset="0%" stopColor="#fff" stopOpacity={0.5 + finish * 0.06} />
+          <stop offset="55%" stopColor="#fff" stopOpacity="0.04" />
+          <stop offset="100%" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
-        <filter id={`shadow-${uid}`} x="-20%" y="-20%" width="140%" height="140%">
-          <feDropShadow dx="0" dy={size * 0.015} stdDeviation={size * 0.03} floodOpacity="0.35" />
+        <filter id={`sh-${uid}`} x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx="0" dy={size * 0.02} stdDeviation={size * (0.02 + finish * 0.006)} floodOpacity={0.35} />
         </filter>
+        {finish >= 4 && (
+          <radialGradient id={`halo-${uid}`} cx="50%" cy="50%" r="50%">
+            <stop offset="60%" stopColor={p.glow} stopOpacity="0" />
+            <stop offset="100%" stopColor={p.glow} stopOpacity="0.5" />
+          </radialGradient>
+        )}
       </defs>
 
-      {/* fluted edge */}
-      <g filter={`url(#shadow-${uid})`}>{notchEls}</g>
+      {/* soft halo for high tiers */}
+      {finish >= 4 && <circle cx={c} cy={c} r={rOuter + size * 0.06} fill={`url(#halo-${uid})`} />}
 
-      {/* medal body */}
-      <circle cx={c} cy={c} r={rOuter} fill={`url(#body-${uid})`} stroke={p.rim} strokeWidth={size * 0.02} />
-      {/* outer engraved ring */}
-      <circle cx={c} cy={c} r={rOuter - size * 0.06} fill="none" stroke={p.light} strokeOpacity="0.5" strokeWidth={size * 0.012} />
+      {laurel}
+      {points}
 
-      {/* recessed inner disc + rim bevel */}
-      <circle cx={c} cy={c} r={rDisc + size * 0.03} fill={p.rim} opacity="0.5" />
-      <circle cx={c} cy={c} r={rDisc} fill={`url(#disc-${uid})`} stroke={p.light} strokeOpacity="0.4" strokeWidth={size * 0.01} />
+      <g filter={`url(#sh-${uid})`}>
+        {notchEls}
+        {/* medal body */}
+        <circle cx={c} cy={c} r={rOuter} fill={`url(#body-${uid})`} stroke={p.rim} strokeWidth={size * 0.02} />
+      </g>
 
-      {/* icon */}
-      <BadgeIcon id={id} color={iconColor} size={size} />
+      {/* engraved rings (more with finish) */}
+      <circle cx={c} cy={c} r={rOuter - size * 0.055} fill="none" stroke={p.light} strokeOpacity={0.45} strokeWidth={size * 0.01} />
+      {finish >= 2 && <circle cx={c} cy={c} r={rOuter - size * 0.085} fill="none" stroke={p.rim} strokeOpacity={0.35} strokeWidth={size * 0.008} />}
+      {guilloche}
 
-      {/* specular gloss over the top half */}
-      <path
-        d={`M ${c - rOuter * 0.82} ${c} A ${rOuter * 0.82} ${rOuter * 0.82} 0 0 1 ${c + rOuter * 0.82} ${c} Z`}
-        fill={`url(#gloss-${uid})`} opacity="0.9"
-      />
+      {/* recessed inner disc + bevel */}
+      <circle cx={c} cy={c} r={rDisc + size * 0.03} fill={p.rim} opacity={0.5} />
+      <circle cx={c} cy={c} r={rDisc} fill={`url(#disc-${uid})`} stroke={p.light} strokeOpacity={0.4} strokeWidth={size * 0.01} />
+      {finish >= 3 && <circle cx={c} cy={c} r={rDisc - size * 0.02} fill="none" stroke={p.light} strokeOpacity={0.25} strokeWidth={size * 0.006} />}
+
+      <Motif motif={motif} color={iconColor} size={size} />
+
+      {/* specular gloss */}
+      <path d={`M ${c - rOuter * 0.82} ${c} A ${rOuter * 0.82} ${rOuter * 0.82} 0 0 1 ${c + rOuter * 0.82} ${c} Z`}
+        fill={`url(#gloss-${uid})`} />
 
       {locked && (
         <g>
-          <circle cx={size * 0.78} cy={size * 0.78} r={size * 0.16} fill="#fff" stroke={p.rim} strokeWidth="1" />
-          <text x={size * 0.78} y={size * 0.82} textAnchor="middle" fontSize={size * 0.18}>🔒</text>
+          <circle cx={size * 0.8} cy={size * 0.8} r={size * 0.15} fill="#fff" stroke={p.rim} strokeWidth="1" />
+          <text x={size * 0.8} y={size * 0.84} textAnchor="middle" fontSize={size * 0.16}>🔒</text>
         </g>
       )}
     </svg>
   );
+}
+
+// A restrained laurel wreath hugging the lower rim, overflowing slightly.
+function Laurel({ c, r, size, color, light }: { c: number; r: number; size: number; color: string; light: string }) {
+  const leaves = (side: 1 | -1) =>
+    Array.from({ length: 6 }, (_, i) => {
+      const t = 0.12 + i * 0.11; // fraction along the arc from bottom upward
+      const a = Math.PI / 2 + side * t * Math.PI; // start at bottom, sweep up
+      const rr = r + size * 0.02;
+      const x = c + Math.cos(a) * rr;
+      const y = c + Math.sin(a) * rr;
+      const rot = (a * 180) / Math.PI + (side === 1 ? -90 : 90);
+      const w = size * 0.05 * (1 - i * 0.09);
+      const h = size * 0.11 * (1 - i * 0.06);
+      return (
+        <g key={`${side}-${i}`} transform={`translate(${x} ${y}) rotate(${rot})`}>
+          <ellipse cx={0} cy={0} rx={w} ry={h} fill={color} stroke={light} strokeOpacity={0.4} strokeWidth={size * 0.006} />
+        </g>
+      );
+    });
+  return <g opacity={0.92}>{leaves(1)}{leaves(-1)}</g>;
 }

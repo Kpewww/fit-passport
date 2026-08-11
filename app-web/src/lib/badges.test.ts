@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { earnedBadgeIds, evaluateBadges, parsePinned, type BadgeStats } from "./badges";
+import { badgesByTrack, earnedBadgeIds, evaluateBadges, parsePinned, type BadgeStats } from "./badges";
 
 const EMPTY: BadgeStats = {
   closetCount: 0, outcomeCount: 0, collectionsUsed: 0, refreshCount: 0,
@@ -21,17 +21,20 @@ describe("badges", () => {
     expect(earnedBadgeIds({ ...EMPTY, closetCount: 12, collectionsUsed: 2 })).not.toContain("curator");
   });
 
-  it("earns community badge only when listed", () => {
-    expect(earnedBadgeIds({ ...EMPTY, communityListed: true })).toContain("public-figure");
+  it("earns Open Closet only when listed", () => {
+    expect(earnedBadgeIds({ ...EMPTY, communityListed: true })).toContain("open-closet");
   });
 
-  it("earns the outfit-driven top-tier badges from real stats", () => {
+  it("earns the outfit track + capstones from real stats", () => {
+    expect(earnedBadgeIds({ ...EMPTY, outfitPosts: 1 })).toContain("first-look");
     expect(earnedBadgeIds({ ...EMPTY, outfitPosts: 3 })).toContain("stylist");
     expect(earnedBadgeIds({ ...EMPTY, outfitPosts: 2 })).not.toContain("stylist");
+    expect(earnedBadgeIds({ ...EMPTY, outfitPosts: 8, outfitLikes: 50 })).toContain("couturier");
+    expect(earnedBadgeIds({ ...EMPTY, outfitPosts: 8, outfitLikes: 49 })).not.toContain("couturier");
     expect(earnedBadgeIds({ ...EMPTY, topOutfitLikes: 100 })).toContain("acclaimed");
-    expect(earnedBadgeIds({ ...EMPTY, topOutfitLikes: 99 })).not.toContain("acclaimed");
-    expect(earnedBadgeIds({ ...EMPTY, outfitLikes: 500 })).toContain("head-designer");
-    expect(earnedBadgeIds({ ...EMPTY, outfitLikes: 499 })).not.toContain("head-designer");
+    expect(earnedBadgeIds({ ...EMPTY, outfitLikes: 500 })).toContain("tastemaker");
+    expect(earnedBadgeIds({ ...EMPTY, outfitLikes: 1000 })).toContain("head-designer");
+    expect(earnedBadgeIds({ ...EMPTY, outfitLikes: 999 })).not.toContain("head-designer");
   });
 
   it("sorts earned highest-metal-first", () => {
@@ -46,6 +49,15 @@ describe("badges", () => {
     expect(starter.progressText).toBe("2/5 items");
     const stylist = evald.find((b) => b.id === "stylist")!;
     expect(stylist.progressText).toMatch(/outfits posted/);
+  });
+
+  it("groups into 3 tracks + capstones with tiers in order", () => {
+    const tracks = badgesByTrack();
+    expect(tracks.map((t) => t.track)).toEqual(["closet", "feedback", "outfits", "capstone"]);
+    for (const t of tracks) {
+      const tiers = t.badges.map((b) => b.tier);
+      expect(tiers).toEqual([...tiers].sort((a, b) => a - b)); // ascending
+    }
   });
 
   it("parsePinned caps at 3 and trims", () => {

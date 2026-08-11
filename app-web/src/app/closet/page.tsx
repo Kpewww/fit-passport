@@ -68,7 +68,7 @@ const GENDERS = [
   { v: "unisex", label: "Unisex" },
 ];
 
-const BLANK = { brand: "", category: "tshirt", gender: "", size: "", fitRating: 5, areaNotes: "", color: "" };
+const BLANK = { brand: "", category: "tshirt", gender: "", size: "", fitRating: 5, areaNotes: "", color: "", onlineAvailable: true };
 
 export default function ClosetPage() {
   const [items, setItems] = useState<Item[]>([]);
@@ -100,7 +100,7 @@ export default function ClosetPage() {
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         brand: form.brand, category: form.category, gender: form.gender || null, size: form.size,
-        fitRating: form.fitRating, color: form.color || null,
+        fitRating: form.fitRating, color: form.color || null, onlineAvailable: form.onlineAvailable,
         areaNotesJson: form.areaNotes ? JSON.stringify({ notes: form.areaNotes }) : null,
       }),
     });
@@ -257,6 +257,13 @@ export default function ClosetPage() {
                 <input className={inputClass} placeholder="e.g. shoulders perfect, sleeves long"
                   value={form.areaNotes} onChange={(e) => setForm({ ...form, areaNotes: e.target.value })} />
               </Field>
+            </div>
+            <div className="flex items-center sm:col-span-6">
+              <label className="flex items-center gap-1.5 text-xs text-ink-soft">
+                <input type="checkbox" checked={!form.onlineAvailable} className="accent-brand"
+                  onChange={(e) => setForm({ ...form, onlineAvailable: !e.target.checked })} />
+                In-store only (not available online)
+              </label>
             </div>
             <div className="sm:col-span-6">
               <Button type="submit" disabled={saving || !form.brand || !form.size || !isValidSize(form.category, form.size)}>

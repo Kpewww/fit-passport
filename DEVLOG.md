@@ -28,6 +28,48 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 18 — Badge taxonomy (tracks + rare capstones) + escalating medallion craft
+
+**Context:** founder wanted badges sorted, tiered per category, and rarer at the
+top ("物以稀为贵"), plus a shape/finish that grows more refined with rank — with
+real cultural/textile-history depth, tasteful (Roman/Chinese/art references), not
+gaudy. Chose the **Tracks + Capstones** scheme with a **circle→relief→laurel**
+finish ladder.
+
+**Built:**
+- `lib/badges.ts` restructured into **3 progression tracks × 3 tiers** + **3 rare
+  capstones** (12 total):
+  - The Wardrobe: Verified Closet → Curator → Wardrobe Archivist
+  - The Fit Record: Truth-Teller → Calibrated → Open Closet
+  - The Atelier: First Look → Stylist → Couturier
+  - Rare Honors: Acclaimed (100 likes/look) → Tastemaker (500) → Head Designer (1000)
+  Each badge gained `track`, `tier`, `finish` (0–5 ornateness), `motif` (icon key),
+  and `lore` (a real history note — Roman fibula/wax tablet, guardaroba, Jacquard
+  loom, imperial jade, etc). Renamed `public-figure`→`open-closet`; added
+  `first-look`/`couturier`/`tastemaker`. New `badgesByTrack()` for grouped UI.
+- `components/BadgeMedallion.tsx` reworked around the **finish ladder**: low tiers
+  = plain struck coin + faint sheen; higher tiers add denser fluting, engraved
+  rings, a guilloché field, deeper shadow/relief, a soft halo, rim star-points,
+  and — only at the top (finish 5) — a **laurel wreath overflowing the rim**.
+  Restraint tuned so it reads refined, not busy. Motif engravings are custom
+  geometric line-art per badge (hanger, shelves, archive, wax tablet, gnomon,
+  compass rose, needle, shears, loom, gem, obelisk, crown).
+- `/badges` now **grouped by track** (tiers in order) with earned ✓ / dimmed
+  unearned states, lore lines, and pinning kept (earned-only).
+- `/help` earn-conditions updated for the new ids + shows lore.
+- Lightweight extra: closet add form got an **in-store-only** checkbox (schema +
+  API already supported `onlineAvailable`).
+
+**LLM guidance recorded:** text extraction → Claude Haiku 4.5 (cheap, already
+wired), Sonnet only for hard pages; images → external VTO/text-to-image (Claude
+can't render), integration already key-gated.
+
+**Verify:** `tsc` clean · 55/55 tests (badge-track grouping + new thresholds
+covered) · `next build` clean · live smoke: 12 badges total, starter earns at 5
+items, all pages 200.
+
+---
+
 ## 2026-08-11 · Session 17 — Premium badge medallions + photoreal try-on integration
 
 **Context:** founder felt the emoji-in-a-circle badges looked cheap and wanted
