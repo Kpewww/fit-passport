@@ -3,21 +3,28 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { collectionForGarment } from "@/lib/collections";
+import { isValidSize } from "@/lib/sizeSystems";
 
-const ItemSchema = z.object({
-  brand: z.string().min(1).max(80),
-  category: z.string().min(1).max(40),
-  gender: z.enum(["mens", "womens", "unisex"]).optional().nullable(),
-  size: z.string().min(1).max(20),
-  region: z.string().max(10).optional().nullable(),
-  fitRating: z.coerce.number().int().min(1).max(5).default(4),
-  areaNotesJson: z.string().max(2000).optional().nullable(),
-  productUrl: z.string().url().optional().nullable(),
-  color: z.string().max(40).optional().nullable(),
-  collectionId: z.string().optional().nullable(),
-  groupId: z.string().optional().nullable(),
-  groupName: z.string().max(80).optional().nullable(),
-});
+const ItemSchema = z
+  .object({
+    brand: z.string().min(1).max(80),
+    category: z.string().min(1).max(40),
+    gender: z.enum(["mens", "womens", "unisex"]).optional().nullable(),
+    size: z.string().min(1).max(20),
+    region: z.string().max(10).optional().nullable(),
+    fitRating: z.coerce.number().int().min(1).max(5).default(4),
+    areaNotesJson: z.string().max(2000).optional().nullable(),
+    productUrl: z.string().url().optional().nullable(),
+    color: z.string().max(40).optional().nullable(),
+    collectionId: z.string().optional().nullable(),
+    groupId: z.string().optional().nullable(),
+    groupName: z.string().max(80).optional().nullable(),
+  })
+  // Guard the size against the category's size system so junk can't be stored.
+  .refine((d) => isValidSize(d.category, d.size), {
+    message: "Size is not valid for this garment type",
+    path: ["size"],
+  });
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -59,22 +66,29 @@ export async function POST(req: Request) {
 
 // PATCH accepts partial updates (edit fields, move collection, recolor, reorder,
 // group/ungroup). All fields optional except id.
-const UpdateSchema = z.object({
-  id: z.string().min(1),
-  brand: z.string().min(1).max(80).optional(),
-  category: z.string().min(1).max(40).optional(),
-  gender: z.enum(["mens", "womens", "unisex"]).optional().nullable(),
-  size: z.string().min(1).max(20).optional(),
-  region: z.string().max(10).optional().nullable(),
-  fitRating: z.coerce.number().int().min(1).max(5).optional(),
-  areaNotesJson: z.string().max(2000).optional().nullable(),
-  productUrl: z.string().url().optional().nullable(),
-  color: z.string().max(40).optional().nullable(),
-  collectionId: z.string().optional().nullable(),
-  sortIndex: z.coerce.number().int().min(0).optional(),
-  groupId: z.string().optional().nullable(),
-  groupName: z.string().max(80).optional().nullable(),
-});
+const UpdateSchema = z
+  .object({
+    id: z.string().min(1),
+    brand: z.string().min(1).max(80).optional(),
+    category: z.string().min(1).max(40).optional(),
+    gender: z.enum(["mens", "womens", "unisex"]).optional().nullable(),
+    size: z.string().min(1).max(20).optional(),
+    region: z.string().max(10).optional().nullable(),
+    fitRating: z.coerce.number().int().min(1).max(5).optional(),
+    areaNotesJson: z.string().max(2000).optional().nullable(),
+    productUrl: z.string().url().optional().nullable(),
+    color: z.string().max(40).optional().nullable(),
+    collectionId: z.string().optional().nullable(),
+    sortIndex: z.coerce.number().int().min(0).optional(),
+    groupId: z.string().optional().nullable(),
+    groupName: z.string().max(80).optional().nullable(),
+  })
+  // Only validate size when it's being changed. Use the incoming category if
+  // present, else "other" (which maps to the permissive top/alpha domain).
+  .refine((d) => d.size == null || isValidSize(d.category ?? "other", d.size), {
+    message: "Size is not valid for this garment type",
+    path: ["size"],
+  });
 
 export async function PATCH(req: Request) {
   const user = await getCurrentUser();

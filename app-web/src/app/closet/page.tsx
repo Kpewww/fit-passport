@@ -4,6 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button, Card, EmptyState, Field, LinkButton, inputClass } from "@/components/ui";
 import { BrandInput } from "@/components/BrandInput";
+import { SizeInput } from "@/components/SizeInput";
+import { isValidSize } from "@/lib/sizeSystems";
 
 type Item = {
   id: string;
@@ -91,7 +93,7 @@ export default function ClosetPage() {
 
   async function add(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.brand || !form.size) return;
+    if (!form.brand || !form.size || !isValidSize(form.category, form.size)) return;
     setSaving(true);
     await fetch("/api/closet", {
       method: "POST",
@@ -233,16 +235,18 @@ export default function ClosetPage() {
                 </select>
               </Field>
             </div>
-            <div className="sm:col-span-1">
-              <Field label="Size"><input className={inputClass} placeholder="M"
-                value={form.size} onChange={(e) => setForm({ ...form, size: e.target.value })} /></Field>
-            </div>
-            <div className="sm:col-span-1">
+            <div className="sm:col-span-2">
               <Field label="Fit">
                 <select className={inputClass} value={form.fitRating}
                   onChange={(e) => setForm({ ...form, fitRating: Number(e.target.value) })}>
                   {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}/5</option>)}
                 </select>
+              </Field>
+            </div>
+            <div className="sm:col-span-6">
+              <Field label="Size">
+                <SizeInput category={form.category} value={form.size}
+                  onChange={(v) => setForm({ ...form, size: v })} />
               </Field>
             </div>
             <div className="sm:col-span-3">
@@ -257,7 +261,7 @@ export default function ClosetPage() {
               </Field>
             </div>
             <div className="sm:col-span-6">
-              <Button type="submit" disabled={saving || !form.brand || !form.size}>
+              <Button type="submit" disabled={saving || !form.brand || !form.size || !isValidSize(form.category, form.size)}>
                 {saving ? "Adding…" : "Add to closet"}
               </Button>
             </div>
@@ -706,7 +710,7 @@ function EditRow({
   const [saving, setSaving] = useState(false);
 
   async function save() {
-    if (!f.brand || !f.size) return;
+    if (!f.brand || !f.size || !isValidSize(f.category, f.size)) return;
     setSaving(true);
     await fetch("/api/closet", {
       method: "PATCH",
@@ -743,13 +747,15 @@ function EditRow({
           </Field>
         </div>
         <div className="sm:col-span-1">
-          <Field label="Size"><input className={inputClass} value={f.size} onChange={(e) => setF({ ...f, size: e.target.value })} /></Field>
-        </div>
-        <div className="sm:col-span-1">
           <Field label="Fit">
             <select className={inputClass} value={f.fitRating} onChange={(e) => setF({ ...f, fitRating: Number(e.target.value) })}>
               {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}/5</option>)}
             </select>
+          </Field>
+        </div>
+        <div className="sm:col-span-6">
+          <Field label="Size">
+            <SizeInput category={f.category} value={f.size} onChange={(v) => setF({ ...f, size: v })} />
           </Field>
         </div>
         <div className="sm:col-span-3">
@@ -767,7 +773,7 @@ function EditRow({
           <Field label="Fit notes"><input className={inputClass} value={f.areaNotes} onChange={(e) => setF({ ...f, areaNotes: e.target.value })} /></Field>
         </div>
         <div className="flex gap-2 sm:col-span-6">
-          <Button onClick={save} disabled={saving || !f.brand || !f.size}>{saving ? "Saving…" : "Save changes"}</Button>
+          <Button onClick={save} disabled={saving || !f.brand || !f.size || !isValidSize(f.category, f.size)}>{saving ? "Saving…" : "Save changes"}</Button>
           <Button variant="ghost" onClick={onCancel}>Cancel</Button>
         </div>
       </div>
