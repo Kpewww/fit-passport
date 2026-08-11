@@ -28,7 +28,7 @@ describe("sizeConvert — bottoms (the pants numbers)", () => {
   it("reads a bare waist number as inches and gives cm", () => {
     const out = convert("bottom", "32", "WAIST_IN");
     const byId = Object.fromEntries(out.map((c) => [c.scaleId, c.value]));
-    expect(byId.WAIST_IN).toBe('32"');
+    expect(byId.WAIST_IN).toBe("32"); // stored value is clean & valid for the size field
     expect(byId.WAIST_CM).toBe("81 cm"); // 32 * 2.54 ≈ 81.3
     expect(byId.ALPHA).toBe("M");
   });
@@ -42,7 +42,7 @@ describe("sizeConvert — bottoms (the pants numbers)", () => {
   it("reads a cm waist back to inches", () => {
     const out = convert("bottom", "81 cm", "WAIST_CM");
     const inch = out.find((c) => c.scaleId === "WAIST_IN");
-    expect(inch?.value).toBe('32"');
+    expect(inch?.value).toBe("32");
   });
 });
 

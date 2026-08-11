@@ -1,23 +1,28 @@
 "use client";
 
-// SizeInput — a size field that adapts to the garment category.
+// SizeInput — the core size field, category-aware and deliberately uncluttered.
 //
-// Instead of a raw text box (which let junk like "<" through), it offers the
-// common sizes for that category as one-tap chips, plus a free-text box for
-// regional variants (EU 48, 32×32, EU 42…). Invalid input is flagged inline and
-// the parent can block save. The valid shapes come from sizeSystems.ts, which
-// the server also enforces — so UI and API can't drift.
+// Layout (top → bottom):
+//   1. Quick-pick chips — the common sizes for this garment type, one tap.
+//   2. The input itself — validated; junk like "<" is flagged inline.
+//   3. One small help line — the scale hint, with a "?" that expands a plain-
+//      language explanation for domains whose numbers aren't obvious (pants).
+//   4. A collapsed converter toggle — for when you only know your size in
+//      another scale (EU/US/UK/cm). Hidden until asked for.
+//
+// Valid shapes come from sizeSystems.ts (the server enforces the same), so UI
+// and API can't drift.
 
+import { useState } from "react";
 import { inputClass } from "@/components/ui";
 import { domainForCategory, isValidSize, presetSizesFor, sizeHintFor } from "@/lib/sizeSystems";
 import { SizeConverter } from "@/components/SizeConverter";
 
-// Plain-language help for domains whose numbers aren't self-explanatory.
-const DOMAIN_HELP: Record<string, string> = {
+// Longer, plain-language explanation for domains whose numbers aren't obvious.
+const DOMAIN_EXPLAINER: Record<string, string> = {
   bottom:
-    "Numbers are inches: a single number is your waist (e.g. 32 = 32\" waist ≈ 81cm). " +
-    "32×34 means waist 32\" × inseam 34\" (inseam = inner-leg length).",
-  shoe: "Numbers are the size on the shoe. Use the converter below to switch between EU / US / UK / cm.",
+    "Pants sizes are in inches. A single number is your waist — e.g. 32 means a 32-inch waist (≈ 81 cm). " +
+    "A pair like 32 × 34 means waist 32 in × inseam 34 in, where the inseam is the inner-leg length from crotch to hem.",
 };
 
 export function SizeInput({
@@ -32,12 +37,14 @@ export function SizeInput({
   const presets = presetSizesFor(category);
   const hint = sizeHintFor(category);
   const domain = domainForCategory(category);
-  const help = DOMAIN_HELP[domain];
+  const explainer = DOMAIN_EXPLAINER[domain];
   const trimmed = value.trim();
   const invalid = trimmed.length > 0 && !isValidSize(category, trimmed);
+  const [showExplainer, setShowExplainer] = useState(false);
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-2">
+      {/* 1. Quick-pick chips */}
       <div className="flex flex-wrap gap-1">
         {presets.map((s) => {
           const active = trimmed.toUpperCase() === s.toUpperCase();
@@ -57,22 +64,39 @@ export function SizeInput({
           );
         })}
       </div>
+
+      {/* 2. The input */}
       <input
         className={`${inputClass} ${invalid ? "border-red-400 focus:border-red-400 focus:ring-red-200" : ""}`}
         placeholder={hint}
         value={value}
         onChange={(e) => onChange(e.target.value)}
       />
-      {invalid ? (
-        <p className="text-xs text-red-600">Not a recognized size — try {hint}.</p>
-      ) : (
-        <p className="text-[11px] text-ink-faint">{hint}</p>
-      )}
-      {help && (
-        <p className="rounded-md bg-neutral-100 px-2 py-1.5 text-[11px] leading-relaxed text-ink-soft">
-          💡 {help}
+
+      {/* 3. One help line */}
+      <div className="flex items-center gap-1.5 text-[11px]">
+        {invalid ? (
+          <span className="text-red-600">Not a recognized size — try {hint}.</span>
+        ) : (
+          <span className="text-ink-faint">{hint}</span>
+        )}
+        {explainer && (
+          <button
+            type="button"
+            onClick={() => setShowExplainer((v) => !v)}
+            className="text-brand hover:underline"
+          >
+            {showExplainer ? "hide" : "what do these mean?"}
+          </button>
+        )}
+      </div>
+      {explainer && showExplainer && (
+        <p className="rounded-md bg-neutral-100 px-2.5 py-2 text-[11px] leading-relaxed text-ink-soft">
+          {explainer}
         </p>
       )}
+
+      {/* 4. Collapsed converter */}
       <SizeConverter category={category} onAdopt={onChange} />
     </div>
   );

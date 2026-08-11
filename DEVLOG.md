@@ -28,6 +28,59 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 14 — Size module cleanup + passport UX overhaul
+
+**Context:** founder feedback: the size/converter block is the product's core but
+was cluttered and confusing (converter always showed "43", no way to change the
+scale cleanly). Plus a batch of passport asks and a claim-flow dead-end.
+
+**Built:**
+
+*Size module (the core) — decluttered & reusable:*
+- `SizeConverter` is now **collapsible** — hidden behind a "Know it in another
+  scale? Convert →" toggle so the size field stays clean. When open: pick your
+  scale, and the input's **example placeholder follows the scale** (EU→"43",
+  US→"10", cm→"27") instead of a fixed "43". Equivalents render as tap-to-adopt
+  chips; adopting closes the panel.
+- Each `Scale` gained an `example` field ([sizeConvert.ts](app-web/src/lib/sizeConvert.ts));
+  scale labels are now human ("S / M / L", "EU number", "Waist (inches)").
+  Scale parsers accept the bare value (scale already selected) so you just type
+  "27" not "27 cm".
+- `SizeInput` restructured to 4 clean rows: chips → input → one help line with a
+  "what do these mean?" toggle → collapsed converter. The pants explainer moved
+  behind that toggle.
+
+*Passport:*
+- **cm/in + kg/lb unit toggles** on Measurements. Fields STORE cm/kg but DISPLAY
+  the chosen unit (`LenField`/`WeightField` convert on commit). Storage/engine
+  untouched.
+- **Region explained** inline ("which country's size labels to show first…").
+- **Preferred fit is now multi-select, up to 3**, first = primary (badge "1st").
+  Stored as CSV in the existing `preferredFit` column (no migration). Engine +
+  recommendService use the FIRST token as the default; the Check page still
+  previews any single fit. Server validates 1–3 valid tokens.
+- **BMI removed** from the body-type card (founder said unnecessary).
+- **Portrait upload** — click the portrait, image is client-resized to a 256px
+  square JPEG data URL, stored in new `FitProfile.avatarDataUrl` (≤300KB,
+  server-validated as a data:image). Falls back to initials. Never exposed by
+  account code.
+- **Sticky save bar** at the bottom of /passport: a live save dot + "Changes
+  save automatically" + explicit Closet / claim actions, so users always know
+  edits persist and how to keep them.
+
+*Account:*
+- Claim form is **no longer a dead-end** — added "← Edit my passport / closet"
+  back links and copy clarifying nothing is locked until claim is pressed.
+
+**Schema:** `FitProfile.avatarDataUrl String?` added; `preferredFit` semantics
+changed to CSV (same column). `prisma db push` applied.
+
+**Verify:** `tsc` clean · 46/46 tests · `next build` clean · live smoke: CSV
+preferredFit stored + primary drives rec (oversized,slim → XL), avatar stored,
+4-fit over-cap rejected (400), cm-entered chest round-trips.
+
+---
+
 ## 2026-08-11 · Session 13 — Size converter + pants-number explainer
 
 **Context:** founder didn't understand what the numeric pants sizes mean, and

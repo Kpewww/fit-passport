@@ -18,6 +18,7 @@ import type { SizeDomain } from "./sizeSystems";
 export type Scale = {
   id: string; // "EU" | "US" | "UK" | "CM" | "ALPHA" | "WAIST_IN" | "WAIST_CM"
   label: string; // shown to the user, e.g. "EU"
+  example: string; // a sample value IN THIS SCALE, e.g. "43" for EU shoes
   // Parse a raw user string into a canonical rung number for this domain.
   // Returns null if the string isn't in this scale.
   parse: (raw: string) => number | null;
@@ -37,6 +38,7 @@ const shoeScales: Scale[] = [
   {
     id: "EU",
     label: "EU",
+    example: "43",
     parse: (raw) => {
       const m = raw.trim().match(/^(?:EU\s*)?(\d{2}(?:\.5)?)$/i);
       return m ? Number(m[1]) : null;
@@ -46,6 +48,7 @@ const shoeScales: Scale[] = [
   {
     id: "US",
     label: "US (men's)",
+    example: "10",
     parse: (raw) => {
       const m = raw.trim().match(/^US\s*(\d{1,2}(?:\.5)?)$/i);
       return m ? usMenToEu(Number(m[1])) : null;
@@ -55,6 +58,7 @@ const shoeScales: Scale[] = [
   {
     id: "UK",
     label: "UK",
+    example: "9",
     parse: (raw) => {
       const m = raw.trim().match(/^UK\s*(\d{1,2}(?:\.5)?)$/i);
       return m ? usMenToEu(Number(m[1]) + 1) : null; // UK = US − 1 (men's)
@@ -63,9 +67,11 @@ const shoeScales: Scale[] = [
   },
   {
     id: "CM",
-    label: "cm (foot)",
+    label: "cm (foot length)",
+    example: "27",
     parse: (raw) => {
-      const m = raw.trim().match(/^(\d{2}(?:\.5)?)\s*cm$/i);
+      // Accept "27" or "27 cm" — the scale is already selected.
+      const m = raw.trim().match(/^(\d{2}(?:\.5)?)\s*(?:cm)?$/i);
       if (!m) return null;
       const cm = Number(m[1]);
       // nearest EU rung by the cm table
@@ -101,7 +107,8 @@ const ALPHA_IDX_TO_EU: Record<number, number> = {
 const topScales: Scale[] = [
   {
     id: "ALPHA",
-    label: "Alpha",
+    label: "S / M / L",
+    example: "M",
     parse: (raw) => {
       const s = raw.trim().toUpperCase();
       const i = ALPHA.indexOf(s);
@@ -115,7 +122,8 @@ const topScales: Scale[] = [
   },
   {
     id: "EU",
-    label: "EU",
+    label: "EU number",
+    example: "48",
     parse: (raw) => {
       const m = raw.trim().match(/^(?:EU\s*)?(\d{2})$/i);
       if (!m) return null;
@@ -135,7 +143,8 @@ const WAIST_ALPHA: Array<{ in: number; alpha: string }> = [
 const bottomScales: Scale[] = [
   {
     id: "WAIST_IN",
-    label: "Waist (in)",
+    label: "Waist (inches)",
+    example: "32",
     parse: (raw) => {
       // "32", "32x34", "W32 L34" → take the waist
       const s = raw.trim();
@@ -144,20 +153,22 @@ const bottomScales: Scale[] = [
       const bare = s.match(/^(\d{2})$/);
       return bare ? Number(bare[1]) : null;
     },
-    render: (inch) => `${Math.round(inch)}"`,
+    render: (inch) => `${Math.round(inch)}`,
   },
   {
     id: "WAIST_CM",
     label: "Waist (cm)",
+    example: "81",
     parse: (raw) => {
-      const m = raw.trim().match(/^(\d{2,3})\s*cm$/i);
+      const m = raw.trim().match(/^(\d{2,3})\s*(?:cm)?$/i);
       return m ? Math.round(Number(m[1]) / 2.54) : null;
     },
     render: (inch) => `${Math.round(inch * 2.54)} cm`,
   },
   {
     id: "ALPHA",
-    label: "Alpha",
+    label: "S / M / L",
+    example: "M",
     parse: (raw) => {
       const s = raw.trim().toUpperCase();
       const found = WAIST_ALPHA.find((w) => w.alpha === s);

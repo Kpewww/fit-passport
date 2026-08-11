@@ -37,8 +37,13 @@ export async function computeRecommendation(
     prisma.fitOutcome.findMany({ where: { userId }, include: { product: true } }),
   ]);
 
-  const effectiveFit: FitPreference =
-    overrideFit ?? ((profile?.preferredFit ?? "regular") as FitPreference);
+  // preferredFit is stored as a CSV (up to 3); the FIRST token is the primary
+  // target the engine defaults to. The check page can still override to preview
+  // any single preference.
+  const primaryFit = (profile?.preferredFit ?? "regular")
+    .split(",")[0]
+    .trim() as FitPreference;
+  const effectiveFit: FitPreference = overrideFit ?? primaryFit;
 
   const engineInput: EngineInput = {
     profile: {

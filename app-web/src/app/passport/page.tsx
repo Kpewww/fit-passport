@@ -25,8 +25,9 @@ type Profile = {
   shoulderCm: number | null;
   sleeveCm: number | null;
   inseamCm: number | null;
-  preferredFit: Fit;
+  preferredFit: string; // CSV of up to 3 fits; first = primary
   region: "US" | "EU" | "UK" | "JP" | "CN";
+  avatarDataUrl: string | null;
   notes: string | null;
 };
 
@@ -36,12 +37,22 @@ const EMPTY: Profile = {
   sex: null, shopsFor: null,
   heightCm: null, weightKg: null, chestCm: null, waistCm: null, hipCm: null,
   shoulderCm: null, sleeveCm: null, inseamCm: null,
-  preferredFit: "regular", region: "US", notes: "",
+  preferredFit: "regular", region: "US", avatarDataUrl: null, notes: "",
 };
 
 const FITS: Fit[] = ["slim", "regular", "relaxed", "oversized"];
+const MAX_FITS = 3;
 const REGIONS = ["US", "EU", "UK", "JP", "CN"] as const;
 const SHOPS = ["mens", "womens", "unisex"] as const;
+const REGION_HELP =
+  "Which country's size labels you shop most. It sets the default scale we show " +
+  "(US = S/M/L, EU = 46/48…). You can still check products from any region — this " +
+  "just picks the labels shown first.";
+
+// Parse/serialize the CSV preferredFit.
+function fitList(csv: string): Fit[] {
+  return csv.split(",").map((s) => s.trim()).filter(Boolean) as Fit[];
+}
 
 export default function PassportPage() {
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -49,6 +60,8 @@ export default function PassportPage() {
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [closetCount, setClosetCount] = useState(0);
   const [bodyChanged, setBodyChanged] = useState(false); // measurement edited this visit
+  const [lengthUnit, setLengthUnit] = useState<"cm" | "in">("cm"); // display unit for lengths
+  const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg"); // display unit for weight
 
   useEffect(() => {
     Promise.all([
@@ -124,17 +137,16 @@ export default function PassportPage() {
 
           {/* Portrait + identity */}
           <div className="grid gap-6 border-b border-neutral-200 px-6 py-6 sm:grid-cols-[auto,1fr]">
-            <div className="flex flex-col items-center">
-              <div className="flex h-24 w-20 items-center justify-center rounded-md border-2 border-neutral-800 bg-neutral-50 font-mono text-2xl font-bold text-neutral-800">
-                {initials}
-              </div>
-              <p className="mt-1 text-[9px] uppercase tracking-widest text-ink-faint">portrait</p>
-            </div>
+            <PortraitUpload
+              initials={initials}
+              value={profile.avatarDataUrl}
+              onChange={(v) => update("avatarDataUrl", v)}
+            />
             <div className="min-w-0 space-y-2">
               <Line label="Holder" value={holder ?? "—"} mono />
               <Line label="Passport no." value={idLine ?? "—"} mono />
               <Line label="Region of issue" value={profile.region} mono />
-              <Line label="Preferred fit" value={profile.preferredFit.toUpperCase()} mono />
+              <Line label="Preferred fit" value={fitList(profile.preferredFit).join(", ").toUpperCase() || "—"} mono />
             </div>
           </div>
 
@@ -161,39 +173,77 @@ export default function PassportPage() {
               </div>
             </Section>
 
-            <Section title="Preferred fit">
+            <Section title="Preferred fit" subtitle="pick up to 3 · first is your default">
               <div className="grid grid-cols-4 gap-2">
                 {FITS.map((f) => {
-                  const active = profile.preferredFit === f;
+                  const list = fitList(profile.preferredFit);
+                  const idx = list.indexOf(f);
+                  const active = idx >= 0;
                   return (
                     <button
                       key={f}
-                      onClick={() => update("preferredFit", f)}
-                      className={`rounded-lg border px-2 py-2 text-xs capitalize transition-all ${
+                      onClick={() => {
+                        let next: Fit[];
+                        if (active) {
+                          next = list.filter((x) => x !== f);
+                        } else if (list.length < MAX_FITS) {
+                          next = [...list, f];
+                        } else {
+                          return; // at cap — ignore
+                        }
+                        // Never allow empty; fall back to regular.
+                        update("preferredFit", (next.length ? next : ["regular"]).join(","));
+                      }}
+                      className={`relative rounded-lg border px-2 py-2 text-xs capitalize transition-all ${
                         active ? "border-brand bg-brand-tint font-semibold text-brand" : "border-neutral-300 text-ink hover:border-neutral-400"
                       }`}
-                    >{f}</button>
+                    >
+                      {f}
+                      {idx === 0 && (
+                        <span className="absolute -right-1 -top-1 rounded-full bg-brand px-1 text-[8px] font-bold text-white">
+                          1st
+                        </span>
+                      )}
+                    </button>
                   );
                 })}
               </div>
+              <p className="mt-1.5 text-[11px] text-ink-faint">
+                Your recommendations default to the 1st pick. On the Check page you
+                can preview any of the others.
+              </p>
             </Section>
 
-            <Section title="Measurements" subtitle="all optional · cm/kg">
+            <Section title="Measurements" subtitle="all optional">
+              <div className="mb-3 flex items-center gap-4">
+                <UnitToggle
+                  label="Lengths"
+                  options={["cm", "in"]}
+                  value={lengthUnit}
+                  onChange={(u) => setLengthUnit(u as "cm" | "in")}
+                />
+                <UnitToggle
+                  label="Weight"
+                  options={["kg", "lb"]}
+                  value={weightUnit}
+                  onChange={(u) => setWeightUnit(u as "kg" | "lb")}
+                />
+              </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <NumField label="Chest" hint="most useful" value={profile.chestCm} onCommit={(v) => update("chestCm", v)} />
-                <NumField label="Waist" value={profile.waistCm} onCommit={(v) => update("waistCm", v)} />
-                <NumField label="Hip" value={profile.hipCm} onCommit={(v) => update("hipCm", v)} />
-                <NumField label="Shoulder" value={profile.shoulderCm} onCommit={(v) => update("shoulderCm", v)} />
-                <NumField label="Sleeve" value={profile.sleeveCm} onCommit={(v) => update("sleeveCm", v)} />
-                <NumField label="Inseam" value={profile.inseamCm} onCommit={(v) => update("inseamCm", v)} />
-                <NumField label="Height" value={profile.heightCm} onCommit={(v) => update("heightCm", v)} />
-                <NumField label="Weight" unit="kg" value={profile.weightKg} onCommit={(v) => update("weightKg", v)} />
+                <LenField label="Chest" hint="most useful" unit={lengthUnit} valueCm={profile.chestCm} onCommitCm={(v) => update("chestCm", v)} />
+                <LenField label="Waist" unit={lengthUnit} valueCm={profile.waistCm} onCommitCm={(v) => update("waistCm", v)} />
+                <LenField label="Hip" unit={lengthUnit} valueCm={profile.hipCm} onCommitCm={(v) => update("hipCm", v)} />
+                <LenField label="Shoulder" unit={lengthUnit} valueCm={profile.shoulderCm} onCommitCm={(v) => update("shoulderCm", v)} />
+                <LenField label="Sleeve" unit={lengthUnit} valueCm={profile.sleeveCm} onCommitCm={(v) => update("sleeveCm", v)} />
+                <LenField label="Inseam" unit={lengthUnit} valueCm={profile.inseamCm} onCommitCm={(v) => update("inseamCm", v)} />
+                <LenField label="Height" unit={lengthUnit} valueCm={profile.heightCm} onCommitCm={(v) => update("heightCm", v)} />
+                <WeightField label="Weight" unit={weightUnit} valueKg={profile.weightKg} onCommitKg={(v) => update("weightKg", v)} />
               </div>
             </Section>
 
             <BodyTypeSection profile={profile} />
 
-            <Section title="Region">
+            <Section title="Region" subtitle="which size labels to show first">
               <div className="flex flex-wrap gap-2">
                 {REGIONS.map((r) => {
                   const active = profile.region === r;
@@ -208,6 +258,7 @@ export default function PassportPage() {
                   );
                 })}
               </div>
+              <p className="mt-1.5 text-[11px] text-ink-faint">{REGION_HELP}</p>
             </Section>
 
             <Section title="Notes">
@@ -247,19 +298,34 @@ export default function PassportPage() {
           </div>
         )}
 
-        {/* Save indicator + next-step */}
-        <div className="mt-4 flex items-center justify-between text-xs text-ink-faint">
-          <span>
-            {status === "saving" && "Saving…"}
-            {status === "saved" && <span className="text-green-700">Saved ✓</span>}
-            {status === "error" && <span className="text-red-700">Save failed</span>}
-            {status === "idle" && "Changes save automatically"}
-          </span>
-          <div className="flex gap-3">
-            <Link href="/closet" className="hover:text-brand">Go to closet →</Link>
+        {/* spacer so content isn't hidden behind the sticky bar */}
+        <div className="h-20" />
+      </div>
+
+      {/* STICKY SAVE BAR — always visible so the user knows edits persist and
+          how to keep them. Explains autosave + gives explicit next steps. */}
+      <div className="sticky bottom-0 z-10 border-t border-neutral-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-6 py-3">
+          <div className="flex items-center gap-2 text-xs">
+            <SaveDot status={status} />
+            <div className="leading-tight">
+              <p className="font-medium text-ink">
+                {status === "saving" ? "Saving…" : status === "error" ? "Save failed — check connection" : "Changes save automatically"}
+              </p>
+              <p className="text-[11px] text-ink-faint">
+                {me.claimed
+                  ? "Edits are saved to your account as you type."
+                  : "Saved to this device. Claim an account to keep it safe & shareable."}
+              </p>
+            </div>
+          </div>
+          <div className="flex flex-shrink-0 gap-2">
+            <Link href="/closet" className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-neutral-400">
+              Closet →
+            </Link>
             {!me.claimed && (
-              <Link href="/account" className="font-medium text-brand hover:underline">
-                Save this passport — claim account →
+              <Link href="/account" className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark">
+                Save — claim account →
               </Link>
             )}
           </div>
@@ -267,6 +333,14 @@ export default function PassportPage() {
       </div>
     </main>
   );
+}
+
+function SaveDot({ status }: { status: "idle" | "saving" | "saved" | "error" }) {
+  const cls =
+    status === "error" ? "bg-red-500"
+    : status === "saving" ? "bg-amber-400 animate-pulse"
+    : "bg-green-500";
+  return <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${cls}`} />;
 }
 
 // ---------- pieces ----------
@@ -361,21 +435,54 @@ function FieldMultiChips({
   );
 }
 
-function NumField({
+// A small segmented unit toggle (cm/in, kg/lb).
+function UnitToggle({
   label,
+  options,
   value,
-  onCommit,
-  hint,
-  unit = "cm",
+  onChange,
 }: {
   label: string;
-  value: number | null;
-  onCommit: (v: number | null) => void;
-  hint?: string;
-  unit?: string;
+  options: [string, string];
+  value: string;
+  onChange: (u: string) => void;
 }) {
-  const [text, setText] = useState(value == null ? "" : String(value));
-  useEffect(() => setText(value == null ? "" : String(value)), [value]);
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[10px] uppercase tracking-widest text-ink-faint">{label}</span>
+      <div className="inline-flex rounded-lg border border-neutral-300 p-0.5">
+        {options.map((o) => (
+          <button
+            key={o}
+            onClick={() => onChange(o)}
+            className={`rounded-md px-2 py-0.5 text-xs transition-colors ${
+              value === o ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"
+            }`}
+          >
+            {o}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// The raw numeric field — displays whatever the parent passes and commits raw.
+function RawNumField({
+  label,
+  hint,
+  unit,
+  text,
+  onText,
+  onCommit,
+}: {
+  label: string;
+  hint?: string;
+  unit: string;
+  text: string;
+  onText: (s: string) => void;
+  onCommit: () => void;
+}) {
   return (
     <div>
       <div className="mb-0.5 flex items-baseline justify-between">
@@ -386,14 +493,9 @@ function NumField({
         <input
           inputMode="decimal"
           value={text}
-          onChange={(e) => setText(e.target.value)}
-          onBlur={() => {
-            const n = text.trim() === "" ? null : Number(text);
-            onCommit(Number.isFinite(n as number) ? (n as number) : null);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") (e.target as HTMLInputElement).blur();
-          }}
+          onChange={(e) => onText(e.target.value)}
+          onBlur={onCommit}
+          onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
           placeholder="—"
           className="w-full bg-transparent px-2.5 py-2 text-sm text-ink outline-none placeholder:text-ink-faint"
         />
@@ -401,6 +503,147 @@ function NumField({
       </div>
     </div>
   );
+}
+
+// A length field that STORES cm but DISPLAYS the chosen unit (cm/in).
+function LenField({
+  label,
+  hint,
+  unit,
+  valueCm,
+  onCommitCm,
+}: {
+  label: string;
+  hint?: string;
+  unit: "cm" | "in";
+  valueCm: number | null;
+  onCommitCm: (v: number | null) => void;
+}) {
+  const toDisplay = (cm: number | null) =>
+    cm == null ? "" : String(unit === "in" ? Math.round((cm / 2.54) * 10) / 10 : cm);
+  const [text, setText] = useState(toDisplay(valueCm));
+  useEffect(() => setText(toDisplay(valueCm)), [valueCm, unit]);
+  return (
+    <RawNumField
+      label={label} hint={hint} unit={unit} text={text} onText={setText}
+      onCommit={() => {
+        if (text.trim() === "") return onCommitCm(null);
+        const n = Number(text);
+        if (!Number.isFinite(n)) return onCommitCm(null);
+        onCommitCm(unit === "in" ? Math.round(n * 2.54 * 10) / 10 : n);
+      }}
+    />
+  );
+}
+
+// A weight field that STORES kg but DISPLAYS the chosen unit (kg/lb).
+function WeightField({
+  label,
+  unit,
+  valueKg,
+  onCommitKg,
+}: {
+  label: string;
+  unit: "kg" | "lb";
+  valueKg: number | null;
+  onCommitKg: (v: number | null) => void;
+}) {
+  const toDisplay = (kg: number | null) =>
+    kg == null ? "" : String(unit === "lb" ? Math.round(kg * 2.2046 * 10) / 10 : kg);
+  const [text, setText] = useState(toDisplay(valueKg));
+  useEffect(() => setText(toDisplay(valueKg)), [valueKg, unit]);
+  return (
+    <RawNumField
+      label={label} unit={unit} text={text} onText={setText}
+      onCommit={() => {
+        if (text.trim() === "") return onCommitKg(null);
+        const n = Number(text);
+        if (!Number.isFinite(n)) return onCommitKg(null);
+        onCommitKg(unit === "lb" ? Math.round((n / 2.2046) * 10) / 10 : n);
+      }}
+    />
+  );
+}
+
+// Portrait upload — click to pick an image, resized client-side to a small
+// square data URL. Falls back to initials when empty.
+function PortraitUpload({
+  initials,
+  value,
+  onChange,
+}: {
+  initials: string;
+  value: string | null;
+  onChange: (v: string | null) => void;
+}) {
+  const [busy, setBusy] = useState(false);
+
+  async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    try {
+      const dataUrl = await resizeImage(file, 256);
+      onChange(dataUrl);
+    } catch {
+      // ignore — keep old value
+    } finally {
+      setBusy(false);
+      e.target.value = "";
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center">
+      <label className="group relative h-24 w-20 cursor-pointer overflow-hidden rounded-md border-2 border-neutral-800 bg-neutral-50">
+        {value ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={value} alt="portrait" className="h-full w-full object-cover" />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center font-mono text-2xl font-bold text-neutral-800">
+            {initials}
+          </span>
+        )}
+        <span className="absolute inset-x-0 bottom-0 bg-black/50 py-0.5 text-center text-[8px] uppercase tracking-wider text-white opacity-0 transition-opacity group-hover:opacity-100">
+          {busy ? "…" : "change"}
+        </span>
+        <input type="file" accept="image/*" onChange={onFile} className="hidden" />
+      </label>
+      <p className="mt-1 text-[9px] uppercase tracking-widest text-ink-faint">portrait</p>
+      {value && (
+        <button onClick={() => onChange(null)} className="mt-0.5 text-[9px] text-ink-faint hover:text-red-600">
+          remove
+        </button>
+      )}
+    </div>
+  );
+}
+
+// Resize an image file to a square data URL (max `size` px), JPEG-encoded.
+function resizeImage(file: File, size: number): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error("read failed"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("decode failed"));
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("no ctx"));
+        // center-crop to square
+        const min = Math.min(img.width, img.height);
+        const sx = (img.width - min) / 2;
+        const sy = (img.height - min) / 2;
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, size, size);
+        resolve(canvas.toDataURL("image/jpeg", 0.8));
+      };
+      img.src = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 function TextField({
@@ -441,9 +684,6 @@ function BodyTypeSection({ profile }: { profile: Profile }) {
         <BodyFigure volume={bt.figureKey} shape={bt.shape} size={80} />
         <div className="min-w-0 flex-1">
           <p className="text-lg font-semibold text-ink">{bt.label}</p>
-          {bt.bmi != null && (
-            <p className="mt-0.5 text-xs text-ink-faint">BMI {bt.bmi}</p>
-          )}
           {!anyData && (
             <p className="mt-1 text-xs text-ink-faint">
               Add height + weight above to derive a body type; add chest + waist

@@ -179,10 +179,19 @@ export default function AccountPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-2xl px-6 py-10">
+        {/* Back links so users aren't trapped — they can go fix their passport
+            or closet before locking in an account. Nothing here is committed
+            until "Claim my account code" is pressed. */}
+        <div className="mb-4 flex items-center gap-4 text-sm">
+          <Link href="/passport" className="text-ink-faint hover:text-brand">← Edit my passport</Link>
+          <Link href="/closet" className="text-ink-faint hover:text-brand">← Edit my closet</Link>
+        </div>
         <h1 className="text-3xl font-bold text-ink">Claim your account</h1>
         <p className="mt-2 text-ink-soft">
           You&apos;ve been using a private, temporary account. Claim it to get a
           shareable <strong>account code</strong> and lock editing behind a password.
+          Your passport and closet are already filled in — you can go back and
+          tweak them first; nothing is locked until you press claim.
         </p>
 
         <Card className="mt-6">

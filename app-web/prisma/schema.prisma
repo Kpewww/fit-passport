@@ -78,11 +78,17 @@ model FitProfile {
   sleeveCm   Float?
   inseamCm   Float?
 
-  // Fit preference for tops/jackets. "slim" | "regular" | "relaxed" | "oversized"
+  // Fit preference for tops/jackets. Comma-separated, up to 3 of
+  // "slim"|"regular"|"relaxed"|"oversized". The FIRST is the primary target the
+  // engine defaults to; the rest are acceptable alternatives the user is open to.
   preferredFit String @default("regular")
 
   // Region for size chart defaults. e.g. "US","EU","UK","JP","CN"
   region String @default("US")
+
+  // Optional portrait — a small client-resized data URL (data:image/...;base64).
+  // Purely cosmetic for the passport page. Never exposed by account code.
+  avatarDataUrl String?
 
   // Optional free-text notes (allergies to fabrics, "long torso", etc)
   notes String?

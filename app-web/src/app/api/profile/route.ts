@@ -15,8 +15,25 @@ const ProfileSchema = z.object({
   shoulderCm: z.coerce.number().min(20).max(80).nullable().optional(),
   sleeveCm: z.coerce.number().min(20).max(100).nullable().optional(),
   inseamCm: z.coerce.number().min(40).max(120).nullable().optional(),
-  preferredFit: z.enum(["slim", "regular", "relaxed", "oversized"]),
+  // CSV of up to 3 fit preferences; first = primary. Validate each token.
+  preferredFit: z
+    .string()
+    .min(1)
+    .refine(
+      (s) => {
+        const parts = s.split(",").map((p) => p.trim()).filter(Boolean);
+        const ok = new Set(["slim", "regular", "relaxed", "oversized"]);
+        return parts.length >= 1 && parts.length <= 3 && parts.every((p) => ok.has(p));
+      },
+      { message: "1-3 of slim/regular/relaxed/oversized" },
+    ),
   region: z.enum(["US", "EU", "UK", "JP", "CN"]),
+  avatarDataUrl: z
+    .string()
+    .max(300_000) // ~300KB cap; the client resizes before sending
+    .regex(/^data:image\/(png|jpeg|webp);base64,/, "must be a small image")
+    .nullable()
+    .optional(),
   notes: z.string().max(1000).nullable().optional(),
 });
 
