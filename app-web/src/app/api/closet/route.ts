@@ -19,6 +19,7 @@ const ItemSchema = z
     collectionId: z.string().optional().nullable(),
     groupId: z.string().optional().nullable(),
     groupName: z.string().max(80).optional().nullable(),
+    onlineAvailable: z.boolean().optional(),
   })
   // Guard the size against the category's size system so junk can't be stored.
   .refine((d) => isValidSize(d.category, d.size), {
@@ -82,6 +83,7 @@ const UpdateSchema = z
     sortIndex: z.coerce.number().int().min(0).optional(),
     groupId: z.string().optional().nullable(),
     groupName: z.string().max(80).optional().nullable(),
+    onlineAvailable: z.boolean().optional(),
   })
   // Only validate size when it's being changed. Use the incoming category if
   // present, else "other" (which maps to the permissive top/alpha domain).

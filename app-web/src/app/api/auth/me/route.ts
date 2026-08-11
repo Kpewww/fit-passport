@@ -13,6 +13,7 @@ export async function GET() {
     username: user.username,
     email: user.email, // fine to show the user their own email
     bodyType: user.bodyType,
+    showBodyType: user.showBodyType,
     exportPolicy: user.exportPolicy,
     canEdit: canEdit(),
   });

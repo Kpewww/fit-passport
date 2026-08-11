@@ -3,7 +3,7 @@ import { earnedBadgeIds, evaluateBadges, parsePinned, type BadgeStats } from "./
 
 const EMPTY: BadgeStats = {
   closetCount: 0, outcomeCount: 0, collectionsUsed: 0, refreshCount: 0,
-  brandsCount: 0, communityListed: false, outfitPosts: 0, outfitLikes: 0,
+  brandsCount: 0, communityListed: false, outfitPosts: 0, outfitLikes: 0, topOutfitLikes: 0,
 };
 
 describe("badges", () => {
@@ -25,15 +25,13 @@ describe("badges", () => {
     expect(earnedBadgeIds({ ...EMPTY, communityListed: true })).toContain("public-figure");
   });
 
-  it("never earns locked (staged) badges regardless of stats", () => {
-    const maxed: BadgeStats = {
-      closetCount: 999, outcomeCount: 999, collectionsUsed: 99, refreshCount: 999,
-      brandsCount: 99, communityListed: true, outfitPosts: 999, outfitLikes: 9999,
-    };
-    const ids = earnedBadgeIds(maxed);
-    expect(ids).not.toContain("stylist");
-    expect(ids).not.toContain("acclaimed");
-    expect(ids).not.toContain("head-designer");
+  it("earns the outfit-driven top-tier badges from real stats", () => {
+    expect(earnedBadgeIds({ ...EMPTY, outfitPosts: 3 })).toContain("stylist");
+    expect(earnedBadgeIds({ ...EMPTY, outfitPosts: 2 })).not.toContain("stylist");
+    expect(earnedBadgeIds({ ...EMPTY, topOutfitLikes: 100 })).toContain("acclaimed");
+    expect(earnedBadgeIds({ ...EMPTY, topOutfitLikes: 99 })).not.toContain("acclaimed");
+    expect(earnedBadgeIds({ ...EMPTY, outfitLikes: 500 })).toContain("head-designer");
+    expect(earnedBadgeIds({ ...EMPTY, outfitLikes: 499 })).not.toContain("head-designer");
   });
 
   it("sorts earned highest-metal-first", () => {
@@ -42,12 +40,12 @@ describe("badges", () => {
     expect(ids.indexOf("archivist")).toBeLessThan(ids.indexOf("starter"));
   });
 
-  it("shows progress text for unearned, coming-soon for locked", () => {
+  it("shows progress text for unearned badges", () => {
     const evald = evaluateBadges({ ...EMPTY, closetCount: 2 });
     const starter = evald.find((b) => b.id === "starter")!;
     expect(starter.progressText).toBe("2/5 items");
     const stylist = evald.find((b) => b.id === "stylist")!;
-    expect(stylist.progressText).toMatch(/Unlocks/);
+    expect(stylist.progressText).toMatch(/outfits posted/);
   });
 
   it("parsePinned caps at 3 and trims", () => {

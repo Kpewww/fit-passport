@@ -14,6 +14,8 @@ import { earnedBadgeIds } from "@/lib/badges";
 const Body = z.object({
   pinnedBadges: z.array(z.string()).max(3).optional(),
   listedInCommunity: z.boolean().optional(),
+  showBodyType: z.boolean().optional(),
+  bodyType: z.string().max(20).nullable().optional(),
 });
 
 export async function POST(req: Request) {
@@ -26,10 +28,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  const data: { pinnedBadges?: string; listedInCommunity?: boolean } = {};
+  const data: {
+    pinnedBadges?: string;
+    listedInCommunity?: boolean;
+    showBodyType?: boolean;
+    bodyType?: string | null;
+  } = {};
 
   if (parsed.data.listedInCommunity !== undefined) {
     data.listedInCommunity = parsed.data.listedInCommunity;
+  }
+  if (parsed.data.showBodyType !== undefined) {
+    data.showBodyType = parsed.data.showBodyType;
+  }
+  if (parsed.data.bodyType !== undefined) {
+    data.bodyType = parsed.data.bodyType || null;
   }
 
   if (parsed.data.pinnedBadges !== undefined) {

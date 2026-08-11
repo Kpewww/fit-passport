@@ -25,10 +25,10 @@ export type BadgeStats = {
   refreshCount: number; // # of comfort checks recorded
   brandsCount: number; // distinct brands in closet
   communityListed: boolean;
-  // Staged (not yet real): outfit posts + likes. Present so rules can read them
-  // once the feature exists; currently always 0.
-  outfitPosts: number;
-  outfitLikes: number;
+  // Outfit posting + likes (real as of the outfits feature).
+  outfitPosts: number; // # of outfits the user has posted
+  outfitLikes: number; // total likes across all their outfits
+  topOutfitLikes: number; // likes on their single most-liked outfit
 };
 
 export type BadgeDef = {
@@ -123,33 +123,33 @@ export const BADGES: BadgeDef[] = [
     progress: (s) => (s.communityListed ? null : "List your closet in Community"),
   },
 
-  // ---- Staged / aspirational (locked until outfits + likes exist) ----
+  // ---- Outfit posting + acclaim (real) ----
   {
     id: "stylist",
     title: "Stylist",
     metal: "obsidian",
     glyph: "🖤",
-    blurb: "Post 3 complete outfits to the community.",
-    locked: true,
-    comingSoon: "Unlocks when outfit posting ships.",
+    blurb: "Posted 3 complete outfits to the community.",
+    earned: (s) => s.outfitPosts >= 3,
+    progress: (s) => (s.outfitPosts >= 3 ? null : `${s.outfitPosts}/3 outfits posted`),
   },
   {
     id: "acclaimed",
     title: "Acclaimed",
     metal: "diamond",
     glyph: "💎",
-    blurb: "An outfit that the community loves — 100+ likes.",
-    locked: true,
-    comingSoon: "Unlocks with outfit likes.",
+    blurb: "An outfit the community loves — 100+ likes on a single look.",
+    earned: (s) => s.topOutfitLikes >= 100,
+    progress: (s) => (s.topOutfitLikes >= 100 ? null : `${s.topOutfitLikes}/100 likes on your best look`),
   },
   {
     id: "head-designer",
     title: "Head Designer",
     metal: "jade",
     glyph: "🟢",
-    blurb: "A top-ranked tastemaker — the community's most-followed looks.",
-    locked: true,
-    comingSoon: "Unlocks with the outfit leaderboard.",
+    blurb: "A true tastemaker — 500+ total likes across your looks.",
+    earned: (s) => s.outfitLikes >= 500,
+    progress: (s) => (s.outfitLikes >= 500 ? null : `${s.outfitLikes}/500 total likes`),
   },
 ];
 

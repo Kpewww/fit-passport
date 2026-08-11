@@ -76,6 +76,7 @@ export default function PassportPage() {
   const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg"); // display unit for weight
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [pinnedBadges, setPinnedBadges] = useState<string[]>([]);
+  const [showBodyType, setShowBodyType] = useState(true);
 
   useEffect(() => {
     Promise.all([
@@ -86,6 +87,7 @@ export default function PassportPage() {
       const prof = { ...EMPTY, ...(p.profile ?? {}) };
       setProfile(prof);
       setMe({ claimed: m.claimed, username: m.username, accountCode: m.accountCode });
+      setShowBodyType(m.showBodyType ?? true);
       setClosetCount(s.closetCount ?? 0);
       setPinnedBadges(s.pinnedBadges ?? []);
       // Default to the polished VIEW card once the passport has real content;
@@ -146,6 +148,7 @@ export default function PassportPage() {
         bodyLabel={bt.label}
         figureKey={bt.figureKey}
         shape={bt.shape}
+        showBodyType={showBodyType}
         pinnedBadges={pinnedBadges}
         onEdit={() => setMode("edit")}
       />
@@ -289,7 +292,18 @@ export default function PassportPage() {
               </div>
             </Section>
 
-            <BodyTypeSection profile={profile} />
+            <BodyTypeSection
+              profile={profile}
+              showBodyType={showBodyType}
+              onToggleShow={(v) => {
+                setShowBodyType(v);
+                fetch("/api/profile/prefs", {
+                  method: "POST",
+                  headers: { "content-type": "application/json" },
+                  body: JSON.stringify({ showBodyType: v }),
+                }).catch(() => {});
+              }}
+            />
 
             <Section title="Region" subtitle="which size labels to show first">
               <div className="flex flex-wrap gap-2">
@@ -309,11 +323,11 @@ export default function PassportPage() {
               <p className="mt-1.5 text-[11px] text-ink-faint">{REGION_HELP}</p>
             </Section>
 
-            <Section title="Notes">
+            <Section title="Memo" subtitle="a short note about your fit / style">
               <TextField
                 value={profile.notes ?? ""}
                 onCommit={(v) => update("notes", v || null)}
-                placeholder="e.g. long torso, broad shoulders, prefer soft cotton"
+                placeholder="e.g. long torso, broad shoulders, prefer soft cotton, minimalist style"
               />
             </Section>
           </div>
@@ -401,6 +415,7 @@ function ViewBook({
   bodyLabel,
   figureKey,
   shape,
+  showBodyType,
   pinnedBadges,
   onEdit,
 }: {
@@ -412,6 +427,7 @@ function ViewBook({
   bodyLabel: string;
   figureKey: Parameters<typeof BodyFigure>[0]["volume"];
   shape: Parameters<typeof BodyFigure>[0]["shape"];
+  showBodyType: boolean;
   pinnedBadges: string[];
   onEdit: () => void;
 }) {
@@ -482,9 +498,13 @@ function ViewBook({
             <BodyFigure volume={figureKey} shape={shape} size={64} />
             <div>
               <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Body type</p>
-              <p className="text-lg font-semibold text-ink">{bodyLabel}</p>
+              <p className="text-lg font-semibold text-ink">
+                {showBodyType ? bodyLabel : "Hidden"}
+              </p>
               <p className="mt-0.5 text-xs text-ink-faint">
-                Precise measurements stay private — never shared by code.
+                {showBodyType
+                  ? "Precise measurements stay private — never shared by code."
+                  : "You've hidden your body type from your public view."}
               </p>
             </div>
           </div>
@@ -842,7 +862,15 @@ function TextField({
   );
 }
 
-function BodyTypeSection({ profile }: { profile: Profile }) {
+function BodyTypeSection({
+  profile,
+  showBodyType,
+  onToggleShow,
+}: {
+  profile: Profile;
+  showBodyType: boolean;
+  onToggleShow: (v: boolean) => void;
+}) {
   const bt = deriveBodyType({
     heightCm: profile.heightCm,
     weightKg: profile.weightKg,
@@ -873,6 +901,11 @@ function BodyTypeSection({ profile }: { profile: Profile }) {
               <span className="font-semibold">Sizing note:</span> {bt.scopeNote}
             </p>
           )}
+          <label className="mt-2 flex items-center gap-1.5 text-[11px] text-ink-soft">
+            <input type="checkbox" checked={showBodyType} className="accent-brand"
+              onChange={(e) => onToggleShow(e.target.checked)} />
+            Show my body type on my passport &amp; public view
+          </label>
         </div>
       </div>
     </Section>

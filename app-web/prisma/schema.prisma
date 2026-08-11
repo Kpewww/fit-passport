@@ -49,6 +49,10 @@ model User {
   // this only records which ones they chose to show off.
   pinnedBadges String @default("")
 
+  // Whether the coarse body type is shown on the passport / public view. The
+  // body type value itself may be set but hidden — this is a separate choice.
+  showBodyType Boolean @default(true)
+
   fitProfile  FitProfile?
   petProfiles PetProfile[]
   knownGood   KnownGoodItem[]
@@ -56,6 +60,74 @@ model User {
   products    Product[]
   outcomes    FitOutcome[]
   recs        FitRecommendation[]
+  outfits     Outfit[]
+  outfitLikes OutfitLike[]
+}
+
+// ---------- Outfits (community posts) ----------
+
+/// A posted outfit — a curated look the user shares to the community. Composed
+/// of one or more garments (OutfitItem), can gather likes, and drives the top
+/// prestige badges (Stylist / Acclaimed / Head Designer).
+model Outfit {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?
+  // Season / occasion tag, free-text and optional ("Fall", "Wedding", …).
+  occasion    String?
+  // If the whole look is only buyable in-store (nothing online), flag it.
+  onlineAvailable Boolean @default(true)
+
+  createdAt DateTime @default(now())
+
+  items OutfitItem[]
+  likes OutfitLike[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+/// One garment slot within an outfit. May reference a closet item, or be a
+/// free-typed piece (with a color) so users can compose looks beyond their
+/// closet. `onlineAvailable=false` marks a piece that's in-store only.
+model OutfitItem {
+  id       String @id @default(cuid())
+  outfitId String
+  outfit   Outfit @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+
+  // Optional link back to a closet item (for real garments the user owns).
+  knownGoodId String?
+
+  brand    String?
+  category String // garment type (drives the mannequin layer)
+  color    String?
+  size     String?
+  note     String?
+  onlineAvailable Boolean @default(true)
+  sortIndex Int    @default(0)
+
+  @@index([outfitId])
+}
+
+/// A like on an outfit. Anonymous-friendly: keyed by a voter token (session id)
+/// so unclaimed visitors can like, deduped per outfit. Claimed users also store
+/// userId. Unique on (outfitId, voterKey) prevents double-likes per session.
+model OutfitLike {
+  id       String @id @default(cuid())
+  outfitId String
+  outfit   Outfit @relation(fields: [outfitId], references: [id], onDelete: Cascade)
+
+  voterKey String // session id (or userId for claimed users)
+  userId   String?
+  user     User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@unique([outfitId, voterKey])
+  @@index([outfitId])
 }
 
 // ---------- The Passport itself ----------
@@ -153,6 +225,9 @@ model KnownGoodItem {
   groupName    String? // optional label for the merged card
 
   productUrl  String? // optional link so we can back-refer to the source
+  // Some garments aren't sold online (local shops, thrift, tailor). When false,
+  // the UI shows an "in-store only" note instead of implying a link exists.
+  onlineAvailable Boolean @default(true)
   purchasedAt DateTime?
   createdAt   DateTime  @default(now())
 

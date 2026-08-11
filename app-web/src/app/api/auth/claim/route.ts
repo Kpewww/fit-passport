@@ -20,6 +20,7 @@ const Body = z.object({
   bodyType: z
     .enum(["petite", "slim", "lean", "average", "athletic", "curvy", "broad", "tall", "plus"])
     .optional(),
+  showBodyType: z.boolean().optional(),
   exportPolicy: z.enum(["owner", "anyone"]).optional(),
 });
 
@@ -32,7 +33,7 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { username, password, bodyType, exportPolicy } = parsed.data;
+  const { username, password, bodyType, showBodyType, exportPolicy } = parsed.data;
   const email = parsed.data.email ? parsed.data.email.toLowerCase() : null;
 
   const taken = await prisma.user.findUnique({ where: { username } });
@@ -67,6 +68,7 @@ export async function POST(req: Request) {
       // so any leftover from a previous flow doesn't linger.
       recoveryHash: null,
       bodyType: bodyType ?? null,
+      showBodyType: showBodyType ?? true,
       exportPolicy: exportPolicy ?? "owner",
     },
   });

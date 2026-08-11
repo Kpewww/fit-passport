@@ -6,17 +6,25 @@ import { prisma } from "./db";
 import type { BadgeStats } from "./badges";
 
 export async function computeBadgeStats(userId: string, communityListed: boolean): Promise<BadgeStats> {
-  const [items, outcomeCount, refreshCount] = await Promise.all([
+  const [items, outcomeCount, refreshCount, outfits] = await Promise.all([
     prisma.knownGoodItem.findMany({
       where: { userId },
       select: { brand: true, collectionId: true },
     }),
     prisma.fitOutcome.count({ where: { userId } }),
     prisma.comfortCheck.count({ where: { userId } }),
+    prisma.outfit.findMany({
+      where: { userId },
+      select: { _count: { select: { likes: true } } },
+    }),
   ]);
 
   const brands = new Set(items.map((i) => i.brand.toLowerCase()));
   const collections = new Set(items.map((i) => i.collectionId).filter(Boolean));
+
+  const outfitPosts = outfits.length;
+  const totalLikes = outfits.reduce((n, o) => n + o._count.likes, 0);
+  const topOutfitLikes = outfits.reduce((m, o) => Math.max(m, o._count.likes), 0);
 
   return {
     closetCount: items.length,
@@ -25,7 +33,8 @@ export async function computeBadgeStats(userId: string, communityListed: boolean
     refreshCount,
     brandsCount: brands.size,
     communityListed,
-    outfitPosts: 0, // staged feature
-    outfitLikes: 0, // staged feature
+    outfitPosts,
+    outfitLikes: totalLikes,
+    topOutfitLikes,
   };
 }

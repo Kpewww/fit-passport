@@ -25,6 +25,7 @@ export async function GET(
       username: true,
       accountCode: true,
       bodyType: true,
+      showBodyType: true,
       exportPolicy: true,
       listedInCommunity: true,
       pinnedBadges: true,
@@ -71,7 +72,7 @@ export async function GET(
     username: user.username,
     accountCode: user.accountCode,
     avatarDataUrl: user.fitProfile?.avatarDataUrl ?? null,
-    bodyType: user.bodyType, // coarse only, may be null
+    bodyType: user.showBodyType ? user.bodyType : null, // coarse, and only if the user shows it
     sex: user.fitProfile?.sex ?? null,
     shopsFor: user.fitProfile?.shopsFor ?? null,
     canExport: user.exportPolicy === "anyone",

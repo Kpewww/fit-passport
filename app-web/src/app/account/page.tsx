@@ -14,8 +14,11 @@ type Me = {
   canEdit: boolean;
 };
 
+// The claim form REQUIRES an explicit pick — but "Prefer not to say" (empty
+// value) is a valid choice. Whether it's shown publicly is a separate checkbox.
+const CLAIM_PLACEHOLDER = "__pick__";
 const BODY_TYPES = [
-  { v: "", label: "Don't share" },
+  { v: "", label: "Prefer not to say" },
   { v: "petite", label: "Petite" },
   { v: "slim", label: "Slim" },
   { v: "lean", label: "Lean" },
@@ -33,7 +36,8 @@ export default function AccountPage() {
     username: "",
     password: "",
     email: "",
-    bodyType: "",
+    bodyType: CLAIM_PLACEHOLDER, // must be changed to a real choice (incl. "prefer not to say")
+    showBodyType: true,
     exportPolicy: "owner" as "owner" | "anyone",
   });
   const [err, setErr] = useState<string | null>(null);
@@ -59,7 +63,9 @@ export default function AccountPage() {
           username: form.username,
           password: form.password,
           email: form.email || undefined,
-          bodyType: form.bodyType || undefined,
+          // "prefer not to say" = empty string → send undefined (no body type)
+          bodyType: form.bodyType && form.bodyType !== CLAIM_PLACEHOLDER ? form.bodyType : undefined,
+          showBodyType: form.showBodyType,
           exportPolicy: form.exportPolicy,
         }),
       });
@@ -219,11 +225,17 @@ export default function AccountPage() {
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 placeholder="you@example.com — so you can reset your password" />
             </Field>
-            <Field label="Body type to share" hint="coarse only — precise measurements never shared">
+            <Field label="Body type" hint="coarse only — precise measurements never shared">
               <select className={inputClass} value={form.bodyType}
                 onChange={(e) => setForm({ ...form, bodyType: e.target.value })}>
+                <option value={CLAIM_PLACEHOLDER} disabled>Choose one…</option>
                 {BODY_TYPES.map((b) => <option key={b.v} value={b.v}>{b.label}</option>)}
               </select>
+              <label className="mt-2 flex items-center gap-1.5 text-xs text-ink-soft">
+                <input type="checkbox" checked={form.showBodyType} className="accent-brand"
+                  onChange={(e) => setForm({ ...form, showBodyType: e.target.checked })} />
+                Show my body type on my public view (you can change this later)
+              </label>
             </Field>
             <Field label="Who can export your closet by code?">
               <select className={inputClass} value={form.exportPolicy}
@@ -235,9 +247,12 @@ export default function AccountPage() {
 
             {err && <p className="text-sm text-red-700">{err}</p>}
 
-            <Button type="submit" size="lg" disabled={saving || !form.username || form.password.length < 6}>
+            <Button type="submit" size="lg" disabled={saving || !form.username || form.password.length < 6 || form.bodyType === CLAIM_PLACEHOLDER}>
               {saving ? "Creating…" : "Claim my account code"}
             </Button>
+            {form.bodyType === CLAIM_PLACEHOLDER && (
+              <p className="text-xs text-ink-faint">Pick a body type (or &quot;Prefer not to say&quot;) to continue.</p>
+            )}
           </form>
         </Card>
 

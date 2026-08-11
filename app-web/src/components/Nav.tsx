@@ -5,11 +5,12 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const LINKS = [
-  { href: "/check", label: "Check a product" },
+  { href: "/check", label: "Check" },
   { href: "/closet", label: "Closet" },
   { href: "/passport", label: "Passport" },
-  { href: "/history", label: "History" },
+  { href: "/outfits", label: "Outfits" },
   { href: "/community", label: "Community" },
+  { href: "/help", label: "Help" },
 ];
 
 type Me = { claimed: boolean; username: string | null };

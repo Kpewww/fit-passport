@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Field, inputClass } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
+import { OutfitCard } from "@/components/OutfitCard";
 
 type Entry = {
   username: string;
@@ -20,15 +21,24 @@ type Entry = {
 
 type Me = { claimed: boolean; listedInCommunity: boolean };
 
+type OutfitFeed = {
+  id: string; title: string; description: string | null; occasion: string | null;
+  onlineAvailable: boolean; likeCount: number; likedByMe: boolean; mine: boolean;
+  author: { username: string | null; accountCode: string | null; avatarDataUrl: string | null };
+  items: Array<{ id: string; brand: string | null; category: string; color: string | null; size: string | null; note: string | null; onlineAvailable: boolean }>;
+};
+
 export default function CommunityPage() {
   const router = useRouter();
   const [code, setCode] = useState("");
   const [entries, setEntries] = useState<Entry[] | null>(null);
   const [me, setMe] = useState<Me | null>(null);
   const [posting, setPosting] = useState(false);
+  const [feed, setFeed] = useState<OutfitFeed[] | null>(null);
 
   function load() {
     fetch("/api/community").then((r) => r.json()).then((d) => setEntries(d.entries ?? []));
+    fetch("/api/outfits").then((r) => r.json()).then((d) => setFeed(d.outfits ?? []));
     fetch("/api/status").then((r) => r.json())
       .then((s) => setMe({ claimed: !!s.claimed, listedInCommunity: !!s.listedInCommunity }))
       .catch(() => setMe(null));
@@ -87,8 +97,27 @@ export default function CommunityPage() {
           )}
         </Card>
 
+        {/* Outfit feed */}
+        <div className="mt-8 flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-soft">Latest looks</h2>
+          <Link href="/outfits" className="text-xs font-medium text-brand hover:underline">Post an outfit →</Link>
+        </div>
+        {feed === null ? (
+          <p className="mt-3 text-sm text-ink-faint">Loading…</p>
+        ) : feed.length === 0 ? (
+          <Card className="mt-3 bg-neutral-50 text-center">
+            <p className="text-sm text-ink-soft">No outfits yet. <Link href="/outfits" className="text-brand hover:underline">Post the first look →</Link></p>
+          </Card>
+        ) : (
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            {feed.map((o) => (
+              <OutfitCard key={o.id} outfit={o} figure={{ volume: "average", shape: "straight" }} onChange={load} />
+            ))}
+          </div>
+        )}
+
         {/* Code lookup */}
-        <Card className="mt-4">
+        <Card className="mt-8">
           <form onSubmit={go} className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="flex-1">
               <Field label="Have a code? View a specific closet">

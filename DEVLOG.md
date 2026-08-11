@@ -28,6 +28,64 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 16 — Outfits + likes (top badges made real), stylized try-on preview, passport/privacy polish
+
+**Context:** founder greenlit the outfit-posting + likes line to make the
+obsidian/diamond/jade badges real, asked for an "in-store only" flag, a virtual
+try-on preview, and a batch of passport/privacy refinements + a help page.
+
+**Built:**
+
+*Outfits + likes (the top-badge engine):*
+- Schema: `Outfit`, `OutfitItem`, `OutfitLike` (+ `KnownGoodItem.onlineAvailable`,
+  `User.showBodyType`). Likes are anonymous-friendly — keyed by session id
+  (`voterKey`), unique on (outfitId, voterKey) so one like per session; claimed
+  users also store userId.
+- APIs: `/api/outfits` (GET mine/feed, POST create, DELETE), `/api/outfits/like`
+  (toggle, deduped).
+- `/outfits` page: compose a look (garment types + colors), **live mannequin
+  preview**, post; see your outfits with like counts. `/community` gained a
+  "Latest looks" feed (most-liked first) with like buttons.
+- **Top badges are now REAL** (were locked): Stylist = 3 posts, Acclaimed = 100
+  likes on one look, Head Designer = 500 total likes. `badgeStats` feeds real
+  outfitPosts / topOutfitLikes / outfitLikes. Verified live: 3 posts → Stylist.
+
+*Stylized try-on preview (honest about scope):*
+- `components/OutfitMannequin.tsx` — a deterministic layered SVG that morphs by
+  body type and paints each garment layer in the outfit's colors (top→torso,
+  bottom→legs, shoe→feet, hat→head, scarf→neck), with neutral defaults so a
+  single-item look still renders. **Photoreal generation is NOT possible with
+  our LLM** (Claude can't render images); `generatePhotoPreview()` is a
+  documented scaffold that throws until an external image-gen/VTO API is wired.
+  Told the founder this plainly.
+
+*In-store-only flag:*
+- Outfit + per-piece `onlineAvailable`; posts show a 🏬 "In-store only" tag (or
+  "some pieces in-store only"). Closet API accepts the flag too.
+
+*Passport / privacy polish:*
+- Body type is now **hideable** — a `showBodyType` checkbox; `/api/view` and
+  `/api/community` null out the body type when hidden. Re-verified no cm leak.
+- "Notes" → **"Memo"**.
+- Claim now **requires an explicit body-type choice** ("Prefer not to say" is a
+  valid pick; empty placeholder blocks submit), with a separate show-publicly
+  checkbox. Coarse types already expanded (petite…plus) in Session 15.
+
+*Help page:*
+- `/help` — how the app works + a badge table generated from the `BADGES` source
+  of truth (never drifts), with plain-language earn conditions.
+
+*Nav:* added Outfits + Help; condensed labels.
+
+**Verify:** `tsc` clean · 54/54 tests · `next build` clean · live smoke: claim →
+3 outfits earns Stylist; like dedups (double-like stays 1); in-store flag shows;
+showBodyType=off hides body type in public view; no cm leak; all pages 200.
+
+**Still staged (needs real scale, not faked):** photoreal try-on (needs an
+image-gen/VTO API + key); Acclaimed/Head Designer require real like volume.
+
+---
+
 ## 2026-08-11 · Session 15 — Prestige layer: badges, avatars, passport view-mode, community directory
 
 **Context:** founder wants the passport to become a show-off object — an official
