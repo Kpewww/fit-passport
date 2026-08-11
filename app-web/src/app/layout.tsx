@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
+import { ClaimNudge } from "@/components/ClaimNudge";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-full flex flex-col bg-neutral-50 text-neutral-900`}>
         <Nav />
         {children}
+        <ClaimNudge />
       </body>
     </html>
   );

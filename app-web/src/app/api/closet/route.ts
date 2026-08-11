@@ -7,6 +7,7 @@ import { collectionForGarment } from "@/lib/collections";
 const ItemSchema = z.object({
   brand: z.string().min(1).max(80),
   category: z.string().min(1).max(40),
+  gender: z.enum(["mens", "womens", "unisex"]).optional().nullable(),
   size: z.string().min(1).max(20),
   region: z.string().max(10).optional().nullable(),
   fitRating: z.coerce.number().int().min(1).max(5).default(4),
@@ -62,6 +63,7 @@ const UpdateSchema = z.object({
   id: z.string().min(1),
   brand: z.string().min(1).max(80).optional(),
   category: z.string().min(1).max(40).optional(),
+  gender: z.enum(["mens", "womens", "unisex"]).optional().nullable(),
   size: z.string().min(1).max(20).optional(),
   region: z.string().max(10).optional().nullable(),
   fitRating: z.coerce.number().int().min(1).max(5).optional(),

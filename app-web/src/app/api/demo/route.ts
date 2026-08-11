@@ -9,11 +9,11 @@ import { getCurrentUser } from "@/lib/session";
 import { DEFAULT_COLLECTIONS } from "@/lib/collections";
 
 const DEMO_ITEMS = [
-  { brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5, color: "navy", notes: "perfect through chest" },
-  { brand: "COS", category: "shirt", size: "EU 48", fitRating: 4, color: "white", notes: "sleeves slightly long" },
-  { brand: "Levi's", category: "jacket", size: "M", fitRating: 4, color: "denim", notes: "boxy vintage cut" },
-  { brand: "Uniqlo", category: "sweater", size: "L", fitRating: 5, color: "olive", notes: "" },
-  { brand: "Everlane", category: "tshirt", size: "M", fitRating: 4, color: "black", notes: "" },
+  { brand: "Uniqlo", category: "tshirt", gender: "mens", size: "M", fitRating: 5, color: "navy", notes: "perfect through chest" },
+  { brand: "COS", category: "shirt", gender: "mens", size: "EU 48", fitRating: 4, color: "white", notes: "sleeves slightly long" },
+  { brand: "Levi's", category: "jacket", gender: "unisex", size: "M", fitRating: 4, color: "denim", notes: "boxy vintage cut" },
+  { brand: "Uniqlo", category: "sweater", gender: "mens", size: "L", fitRating: 5, color: "olive", notes: "" },
+  { brand: "Everlane", category: "tshirt", gender: "womens", size: "M", fitRating: 4, color: "black", notes: "" },
 ];
 
 export async function POST() {
@@ -52,6 +52,7 @@ export async function POST() {
         userId: user.id,
         brand: it.brand,
         category: it.category,
+        gender: it.gender,
         size: it.size,
         fitRating: it.fitRating,
         color: it.color,

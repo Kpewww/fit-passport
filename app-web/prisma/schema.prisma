@@ -118,6 +118,7 @@ model KnownGoodItem {
 
   brand         String // e.g. "Uniqlo"
   category      String // GARMENT TYPE for the engine: "shirt"|"tshirt"|"jacket"|...
+  gender        String? // which line the garment is from: "mens"|"womens"|"unisex". Optional.
   size          String // as-labeled: "M", "L", "EU 48", "US 32"
   region        String? // if the label uses a specific region
   fitRating     Int     @default(4) // 1-5 how well it fits

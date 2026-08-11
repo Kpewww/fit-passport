@@ -36,7 +36,7 @@ export async function GET() {
       key: "profile",
       label: "Set your fit preference",
       done: !!profile,
-      href: "/onboarding",
+      href: "/passport",
     },
     {
       key: "closet",

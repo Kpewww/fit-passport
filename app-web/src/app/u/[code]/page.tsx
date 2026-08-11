@@ -8,6 +8,7 @@ type ClosetItem = {
   id: string;
   brand: string;
   category: string;
+  gender: string | null;
   size: string;
   region: string | null;
   fitRating: number;
@@ -122,6 +123,7 @@ export default function ViewByCodePage({
                         <div className="flex items-center gap-2 font-medium text-ink">
                           <ColorDot color={it.color} />
                           {it.brand} · <span className="text-ink-soft">{it.category}</span> · size {it.size}
+                          {it.gender && <GenderTag gender={it.gender} />}
                           {it.color && <span className="text-xs text-ink-faint">· {it.color}</span>}
                         </div>
                         <span className="inline-flex gap-0.5 text-xs">
@@ -180,6 +182,17 @@ const COLOR_PRESETS: Record<string, string> = {
   sage: "#9caf88", teal: "#2f8f83", burgundy: "#6d2036", red: "#b03a3a",
   rust: "#b5622f", mustard: "#d0a028", pink: "#dba0b0", purple: "#7c5aa8",
 };
+
+function GenderTag({ gender }: { gender: string }) {
+  const m: Record<string, { label: string; cls: string }> = {
+    mens: { label: "M", cls: "bg-blue-100 text-blue-700" },
+    womens: { label: "W", cls: "bg-pink-100 text-pink-700" },
+    unisex: { label: "U", cls: "bg-neutral-100 text-neutral-600" },
+  };
+  const g = m[gender];
+  if (!g) return null;
+  return <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${g.cls}`} title={gender}>{g.label}</span>;
+}
 
 function ColorDot({ color }: { color: string | null }) {
   if (!color) return null;

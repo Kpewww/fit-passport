@@ -43,17 +43,41 @@ export function clearSession() {
 }
 
 /**
- * Get the current user, creating a fresh anonymous account on first visit.
- * Always returns a user; the caller can check `claimed`.
+ * Get the current user for this session.
+ *
+ * The middleware mints the session cookie (with a fresh userId) on the first
+ * page load, BEFORE any /api call — so by the time we get here a cookie almost
+ * always exists. We upsert by that id, which is idempotent: concurrent requests
+ * carrying the same cookie converge on one row instead of racing to create
+ * several (the old bug). We only fall back to creating a brand-new session if
+ * there's genuinely no valid cookie (e.g. an API hit with cookies disabled).
  */
 export async function getCurrentUser() {
   const session = readSession();
+
   if (session) {
-    const existing = await prisma.user.findUnique({ where: { id: session.userId } });
-    if (existing) return existing;
-    // Session pointed at a deleted user — fall through and create a new one.
+    // Idempotent: create the row for this session id if it doesn't exist yet,
+    // otherwise return the existing one. If two concurrent requests both try to
+    // create the same id, one wins and the other hits a unique-constraint error
+    // (P2002) — we just re-read in that case.
+    try {
+      return await prisma.user.upsert({
+        where: { id: session.userId },
+        update: {},
+        create: {
+          id: session.userId,
+          claimed: false,
+          fitProfile: { create: { preferredFit: "regular", region: "US" } },
+        },
+      });
+    } catch {
+      const existing = await prisma.user.findUnique({ where: { id: session.userId } });
+      if (existing) return existing;
+      // fall through to a fresh session below
+    }
   }
 
+  // No valid cookie at all — create one now (rare: direct API call w/o cookie).
   const user = await prisma.user.create({
     data: {
       claimed: false,

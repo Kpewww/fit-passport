@@ -28,6 +28,68 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 09 — FIX passport persistence, fancy passport UI, garment gender, claim nudge
+
+**Goal:** user report — "passport didn't save; no prompt to claim; even after
+claiming, data wasn't retained; want fancy real-passport-looking editable UI;
+add optional garment gender line (M/W/Unisex)."
+
+### [BUG-01] Passport data disappearing — ROOT CAUSE + FIX
+- **Diagnosis:** confirmed via reproducer — on first visit, the browser fires
+  several concurrent no-cookie requests (`/api/auth/me`, `/api/status`,
+  page HTML). Each API request hit `getCurrentUser()`, which created a NEW
+  anonymous user and set its own Set-Cookie header. Browser kept only the
+  last cookie → the profile/closet the user had just POSTed lived on a
+  now-unreferenced userId. The DB test showed **3 User rows created in a
+  single first visit.**
+- **Fix:** added **`src/middleware.ts`** (Edge runtime) that mints the session
+  cookie on any page navigation BEFORE any /api call fires. Middleware runs
+  once per request, atomically, so all client-side /api calls carry the same
+  cookie. `getCurrentUser()` reworked to **upsert by cookie's userId**
+  (idempotent — concurrent same-cookie requests converge, they don't race);
+  caught P2002 unique-constraint edge case with a re-read fallback.
+- Added a parallel Edge-safe signing lib **`src/lib/authEdge.ts`** using Web
+  Crypto (`crypto.subtle.sign`) so middleware can verify + issue the same
+  HMAC-signed cookies as Node's `auth.ts` (byte-compatible).
+- Verified live: 3-way concurrent first-visit → **1 User row**, profile
+  survives, closet survives, and claiming preserves everything.
+
+### Fancy passport UI at /passport
+- New `src/app/passport/page.tsx`, replacing plain `/onboarding` as the primary
+  entry (old route still works for bookmarks; Nav + all internal links now
+  point to `/passport`). Design:
+  - Gradient cover strip with subtle diagonal shine ("FIT PASSPORT · Sizing
+    Identity")
+  - Passport-photo-styled avatar (initials in a framed portrait box)
+  - Mono-font "identity block" (Holder / Passport no. / Region / Preferred fit)
+  - Sections: Sizing reference (sex chips + shopsFor multi-chips), Preferred
+    fit (4 chips), Measurements (8 optional cm/kg fields), Region, Notes
+  - Inline autosave on every change (blur/Enter for numeric+text; instant for
+    chips) with a "Saved ✓ / Saving…" status line
+  - Decorative MRZ-style footer that reflects the actual values you entered
+- Style stayed restrained per the "simple + high-end, not gimmicky" directive.
+
+### Garment gender line
+- `KnownGoodItem.gender` = `"mens" | "womens" | "unisex" | null` (optional).
+  Directly supports the cross-department shopping story (a woman buying
+  men's tees is a real use case).
+- Closet add/edit form: new "Line" chip select (—/Men's/Women's/Unisex).
+- Item cards + public `/u/[code]` show a small **M/W/U** color badge.
+- Demo seeder + view API + engine input all pass gender through.
+
+### Guided flow — ClaimNudge floating card
+- `src/components/ClaimNudge.tsx` mounted in root layout. Appears ONLY when:
+  the user is unclaimed AND has actually entered data (`hasBody` or
+  `closetCount ≥ 1`). Hidden on `/account`, `/login`, `/recover`. Dismissible
+  per tab. Copy: "Save your passport — set a username + password so this
+  doesn't disappear when you close the browser."
+
+### Verified
+- `tsc` clean · `vitest` 15/15 · `next build` clean (30 routes) · live
+  concurrent-first-visit → single user, saved data survives claim.
+
+---
+
 ## 2026-08-11 · Session 08 — biological sex, username login, email-only recovery
 
 **Goal:** three founder requests: (1) add biological sex to the profile — as a

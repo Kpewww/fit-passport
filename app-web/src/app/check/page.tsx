@@ -208,7 +208,7 @@ function AccuracyNudge({ status }: { status: Status }) {
             <Link href="/closet" className="font-medium underline">Add 3 clothes you own →</Link></>
         ) : !status.hasBody ? (
           <>Add your chest measurement to unlock measurement-based sizing.{" "}
-            <Link href="/onboarding" className="font-medium underline">Update passport →</Link></>
+            <Link href="/passport" className="font-medium underline">Update passport →</Link></>
         ) : (
           <>Add a couple more known-good items to reach high accuracy.{" "}
             <Link href="/closet" className="font-medium underline">Add to closet →</Link></>

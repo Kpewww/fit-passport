@@ -35,6 +35,7 @@ export async function GET(
           id: true,
           brand: true,
           category: true,
+          gender: true,
           size: true,
           region: true,
           fitRating: true,

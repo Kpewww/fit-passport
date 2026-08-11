@@ -8,6 +8,7 @@ type Item = {
   id: string;
   brand: string;
   category: string;
+  gender: string | null;
   size: string;
   region: string | null;
   fitRating: number;
@@ -57,7 +58,14 @@ function colorHex(name: string | null): string | null {
   return COLOR_PRESETS.find((c) => c.name === name.toLowerCase())?.hex ?? null;
 }
 
-const BLANK = { brand: "", category: "tshirt", size: "", fitRating: 5, areaNotes: "", color: "" };
+const GENDERS = [
+  { v: "", label: "—" },
+  { v: "mens", label: "Men's" },
+  { v: "womens", label: "Women's" },
+  { v: "unisex", label: "Unisex" },
+];
+
+const BLANK = { brand: "", category: "tshirt", gender: "", size: "", fitRating: 5, areaNotes: "", color: "" };
 
 export default function ClosetPage() {
   const [items, setItems] = useState<Item[]>([]);
@@ -88,7 +96,7 @@ export default function ClosetPage() {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        brand: form.brand, category: form.category, size: form.size,
+        brand: form.brand, category: form.category, gender: form.gender || null, size: form.size,
         fitRating: form.fitRating, color: form.color || null,
         areaNotesJson: form.areaNotes ? JSON.stringify({ notes: form.areaNotes }) : null,
       }),
@@ -201,11 +209,19 @@ export default function ClosetPage() {
                 <BrandInput value={form.brand} onChange={(v) => setForm({ ...form, brand: v })} />
               </Field>
             </div>
-            <div className="sm:col-span-2">
-              <Field label="Type" hint="used by the engine">
+            <div className="sm:col-span-1">
+              <Field label="Type" hint="engine">
                 <select className={inputClass} value={form.category}
                   onChange={(e) => setForm({ ...form, category: e.target.value })}>
                   {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </Field>
+            </div>
+            <div className="sm:col-span-1">
+              <Field label="Line" hint="optional">
+                <select className={inputClass} value={form.gender}
+                  onChange={(e) => setForm({ ...form, gender: e.target.value })}>
+                  {GENDERS.map((g) => <option key={g.v} value={g.v}>{g.label}</option>)}
                 </select>
               </Field>
             </div>
@@ -606,6 +622,7 @@ function ItemCard({
             <span className="truncate">
               {it.brand} · <span className="text-ink-soft">{it.category}</span> · size {it.size}
             </span>
+            {it.gender && <GenderBadge gender={it.gender} />}
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-ink-faint">
             <span className="text-amber-500">{"★".repeat(it.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - it.fitRating)}</span></span>
@@ -664,7 +681,7 @@ function EditRow({
   onSaved: () => void;
 }) {
   const [f, setF] = useState({
-    brand: item.brand, category: item.category, size: item.size,
+    brand: item.brand, category: item.category, gender: item.gender ?? "", size: item.size,
     fitRating: item.fitRating, color: item.color ?? "",
     collectionId: item.collectionId ?? "",
     areaNotes: safeNotes(item.areaNotesJson) ?? "",
@@ -678,7 +695,7 @@ function EditRow({
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        id: item.id, brand: f.brand, category: f.category, size: f.size,
+        id: item.id, brand: f.brand, category: f.category, gender: f.gender || null, size: f.size,
         fitRating: f.fitRating, color: f.color || null,
         collectionId: f.collectionId || null,
         areaNotesJson: f.areaNotes ? JSON.stringify({ notes: f.areaNotes }) : null,
@@ -694,10 +711,17 @@ function EditRow({
         <div className="sm:col-span-2">
           <Field label="Brand"><BrandInput value={f.brand} onChange={(v) => setF({ ...f, brand: v })} /></Field>
         </div>
-        <div className="sm:col-span-2">
+        <div className="sm:col-span-1">
           <Field label="Type">
             <select className={inputClass} value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })}>
               {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </Field>
+        </div>
+        <div className="sm:col-span-1">
+          <Field label="Line">
+            <select className={inputClass} value={f.gender} onChange={(e) => setF({ ...f, gender: e.target.value })}>
+              {GENDERS.map((g) => <option key={g.v} value={g.v}>{g.label}</option>)}
             </select>
           </Field>
         </div>
@@ -777,6 +801,21 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
         </label>
       </div>
     </div>
+  );
+}
+
+function GenderBadge({ gender }: { gender: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    mens: { label: "M", cls: "bg-blue-100 text-blue-700" },
+    womens: { label: "W", cls: "bg-pink-100 text-pink-700" },
+    unisex: { label: "U", cls: "bg-neutral-100 text-neutral-600" },
+  };
+  const m = map[gender];
+  if (!m) return null;
+  return (
+    <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${m.cls}`} title={gender}>
+      {m.label}
+    </span>
   );
 }
 

@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 const LINKS = [
   { href: "/check", label: "Check a product" },
   { href: "/closet", label: "Closet" },
-  { href: "/onboarding", label: "Passport" },
+  { href: "/passport", label: "Passport" },
   { href: "/history", label: "History" },
   { href: "/community", label: "Community" },
 ];

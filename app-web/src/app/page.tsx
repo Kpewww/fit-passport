@@ -142,7 +142,7 @@ function NewUserGuide() {
         ))}
       </div>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-        <LinkButton href="/onboarding" variant="secondary">
+        <LinkButton href="/passport" variant="secondary">
           Set up my passport first
         </LinkButton>
         <LinkButton href="/check">Or just check a product →</LinkButton>
