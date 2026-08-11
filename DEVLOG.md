@@ -28,6 +28,59 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 11 — Size regularization + Refresh picker & smoother cards
+
+**Context:** founder gave a broad roadmap (brand-bias learning, multi-dimensional
+body types with an image + out-of-scope path, more garment domains incl. a
+separate pets session, cross-domain rec disclaimers, LLM-as-judge exploration,
+deployment). We discussed all of it (recorded in memory `project-fit-passport-roadmap`)
+and picked the two concrete "fix now" items to implement this session.
+
+**Built:**
+
+1. **Sizes are now regularized per garment type.** Bug: the closet size field was
+   a raw `<input>`, so `<` (or any junk) saved and displayed. New
+   `src/lib/sizeSystems.ts` = single source of truth: garment category → size
+   *domain* (top / bottom / shoe / sock / accessory) → valid shapes (regex),
+   preset chips, and a human hint. New `SizeInput` component (one-tap preset
+   chips + validated free text with inline error) replaces the raw input in both
+   the closet add form and the edit row. Server-side, `/api/closet` POST & PATCH
+   gained a Zod `.refine()` that rejects sizes not matching the category's
+   domain. Verified live: `tshirt` `<` → HTTP 400; `tshirt` `M` → 200; `shoes`
+   `M` → 400 (shoes aren't alpha-sized). 6 new tests, 21 total green.
+   - **Design choice:** `sizeSystems.ts` is deliberately forward-compatible —
+     pants/jeans/shorts/skirt/shoes/sneakers/boots/socks/hat/belt/scarf already
+     have domains + patterns, so adding those garment types later (roadmap item
+     #3) is just extending the closet CATEGORIES list + per-type input widgets,
+     not reworking validation.
+
+2. **Fit Refresh got a "pick what to refresh" step + smoother cards.** The
+   `/refresh` page now has two phases: **pick** (choose one/several
+   collections or Everything, pre-seeded from the `?collections=` link but always
+   adjustable) → **cards**. Card motion is now velocity-aware: a quick flick
+   commits even if the drag is short; release animates on a spring curve
+   (`cubic-bezier(.22,1,.36,1)`); the next card rises + scales up to meet you as
+   you drag; swipe-hint chips fade/scale with drag progress.
+
+**Verify:** `tsc` clean · 21/21 tests · `next build` clean · live size-API smoke
+passed. Committed 6e1f450, pushed to origin/main.
+
+**Founder Q&A this session (for the reflection essay):** walked through the
+current scoring logic (transparent 5-signal engine, adaptive anchor weights),
+whether to move to "LLM as judge" (advised: no for the size decision — keep the
+explainable engine as the course differentiator + governance answer; yes for
+extraction, explanation polish, and an optional confidence-only judge layer),
+LLM cost (~$14 Haiku / ~$54 Sonnet per ~2000 checks, plus caching), and
+deployment (SQLite is the blocker → Postgres on Vercel with pooled connections,
+or Railway/Render with a persistent disk; ~$0–20/mo + a few $ LLM for beta).
+
+**Next up:** LLM extraction (real size charts + product images, deterministic
+fallback) is the highest-leverage next step; aesthetic polish pass; then the
+larger roadmap items (brand-bias learning with pollution guards, body-type
+dimensions, new garment domains).
+
+---
+
 ## 2026-08-11 · Session 10 — Fit Refresh (card-stack comfort re-rating)
 
 **Goal:** a delightful way to update how clothes feel as the body changes — a
