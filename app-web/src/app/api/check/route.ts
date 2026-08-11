@@ -9,7 +9,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { extractFromUrl } from "@/lib/extractor";
+import { extractSmart } from "@/lib/extractorLLM";
 import { computeRecommendation } from "@/lib/recommendService";
 
 const Body = z.object({ url: z.string().url() });
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   }
   const { url } = parsed.data;
 
-  const extracted = extractFromUrl(url);
+  const extracted = await extractSmart(url);
 
   // Persist product + sizes.
   const product = await prisma.product.create({

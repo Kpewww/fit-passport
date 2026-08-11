@@ -18,6 +18,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, EmptyState, LinkButton } from "@/components/ui";
+import { garmentGlyph, garmentLabel } from "@/lib/garments";
 
 type Item = {
   id: string;
@@ -342,7 +343,7 @@ function RefreshInner() {
                   <div className="min-w-0">
                     <h2 className="truncate text-xl font-semibold text-ink">{current!.brand}</h2>
                     <p className="text-sm text-ink-soft">
-                      {current!.category} · size {current!.size}
+                      {garmentLabel(current!.category)} · size {current!.size}
                       {current!.color ? ` · ${current!.color}` : ""}
                     </p>
                   </div>
@@ -390,7 +391,7 @@ function RefreshInner() {
 // image / web lookup can slot in here later without changing the card layout.
 function GarmentThumb({ item }: { item: Item }) {
   const hex = colorHex(item.color);
-  const glyph = GARMENT_GLYPH[item.category] ?? "👕";
+  const glyph = garmentGlyph(item.category);
   return (
     <div
       className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl border border-neutral-200 text-2xl"
@@ -401,11 +402,6 @@ function GarmentThumb({ item }: { item: Item }) {
     </div>
   );
 }
-
-const GARMENT_GLYPH: Record<string, string> = {
-  tshirt: "👕", shirt: "👔", polo: "👕", sweater: "🧶",
-  hoodie: "🧥", jacket: "🧥", other: "👚",
-};
 
 const COLOR_PRESETS: Record<string, string> = {
   black: "#1a1a1a", white: "#f5f5f5", grey: "#9ca3af", charcoal: "#374151",

@@ -5,7 +5,9 @@ import Link from "next/link";
 import { Button, Card, EmptyState, Field, LinkButton, inputClass } from "@/components/ui";
 import { BrandInput } from "@/components/BrandInput";
 import { SizeInput } from "@/components/SizeInput";
+import { CategoryPicker } from "@/components/CategoryPicker";
 import { isValidSize } from "@/lib/sizeSystems";
+import { garmentLabel } from "@/lib/garments";
 
 type Item = {
   id: string;
@@ -24,8 +26,6 @@ type Item = {
 };
 
 type Collection = { id: string; name: string; sortIndex: number; itemCount: number };
-
-const CATEGORIES = ["tshirt", "shirt", "sweater", "jacket", "hoodie", "polo", "other"];
 
 // Small preset palette for color tags (plus free text).
 // Two rows of common/on-trend apparel colors. Names are stored as-is; a hex is
@@ -221,10 +221,8 @@ export default function ClosetPage() {
             </div>
             <div className="sm:col-span-1">
               <Field label="Type" hint="engine">
-                <select className={inputClass} value={form.category}
-                  onChange={(e) => setForm({ ...form, category: e.target.value })}>
-                  {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <CategoryPicker value={form.category}
+                  onChange={(v) => setForm({ ...form, category: v, size: "" })} />
               </Field>
             </div>
             <div className="sm:col-span-1">
@@ -641,7 +639,7 @@ function ItemCard({
           <div className="flex items-center gap-2 font-medium text-ink">
             <ColorDot color={it.color} />
             <span className="truncate">
-              {it.brand} · <span className="text-ink-soft">{it.category}</span> · size {it.size}
+              {it.brand} · <span className="text-ink-soft">{garmentLabel(it.category)}</span> · size {it.size}
             </span>
             {it.gender && <GenderBadge gender={it.gender} />}
           </div>
@@ -734,9 +732,7 @@ function EditRow({
         </div>
         <div className="sm:col-span-1">
           <Field label="Type">
-            <select className={inputClass} value={f.category} onChange={(e) => setF({ ...f, category: e.target.value })}>
-              {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-            </select>
+            <CategoryPicker value={f.category} onChange={(v) => setF({ ...f, category: v })} />
           </Field>
         </div>
         <div className="sm:col-span-1">

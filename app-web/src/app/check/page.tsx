@@ -47,7 +47,13 @@ type Source = { url: string; host: string; derived: boolean; slug?: string };
 type CheckResponse = {
   product: Product;
   source: Source;
-  result: { ranked: SizeScore[]; best: SizeScore; explanation: string };
+  result: {
+    ranked: SizeScore[];
+    best: SizeScore;
+    explanation: string;
+    domainNote: string | null;
+    domainRelevance: "match" | "cross" | "empty";
+  };
   effectiveFit: FitPref;
   recommendationId: string;
 };
@@ -284,6 +290,17 @@ function Result({
           {product.url}
         </a>
       </Card>
+
+      {/* CROSS-DOMAIN DISCLAIMER — closet evidence is a different garment type */}
+      {result.domainNote && (
+        <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm">
+          <span className="mt-0.5 text-lg text-amber-600">⚠️</span>
+          <div className="text-amber-900">
+            <p className="font-semibold">Low-confidence recommendation</p>
+            <p className="mt-0.5 text-amber-800">{result.domainNote}</p>
+          </div>
+        </div>
+      )}
 
       {/* THE ANSWER + fit toggle */}
       <Card className="border-l-4 border-l-brand">

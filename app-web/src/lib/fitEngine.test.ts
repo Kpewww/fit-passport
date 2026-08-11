@@ -252,3 +252,39 @@ describe("explanation", () => {
     expect(out.explanation).toContain("•");
   });
 });
+
+describe("cross-domain evidence [roadmap: only-shoes → shirt]", () => {
+  it("flags cross-domain and caps confidence when the closet is a different domain", () => {
+    const out = recommend(
+      baseInput({
+        profile: { chestCm: 95, preferredFit: "regular" } as EngineInput["profile"],
+        product: { brand: "Uniqlo", category: "tshirt" },
+        // Closet is entirely footwear — tells us nothing about a t-shirt.
+        knownGood: [
+          { brand: "Nike", category: "sneakers", size: "9", fitRating: 5 },
+          { brand: "Adidas", category: "shoes", size: "10", fitRating: 5 },
+        ],
+      }),
+    );
+    expect(out.domainRelevance).toBe("cross");
+    expect(out.domainNote).toBeTruthy();
+    expect(out.best.confidence).toBeLessThanOrEqual(0.35);
+  });
+
+  it("does NOT flag when the closet has same-domain evidence", () => {
+    const out = recommend(
+      baseInput({
+        product: { brand: "Uniqlo", category: "tshirt" },
+        knownGood: [{ brand: "Uniqlo", category: "shirt", size: "M", fitRating: 5 }],
+      }),
+    );
+    expect(out.domainRelevance).toBe("match");
+    expect(out.domainNote).toBeNull();
+  });
+
+  it("reports empty when there is no closet at all", () => {
+    const out = recommend(baseInput());
+    expect(out.domainRelevance).toBe("empty");
+    expect(out.domainNote).toBeNull();
+  });
+});

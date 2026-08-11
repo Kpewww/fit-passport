@@ -28,6 +28,92 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-11 · Session 12 — Multi-garment domains, cross-domain disclaimer, body type + figure, brand-bias learning, LLM extractor scaffold
+
+**Context:** the founder asked to knock out the whole roadmap in one pass so
+they could experience it. I built four self-contained items end-to-end and
+scaffolded a fifth (LLM extraction) as a dormant upgrade path — pets deliberately
+deferred to its own session per their earlier directive.
+
+**Built:**
+
+1. **Garment taxonomy — the app now knows about more than tops.**
+   [`src/lib/garments.ts`](app-web/src/lib/garments.ts) is the single source of
+   truth: 18 garment types across four sections (Tops / Bottoms / Footwear /
+   Accessories), each with a display label, emoji glyph, and size domain
+   (derived from `sizeSystems.ts`). Closet add + edit forms now use a new
+   sectioned `<CategoryPicker>` with `<optgroup>`s; the flat 7-type list is
+   gone. `sizeSystems.ts` already knew the domains → shoes are numeric, socks
+   are S–XL, pants are waist / W×L, accessories can be "One size." Default
+   collections extended (Bottoms / Footwear / Accessories folders auto-file).
+   Closet + refresh cards render `garmentLabel(category)` and `garmentGlyph`.
+
+2. **Cross-domain disclaimer — "3 pairs of shoes → shirt rec" no longer lies.**
+   The engine now derives the product's domain and the closet's domains. If
+   they don't intersect (`domainRelevance === "cross"`), we (a) do NOT feed the
+   irrelevant known-good items into the anchor signal, (b) hard-cap confidence
+   at 0.35, (c) emit a plain-language `domainNote` the check page renders as an
+   amber banner: "Your closet is footwear, but this is a top item. Sizing
+   across garment types is unreliable…" Verified end-to-end via HTTP.
+
+3. **Body-type derivation + illustrative figure + respectful out-of-scope path.**
+   [`src/lib/bodyType.ts`](app-web/src/lib/bodyType.ts) derives two axes from
+   the passport measurements — a volume band from BMI (petite / lean / average
+   / solid / broad / extended) and a torso shape from chest-vs-waist (tapered /
+   straight / full-waist). Degrades gracefully when data is missing. The two
+   extreme bands trigger a **respectful scope note** — the wording talks about
+   what standard S–XXL charts cover, never editorializes the person's body
+   ("Your measurements sit above the range most standard S–XXL charts cover…").
+   A `<BodyFigure>` SVG shows an abstract, faceless silhouette that widens /
+   narrows by band and shape. Rendered as a new section on `/passport`.
+
+4. **Per-user brand-bias learning — with pollution guards.**
+   [`src/lib/brandBias.ts`](app-web/src/lib/brandBias.ts) reads THIS user's
+   outcomes. Guards baked in (all founder-stated concerns): per-user only (no
+   cross-user contamination), min-evidence threshold (≥2 same-direction
+   outcomes), cancellation on contradictory reports, hard ±1-step cap. When a
+   brand accumulates "too big" or "too small" signals, we shift the
+   recommendation one alpha step, adding a new `brand-bias` signal to the
+   engine with an explainable reason ("You've reported 2 Uniqlo items running
+   too big — sized down one"). To make this actually MOVE the recommendation
+   (an anchor rating goes stale), a non-neutral brand-bias downgrades the
+   engine from `ANCHOR_W` to `DEFAULT_W`. Verified live: same closet + same
+   product, 2 "too big" returns switched the pick from **M → S** with the
+   right reason attached.
+
+5. **LLM extractor scaffold — dormant until a key is set.**
+   [`src/lib/extractorLLM.ts`](app-web/src/lib/extractorLLM.ts) — `extractSmart(url)`
+   drop-in async replacement for `extractFromUrl`. If `ANTHROPIC_API_KEY` is
+   unset, or the LLM call fails, or Zod validation fails → falls back to the
+   deterministic extractor and the app behaves exactly as before. When enabled:
+   Claude Haiku 4.5, `temperature=0`, strict JSON, timeouts + body-size caps,
+   polite UA. **Never sends user body measurements** — only page text. Wired
+   into `/api/check`. `.env.example` documents the switch.
+
+**Test coverage:** 37/37 green. New test files: `sizeSystems.test.ts` (already
+existed, 6), `bodyType.test.ts` (6), `brandBias.test.ts` (7), plus 3 new
+cross-domain cases in `fitEngine.test.ts` (now 18).
+
+**Verify:** `tsc` clean · 37/37 tests · `next build` clean (32 routes) · live
+smoke passed for cross-domain, brand-bias direction shift, and body-type
+rendering.
+
+**Not done this session (intentional):**
+- Pets — founder said separate session; PetProfile is in schema, ready.
+- Aesthetic pass — deferred pending focused design session; piecemeal edits
+  now would risk the "fancy but messy" outcome the founder warned about.
+- Real LLM run — needs an ANTHROPIC_API_KEY.
+
+**Governance selling point (for the reflection essay):** brand-bias is the
+first example of the app learning from outcomes without becoming a black box.
+Every shift attaches a plain-language reason; the guards (per-user, ≥2
+evidence, cancellation, ±1 cap) are all in one auditable file — exactly the
+"we can evaluate why the engine did what it did" story the proposal committed
+to. The cross-domain disclaimer is the second: instead of returning a plausible
+wrong answer, we say "we don't have the right evidence."
+
+---
+
 ## 2026-08-11 · Session 11 — Size regularization + Refresh picker & smoother cards
 
 **Context:** founder gave a broad roadmap (brand-bias learning, multi-dimensional

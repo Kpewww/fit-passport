@@ -8,6 +8,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button, Card } from "@/components/ui";
+import { BodyFigure } from "@/components/BodyFigure";
+import { deriveBodyType } from "@/lib/bodyType";
 
 type Sex = "male" | "female" | "unspecified" | null;
 type Fit = "slim" | "regular" | "relaxed" | "oversized";
@@ -188,6 +190,8 @@ export default function PassportPage() {
                 <NumField label="Weight" unit="kg" value={profile.weightKg} onCommit={(v) => update("weightKg", v)} />
               </div>
             </Section>
+
+            <BodyTypeSection profile={profile} />
 
             <Section title="Region">
               <div className="flex flex-wrap gap-2">
@@ -419,6 +423,46 @@ function TextField({
       placeholder={placeholder}
       className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-faint focus:border-brand focus:ring-2 focus:ring-brand/20"
     />
+  );
+}
+
+function BodyTypeSection({ profile }: { profile: Profile }) {
+  const bt = deriveBodyType({
+    heightCm: profile.heightCm,
+    weightKg: profile.weightKg,
+    chestCm: profile.chestCm,
+    waistCm: profile.waistCm,
+    hipCm: profile.hipCm,
+  });
+  const anyData = bt.have.volume || bt.have.shape;
+  return (
+    <Section title="Body type" subtitle="derived from your measurements">
+      <div className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3">
+        <BodyFigure volume={bt.figureKey} shape={bt.shape} size={80} />
+        <div className="min-w-0 flex-1">
+          <p className="text-lg font-semibold text-ink">{bt.label}</p>
+          {bt.bmi != null && (
+            <p className="mt-0.5 text-xs text-ink-faint">BMI {bt.bmi}</p>
+          )}
+          {!anyData && (
+            <p className="mt-1 text-xs text-ink-faint">
+              Add height + weight above to derive a body type; add chest + waist
+              to refine the build.
+            </p>
+          )}
+          {anyData && !bt.have.shape && (
+            <p className="mt-1 text-xs text-ink-faint">
+              Add chest + waist to derive build (tapered / straight / full-waist).
+            </p>
+          )}
+          {bt.scopeNote && (
+            <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+              <span className="font-semibold">Sizing note:</span> {bt.scopeNote}
+            </p>
+          )}
+        </div>
+      </div>
+    </Section>
   );
 }
 

@@ -28,6 +28,8 @@ import {
   type AlphaSize,
   type FitPreference,
 } from "./sizing";
+import { domainForCategory } from "./sizeSystems";
+import { biasForBrand, type BrandBias } from "./brandBias";
 
 // ------------ Input contracts ------------
 
@@ -78,7 +80,7 @@ export type EngineInput = {
 // ------------ Output contracts ------------
 
 export type Reason = {
-  signal: "chest-fit" | "known-good" | "preference" | "outcome" | "completeness";
+  signal: "chest-fit" | "known-good" | "preference" | "outcome" | "completeness" | "brand-bias";
   weight: number; // contribution to this size's score, positive = supports
   message: string;
 };
@@ -91,10 +93,20 @@ export type SizeScore = {
   reasons: Reason[];
 };
 
+// How relevant the user's closet evidence is to the product's garment domain.
+//   "match"    — closet has items in the same domain (e.g. tops → tops)
+//   "cross"    — closet has items, but ALL in a different domain (shoes → shirt)
+//   "empty"    — no closet items at all
+export type DomainRelevance = "match" | "cross" | "empty";
+
 export type EngineOutput = {
   ranked: SizeScore[];
   best: SizeScore;
   explanation: string;
+  // Set when the closet evidence is a different domain than the product, so the
+  // UI can warn the recommendation is weak. Null when evidence is on-domain.
+  domainNote: string | null;
+  domainRelevance: DomainRelevance;
 };
 
 // ------------ Engine ------------
@@ -116,6 +128,10 @@ const DEFAULT_W: Weights = {
   outcomePenalty: 0.15,
   minDataFloor: 0.2, // score never drops below this due to missing data
 };
+
+// Brand-bias signal weight. Deliberately smaller than chest/anchor — it's one
+// more piece of evidence, not a dominator, and capped at ±1 step upstream.
+const BRAND_BIAS_W = 0.15;
 
 // Anchor-led weights: used when the closet contains a same-brand + same-category
 // item the user rated well. In that case "size X fits me in THIS brand+category"
@@ -311,25 +327,107 @@ function computeConfidence(size: SizeOptionInput, hasKnownGood: boolean, hasChes
   return Math.min(1, c);
 }
 
+/**
+ * Reference size to anchor a brand-bias shift around. Prefers a same-brand
+ * known-good anchor; falls back to the middle of the offered size ladder.
+ * Returns the alpha index (in ALPHA_LADDER) we'd nominally pick without the bias.
+ */
+function referenceSizeIdx(
+  product: EngineInput["product"],
+  sizes: SizeOptionInput[],
+  knownGood: KnownGoodInput[],
+): number | null {
+  // Same-brand anchor first.
+  const anchor = knownGood.find(
+    (kg) => product.brand && kg.brand.toLowerCase() === product.brand.toLowerCase(),
+  );
+  if (anchor) {
+    const idx = alphaIndex(normalizeToAlpha(anchor.size));
+    if (idx !== null) return idx;
+  }
+  // Otherwise pick the middle offered size.
+  const mid = sizes[Math.floor(sizes.length / 2)];
+  return mid ? alphaIndex(normalizeToAlpha(mid.label)) : null;
+}
+
+function scoreBrandBiasForSize(
+  size: SizeOptionInput,
+  bias: BrandBias,
+  refIdx: number | null,
+): Reason | null {
+  if (bias.shift === 0 || refIdx === null) return null;
+  const sizeIdx = alphaIndex(normalizeToAlpha(size.label));
+  if (sizeIdx === null) return null;
+  const targetIdx = refIdx + bias.shift;
+  const dist = Math.abs(sizeIdx - targetIdx);
+  // Full support at the target; zero past 1 step away.
+  const proximity = Math.max(0, 1 - dist);
+  if (proximity === 0) return null;
+  return {
+    signal: "brand-bias",
+    weight: BRAND_BIAS_W * proximity,
+    message: bias.reason ?? "",
+  };
+}
+
 export function recommend(input: EngineInput): EngineOutput {
   const { profile, product, sizes, knownGood, outcomes } = input;
 
-  // [F1] Adaptive weighting: if we have a trustworthy same-brand + same-category
-  // anchor, let that dominate; otherwise fall back to measurement-led weights.
-  const anchored = hasStrongAnchor(product, knownGood);
+  // ---- Per-user brand bias from outcomes (see brandBias.ts) -------------------
+  const brand = product.brand ?? null;
+  const brandBias: BrandBias = brand
+    ? biasForBrand(brand, outcomes.map((o) => ({
+        productBrand: o.productBrand ?? null,
+        decision: o.decision,
+        overallFit: o.overallFit ?? null,
+        areaIssues: o.areaIssues ?? null,
+      })))
+    : { direction: "neutral", evidence: 0, shift: 0, reason: null };
+  const refIdx = brandBias.shift !== 0
+    ? referenceSizeIdx(product, sizes, knownGood)
+    : null;
+
+  // ---- Domain relevance of the closet evidence -------------------------------
+  // The engine's known-good similarity only makes sense when the closet contains
+  // garments in the SAME size domain as the product (tops vs bottoms vs shoes…).
+  // Three pairs of jeans tell us almost nothing about a shirt. We detect this and
+  // (a) cap confidence, (b) surface a plain-language disclaimer.
+  const productDomain = product.category ? domainForCategory(product.category) : null;
+  const closetDomains = new Set(knownGood.map((kg) => domainForCategory(kg.category)));
+  let domainRelevance: DomainRelevance;
+  if (knownGood.length === 0) domainRelevance = "empty";
+  else if (productDomain != null && closetDomains.has(productDomain)) domainRelevance = "match";
+  else domainRelevance = "cross";
+
+  // On cross-domain, the known-good anchor is NOT trustworthy — force the
+  // measurement-led weights so a random jeans size can't masquerade as a top fit.
+  // Also: when brand-bias is non-neutral, the user is TELLING us the anchor
+  // rating is stale for this brand — step down from anchor-led to default
+  // weights so the outcome+bias evidence can actually move the recommendation.
+  const anchored =
+    domainRelevance === "match" &&
+    hasStrongAnchor(product, knownGood) &&
+    brandBias.shift === 0;
   const W: Weights = anchored ? ANCHOR_W : DEFAULT_W;
+
+  // On cross-domain, known-good similarity is meaningless — don't feed it.
+  const usableKnownGood = domainRelevance === "cross" ? [] : knownGood;
 
   const ranked: SizeScore[] = sizes.map((size) => {
     const reasons: Reason[] = [];
     const chest = scoreChestFit(size, profile.chestCm, profile.preferredFit, W);
     if (chest.reason) reasons.push(chest.reason);
-    const kg = scoreKnownGood(size, product, knownGood, profile.preferredFit, W);
+    const kg = scoreKnownGood(size, product, usableKnownGood, profile.preferredFit, W);
     if (kg.reason) reasons.push(kg.reason);
     const outc = scoreOutcome(size, product, outcomes, W);
     if (outc.reason) reasons.push(outc.reason);
+    const bias = scoreBrandBiasForSize(size, brandBias, refIdx);
+    if (bias) reasons.push(bias);
 
     const score = combine(reasons, W.minDataFloor);
-    const confidence = computeConfidence(size, knownGood.length > 0, profile.chestCm != null);
+    let confidence = computeConfidence(size, usableKnownGood.length > 0, profile.chestCm != null);
+    // Cross-domain closet evidence should not lend confidence: cap it hard.
+    if (domainRelevance === "cross") confidence = Math.min(confidence, 0.35);
     return {
       label: size.label,
       normalized: normalizeToAlpha(size.label),
@@ -382,5 +480,27 @@ export function recommend(input: EngineInput): EngineOutput {
     edgeNote +
     alt;
 
-  return { ranked, best, explanation };
+  // Cross-domain disclaimer: the closet is all a different garment domain than
+  // what we're sizing, so warn the user plainly.
+  let domainNote: string | null = null;
+  if (domainRelevance === "cross" && productDomain) {
+    const closetList = Array.from(closetDomains).map(humanDomain).join(" & ");
+    domainNote =
+      `Your closet is ${closetList}, but this is a ${humanDomain(productDomain)} item. ` +
+      `Sizing across garment types is unreliable — we're going mostly on your ` +
+      `measurements and preference. Add a ${humanDomain(productDomain)} you own for a real recommendation.`;
+  }
+
+  return { ranked, best, explanation, domainNote, domainRelevance };
+}
+
+/** Human name for a size domain, for disclaimers. */
+function humanDomain(d: ReturnType<typeof domainForCategory>): string {
+  switch (d) {
+    case "top": return "top";
+    case "bottom": return "bottoms";
+    case "shoe": return "footwear";
+    case "sock": return "socks";
+    case "accessory": return "accessory";
+  }
 }

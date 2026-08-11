@@ -9,12 +9,28 @@ import { prisma } from "./db";
 
 // Garment type (KnownGoodItem.category) → default collection name.
 const TYPE_TO_COLLECTION: Record<string, string> = {
+  // Tops
   tshirt: "T-Shirts",
   polo: "T-Shirts",
   shirt: "Shirts",
   sweater: "Sweaters",
   hoodie: "Sweaters",
   jacket: "Jackets",
+  // Bottoms
+  pants: "Bottoms",
+  jeans: "Bottoms",
+  shorts: "Bottoms",
+  skirt: "Bottoms",
+  // Footwear
+  shoes: "Footwear",
+  sneakers: "Footwear",
+  boots: "Footwear",
+  socks: "Footwear",
+  // Accessories
+  hat: "Accessories",
+  belt: "Accessories",
+  scarf: "Accessories",
+  accessory: "Accessories",
   other: "Other",
 };
 
@@ -24,6 +40,9 @@ export const DEFAULT_COLLECTIONS = [
   "Shirts",
   "Sweaters",
   "Jackets",
+  "Bottoms",
+  "Footwear",
+  "Accessories",
   "Other",
 ];
 
