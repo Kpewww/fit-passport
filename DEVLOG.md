@@ -28,6 +28,63 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 29 — Metal charge-card passport, 6-metal badge ladder, CS2-style inspect, first logo
+
+**Context:** founder feedback: badge light too strong + motion too fast, and the
+3D should apply everywhere; /check hero was visually off-centre; the passport
+should be **one slab like an Amex metal card** (metallic, minimal, "flex"
+worthy), coloured by the holder's **highest badge metal** (lapis cobalt default),
+with the body-type figure removed; badges should be **much harder** and follow a
+metal ladder (bronze→silver→gold→platinum→diamond→obsidian) with **special**
+colours (amethyst / jade / amber) for unusual feats and **agate-style white
+veining** from diamond up. Also: design a logo, and inspect badges the way CS2
+lets you inspect a weapon skin.
+
+**Built:**
+- **Metal card passport.** `MetalCard` renders one slab: deep metal gradient,
+  brushed micro-grain, broad diagonal sheen, slow travelling glint, inset hairline
+  bevel. `CARD_THEMES` maps every metal to a card edition (Lapis / Bronze / …
+  Obsidian) and the card takes the theme of `highestMetal(earnedBadges)`; top
+  metals add agate striations. Layout is card-like: wordmark + Issued, portrait +
+  holder, a 3-up detail row, verification + logo. Body-type figure removed from
+  the card (now plain text below); all other details moved into panels **below**
+  the card so the slab stays clean.
+- **Badge ladder, harder.** `Metal` extended to bronze/silver/gold/**platinum**/
+  diamond/obsidian + specials **amethyst/jade/amber**; added exported `METAL_RANK`
+  (deduped an older local copy), `VEINED_METALS`, `highestMetal()`. Added a 4th
+  **platinum** tier to every track (Grand Wardrobe 100 items/20 brands/6
+  collections · Fit Scholar 60 refreshes+20 outcomes · Atelier Master 30 posts+500
+  likes) and a **Polymath** (jade) special for gold in all three tracks. Every
+  threshold raised (e.g. starter 5→8, curator 12/3→20/4, archivist 25/6→45/10,
+  stylist 3→6, couturier 8/50→15/150); capstones retiered — acclaimed 100→250
+  (diamond), tastemaker 500→1500 (amethyst), head-designer 1000→4000 (obsidian).
+  Medallion art gained **agate white veining** for the top metals; fixed a stray
+  non-ASCII character hiding in the gold hex (`"#e6ب23d".replace(...)`).
+  Tests updated + a new platinum-threshold test (63 total).
+- **CS2-style `BadgeInspect`.** Click a medallion → it lifts onto a dark stage:
+  drag to turn in 3D, **real thickness** via stacked rim slices, an engraved back
+  face with the metal name, a restrained raking light that tracks rotation, slow
+  idle drift, and an info panel (title/tier/blurb/lore/progress). CSS 3D, not
+  WebGL — the art is already crisp SVG, so we get depth with no shaders and no
+  load wait.
+- **Softer badge lighting** — `Badge3D` now uses one soft-light sheen (was a bright
+  screen hot-spot + a hard glint streak) and slower, weightier tilt; applied to
+  **every** badge via `BadgeSeal` (opt out with `flat`).
+- **First logo** (`components/Logo.tsx`): a passport arch wrapping an F/P monogram
+  over a measurement baseline; SVG + `currentColor`, so it works in ink, on metal,
+  or in any badge colour. Wired into the Nav and the card's logo slot.
+- **/check** hero centred; **/help** stopped duplicating earn rules (drives text
+  from each badge's `blurb`, single source of truth).
+
+**Verified:** `tsc` clean · 63/63 vitest green · `next build` clean · live: home,
+passport, check, closet, help, outfits, community, badges all 200; new badges +
+Platinum/Amethyst render on /help; logo present in the nav.
+
+**Next:** founder will specify the card's finer details; optional true-WebGL badge
+(Three.js) if CSS depth isn't enough; faers-style live calculator on /check.
+
+---
+
 ## 2026-08-12 · Session 28 — Cohesion fixes (passport + check) + interactive 3D badges
 
 **Context:** the dark-glass passport (Sess 27) broke cohesion — low-contrast
