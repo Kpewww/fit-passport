@@ -84,7 +84,7 @@ app-web/
   middleware.ts       # mints the session cookie before any API call
 docs/
   DEPLOYMENT.md       # Vercel + Neon runbook
-  design/             # design notes (identity & sharing threat model)
+  design/             # design notes (identity threat model, community ecosystem plan)
   course/             # course deliverables
   proposals/          # original proposal PDFs
 DEVLOG.md             # per-session development log (also the Weekly Journal)

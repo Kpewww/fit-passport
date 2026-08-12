@@ -187,8 +187,11 @@ function MemberCard({ entry }: { entry: Entry }) {
           {theme.label}
         </span>
       </div>
-      {/* details, with the avatar overlapping the banner edge */}
-      <div className="flex items-end gap-3 px-4 pb-4">
+      {/* Details, with the avatar overlapping the banner edge.
+          `relative z-10` is required: the banner above is positioned, and
+          positioned siblings paint over STATIC ones regardless of DOM order — so
+          without this the metal surface covers the avatar and badges. */}
+      <div className="relative z-10 flex items-end gap-3 px-4 pb-4">
         <div className="-mt-7 rounded-full ring-4 ring-white">
           <Avatar src={entry.avatarDataUrl} initials={entry.username.slice(0, 2).toUpperCase()} size={48} ring={false} />
         </div>
