@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, EmptyState, LinkButton } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
+import { FollowButton } from "@/components/FollowButton";
 
 type ClosetItem = {
   id: string;
@@ -26,6 +27,7 @@ type PublicView = {
   sex: "male" | "female" | "unspecified" | null;
   shopsFor: string | null;
   canExport: boolean;
+  followerCount: number;
   collections: Array<{ id: string; name: string; sortIndex: number }>;
   closet: ClosetItem[];
   badges: Array<{ id: string; title: string; metal: string }>;
@@ -40,8 +42,13 @@ export default function ViewByCodePage({
   const { code } = params;
   const [data, setData] = useState<PublicView | null>(null);
   const [notFound, setNotFound] = useState(false);
+  const [follow, setFollow] = useState<{
+    claimed: boolean;
+    accountCode: string | null;
+    following: string[];
+  } | null>(null);
 
-  useEffect(() => {
+  const loadView = useCallback(() => {
     fetch(`/api/view/${encodeURIComponent(code)}`)
       .then((r) => {
         if (!r.ok) throw new Error("not found");
@@ -50,6 +57,12 @@ export default function ViewByCodePage({
       .then(setData)
       .catch(() => setNotFound(true));
   }, [code]);
+
+  const loadFollow = useCallback(() => {
+    fetch("/api/follow").then((r) => r.json()).then(setFollow).catch(() => setFollow(null));
+  }, []);
+
+  useEffect(() => { loadView(); loadFollow(); }, [loadView, loadFollow]);
 
   if (notFound) {
     return (
@@ -82,14 +95,32 @@ export default function ViewByCodePage({
         </div>
         <div className="mt-3 flex items-center gap-4">
           <Avatar src={data.avatarDataUrl} initials={data.username.slice(0, 2).toUpperCase()} size={64} />
-          <div>
+          <div className="min-w-0">
             <h1 className="font-serif text-4xl text-ink">{data.username}</h1>
-            {(data.pinnedBadges.length > 0 || data.badges.length > 0) && (
-              <div className="mt-1.5">
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
+              {(data.pinnedBadges.length > 0 || data.badges.length > 0) && (
                 <PinnedSeals ids={data.pinnedBadges.length > 0 ? data.pinnedBadges : data.badges.map((b) => b.id).slice(0, 3)} size={30} />
-              </div>
-            )}
+              )}
+              {data.followerCount > 0 && (
+                <span className="text-xs text-ink-faint">
+                  {data.followerCount} follower{data.followerCount === 1 ? "" : "s"}
+                </span>
+              )}
+            </div>
           </div>
+          {/* No follow button on your own profile — the server rejects it anyway,
+              but offering it would just look broken. */}
+          {follow?.accountCode !== data.accountCode && (
+            <div className="ml-auto flex-shrink-0">
+              <FollowButton
+                accountCode={data.accountCode}
+                following={!!follow?.following.includes(data.accountCode)}
+                canFollow={!!follow?.claimed}
+                size="md"
+                onChange={() => { loadView(); loadFollow(); }}
+              />
+            </div>
+          )}
         </div>
         <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-ink-soft">
           {data.sex && data.sex !== "unspecified" && (

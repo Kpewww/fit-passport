@@ -48,7 +48,7 @@ without upgrading Node first.
 | **Size check** | Paste any product link (bare domains fine) → the extractor reads brand / garment / gender / size chart → the engine ranks every size with per-signal reasons. Plus a live multi-region size converter. |
 | **Fit refresh** | Re-rate how garments feel over time; bodies change, so the profile tracks drift. |
 | **Outfits** | Compose looks on a body-typed SVG mannequin, post them, collect likes. Optional photoreal try-on when an image key is set. |
-| **Community** | Opt-in directory of members (each with a metal banner in their card finish) plus an outfit feed. |
+| **Community** | Opt-in directory of members (each with a metal banner in their card finish), plus an outfit feed you can switch between **Everyone** (most-liked first) and **Following** (people you follow, newest first). Following requires a claimed account on both sides, so follower counts stay earned. |
 | **Badges** | 4-tier tracks (bronze → silver → gold → platinum) + rare capstones (diamond / obsidian) and special honours (amethyst / jade / amber). Struck-metal SVG medallions with per-track silhouettes, an inspect stage you can turn in 3D, and an optional true-WebGL view. |
 | **Identity** | Anonymous session → claim an account → a shareable high-entropy account code. Login by username, email, or code. Password reset by email, change password, soft-deactivate. |
 

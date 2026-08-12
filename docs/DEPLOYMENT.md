@@ -32,7 +32,22 @@ Every model uses only portable scalars (`String`, `Int`, `Float`, `Boolean`,
 `DateTime`), so swapping the provider is sufficient. The generator refuses to run
 if the source schema is no longer SQLite, so this can't silently break.
 
-**After changing `schema.prisma`,** regenerate the Postgres migration:
+**While no database has been deployed yet** (still true as of Session 33), the
+simplest correct move after a schema change is to *regenerate* `0_init` from empty
+— no shadow database needed, and there's no applied history to conflict with:
+
+```bash
+cd app-web
+npm run db:push                    # apply locally (SQLite)
+npm run db:pg:schema               # refresh prisma/schema.postgres.prisma
+npx prisma migrate diff --from-empty \
+  --to-schema-datamodel prisma/schema.postgres.prisma \
+  --script > prisma/migrations/0_init/migration.sql
+```
+
+**Once a real database has applied `0_init`, stop doing that** — rewriting an
+applied migration makes Prisma refuse to deploy. From then on add an *additive*
+migration instead:
 
 ```bash
 cd app-web

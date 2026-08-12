@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Field, inputClass } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
 import { OutfitCard } from "@/components/OutfitCard";
+import { FollowButton } from "@/components/FollowButton";
 import { MetalSurface, resolveTheme } from "@/components/MetalCard";
+import type { FeedScope } from "@/lib/feed";
 
 type Entry = {
   username: string;
@@ -17,11 +19,20 @@ type Entry = {
   sex: string | null;
   shopsFor: string | null;
   closetCount: number;
+  followerCount: number;
   badges: string[];
   badgeCount: number;
 };
 
 type Me = { claimed: boolean; listedInCommunity: boolean };
+
+type FollowSummary = {
+  claimed: boolean;
+  accountCode: string | null;
+  following: string[];
+  followingCount: number;
+  followerCount: number;
+};
 
 type OutfitFeed = {
   id: string; title: string; description: string | null; occasion: string | null;
@@ -37,15 +48,40 @@ export default function CommunityPage() {
   const [me, setMe] = useState<Me | null>(null);
   const [posting, setPosting] = useState(false);
   const [feed, setFeed] = useState<OutfitFeed[] | null>(null);
+  const [scope, setScope] = useState<FeedScope>("everyone");
+  const [follow, setFollow] = useState<FollowSummary | null>(null);
 
-  function load() {
+  const loadFeed = useCallback((s: FeedScope) => {
+    setFeed(null);
+    fetch(`/api/outfits?scope=${s}`)
+      .then((r) => r.json())
+      .then((d) => setFeed(d.outfits ?? []))
+      .catch(() => setFeed([]));
+  }, []);
+
+  const load = useCallback(() => {
     fetch("/api/community").then((r) => r.json()).then((d) => setEntries(d.entries ?? []));
-    fetch("/api/outfits").then((r) => r.json()).then((d) => setFeed(d.outfits ?? []));
+    fetch("/api/follow").then((r) => r.json()).then(setFollow).catch(() => setFollow(null));
     fetch("/api/status").then((r) => r.json())
       .then((s) => setMe({ claimed: !!s.claimed, listedInCommunity: !!s.listedInCommunity }))
       .catch(() => setMe(null));
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+  useEffect(() => { loadFeed(scope); }, [scope, loadFeed]);
+
+  const followingSet = useMemo(
+    () => new Set(follow?.following ?? []),
+    [follow],
+  );
+  const canFollow = !!follow?.claimed;
+
+  // A follow changes what the Following feed contains, so refresh both the
+  // summary (counts) and the feed if it's the one on screen.
+  function afterFollowChange() {
+    fetch("/api/follow").then((r) => r.json()).then(setFollow).catch(() => {});
+    if (scope === "following") loadFeed("following");
   }
-  useEffect(load, []);
 
   function go(e: React.FormEvent) {
     e.preventDefault();
@@ -69,8 +105,16 @@ export default function CommunityPage() {
         <h1 className="font-serif text-4xl text-ink">Community</h1>
         <p className="mt-2 text-ink-soft">
           Fit is easier to trust when it comes from someone built like you. Browse
-          public closets, or enter a friend&apos;s code to see theirs.
+          public closets, follow the people whose taste you trust, or enter a
+          friend&apos;s code to see theirs.
         </p>
+        {follow?.claimed && (
+          <p className="mt-2 text-xs uppercase tracking-widest text-ink-faint">
+            {follow.followerCount} follower{follow.followerCount === 1 ? "" : "s"}
+            {" · "}
+            {follow.followingCount} following
+          </p>
+        )}
 
         {/* Post yourself to community */}
         <Card className="mt-6 flex items-center justify-between gap-4 bg-brand-tint/40">
@@ -99,21 +143,40 @@ export default function CommunityPage() {
           )}
         </Card>
 
-        {/* Outfit feed */}
-        <div className="mt-8 flex items-center justify-between">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-soft">Latest looks</h2>
-          <Link href="/outfits" className="text-xs font-medium text-brand hover:underline">Post an outfit →</Link>
+        {/* Outfit feed — two scopes, two orderings (see lib/feed.ts) */}
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-soft">
+            {scope === "following" ? "From people you follow" : "Latest looks"}
+          </h2>
+          <ScopeTabs scope={scope} onChange={setScope} followingCount={follow?.followingCount ?? 0} />
+          <Link href="/outfits" className="ml-auto text-xs font-medium text-brand hover:underline">Post an outfit →</Link>
         </div>
         {feed === null ? (
           <p className="mt-3 text-sm text-ink-faint">Loading…</p>
         ) : feed.length === 0 ? (
-          <Card className="mt-3 bg-neutral-50 text-center">
-            <p className="text-sm text-ink-soft">No outfits yet. <Link href="/outfits" className="text-brand hover:underline">Post the first look →</Link></p>
-          </Card>
+          <FeedEmpty scope={scope} claimed={canFollow} followingCount={follow?.followingCount ?? 0} />
         ) : (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {feed.map((o) => (
-              <OutfitCard key={o.id} outfit={o} figure={{ volume: "average", shape: "straight" }} onChange={load} />
+              <OutfitCard
+                key={o.id}
+                outfit={o}
+                figure={{ volume: "average", shape: "straight" }}
+                // Deliberately NOT refetching the feed on a like: the card
+                // updates its own count, and a refetch would re-sort the
+                // "everyone" feed under the reader's cursor.
+                onChange={load}
+                authorAction={
+                  !o.mine && o.author.accountCode ? (
+                    <FollowButton
+                      accountCode={o.author.accountCode}
+                      following={followingSet.has(o.author.accountCode)}
+                      canFollow={canFollow}
+                      onChange={afterFollowChange}
+                    />
+                  ) : undefined
+                }
+              />
             ))}
           </div>
         )}
@@ -148,7 +211,12 @@ export default function CommunityPage() {
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {entries.map((e) => (
               <Link key={e.accountCode} href={`/u/${encodeURIComponent(e.accountCode)}`}>
-                <MemberCard entry={e} />
+                <MemberCard
+                  entry={e}
+                  following={followingSet.has(e.accountCode)}
+                  canFollow={canFollow}
+                  onFollowChange={afterFollowChange}
+                />
               </Link>
             ))}
           </div>
@@ -168,9 +236,101 @@ export default function CommunityPage() {
   );
 }
 
+// Scope switch for the feed. Small, quiet, and it says how many people you
+// follow so an empty Following tab is never a surprise.
+function ScopeTabs({
+  scope,
+  onChange,
+  followingCount,
+}: {
+  scope: FeedScope;
+  onChange: (s: FeedScope) => void;
+  followingCount: number;
+}) {
+  const tabs: Array<{ key: FeedScope; label: string }> = [
+    { key: "everyone", label: "Everyone" },
+    { key: "following", label: followingCount > 0 ? `Following · ${followingCount}` : "Following" },
+  ];
+  return (
+    <div className="inline-flex rounded-full border border-line bg-paper-soft p-0.5 text-xs font-medium">
+      {tabs.map((t) => (
+        <button
+          key={t.key}
+          onClick={() => onChange(t.key)}
+          aria-pressed={scope === t.key}
+          className={`rounded-full px-3 py-1 transition-colors ${
+            scope === t.key ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
+          }`}
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+// Three different reasons a feed can be empty — each gets the next useful step
+// instead of a dead end.
+function FeedEmpty({
+  scope,
+  claimed,
+  followingCount,
+}: {
+  scope: FeedScope;
+  claimed: boolean;
+  followingCount: number;
+}) {
+  if (scope === "everyone") {
+    return (
+      <Card className="mt-3 bg-neutral-50 text-center">
+        <p className="text-sm text-ink-soft">
+          No outfits yet.{" "}
+          <Link href="/outfits" className="text-brand hover:underline">Post the first look →</Link>
+        </p>
+      </Card>
+    );
+  }
+  if (!claimed) {
+    return (
+      <Card className="mt-3 bg-brand-tint/40 text-center">
+        <p className="font-semibold text-ink">A feed of your own</p>
+        <p className="mx-auto mt-1 max-w-md text-sm text-ink-soft">
+          Claim an account to follow the people whose fit you trust — then this tab
+          becomes their looks only, newest first.
+        </p>
+        <Link
+          href="/account"
+          className="mt-4 inline-block rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
+        >
+          Claim account
+        </Link>
+      </Card>
+    );
+  }
+  return (
+    <Card className="mt-3 bg-neutral-50 text-center">
+      <p className="text-sm text-ink-soft">
+        {followingCount === 0
+          ? "You're not following anyone yet. Follow a few closets below and this becomes your feed."
+          : "The people you follow haven't posted a look yet."}
+      </p>
+    </Card>
+  );
+}
+
 // A member row whose BANNER wears their card metal — the same finish as their
 // passport card, so a colour reads as a person's identity across the app.
-function MemberCard({ entry }: { entry: Entry }) {
+function MemberCard({
+  entry,
+  following,
+  canFollow,
+  onFollowChange,
+}: {
+  entry: Entry;
+  following: boolean;
+  canFollow: boolean;
+  onFollowChange: () => void;
+}) {
   const theme = resolveTheme(entry.cardMetal, null);
   return (
     <div className="overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-line transition-shadow hover:shadow-lift">
@@ -197,13 +357,25 @@ function MemberCard({ entry }: { entry: Entry }) {
         </div>
         <div className="min-w-0 flex-1 pb-0.5">
           <p className="truncate font-semibold text-ink">{entry.username}</p>
+          {/* Badge COUNT is deliberately not repeated here — the seals on the
+              right already say it, and the room is better spent on fit signal. */}
           <p className="text-xs text-ink-faint">
             {entry.closetCount} items
             {entry.bodyType ? ` · ${entry.bodyType}` : ""}
-            {entry.badgeCount > 0 ? ` · ${entry.badgeCount} badge${entry.badgeCount === 1 ? "" : "s"}` : ""}
+            {entry.followerCount > 0
+              ? ` · ${entry.followerCount} follower${entry.followerCount === 1 ? "" : "s"}`
+              : ""}
           </p>
         </div>
-        {entry.badges.length > 0 && <div className="pb-0.5"><PinnedSeals ids={entry.badges} size={26} /></div>}
+        <div className="flex flex-shrink-0 flex-col items-end gap-1.5 pb-0.5">
+          {entry.badges.length > 0 && <PinnedSeals ids={entry.badges} size={26} />}
+          <FollowButton
+            accountCode={entry.accountCode}
+            following={following}
+            canFollow={canFollow}
+            onChange={onFollowChange}
+          />
+        </div>
       </div>
     </div>
   );

@@ -28,6 +28,106 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 33 — Follow + a followed feed (ecosystem step 1)
+
+**Context:** the ecosystem outline written last session sequences the work
+smallest-first, and step 1 is *"follow + a followed feed — cheapest change with
+the biggest retention effect."* This session builds exactly that and nothing else.
+
+**Why this first.** Everything else in the plan (Ask & Answer, Daily Top,
+contests) assumes a way to care about a *particular person*. Without follows the
+community is one global list where the reader has no stake. A follow is the
+smallest possible object that turns browsing into subscribing.
+
+**Data model — one new table.** `Follow { followerId, followeeId, createdAt }`,
+`@@unique([followerId, followeeId])` so re-following is idempotent rather than
+duplicated, `@@index([followeeId])` because "how many followers does X have" is
+the hot query. Both sides must be **claimed**: a follow needs a durable identity,
+and since an anonymous session is free to mint, allowing it would make follower
+counts inflatable — which contradicts the earned-only prestige idea the whole
+badge system rests on.
+
+**Ordering is a product decision, so it got its own tested module.**
+`src/lib/feed.ts` — two scopes with deliberately *different* orderings:
+- `everyone` → **most-liked first** (a discovery surface; quality should float up
+  for a first-time reader), with recency as the tie-break so equally-liked fresh
+  posts aren't stranded.
+- `following` → **newest first** (a subscription surface; ranking by likes would
+  bury the people you explicitly chose behind whoever is popular).
+
+Extracting this out of the route handler is what makes it testable — 9 new tests
+(`feed.test.ts`), suite now **77 green**.
+
+**API.**
+- `GET /api/follow` → `{ claimed, accountCode, following: [codes], followingCount,
+  followerCount }`. One call gives the UI every follow button's state; the
+  `accountCode` is there so a profile page can hide its own button.
+- `POST /api/follow { accountCode, follow }` → toggle. Guards: claim required
+  (403 `claim-required`), no self-follow (400), unknown/unclaimed/deactivated
+  target (404), rate-limited 60/min per IP (follow-spam is the classic growth
+  hack). Follows are upserted, so double-clicks are harmless.
+- `GET /api/outfits?scope=following` → restricted to followed authors, ordered by
+  `rankFeed`. Deactivated followees are filtered at the query level.
+- Follower counts added to `/api/community` (`_count.followers`) and
+  `/api/view/[code]`. **Deliberate:** who-follows-whom is social metadata and says
+  nothing about a body — the privacy invariant is untouched.
+
+**UI.**
+- `components/FollowButton.tsx` — shared toggle. Two non-obvious details: it
+  lives **inside a `<Link>`** on the member card, so it must `preventDefault` +
+  `stopPropagation` or following someone navigates away; and for unclaimed
+  visitors it routes to `/account` instead of being a dead button — following is
+  one of the few moments where creating an account is *obviously* worth it.
+- `/community` — the feed gained an `Everyone | Following · N` segmented switch,
+  a `N followers · N following` line for claimed members, follow buttons on
+  member cards (stacked under the badge seals so nothing crowds), and **three
+  distinct empty states**: not claimed → "A feed of your own" + claim CTA;
+  claimed with zero follows → "follow a few closets below"; following people who
+  haven't posted → say so. A dead end is a design bug.
+- `OutfitCard` gained an optional `authorAction` slot, and the author's name is
+  now a link to their closet — see a look → open the closet → follow. That's the
+  loop, and it didn't exist before.
+- `/u/[code]` — follower count + a full-size follow button, hidden on your own
+  profile.
+
+**What worked.** Two-cookie-jar live smoke: anon → 403, A follows B → 200 with
+`followerCount: 1`, re-follow idempotent, self-follow 400, bogus code 404, A's
+following feed shows exactly B's look, B's own following feed is empty,
+unfollow → feed empty. Then the privacy path: **deactivating B removed it from
+A's follow list AND A's feed AND 404'd the profile** in one step. Clean
+production build, all 10 pages + the new API 200.
+
+**What didn't (twice, same root cause).** `POST /api/follow` returned 500 with
+`Unknown field 'followers' on UserCountOutputType` — the *running dev server* had
+the Prisma Client from **before** `db:push` regenerated it. Restarting dev fixed
+it with no code change. Filed alongside the stale-`.next` gotcha: **after a schema
+change, restart the dev server, or every new-table query 500s while typecheck
+stays green.**
+
+**Next up.** Ecosystem step 2 = Ask & Answer with closet-item attachments (our
+unique utility). Then Daily Top Outfits (just a query), then one **manual** $100
+contest to validate demand before any event tooling. Still open before real
+users: swap the in-memory rate limiter for Upstash Redis.
+
+**Files touched**
+```
+app-web/prisma/schema.prisma                  (Follow model + User relations)
+app-web/src/lib/feed.ts                       (new — scope + ranking)
+app-web/src/lib/feed.test.ts                  (new — 9 tests)
+app-web/src/app/api/follow/route.ts           (new — GET summary, POST toggle)
+app-web/src/app/api/outfits/route.ts          (scope=following, rankFeed)
+app-web/src/app/api/community/route.ts        (followerCount)
+app-web/src/app/api/view/[code]/route.ts      (followerCount)
+app-web/src/components/FollowButton.tsx       (new)
+app-web/src/components/OutfitCard.tsx         (authorAction slot, author link)
+app-web/src/app/community/page.tsx            (scope tabs, empty states, follows)
+app-web/src/app/u/[code]/page.tsx             (follow button + follower count)
+docs/design/community-ecosystem.md            (step 1 marked shipped)
+README.md, DEVLOG.md
+```
+
+---
+
 ## 2026-08-12 · Session 32 — Community card layering fix + ecosystem design outline
 
 **Context:** founder reported a bug on the Public closets grid ("背景在上,图表在下")

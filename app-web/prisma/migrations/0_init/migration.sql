@@ -24,6 +24,16 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "Follow" (
+    "id" TEXT NOT NULL,
+    "followerId" TEXT NOT NULL,
+    "followeeId" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Follow_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Outfit" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -237,6 +247,12 @@ CREATE UNIQUE INDEX "User_accountCode_key" ON "User"("accountCode");
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
+CREATE INDEX "Follow_followeeId_idx" ON "Follow"("followeeId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Follow_followerId_followeeId_key" ON "Follow"("followerId", "followeeId");
+
+-- CreateIndex
 CREATE INDEX "Outfit_userId_idx" ON "Outfit"("userId");
 
 -- CreateIndex
@@ -286,6 +302,12 @@ CREATE INDEX "FitOutcome_userId_idx" ON "FitOutcome"("userId");
 
 -- CreateIndex
 CREATE INDEX "PetProfile_userId_idx" ON "PetProfile"("userId");
+
+-- AddForeignKey
+ALTER TABLE "Follow" ADD CONSTRAINT "Follow_followerId_fkey" FOREIGN KEY ("followerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Follow" ADD CONSTRAINT "Follow_followeeId_fkey" FOREIGN KEY ("followeeId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Outfit" ADD CONSTRAINT "Outfit_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

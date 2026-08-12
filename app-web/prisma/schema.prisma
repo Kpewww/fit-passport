@@ -78,6 +78,30 @@ model User {
   recs        FitRecommendation[]
   outfits     Outfit[]
   outfitLikes OutfitLike[]
+  following   Follow[] @relation("follower")
+  followers   Follow[] @relation("followee")
+}
+
+/// A one-directional follow. This is the cheapest retention primitive we have:
+/// it turns one global chronological feed into a feed the member chose (see
+/// docs/design/community-ecosystem.md, sequencing step 1).
+///
+/// Both sides must be CLAIMED accounts. A follow needs a durable identity to
+/// mean anything, and requiring it keeps follower counts honest — an anonymous
+/// session is free to create, so allowing it would make counts inflatable.
+model Follow {
+  id String @id @default(cuid())
+
+  followerId String
+  follower   User   @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followeeId String
+  followee   User   @relation("followee", fields: [followeeId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  // One follow per pair; re-following is idempotent rather than duplicated.
+  @@unique([followerId, followeeId])
+  @@index([followeeId])
 }
 
 // ---------- Outfits (community posts) ----------

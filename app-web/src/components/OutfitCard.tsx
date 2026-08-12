@@ -3,7 +3,8 @@
 // Shared outfit card — used by /outfits (mine) and /community (feed). Renders the
 // stylized mannequin preview, metadata, in-store-only tags, and a like toggle.
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
+import Link from "next/link";
 import { Card } from "@/components/ui";
 import { OutfitMannequin, type OutfitLayer } from "@/components/OutfitMannequin";
 import { Avatar } from "@/components/Badges";
@@ -37,11 +38,14 @@ export function OutfitCard({
   figure,
   onDelete,
   onChange,
+  authorAction,
 }: {
   outfit: OutfitView;
   figure: { volume: string; shape: string };
   onDelete?: () => void;
   onChange?: () => void;
+  /** Optional control beside the author (e.g. a follow toggle on the feed). */
+  authorAction?: ReactNode;
 }) {
   const [liked, setLiked] = useState(outfit.likedByMe);
   const [count, setCount] = useState(outfit.likeCount);
@@ -89,9 +93,21 @@ export function OutfitCard({
 
           <div className="mt-2 flex items-center gap-3">
             {!outfit.mine && (
-              <div className="flex items-center gap-1 text-xs text-ink-faint">
+              <div className="flex min-w-0 items-center gap-1.5 text-xs text-ink-faint">
                 <Avatar src={outfit.author.avatarDataUrl} initials={(outfit.author.username ?? "?").slice(0, 2).toUpperCase()} size={20} ring={false} />
-                {outfit.author.username}
+                {/* The author's closet is the payoff of liking a look — make the
+                    name the way in, then let the follow toggle sit beside it. */}
+                {outfit.author.accountCode ? (
+                  <Link
+                    href={`/u/${encodeURIComponent(outfit.author.accountCode)}`}
+                    className="truncate hover:text-ink hover:underline"
+                  >
+                    {outfit.author.username}
+                  </Link>
+                ) : (
+                  <span className="truncate">{outfit.author.username}</span>
+                )}
+                {authorAction}
               </div>
             )}
             <button

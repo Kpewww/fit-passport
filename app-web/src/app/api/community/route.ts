@@ -20,7 +20,7 @@ export async function GET() {
       pinnedBadges: true,
       cardMetal: true,
       fitProfile: { select: { sex: true, shopsFor: true, avatarDataUrl: true } },
-      _count: { select: { knownGood: true } },
+      _count: { select: { knownGood: true, followers: true } },
     },
     take: 60,
   });
@@ -40,6 +40,7 @@ export async function GET() {
         sex: u.fitProfile?.sex ?? null,
         shopsFor: u.fitProfile?.shopsFor ?? null,
         closetCount: u._count.knownGood,
+        followerCount: u._count.followers,
         badges: showBadges,
         badgeCount: earned.length,
         // The member's card finish drives their banner colour in the directory

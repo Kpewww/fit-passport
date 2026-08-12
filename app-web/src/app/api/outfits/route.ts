@@ -1,7 +1,8 @@
 // Outfits — community look posts.
 //
 //   GET  /api/outfits?mine=1        → your outfits (with like counts)
-//   GET  /api/outfits               → public feed (all outfits, most-liked first-ish)
+//   GET  /api/outfits               → public feed (all outfits, most-liked first)
+//   GET  /api/outfits?scope=following → only people you follow, newest first
 //   POST /api/outfits               → create { title, description?, occasion?,
 //                                       onlineAvailable?, items: [{brand?,category,
 //                                       color?,size?,note?,onlineAvailable?}] }
@@ -11,6 +12,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, canEdit } from "@/lib/session";
+import { parseFeedScope, rankFeed } from "@/lib/feed";
 
 const ItemSchema = z.object({
   knownGoodId: z.string().optional().nullable(),
@@ -32,10 +34,28 @@ const CreateSchema = z.object({
 
 export async function GET(req: Request) {
   const user = await getCurrentUser();
-  const mine = new URL(req.url).searchParams.get("mine") === "1";
+  const params = new URL(req.url).searchParams;
+  const mine = params.get("mine") === "1";
+  const scope = parseFeedScope(params.get("scope"));
+
+  // A followed feed is restricted to the authors this user picked. Unclaimed
+  // sessions can't follow anyone, so their followee list is simply empty and
+  // the UI shows the "claim an account" prompt instead of a silent empty feed.
+  let followeeIds: string[] | null = null;
+  if (!mine && scope === "following") {
+    const follows = await prisma.follow.findMany({
+      where: { followerId: user.id, followee: { deactivated: false } },
+      select: { followeeId: true },
+    });
+    followeeIds = follows.map((f) => f.followeeId);
+  }
 
   const outfits = await prisma.outfit.findMany({
-    where: mine ? { userId: user.id } : undefined,
+    where: mine
+      ? { userId: user.id }
+      : followeeIds
+        ? { userId: { in: followeeIds } }
+        : undefined,
     orderBy: { createdAt: "desc" },
     take: 100,
     include: {
@@ -72,10 +92,11 @@ export async function GET(req: Request) {
     })),
   }));
 
-  // Public feed: most-liked first, then newest. "mine" keeps chronological.
-  if (!mine) entries.sort((a, b) => b.likeCount - a.likeCount);
+  // "mine" keeps the query's chronological order. The two public scopes are
+  // ordered differently on purpose — see lib/feed.ts.
+  const ordered = mine ? entries : rankFeed(entries, scope);
 
-  return NextResponse.json({ outfits: entries });
+  return NextResponse.json({ outfits: ordered, scope: mine ? "mine" : scope });
 }
 
 export async function POST(req: Request) {

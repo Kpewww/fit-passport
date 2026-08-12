@@ -62,6 +62,8 @@ export async function GET(
         orderBy: { sortIndex: "asc" },
         select: { id: true, name: true, sortIndex: true },
       },
+      // Social counts only — who follows whom says nothing about a body.
+      _count: { select: { followers: true } },
     },
   });
 
@@ -82,6 +84,7 @@ export async function GET(
     sex: user.fitProfile?.sex ?? null,
     shopsFor: user.fitProfile?.shopsFor ?? null,
     canExport: user.exportPolicy === "anyone",
+    followerCount: user._count.followers,
     collections: user.collections,
     closet: user.knownGood,
     badges: evaluateBadges(stats).filter((b) => b.earnedNow),

@@ -1,7 +1,8 @@
 # Community & Ecosystem — design outline
 
-> **Status: PLANNED, not built.** This is the thinking-ahead document. Nothing here
-> is implemented yet beyond what's noted as *shipped*. Written 2026-08-12.
+> **Status: mostly PLANNED.** This is the thinking-ahead document — nothing here is
+> implemented except what's marked **SHIPPED**. Written 2026-08-12; step 1 shipped
+> the same day (Session 33).
 
 ## Why this matters
 
@@ -44,8 +45,12 @@ closets.
 - **Daily Top Outfits** — a rotating leaderboard, reset daily so newcomers can win.
 - **Top Stylists** — weekly/monthly ranking by *earned* signals (likes per look,
   answer helpfulness), not by follower count.
-- **Follow / feed** — the missing primitive. Today the feed is chronological and
-  global; it should be followable.
+- **Follow / feed** — **SHIPPED** (Session 33). `Follow` table, `/api/follow`,
+  `/api/outfits?scope=following`, an `Everyone | Following` switch on `/community`,
+  follow buttons on member cards, outfit cards and `/u/[code]`. Both sides must be
+  claimed so follower counts stay earned. Ordering rules live in `src/lib/feed.ts`:
+  the public feed is most-liked-first (discovery), the followed feed is
+  newest-first (subscription).
 
 ### Loop 3 — Compete & Belong (events → spikes)
 
@@ -115,7 +120,8 @@ Reuse what exists: the `OutfitLike` voter-key pattern (anonymous-friendly, dedup
 
 ## Sequencing (smallest first)
 
-1. **Follow + a followed feed** — cheapest change with the biggest retention effect.
+1. ~~**Follow + a followed feed**~~ — **SHIPPED** Session 33. Cheapest change with
+   the biggest retention effect, so it went first.
 2. **Ask & Answer** with closet-item attachments — our unique utility.
 3. **Daily Top Outfits** — a leaderboard is just a query; huge perceived liveness.
 4. **One $100 contest, run manually** — validate that people enter *before* building
