@@ -4,7 +4,6 @@ import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
-  Button,
   Card,
   ConfidenceRing,
   LinkButton,
@@ -150,27 +149,36 @@ function CheckInner() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-6 py-10">
-        <h1 className="text-3xl font-bold text-ink">Check a product</h1>
-        <p className="mt-2 text-ink-soft">
+        <p className="eyebrow text-ink-faint">Size check</p>
+        <h1 className="mt-3 font-serif text-4xl leading-tight text-ink sm:text-5xl">What size should I buy?</h1>
+        <p className="mt-3 max-w-lg text-ink-soft">
           Paste a product URL. We&apos;ll read the page, extract its sizing, and recommend a
           size — with the reasons, so you can see exactly what it&apos;s based on.
         </p>
 
-        <form onSubmit={submit} className="mt-6 flex flex-col gap-2 sm:flex-row">
+        {/* Same pill field family as the homepage hero, in the light palette. */}
+        <form
+          onSubmit={submit}
+          className="mt-7 flex max-w-xl items-center gap-2 rounded-full border border-line bg-paper-soft p-1.5 shadow-card focus-within:border-ink/30"
+        >
           <input
             type="url"
             required
-            placeholder="https://…"
+            placeholder="Paste a product URL…"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
-            className="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm shadow-card focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            className="flex-1 bg-transparent px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none"
           />
-          <Button type="submit" size="lg" disabled={loading}>
-            {loading ? "Reading…" : "Get my size"}
-          </Button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-shrink-0 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-transform hover:scale-[0.98] active:scale-95 disabled:opacity-50"
+          >
+            {loading ? "Reading…" : "Get my size →"}
+          </button>
         </form>
 
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+        <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
           <span className="text-ink-faint">Try:</span>
           {DEMO_URLS.map((d) => (
             <button
@@ -180,7 +188,7 @@ function CheckInner() {
                 setUrl(d.url);
                 runCheck(d.url);
               }}
-              className="rounded-full border border-neutral-300 px-3 py-1 text-ink-soft transition-colors hover:border-brand hover:text-brand"
+              className="rounded-full border border-line px-3 py-1 text-ink-soft transition-colors hover:border-ink hover:text-ink"
             >
               {d.label}
             </button>

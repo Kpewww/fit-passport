@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui";
-import { BadgeSeal } from "@/components/Badges";
+import { BadgeSeal, Badge3D } from "@/components/Badges";
 import { badgesByTrack, METAL_STYLE, type EarnedBadge } from "@/lib/badges";
 
 type StatusResp = {
@@ -113,8 +113,10 @@ function BadgeCard({
   const st = METAL_STYLE[badge.metal];
   const dim = !badge.earnedNow;
   return (
-    <Card className={`flex gap-3 !p-4 ${dim ? "bg-neutral-50" : ""}`}>
-      <BadgeSeal id={badge.id} metal={badge.metal} size={54} locked={!badge.earnedNow} title={badge.title} />
+    <Card className={`flex gap-3 !p-4 ${dim ? "bg-paper-dim" : ""}`}>
+      <Badge3D size={54}>
+        <BadgeSeal id={badge.id} metal={badge.metal} size={54} locked={!badge.earnedNow} title={badge.title} />
+      </Badge3D>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className={`truncate font-semibold ${dim ? "text-ink-soft" : "text-ink"}`}>{badge.title}</p>
@@ -136,8 +138,8 @@ function BadgeCard({
               pinned
                 ? "border-brand bg-brand-tint text-brand"
                 : canPin
-                  ? "border-neutral-300 text-ink-soft hover:border-brand hover:text-brand"
-                  : "cursor-not-allowed border-neutral-200 text-ink-faint"
+                  ? "border-line text-ink-soft hover:border-brand hover:text-brand"
+                  : "cursor-not-allowed border-line text-ink-faint"
             }`}
           >
             {pinned ? "📌 Pinned — click to unpin" : canPin ? "Pin to passport" : "3 pinned already"}

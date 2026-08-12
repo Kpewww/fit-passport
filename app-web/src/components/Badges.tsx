@@ -3,8 +3,60 @@
 // Shared badge + avatar visuals, used on the passport, home, community, and
 // public views. Kept dumb (presentational) — earning logic lives in badges.ts.
 
+import { useRef, useState, type ReactNode } from "react";
 import { badgeById, METAL_STYLE, type EarnedBadge, type Metal } from "@/lib/badges";
 import { BadgeMedallion } from "@/components/BadgeMedallion";
+
+// Interactive 3D tilt — the medallion follows the cursor in 3D with a moving
+// gloss, so a badge can be "turned" and viewed like a real struck coin. Pure
+// CSS 3D transforms (no libraries); reverts smoothly on leave.
+export function Badge3D({ children, size }: { children: ReactNode; size: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [t, setT] = useState({ rx: 0, ry: 0, active: false });
+
+  function onMove(e: React.PointerEvent) {
+    const el = ref.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    setT({ rx: -py * 24, ry: px * 24, active: true });
+  }
+  function reset() {
+    setT({ rx: 0, ry: 0, active: false });
+  }
+
+  return (
+    <div
+      ref={ref}
+      onPointerMove={onMove}
+      onPointerLeave={reset}
+      style={{ perspective: 520, width: size, height: size }}
+      className="flex-shrink-0"
+    >
+      <div
+        style={{
+          transform: `rotateX(${t.rx}deg) rotateY(${t.ry}deg)`,
+          transformStyle: "preserve-3d",
+          transition: t.active ? "transform 60ms linear" : "transform 450ms cubic-bezier(0.16,1,0.3,1)",
+        }}
+        className="relative h-full w-full"
+      >
+        {children}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 rounded-full"
+          style={{
+            background: `radial-gradient(circle at ${50 + t.ry * 2}% ${50 - t.rx * 2}%, rgba(255,255,255,0.55), transparent 55%)`,
+            opacity: t.active ? 0.55 : 0,
+            transition: "opacity 300ms ease",
+            mixBlendMode: "overlay",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
 
 // Round avatar that shows an uploaded portrait or falls back to initials.
 export function Avatar({

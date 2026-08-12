@@ -463,153 +463,147 @@ function ViewBook({
   const signature = outfits.find((o) => o.id === signatureOutfitId) ?? null;
 
   return (
-    <main className="relative flex-1 overflow-hidden bg-ink py-14 text-paper">
-      {/* ambient cobalt glow so the glass reads */}
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-brand/20 blur-[120px]" />
-      <div className="pointer-events-none absolute bottom-0 right-0 h-80 w-80 rounded-full bg-sky-500/10 blur-[120px]" />
-
-      <div className="relative mx-auto max-w-xl px-6">
-        <div className="mb-4 flex items-center justify-end">
-          <button
-            onClick={onEdit}
-            className="rounded-full border border-white/15 bg-white/5 px-4 py-1.5 text-sm text-paper/80 backdrop-blur transition-colors hover:border-white/40 hover:text-paper"
-          >
-            ✎ Edit passport
-          </button>
+    <main className="flex-1 bg-paper py-12">
+      <div className="mx-auto max-w-2xl px-6">
+        <div className="mb-3 flex items-center justify-end">
+          <Button size="md" variant="secondary" onClick={onEdit}>✎ Edit passport</Button>
         </div>
 
-        {/* THE CREDENTIAL — holo foil edge over dark glass */}
-        <div className="group rounded-[26px] bg-gradient-to-br from-brand via-sky-300/70 to-brand/60 p-px shadow-[0_30px_80px_-24px_rgba(36,56,214,0.55)]">
-          <div className="glass-panel overflow-hidden rounded-[25px]">
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4 border-b border-white/10 px-7 py-6">
+        {/* THE CREDENTIAL — cohesive light card with a metallic cobalt banner */}
+        <div className="overflow-hidden rounded-2xl bg-white shadow-lift ring-1 ring-line">
+          {/* Metallic banner: cobalt→ink gradient + a static diagonal sheen and a
+              slow moving light streak for a brushed-metal look. */}
+          <div className="relative overflow-hidden bg-gradient-to-br from-brand-dark via-brand to-ink px-7 py-6 text-white">
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent_25%,rgba(255,255,255,0.18)_45%,transparent_65%)]" />
+            <div className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_6s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_42%,rgba(255,255,255,0.22)_50%,transparent_58%)]" />
+            <div className="relative flex items-center justify-between">
               <div>
-                <p className="font-serif text-2xl italic text-paper">Fit Passport</p>
-                <p className="mt-0.5 text-[10px] uppercase tracking-[0.28em] text-paper/45">International Sizing Identity</p>
+                <p className="font-serif text-2xl italic leading-none">Fit Passport</p>
+                <p className="mt-1.5 text-[10px] uppercase tracking-[0.28em] text-white/70">International Sizing Identity</p>
               </div>
-              <span className="flex flex-shrink-0 items-center gap-1.5 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-300">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" /> Verified
+              <span className="flex flex-shrink-0 items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" /> Issued
               </span>
             </div>
+          </div>
 
-            {/* Portrait + identity */}
-            <div className="grid gap-6 border-b border-white/10 px-7 py-6 sm:grid-cols-[auto,1fr]">
-              <div className="flex flex-col items-center">
-                <div className="rounded-full bg-gradient-to-br from-brand to-sky-400 p-px">
-                  <Avatar src={profile.avatarDataUrl} initials={initials} size={86} ring={false} />
-                </div>
-                <p className="mt-1.5 text-[9px] uppercase tracking-widest text-paper/40">portrait</p>
+          {/* Portrait + identity — high-contrast ink on white */}
+          <div className="grid gap-6 border-b border-line px-7 py-6 sm:grid-cols-[auto,1fr]">
+            <div className="flex flex-col items-center">
+              <div className="rounded-full bg-gradient-to-br from-brand to-brand-dark p-[2px]">
+                <Avatar src={profile.avatarDataUrl} initials={initials} size={86} ring={false} />
               </div>
-              <div className="min-w-0 space-y-3">
-                <CredLine label="Holder" value={holder} mono />
-                <CredLine label="Passport no." value={idLine} mono />
-                <CredLine label="Region of issue" value={profile.region || "—"} mono />
-                <CredLine label="Preferred fit" value={fits.join(", ").toUpperCase() || "—"} />
-              </div>
+              <p className="mt-1.5 text-[9px] uppercase tracking-widest text-ink-faint">portrait</p>
             </div>
+            <div className="min-w-0 space-y-2.5">
+              <Line label="Holder" value={holder} mono />
+              <Line label="Passport no." value={idLine} mono />
+              <Line label="Region of issue" value={profile.region || "—"} mono />
+              <Line label="Preferred fit" value={fits.join(", ").toUpperCase() || "—"} />
+            </div>
+          </div>
 
-            {/* Achievements */}
-            <div className="border-b border-white/10 px-7 py-5">
-              <div className="mb-2.5 flex items-center justify-between">
-                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-brand">Achievements</p>
-                {earnedBadges.length > 0 && <span className="text-[10px] text-paper/40">hover a medallion</span>}
-              </div>
-              {earnedBadges.length > 0 ? (
-                <EarnedSealRow earnedIds={earnedBadges} pinnedIds={pinnedBadges} size={48} />
-              ) : (
-                <Link href="/badges" className="text-sm text-brand hover:underline">Earn badges and pin up to 3 here →</Link>
+          {/* Achievements */}
+          <div className="border-b border-line px-7 py-5">
+            <div className="mb-2.5 flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Achievements</p>
+              {earnedBadges.length > 0 && <span className="text-[10px] text-ink-faint">hover a medallion for its meaning</span>}
+            </div>
+            {earnedBadges.length > 0 ? (
+              <EarnedSealRow earnedIds={earnedBadges} pinnedIds={pinnedBadges} size={48} />
+            ) : (
+              <Link href="/badges" className="text-sm text-brand hover:underline">Earn badges and pin up to 3 here →</Link>
+            )}
+          </div>
+
+          {/* Signature look */}
+          <div className="border-b border-line px-7 py-5">
+            <div className="mb-2.5 flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Signature look</p>
+              {outfits.length > 0 && (
+                <select
+                  value={signatureOutfitId ?? ""}
+                  onChange={(e) => onSetSignature(e.target.value || null)}
+                  className="rounded-md border border-line bg-paper-soft px-2 py-1 text-xs text-ink-soft"
+                >
+                  <option value="">None</option>
+                  {outfits.map((o) => (
+                    <option key={o.id} value={o.id}>{o.title}</option>
+                  ))}
+                </select>
               )}
             </div>
-
-            {/* Signature look */}
-            <div className="border-b border-white/10 px-7 py-5">
-              <div className="mb-2.5 flex items-center justify-between">
-                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-brand">Signature look</p>
-                {outfits.length > 0 && (
-                  <select
-                    value={signatureOutfitId ?? ""}
-                    onChange={(e) => onSetSignature(e.target.value || null)}
-                    className="rounded-md border border-white/15 bg-white/5 px-2 py-1 text-xs text-paper/80"
-                  >
-                    <option className="bg-ink" value="">None</option>
-                    {outfits.map((o) => (
-                      <option className="bg-ink" key={o.id} value={o.id}>{o.title}</option>
-                    ))}
-                  </select>
-                )}
-              </div>
-              {signature ? (
-                <div className="flex items-center gap-4">
-                  <div className="flex-shrink-0 rounded-xl border border-white/10 bg-white/[0.03] p-1">
-                    <OutfitMannequin
-                      layers={signature.items.map((it) => ({ category: it.category, color: it.color }))}
-                      volume={figureKey as never}
-                      shape={shape as never}
-                      size={72}
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-paper">{signature.title}</p>
-                    {signature.occasion && <p className="text-xs text-brand">{signature.occasion}</p>}
-                    <p className="mt-0.5 text-xs text-paper/50">
-                      {signature.items.map((it) => garmentLabel(it.category)).join(" · ")}
-                    </p>
-                    <p className="mt-0.5 text-xs text-paper/50">♥ {signature.likeCount}</p>
-                  </div>
+            {signature ? (
+              <div className="flex items-center gap-4">
+                <div className="flex-shrink-0 rounded-xl border border-line bg-paper-soft p-1">
+                  <OutfitMannequin
+                    layers={signature.items.map((it) => ({ category: it.category, color: it.color }))}
+                    volume={figureKey as never}
+                    shape={shape as never}
+                    size={72}
+                  />
                 </div>
-              ) : outfits.length > 0 ? (
-                <p className="text-sm text-paper/55">Pick one of your outfits above to feature it here.</p>
+                <div className="min-w-0">
+                  <p className="font-semibold text-ink">{signature.title}</p>
+                  {signature.occasion && <p className="text-xs text-brand">{signature.occasion}</p>}
+                  <p className="mt-0.5 text-xs text-ink-faint">
+                    {signature.items.map((it) => garmentLabel(it.category)).join(" · ")}
+                  </p>
+                  <p className="mt-0.5 text-xs text-ink-faint">♥ {signature.likeCount}</p>
+                </div>
+              </div>
+            ) : outfits.length > 0 ? (
+              <p className="text-sm text-ink-soft">Pick one of your outfits above to feature it here.</p>
+            ) : (
+              <Link href="/outfits" className="text-sm text-brand hover:underline">Compose an outfit to feature as your signature look →</Link>
+            )}
+          </div>
+
+          {/* Body type */}
+          <div className="flex items-center gap-4 border-b border-line px-7 py-5">
+            <div className="flex-shrink-0 rounded-2xl border border-line bg-paper-soft p-2">
+              <BodyFigure volume={figureKey} shape={shape} size={58} />
+            </div>
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Body type</p>
+              <p className="text-lg font-semibold text-ink">{showBodyType ? bodyLabel : "Hidden"}</p>
+              <p className="mt-0.5 text-xs text-ink-faint">
+                {showBodyType
+                  ? "Precise measurements stay private — never shared by code."
+                  : "You've hidden your body type from your public view."}
+              </p>
+            </div>
+          </div>
+
+          {/* Footer: issue seal + verification string + logo placeholder */}
+          <div className="flex items-center gap-4 bg-paper-soft px-7 py-5">
+            <div className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center">
+              <div className="absolute inset-0 animate-[spin_20s_linear_infinite] rounded-full border border-dashed border-brand/40" />
+              {sealBadge ? (
+                <BadgeSeal id={sealBadge.id} metal={sealBadge.metal} size={42} title={sealBadge.title} />
               ) : (
-                <Link href="/outfits" className="text-sm text-brand hover:underline">Compose an outfit to feature as your signature look →</Link>
+                <div className="flex h-11 w-11 flex-col items-center justify-center rounded-full border border-brand/40 bg-brand-tint">
+                  <span className="text-[8px] font-bold uppercase tracking-tight text-brand">Issued</span>
+                  <span className="-mt-0.5 text-[7px] tracking-widest text-ink-faint">2026</span>
+                </div>
               )}
             </div>
-
-            {/* Body type */}
-            <div className="flex items-center gap-4 border-b border-white/10 px-7 py-5">
-              <div className="flex-shrink-0 rounded-2xl border border-white/10 bg-white/[0.03] p-2">
-                <BodyFigure volume={figureKey} shape={shape} size={58} />
-              </div>
-              <div>
-                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-brand">Body type</p>
-                <p className="text-lg font-semibold text-paper">{showBodyType ? bodyLabel : "Hidden"}</p>
-                <p className="mt-0.5 text-xs text-paper/50">
-                  {showBodyType
-                    ? "Precise measurements stay private — never shared by code."
-                    : "You've hidden your body type from your public view."}
-                </p>
-              </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[9px] uppercase tracking-widest text-ink-faint">Verification</p>
+              <p className="truncate font-mono text-[11px] tracking-widest text-ink-soft">{mrz(profile, me)}</p>
             </div>
-
-            {/* Footer: rotating seal + verification MRZ + QR motif */}
-            <div className="flex items-center gap-4 bg-black/20 px-7 py-5">
-              <div className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center">
-                <div className="absolute inset-0 rounded-full border border-dashed border-brand/40 animate-[spin_20s_linear_infinite]" />
-                {sealBadge ? (
-                  <BadgeSeal id={sealBadge.id} metal={sealBadge.metal} size={42} title={sealBadge.title} />
-                ) : (
-                  <div className="flex h-11 w-11 flex-col items-center justify-center rounded-full border border-brand/50 bg-gradient-to-br from-brand/25 to-sky-500/15">
-                    <span className="text-[8px] font-bold uppercase tracking-tight text-paper">Passed</span>
-                    <span className="-mt-0.5 text-[7px] tracking-widest text-brand">2026</span>
-                  </div>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[9px] uppercase tracking-widest text-paper/40">Verification</p>
-                <p className="truncate font-mono text-[11px] tracking-widest text-paper/70">{mrz(profile, me)}</p>
-              </div>
-              <QRMotif />
-            </div>
+            <LogoPlaceholder />
           </div>
         </div>
 
         {/* actions */}
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm">
           <div className="flex gap-4">
-            <Link href="/closet" className="text-paper/60 hover:text-paper">My closet →</Link>
-            <Link href="/badges" className="text-paper/60 hover:text-paper">Badge library →</Link>
+            <Link href="/closet" className="text-ink-soft hover:text-brand">My closet →</Link>
+            <Link href="/badges" className="text-ink-soft hover:text-brand">Badge library →</Link>
           </div>
           {me.claimed ? (
-            <Link href={`/u/${encodeURIComponent(me.accountCode ?? "")}`} className="text-paper/60 hover:text-paper">
+            <Link href={`/u/${encodeURIComponent(me.accountCode ?? "")}`} className="text-ink-soft hover:text-brand">
               Preview public view →
             </Link>
           ) : (
@@ -623,24 +617,11 @@ function ViewBook({
   );
 }
 
-// A credential row for the dark glass card (light text on dark).
-function CredLine({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+// A blank framed slot reserved for our future logo (design pending).
+function LogoPlaceholder() {
   return (
-    <div className="grid grid-cols-[8rem,1fr] items-baseline gap-2">
-      <span className="text-[10px] font-bold uppercase tracking-[0.25em] text-paper/40">{label}</span>
-      <span className={`text-sm text-paper ${mono ? "font-mono tracking-tight" : ""}`}>{value}</span>
-    </div>
-  );
-}
-
-// A minimal encrypted-QR motif (decorative) for the credential footer.
-function QRMotif() {
-  const cells = [1, 1, 0, 1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 1, 0, 1];
-  return (
-    <div className="grid h-12 w-12 flex-shrink-0 grid-cols-4 gap-[2px] rounded-md border border-white/10 bg-white/5 p-1">
-      {cells.map((c, i) => (
-        <span key={i} className={c ? "rounded-[1px] bg-paper/80" : "bg-transparent"} />
-      ))}
+    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md border border-dashed border-line text-[8px] uppercase tracking-widest text-ink-faint">
+      logo
     </div>
   );
 }

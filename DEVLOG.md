@@ -28,6 +28,42 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 28 — Cohesion fixes (passport + check) + interactive 3D badges
+
+**Context:** the dark-glass passport (Sess 27) broke cohesion — low-contrast
+text (unreadable), a banner that differed from the body and from every other
+(light) page, lost metallic sheen, a "Passed 2026" seal that doesn't fit
+"filled out a passport," and a QR motif. Also home's check field ≠ the /check
+page. Founder wants ONE unified style, and better/3D-interactive badges.
+
+**Fixed:**
+- **Passport back to the cohesive LIGHT system** (matches every other page):
+  white card on `bg-paper`, high-contrast ink text (readable). Restored a
+  **designed metallic banner** — cobalt→ink gradient with a static diagonal
+  sheen + a slow moving light streak (`animate-[shimmer_6s]`) for a brushed-metal
+  look. Seal word "Passed" → **"Issued"** (and the status pill → "Issued"); the
+  **QR motif → a blank `LogoPlaceholder`** reserved for our future logo. Removed
+  the dark `.glass-panel`/`CredLine`/`QRMotif` treatment; reused the readable
+  `Line` component.
+- **/check unified with the homepage**: eyebrow + serif headline, the same pill
+  URL field + ink CTA family, hairline demo pills (was a plain bold h1 + boxy
+  input with red focus). Dropped the now-unused `Button` import.
+- **Interactive 3D badges**: new `Badge3D` wrapper (pure CSS 3D, no libs) —
+  cursor-tracked `rotateX/Y` tilt + a moving gloss so a medallion can be "turned"
+  and viewed like a struck coin; reverts smoothly on leave. Applied on the
+  /badges trophy case; also cleaned that page's stray gray tokens to `paper/line`.
+  (Adopted the referenced badge-tooling ideas — SVG medallion + CSS ring/gloss —
+  rather than raster AI art; keeps it crisp, fast, on-palette.)
+
+**Verified:** `tsc` clean · 62/62 vitest green · `next build` clean · live:
+home/check/passport/closet/badges/outfits/community all 200; /check serves the
+new serif hero.
+
+**Next:** design an actual logo for the placeholder; optional faers-style live
+calculator on /check; carry serif headings into remaining page headers.
+
+---
+
 ## 2026-08-12 · Session 27 — Lighter homepage scroll + glass "credential" passport
 
 **Context:** founder feedback on the fashion-scroll homepage — the pinned
