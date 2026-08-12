@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #f7f3ec; /* warm ivory paper */
-  --foreground: #201c18; /* warm near-black ink */
+  --background: #f3f3f1; /* cool porcelain */
+  --foreground: #17181c; /* cool near-black ink */
 }
 
 html,

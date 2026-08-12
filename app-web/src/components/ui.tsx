@@ -154,7 +154,7 @@ export function ConfidenceRing({
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const offset = c * (1 - value);
-  const color = pct >= 75 ? "#16a34a" : pct >= 50 ? "#A6192E" : "#c2803a";
+  const color = pct >= 75 ? "#16a34a" : pct >= 50 ? "#2438d6" : "#c2803a";
   return (
     <div className="relative inline-flex" style={{ width: size, height: size }}>
       <svg width={size} height={size} className="-rotate-90">

@@ -28,6 +28,49 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 25 — Black-led + cobalt palette (research-grounded), bold black hero
+
+**Context:** founder shared two awwwards refs (K95 — cobalt WebGL portfolio;
+NOTHIN' — giant black grotesk) — loves the *first-impression impact* but finds
+them impractical (heavy animation, load-wait). Directive: borrow the "眼前一亮"
+moment, not the heavy motion; main color = high-end black + lighter tones; and
+research color/typography psychology first. Grounding (Wikipedia color-psychology
+synthesis, since Vogue blocked fetch): **black is the strongest evidence-backed
+premium cue** (expensive/high-quality/authority/sophistication); **blue/violet
+reinforce sophistication**; **saturation drives excitement** (use a strong accent
+sparingly); ~62–90% of a snap product judgment is color; no universal color
+(context-dependent). Fashion palette theory: true neutrals base → staples (navy/
+beige/olive) → accents (red/cobalt/butter). Founder picked **cobalt** as the rare
+accent (via previewed options).
+
+**Built:**
+- **Palette re-grounded** (`tailwind.config.ts`): retired warm-ivory/red for a
+  cool **black-led + porcelain** system. Repointed the `brand` token to **cobalt
+  `#2438d6`** (dark/light/tint) so *every* `text-brand`/`bg-brand` across the app
+  flips to cobalt in ONE place. `paper` → cool porcelain (`#F3F3F1`), `ink` → cool
+  near-black (`#17181c`), `line` cooled. `globals.css` roots + `ConfidenceRing`'s
+  hardcoded `#A6192E` updated to cobalt.
+- **Dual-surface principle:** black = statement (hero/brand), porcelain = the
+  working surface you read/use (closet, passport…). Keeps impact AND usability.
+- **Landing hero rebuilt black-led** (`page.tsx`): full-width `bg-ink` band, huge
+  serif headline (text-6xl→8xl, `leading-[0.95]`), the accent word in cobalt
+  italic, a glassy translucent URL field with a **cobalt CTA**, one clean staggered
+  `rise` entrance — no loader, no wait. Guided content sits on porcelain below.
+
+**Deliberately NOT done (practicality):** no WebGL/3D, no intro loader, no heavy
+motion — impact is scale + contrast + one accent. Framer Motion / Lenis noted as
+optional future polish; open-source refs given (GSAP now free, Three/R3F, Lenis,
+SplitType, Fontshare, Codrops).
+
+**Verified:** `tsc` clean · 62/62 vitest green · `next build` clean · live:
+home + passport/closet/check/outfits/community/badges all 200; hero serves the
+black `bg-ink` band + cobalt accent.
+
+**Next:** carry cobalt/black/porcelain deeper per page; consider Framer Motion +
+Lenis for tasteful fast motion; then real product-photography treatment.
+
+---
+
 ## 2026-08-12 · Session 24 — Editorial design system (foundation pass): fashion-magazine aesthetic
 
 **Context:** the founder wants a cross-cutting visual upgrade — "fashionable,

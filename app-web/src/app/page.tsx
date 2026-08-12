@@ -61,48 +61,50 @@ export default function Home() {
 
   return (
     <main className="flex-1">
-      {/* HERO — editorial: a single evocative line, then the value-first action. */}
-      <section className="relative mx-auto max-w-4xl px-6 pt-20 pb-12 text-center sm:pt-28">
-        <p className="eyebrow text-ink-faint animate-rise">One body · one fit identity · any store</p>
-        <h1 className="mt-6 font-serif text-5xl leading-[1.04] text-ink animate-rise sm:text-7xl" style={{ animationDelay: "60ms" }}>
-          Know what fits,
-          <br />
-          <span className="italic text-brand">anywhere.</span>
-        </h1>
-        <p className="mx-auto mt-7 max-w-lg text-base leading-relaxed text-ink-soft animate-rise sm:text-lg" style={{ animationDelay: "120ms" }}>
-          Paste any product link. We read its sizing, weigh it against the clothes
-          you already love, and tell you the size — and&nbsp;why.
-        </p>
+      {/* HERO — black "statement" panel: huge serif, one clean entrance, no loader.
+          The impact comes from scale + black/porcelain contrast + a single cobalt
+          accent, not from heavy animation — bold first impression, still fast. */}
+      <section className="bg-ink text-paper">
+        <div className="mx-auto max-w-5xl px-6 pt-20 pb-16 text-center sm:pt-28 sm:pb-20">
+          <p className="eyebrow text-paper/45 animate-rise">One body · one fit identity · any store</p>
+          <h1 className="mx-auto mt-7 max-w-4xl font-serif text-6xl font-semibold leading-[0.95] tracking-tight animate-rise sm:text-8xl" style={{ animationDelay: "60ms" }}>
+            Know what fits,
+            <br />
+            <span className="italic font-normal text-brand">anywhere.</span>
+          </h1>
+          <p className="mx-auto mt-8 max-w-lg text-base leading-relaxed text-paper/65 animate-rise sm:text-lg" style={{ animationDelay: "120ms" }}>
+            Paste any product link. We read its sizing, weigh it against the clothes
+            you already love, and tell you the size — and&nbsp;why.
+          </p>
 
-        <form
-          onSubmit={goCheck}
-          className="mx-auto mt-10 flex max-w-xl items-center gap-2 rounded-full border border-line bg-paper-soft p-1.5 shadow-card animate-rise focus-within:border-ink/30"
-          style={{ animationDelay: "180ms" }}
-        >
-          <input
-            type="url"
-            required
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="Paste a product URL…"
-            className="flex-1 bg-transparent px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="flex-shrink-0 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-transform hover:scale-[0.98] active:scale-95"
+          <form
+            onSubmit={goCheck}
+            className="mx-auto mt-10 flex max-w-xl items-center gap-2 rounded-full border border-paper/15 bg-paper/10 p-1.5 backdrop-blur animate-rise focus-within:border-paper/40"
+            style={{ animationDelay: "180ms" }}
           >
-            Get my size →
-          </button>
-        </form>
-        <p className="mt-4 text-xs text-ink-faint animate-rise" style={{ animationDelay: "220ms" }}>
-          No account needed. Try a demo product on the next screen.
-        </p>
-
-        <div className="mx-auto mt-14 h-px max-w-xs bg-line" />
+            <input
+              type="url"
+              required
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="Paste a product URL…"
+              className="flex-1 bg-transparent px-4 py-2.5 text-sm text-paper placeholder:text-paper/40 focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="flex-shrink-0 rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[0.98] active:scale-95"
+            >
+              Get my size →
+            </button>
+          </form>
+          <p className="mt-4 text-xs text-paper/40 animate-rise" style={{ animationDelay: "220ms" }}>
+            No account needed. Try a demo product on the next screen.
+          </p>
+        </div>
       </section>
 
       {/* GUIDED STATE */}
-      <section className="mx-auto max-w-3xl px-6 pb-20">
+      <section className="mx-auto max-w-3xl px-6 pb-20 pt-14">
         {status === null ? (
           <Card className="space-y-3">
             <Skeleton className="h-5 w-40" />

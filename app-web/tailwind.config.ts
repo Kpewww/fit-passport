@@ -10,26 +10,29 @@ const config: Config = {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
       },
       colors: {
-        // CMU / Fit Passport accent — used sparingly on an editorial paper canvas.
+        // The single "rare accent" — a confident cobalt (research: blue reinforces
+        // sophistication + it reads bold/premium). Named `brand` so every existing
+        // `text-brand`/`bg-brand` flips to cobalt in one place. Used sparingly.
         brand: {
-          DEFAULT: "#A6192E", // CMU cardinal red
-          dark: "#7d1222",
-          light: "#f6e7ea",
-          tint: "#fbf3f4",
+          DEFAULT: "#2438d6", // cobalt
+          dark: "#1a2aa8",
+          light: "#e9ebfb",
+          tint: "#f2f3fc",
         },
-        // Warm ivory "paper" canvas — the editorial magazine base.
+        // Cool "porcelain" off-white — the light working surface (pairs with black
+        // + cobalt). Black is the statement color; porcelain is where you read/work.
         paper: {
-          DEFAULT: "#F7F3EC",
-          soft: "#FCFAF5",
-          dim: "#ECE6D9",
+          DEFAULT: "#F3F3F1",
+          soft: "#FBFBFA",
+          dim: "#E6E7E9",
         },
-        // Warm near-black ink + warm grays (reads more premium than pure gray).
+        // Cool near-black ink + cool grays — high-end, evidence-backed premium cue.
         ink: {
-          DEFAULT: "#201c18",
-          soft: "#57514a",
-          faint: "#938b80",
+          DEFAULT: "#17181c",
+          soft: "#4c4e57",
+          faint: "#8a8d97",
         },
-        line: "#E3DCCE", // hairline rules on paper
+        line: "#E2E3E7", // hairline rules
       },
       letterSpacing: {
         editorial: "0.24em",
