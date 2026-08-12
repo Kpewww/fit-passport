@@ -89,6 +89,30 @@ export default function ClosetPage() {
   const [extractNote, setExtractNote] = useState<string | null>(null);
   // Closet view mode
   const [view, setView] = useState<"list" | "grid">("list");
+  // Folder view: the file "pulled fully out" onto the desk (detail sheet), and
+  // the comparison "bucket" — items set aside to view side-by-side, mirroring
+  // how you pull a few garments out of a real closet when planning an outfit.
+  const [detailGroup, setDetailGroup] = useState<Group | null>(null);
+  const [compareItems, setCompareItems] = useState<Item[]>([]);
+
+  function toggleBucket(it: Item) {
+    setCompareItems((prev) =>
+      prev.some((x) => x.id === it.id) ? prev.filter((x) => x.id !== it.id) : [...prev, it],
+    );
+  }
+  const inBucket = (id: string) => compareItems.some((x) => x.id === id);
+
+  // Keep the bucket + open sheet in sync with the latest item data after reloads
+  // (edits/removals): drop anything that no longer exists, refresh the rest.
+  useEffect(() => {
+    const byId = new Map(items.map((i) => [i.id, i]));
+    setCompareItems((prev) => prev.map((c) => byId.get(c.id)).filter(Boolean) as Item[]);
+    setDetailGroup((prev) => {
+      if (!prev) return prev;
+      const live = prev.items.map((c) => byId.get(c.id)).filter(Boolean) as Item[];
+      return live.length ? { ...prev, items: live } : null;
+    });
+  }, [items]);
 
   async function extractFromUrl() {
     if (!pasteUrl.trim()) return;
@@ -106,9 +130,11 @@ export default function ClosetPage() {
         brand: r.brand || f.brand,
         displayName: r.suggestedName || f.displayName,
         category: r.category || f.category,
+        gender: r.gender || f.gender,
         size: Array.isArray(r.sizes) && r.sizes.length ? "" : f.size, // let user pick a size
       }));
-      setExtractNote(`Read from ${r.source?.host ?? "the page"} — review and pick your size below.`);
+      const bits = [r.brand, r.category && garmentLabel(r.category)].filter(Boolean).join(" · ");
+      setExtractNote(`Read ${bits || "details"} from ${r.source?.host ?? "the page"} — review and pick your size below.`);
     } catch {
       setExtractNote("Couldn't read that URL — fill the fields in manually.");
     } finally {
@@ -400,7 +426,7 @@ export default function ClosetPage() {
           </div>
         ) : (
           <div className="mt-6 space-y-6">
-            {buckets.map(({ collection, items: bucketItems }) => (
+            {buckets.map(({ collection, items: bucketItems }, i) => (
               <CollectionSection
                 key={collection.id}
                 collection={collection}
@@ -416,6 +442,10 @@ export default function ClosetPage() {
                 selected={selected}
                 onToggleSelect={toggleSelect}
                 view={view}
+                colorSeed={i}
+                onOpenDetail={setDetailGroup}
+                onBucket={toggleBucket}
+                inBucket={inBucket}
               />
             ))}
             {uncategorized.length > 0 && (
@@ -433,6 +463,10 @@ export default function ClosetPage() {
                 selected={selected}
                 onToggleSelect={toggleSelect}
                 view={view}
+                colorSeed={-1}
+                onOpenDetail={setDetailGroup}
+                onBucket={toggleBucket}
+                inBucket={inBucket}
                 undeletable
               />
             )}
@@ -463,6 +497,23 @@ export default function ClosetPage() {
           </Card>
         )}
       </div>
+
+      {/* The file pulled fully out onto the desk */}
+      {detailGroup && (
+        <DetailSheet
+          group={detailGroup}
+          collections={collections}
+          inBucket={inBucket}
+          onBucket={toggleBucket}
+          onClose={() => setDetailGroup(null)}
+          onEdit={(id) => { setDetailGroup(null); setEditingId(id); }}
+          onPatch={patch}
+          onRemove={(id) => { remove(id); }}
+        />
+      )}
+
+      {/* The comparison bucket — items set aside to look at together */}
+      <BucketPanel items={compareItems} onRemove={toggleBucket} onClear={() => setCompareItems([])} onOpen={(it) => setDetailGroup({ key: it.id, label: it.displayName || it.brand, items: [it], isVariant: false })} />
     </main>
   );
 }
@@ -488,6 +539,10 @@ function CollectionSection({
   selected,
   onToggleSelect,
   view,
+  colorSeed,
+  onOpenDetail,
+  onBucket,
+  inBucket,
   undeletable,
 }: {
   collection: Collection;
@@ -502,6 +557,10 @@ function CollectionSection({
   selectMode: boolean;
   selected: Set<string>;
   onToggleSelect: (id: string) => void;
+  colorSeed: number;
+  onOpenDetail: (g: Group) => void;
+  onBucket: (it: Item) => void;
+  inBucket: (id: string) => boolean;
   view: "list" | "grid";
   undeletable?: boolean;
 }) {
@@ -566,14 +625,18 @@ function CollectionSection({
         )}
       </div>
 
-      {items.length === 0 ? (
+      {view === "grid" && !selectMode ? (
+        <Folder
+          groups={groups}
+          colorSeed={colorSeed}
+          onOpen={onOpenDetail}
+          onBucket={onBucket}
+          inBucket={inBucket}
+        />
+      ) : items.length === 0 ? (
         <p className="rounded-xl border border-dashed border-neutral-200 px-4 py-3 text-xs text-ink-faint">
           Empty — items of this type will file here automatically.
         </p>
-      ) : view === "grid" && !selectMode ? (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-          {items.map((it) => <ItemTile key={it.id} item={it} onEdit={(id) => onEdit(id)} />)}
-        </div>
       ) : (
         <div className="space-y-2">
           {groups.map((g) =>
@@ -1017,41 +1080,304 @@ function ItemThumb({ item, size }: { item: Item; size: number }) {
   );
 }
 
-// A manila-folder tile: a tabbed folder that normally shows just the name.
-// On hover, a "file" slides UP and to the RIGHT out of the folder — peeking out
-// of the top-right corner to reveal the item's photo + info, like pulling a
-// document partway out of a folder.
-function ItemTile({ item, onEdit }: { item: Item; onEdit: (id: string) => void }) {
-  const name = item.displayName || `${item.brand} ${garmentLabel(item.category)}`;
-  return (
-    <button
-      onClick={() => onEdit(item.id)}
-      className="group relative h-28 w-full text-left [perspective:600px]"
-      title={name}
-    >
-      {/* The file that peeks out — sits BEHIND the folder front, slides out on hover */}
-      <div
-        className="pointer-events-none absolute right-1 top-1 z-0 flex h-[74%] w-[74%] flex-col overflow-hidden rounded-md border border-neutral-200 bg-white opacity-0 shadow-card transition-all duration-300 ease-out group-hover:-translate-y-3 group-hover:translate-x-3 group-hover:opacity-100"
-      >
-        <div className="flex flex-1 items-center justify-center bg-neutral-50">
-          <ItemThumb item={item} size={40} />
-        </div>
-        <div className="border-t border-neutral-100 px-1.5 py-1">
-          <p className="truncate text-[10px] font-medium text-ink">{name}</p>
-          <p className="text-[9px] text-ink-faint">{garmentLabel(item.category)} · {item.size}</p>
-          <p className="text-[9px] text-amber-500">{"★".repeat(item.fitRating)}</p>
-        </div>
-      </div>
+// ---------------- Folder view (physical filing metaphor) ----------------
+//
+// Each COLLECTION is drawn as a real folder — a tabbed, colored sleeve that is
+// clearly a different color from the white "file" cards tucked inside it. The
+// items stack, each showing just one key-info row, with the front-most file
+// fully open. Hover a file to peek at its overview; click to pull it fully out
+// onto the "desk" (the detail sheet). A comparison bucket lets you set a few
+// files aside to look at together — the way you pull a few things out of a real
+// closet when planning an outfit.
 
-      {/* Folder tab */}
-      <span className="absolute left-2 top-1 z-10 h-3 w-10 rounded-t-md bg-amber-200/90 shadow-sm transition-colors group-hover:bg-amber-300" />
-      {/* Folder front face */}
-      <div className="absolute inset-x-0 bottom-0 top-3 z-20 flex flex-col justify-end rounded-lg rounded-tl-none border border-amber-300/70 bg-gradient-to-b from-amber-100 to-amber-200/80 p-2 shadow-card transition-all duration-300 group-hover:shadow-lift">
-        {/* color dot as a tiny label sticker */}
-        <span className="absolute right-2 top-2"><ColorDot color={item.color} /></span>
-        <p className="truncate text-[11px] font-semibold text-amber-900">{name}</p>
-        <p className="truncate text-[9px] text-amber-700/80">{garmentLabel(item.category)}</p>
+function itemName(it: Item): string {
+  return it.displayName || `${it.brand} ${garmentLabel(it.category)}`;
+}
+
+// Folder sleeve colors — each collection reads as its own folder, distinct from
+// the white file cards inside.
+const FOLDER_PALETTE = [
+  { tab: "bg-amber-300", body: "from-amber-100 to-amber-200/80", edge: "border-amber-400/60" },
+  { tab: "bg-sky-300", body: "from-sky-100 to-sky-200/80", edge: "border-sky-400/60" },
+  { tab: "bg-emerald-300", body: "from-emerald-100 to-emerald-200/80", edge: "border-emerald-400/60" },
+  { tab: "bg-rose-300", body: "from-rose-100 to-rose-200/80", edge: "border-rose-400/60" },
+  { tab: "bg-violet-300", body: "from-violet-100 to-violet-200/80", edge: "border-violet-400/60" },
+  { tab: "bg-orange-300", body: "from-orange-100 to-orange-200/80", edge: "border-orange-400/60" },
+];
+const UNCAT_FOLDER = { tab: "bg-neutral-300", body: "from-neutral-100 to-neutral-200/80", edge: "border-neutral-300" };
+function folderColor(seed: number) {
+  return seed < 0 ? UNCAT_FOLDER : FOLDER_PALETTE[seed % FOLDER_PALETTE.length];
+}
+
+function Folder({
+  groups,
+  colorSeed,
+  onOpen,
+  onBucket,
+  inBucket,
+}: {
+  groups: Group[];
+  colorSeed: number;
+  onOpen: (g: Group) => void;
+  onBucket: (it: Item) => void;
+  inBucket: (id: string) => boolean;
+}) {
+  const c = folderColor(colorSeed);
+  return (
+    <div className="relative pt-3">
+      {/* folder tab */}
+      <span className={`absolute left-5 top-0 h-4 w-24 rounded-t-lg ${c.tab} shadow-sm`} />
+      {/* folder sleeve */}
+      <div className={`relative rounded-xl rounded-tl-none border ${c.edge} bg-gradient-to-b ${c.body} p-3 shadow-card`}>
+        {groups.length === 0 ? (
+          <div className="flex h-20 items-center justify-center rounded-lg border-2 border-dashed border-white/70 text-xs italic text-black/40">
+            Empty folder — items of this type file here automatically.
+          </div>
+        ) : (
+          <div className="relative">
+            {groups.map((g, i) => (
+              <FileCard
+                key={g.key}
+                group={g}
+                index={i}
+                front={i === groups.length - 1}
+                onOpen={onOpen}
+                onBucket={onBucket}
+                inBucket={inBucket}
+              />
+            ))}
+          </div>
+        )}
       </div>
-    </button>
+    </div>
+  );
+}
+
+// A single "file" in the folder. Collapsed cards show only their top key-info
+// row and tuck slightly under the next file; the front file is open. Hover to
+// expand a file's overview in place ("peek"); click opens the full detail sheet.
+function FileCard({
+  group,
+  index,
+  front,
+  onOpen,
+  onBucket,
+  inBucket,
+}: {
+  group: Group;
+  index: number;
+  front: boolean;
+  onOpen: (g: Group) => void;
+  onBucket: (it: Item) => void;
+  inBucket: (id: string) => boolean;
+}) {
+  const head = group.items[0];
+  const name = itemName(head);
+  const sizeLabel = group.isVariant ? `${group.items.length} sizes` : `size ${head.size}`;
+  const bucketed = inBucket(head.id);
+  return (
+    <div
+      className="group/file relative"
+      style={{ marginTop: index === 0 ? 0 : "-0.4rem", zIndex: index + 1 }}
+    >
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => onOpen(group)}
+        onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen(group))}
+        className="cursor-pointer rounded-lg border border-neutral-200 bg-white px-3 py-2 shadow-sm transition-all duration-200 hover:z-30 hover:border-neutral-300 hover:shadow-lift"
+      >
+        {/* key-info row — always visible */}
+        <div className="flex items-center gap-2">
+          <span className="text-base leading-none">{garmentGlyph(head.category)}</span>
+          <ColorDot color={head.color} />
+          <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{name}</span>
+          {group.isVariant && (
+            <span className="flex-shrink-0 rounded-full bg-brand-tint px-1.5 py-0.5 text-[9px] font-semibold text-brand">
+              {group.items.length}
+            </span>
+          )}
+          <span className="flex-shrink-0 text-xs text-ink-faint">{garmentLabel(head.category)} · {sizeLabel}</span>
+        </div>
+
+        {/* overview — open on the front file, and on hover for the rest */}
+        <div
+          className={`overflow-hidden transition-all duration-200 ${
+            front ? "mt-2 max-h-40 opacity-100" : "max-h-0 opacity-0 group-hover/file:mt-2 group-hover/file:max-h-40 group-hover/file:opacity-100"
+          }`}
+        >
+          <div className="flex items-center gap-3 border-t border-neutral-100 pt-2">
+            <ItemThumb item={head} size={40} />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-xs text-ink-soft">
+                {head.brand}
+                {head.gender ? <span className="ml-1"><GenderBadge gender={head.gender} /></span> : null}
+              </p>
+              <p className="text-[11px] text-amber-500">
+                {"★".repeat(head.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - head.fitRating)}</span>
+              </p>
+              {head.color && <p className="text-[11px] text-ink-faint">{head.color}</p>}
+            </div>
+            <button
+              onClick={(e) => { e.stopPropagation(); onBucket(head); }}
+              className={`flex-shrink-0 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors ${
+                bucketed
+                  ? "border-brand bg-brand-tint text-brand"
+                  : "border-neutral-200 text-ink-soft hover:border-brand hover:text-brand"
+              }`}
+              title="Set aside to compare"
+            >
+              {bucketed ? "✓ Bucket" : "＋ Bucket"}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// The file pulled fully out onto the desk — a right-side sheet with everything.
+function DetailSheet({
+  group,
+  collections,
+  inBucket,
+  onBucket,
+  onClose,
+  onEdit,
+  onPatch,
+  onRemove,
+}: {
+  group: Group;
+  collections: Collection[];
+  inBucket: (id: string) => boolean;
+  onBucket: (it: Item) => void;
+  onClose: () => void;
+  onEdit: (id: string) => void;
+  onPatch: (id: string, data: Record<string, unknown>) => void;
+  onRemove: (id: string) => void;
+}) {
+  const head = group.items[0];
+  const name = itemName(head);
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="animate-fade-in-up relative z-10 flex h-full w-full max-w-sm flex-col overflow-y-auto bg-white shadow-2xl"
+      >
+        <div className="flex items-start justify-between border-b border-neutral-200 px-5 py-4">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">On the desk</p>
+            <h3 className="truncate text-lg font-semibold text-ink">{name}</h3>
+          </div>
+          <button onClick={onClose} className="ml-3 flex-shrink-0 text-2xl leading-none text-ink-faint hover:text-ink" aria-label="Close">×</button>
+        </div>
+
+        <div className="flex items-center gap-4 px-5 py-5">
+          <ItemThumb item={head} size={72} />
+          <div className="min-w-0 space-y-1 text-sm">
+            <p className="font-medium text-ink">{head.brand}</p>
+            <p className="text-ink-soft">{garmentLabel(head.category)}{head.gender ? ` · ${head.gender}` : ""}</p>
+            <p className="text-amber-500">{"★".repeat(head.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - head.fitRating)}</span></p>
+          </div>
+        </div>
+
+        {/* variants OR single size */}
+        <div className="border-t border-neutral-100 px-5 py-4">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
+            {group.isVariant ? `${group.items.length} variants` : "Details"}
+          </p>
+          <div className="space-y-1.5">
+            {group.items.map((v) => (
+              <div key={v.id} className="flex items-center justify-between rounded-lg border border-neutral-100 px-3 py-2 text-sm">
+                <span className="flex items-center gap-2">
+                  <ColorDot color={v.color} />
+                  <span className="font-medium text-ink">size {v.size}</span>
+                  {v.color && <span className="text-ink-faint">· {v.color}</span>}
+                </span>
+                <span className="flex items-center gap-3 text-xs">
+                  <button onClick={() => onEdit(v.id)} className="text-ink-soft hover:text-brand">Edit</button>
+                  <button onClick={() => onRemove(v.id)} className="text-ink-faint hover:text-red-600">Remove</button>
+                </span>
+              </div>
+            ))}
+          </div>
+          {head.areaNotesJson && safeNotes(head.areaNotesJson) && (
+            <p className="mt-3 rounded-lg bg-neutral-50 px-3 py-2 text-xs text-ink-soft">📝 {safeNotes(head.areaNotesJson)}</p>
+          )}
+        </div>
+
+        {/* actions */}
+        <div className="mt-auto space-y-3 border-t border-neutral-200 px-5 py-4">
+          <div className="flex items-center gap-2">
+            <MoveMenu collections={collections} currentId={head.collectionId} onMove={(cid) => onPatch(head.id, { collectionId: cid })} />
+            <button
+              onClick={() => onBucket(head)}
+              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                inBucket(head.id) ? "border-brand bg-brand-tint text-brand" : "border-neutral-200 text-ink-soft hover:border-brand hover:text-brand"
+              }`}
+            >
+              {inBucket(head.id) ? "✓ In bucket" : "＋ Add to bucket"}
+            </button>
+          </div>
+          <p className="text-[11px] text-ink-faint">Precise measurements stay private — never shared by code.</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// A floating "bucket" — files set aside to compare side by side.
+function BucketPanel({
+  items,
+  onRemove,
+  onClear,
+  onOpen,
+}: {
+  items: Item[];
+  onRemove: (it: Item) => void;
+  onClear: () => void;
+  onOpen: (it: Item) => void;
+}) {
+  const [open, setOpen] = useState(true);
+  if (items.length === 0) return null;
+  return (
+    <div className="fixed bottom-4 right-4 z-40">
+      {open ? (
+        <div className="w-72 rounded-2xl border border-neutral-200 bg-white p-3 shadow-2xl">
+          <div className="mb-2 flex items-center justify-between">
+            <p className="text-sm font-semibold text-ink">🧺 Comparison bucket <span className="text-ink-faint">({items.length})</span></p>
+            <div className="flex items-center gap-2 text-xs">
+              <button onClick={onClear} className="text-ink-faint hover:text-red-600">Clear</button>
+              <button onClick={() => setOpen(false)} className="text-ink-faint hover:text-ink" aria-label="Collapse">–</button>
+            </div>
+          </div>
+          <div className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto">
+            {items.map((it) => (
+              <div key={it.id} className="relative rounded-lg border border-neutral-100 p-2">
+                <button
+                  onClick={() => onRemove(it)}
+                  className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-200 text-[10px] leading-none text-ink-soft hover:bg-red-100 hover:text-red-600"
+                  aria-label="Remove from bucket"
+                >×</button>
+                <button onClick={() => onOpen(it)} className="flex w-full flex-col items-center gap-1 text-center">
+                  <ItemThumb item={it} size={44} />
+                  <span className="w-full truncate text-[11px] font-medium text-ink">{itemName(it)}</span>
+                  <span className="text-[10px] text-ink-faint">{garmentLabel(it.category)} · {it.size}</span>
+                </button>
+              </div>
+            ))}
+          </div>
+          <p className="mt-2 text-[10px] text-ink-faint">Held for side-by-side comparison — not a saved list.</p>
+        </div>
+      ) : (
+        <button
+          onClick={() => setOpen(true)}
+          className="flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-lift"
+        >
+          🧺 Bucket <span className="rounded-full bg-white/25 px-1.5">{items.length}</span>
+        </button>
+      )}
+    </div>
   );
 }

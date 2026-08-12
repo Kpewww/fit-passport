@@ -29,11 +29,14 @@ export type ExtractedSize = {
   bodyChestMaxCm?: number;
 };
 
+export type Gender = "mens" | "womens" | "unisex";
+
 export type ExtractedProduct = {
   retailer: string;
   brand: string;
   productName: string;
   category: string;
+  gender?: Gender;
   material?: string;
   fitNotes?: string;
   modelInfo?: { heightCm?: number; wearsSize?: string };
@@ -138,15 +141,51 @@ const BRAND_TABLE: Record<string, BrandProfile> = {
   patagonia: { brand: "Patagonia", system: "alpha", chestBaseCm: 108, stepCm: 5, fitNotes: "Regular outdoor fit." },
 };
 
-// category keyword detection from the URL slug / path
+// category keyword detection from the URL slug / path.
+// ORDER MATTERS — the first regex that matches wins, so the most specific /
+// least ambiguous patterns come first. Insulated outerwear ("down hoody",
+// "puffer") is matched as a jacket BEFORE the generic hoodie rule, since a
+// down-hoody is an insulated jacket with a hood, not a fleece hoodie.
 const CATEGORY_KEYWORDS: Array<{ cat: string; re: RegExp }> = [
-  { cat: "tshirt", re: /\b(t-?shirt|tee|crew-?neck)\b/i },
+  // Bottoms (before tops so "sweatpants" ≠ sweater, "board-shorts" ≠ shirt)
+  { cat: "jeans", re: /\b(jeans?|denim)\b/i },
+  { cat: "shorts", re: /\b(shorts?|boardshorts?|trunks)\b/i },
+  { cat: "skirt", re: /\b(skirts?)\b/i },
+  { cat: "pants", re: /\b(pants?|trousers?|chinos?|leggings?|joggers?|sweatpants?|slacks?|cargos?)\b/i },
+  // Footwear
+  { cat: "sneakers", re: /\b(sneakers?|trainers?|runners?)\b/i },
+  { cat: "boots", re: /\b(boots?)\b/i },
+  { cat: "shoes", re: /\b(shoes?|loafers?|sandals?|footwear|flats?|heels?|clogs?)\b/i },
+  { cat: "socks", re: /\b(socks?)\b/i },
+  // Accessories
+  { cat: "hat", re: /\b(hat|caps?|beanie|beanies)\b/i },
+  { cat: "belt", re: /\b(belts?)\b/i },
+  { cat: "scarf", re: /\b(scarf|scarves|muffler)\b/i },
+  // Tops — insulated outerwear first, then hoodie/sweater/jacket/shirt/tee
+  { cat: "jacket", re: /\b(down|puffer|puffy|insulated|parka|anorak|windbreaker|gilet|shell)\b/i },
   { cat: "polo", re: /\bpolo\b/i },
-  { cat: "hoodie", re: /\b(hoodie|hooded|sweatshirt)\b/i },
-  { cat: "sweater", re: /\b(sweater|jumper|knit|cardigan|pullover)\b/i },
-  { cat: "jacket", re: /\b(jacket|coat|parka|trucker|blazer|outerwear|shell)\b/i },
-  { cat: "shirt", re: /\b(shirt|oxford|flannel|button)\b/i },
+  { cat: "hoodie", re: /\b(hoodie|hoody|hooded|sweatshirt)\b/i },
+  { cat: "sweater", re: /\b(sweater|jumper|knit|cardigan|pullover|fleece|turtleneck)\b/i },
+  { cat: "jacket", re: /\b(jacket|coat|trucker|blazer|outerwear|vest)\b/i },
+  { cat: "shirt", re: /\b(shirt|oxford|flannel|button-?down|button-?up)\b/i },
+  { cat: "tshirt", re: /\b(t-?shirt|tee|crew-?neck)\b/i },
 ];
+
+// Gender / department detection from the URL path. "women" first — note
+// "\bmen\b" never matches inside "women" anyway (no word boundary), but ordering
+// keeps the intent obvious. Single letters (m/w) are too noisy to trust.
+function detectGender(text: string): Gender | undefined {
+  const rules: Array<{ g: Gender; re: RegExp }> = [
+    { g: "womens", re: /\b(womens?|women'?s|woman|ladies|female|girls?)\b/i },
+    { g: "mens", re: /\b(mens?|men'?s|male|boys?)\b/i },
+    { g: "unisex", re: /\b(unisex|all-?gender)\b/i },
+  ];
+  for (const { g, re } of rules) if (re.test(text)) return g;
+  return undefined;
+}
+
+// gender words to strip from the FRONT of a derived product name
+const GENDER_PREFIX_RE = /^(womens?|women'?s|woman|ladies|mens?|men'?s|male|unisex)\s+/i;
 
 // CMS/path noise words that show up in slugs but aren't part of a product name.
 const SLUG_NOISE = new Set([
@@ -167,6 +206,7 @@ function slugToName(slug: string): string {
     .map((w) => w.trim())
     .filter(Boolean)
     // drop alphanumeric SKU-ish tokens and standalone ids
+    .filter((w) => !/^\d+$/.test(w)) // pure numbers (sizes/color codes: "00", "42")
     .filter((w) => !/\d{3,}/.test(w)) // has a 3+ digit run → likely an id
     .filter((w) => !/^[a-z]{1,3}\d+$/i.test(w)) // e.g. "abc123", "p12"
     .filter((w) => !SLUG_NOISE.has(w.toLowerCase()));
@@ -175,6 +215,27 @@ function slugToName(slug: string): string {
   return words
     .map((w) => (w.length <= 2 ? w.toUpperCase() : w[0].toUpperCase() + w.slice(1)))
     .join(" ");
+}
+
+/**
+ * Many retailers put the SKU/id in the LAST path segment and the descriptive
+ * slug earlier (e.g. Patagonia `/product/womens-fitz-roy-down-hoody/85506.html`).
+ * So we score every path segment by how many real words it yields and pick the
+ * richest one, instead of blindly taking the last segment.
+ */
+function pickNameSlug(parts: string[]): string {
+  let best = "";
+  let bestScore = 0;
+  for (const p of parts) {
+    const name = slugToName(p);
+    if (!name) continue;
+    const score = name.split(/\s+/).filter(Boolean).length;
+    if (score > bestScore) {
+      bestScore = score;
+      best = name;
+    }
+  }
+  return best;
 }
 
 function guessBrand(host: string): BrandProfile | null {
@@ -227,15 +288,15 @@ function guessRetailerName(host: string): string {
 
 export function extractFromUrl(url: string): ExtractedProduct {
   let host = "";
-  let slug = "";
+  let parts: string[] = [];
   try {
     const u = new URL(url);
     host = u.hostname.replace(/^www\./, "");
-    const parts = u.pathname.split("/").filter(Boolean);
-    slug = parts[parts.length - 1] ?? "";
+    parts = u.pathname.split("/").filter(Boolean).map((p) => decodeURIComponent(p));
   } catch {
     host = "";
   }
+  const slug = parts[parts.length - 1] ?? "";
 
   // Layer 1: curated fixture (exact demo products).
   for (const f of FIXTURES) {
@@ -244,22 +305,29 @@ export function extractFromUrl(url: string): ExtractedProduct {
     }
   }
 
-  // Layer 2: URL-derived.
-  const fullText = `${host} ${slug}`;
-  const category = detectCategory(fullText);
+  // Layer 2: URL-derived. Detect over the WHOLE path (all segments), not just
+  // the last one — the descriptive slug is often not the final segment.
+  const pathText = `${host} ${parts.join(" ")}`.replace(/[-_]/g, " ");
+  const category = detectCategory(pathText);
+  const gender = detectGender(pathText);
   const brandProfile = guessBrand(host);
-  const nameFromSlug = slugToName(slug);
+
+  // Best human name from the richest path segment, with a leading gender word
+  // stripped (we surface gender separately).
+  const rawName = pickNameSlug(parts);
+  const nameFromSlug = rawName.replace(GENDER_PREFIX_RE, "").trim();
 
   if (brandProfile) {
     const productName =
       nameFromSlug && nameFromSlug.toLowerCase() !== brandProfile.brand.toLowerCase()
         ? `${brandProfile.brand} ${nameFromSlug}`
-        : `${brandProfile.brand} ${category}`;
+        : `${brandProfile.brand} ${garmentNoun(category)}`;
     return {
       retailer: brandProfile.brand,
       brand: brandProfile.brand,
       productName,
       category,
+      gender,
       material: "See product page",
       fitNotes: brandProfile.fitNotes,
       sizes: buildSizes(brandProfile, category),
@@ -279,13 +347,25 @@ export function extractFromUrl(url: string): ExtractedProduct {
   return {
     retailer,
     brand: retailer,
-    productName: nameFromSlug ? `${retailer} · ${nameFromSlug}` : `${retailer} ${category}`,
+    productName: nameFromSlug ? `${retailer} · ${nameFromSlug}` : `${retailer} ${garmentNoun(category)}`,
     category,
+    gender,
     material: "Unknown",
     fitNotes: genericProfile.fitNotes,
     sizes: buildSizes(genericProfile, category),
     source: { url, host, derived: true, slug },
   };
+}
+
+// Human noun for a category, used when we couldn't recover a real product name.
+function garmentNoun(category: string): string {
+  const nouns: Record<string, string> = {
+    tshirt: "T-shirt", shirt: "shirt", polo: "polo", sweater: "sweater",
+    hoodie: "hoodie", jacket: "jacket", pants: "pants", jeans: "jeans",
+    shorts: "shorts", skirt: "skirt", shoes: "shoes", sneakers: "sneakers",
+    boots: "boots", socks: "socks", hat: "hat", belt: "belt", scarf: "scarf",
+  };
+  return nouns[category] ?? "item";
 }
 
 export function listFixtures() {

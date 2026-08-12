@@ -10,7 +10,7 @@ import Link from "next/link";
 import { Button, Card } from "@/components/ui";
 import { BodyFigure } from "@/components/BodyFigure";
 import { deriveBodyType } from "@/lib/bodyType";
-import { Avatar, BadgeSeal, PinnedSeals } from "@/components/Badges";
+import { Avatar, BadgeSeal, EarnedSealRow } from "@/components/Badges";
 import { badgeById } from "@/lib/badges";
 
 type Sex = "male" | "female" | "unspecified" | null;
@@ -76,6 +76,7 @@ export default function PassportPage() {
   const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg"); // display unit for weight
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [pinnedBadges, setPinnedBadges] = useState<string[]>([]);
+  const [earnedBadges, setEarnedBadges] = useState<string[]>([]);
   const [showBodyType, setShowBodyType] = useState(true);
 
   useEffect(() => {
@@ -90,6 +91,7 @@ export default function PassportPage() {
       setShowBodyType(m.showBodyType ?? true);
       setClosetCount(s.closetCount ?? 0);
       setPinnedBadges(s.pinnedBadges ?? []);
+      setEarnedBadges(s.earnedBadgeIds ?? []);
       // Default to the polished VIEW card once the passport has real content;
       // brand-new/empty passports open straight into edit so there's something to do.
       setMode(p.profile && hasContent(prof) ? "view" : "edit");
@@ -150,6 +152,7 @@ export default function PassportPage() {
         shape={bt.shape}
         showBodyType={showBodyType}
         pinnedBadges={pinnedBadges}
+        earnedBadges={earnedBadges}
         onEdit={() => setMode("edit")}
       />
     );
@@ -412,6 +415,7 @@ function ViewBook({
   shape,
   showBodyType,
   pinnedBadges,
+  earnedBadges,
   onEdit,
 }: {
   profile: Profile;
@@ -424,6 +428,7 @@ function ViewBook({
   shape: Parameters<typeof BodyFigure>[0]["shape"];
   showBodyType: boolean;
   pinnedBadges: string[];
+  earnedBadges: string[];
   onEdit: () => void;
 }) {
   const fits = fitList(profile.preferredFit);
@@ -469,16 +474,16 @@ function ViewBook({
             </div>
           </div>
 
-          {/* Pinned badges showcase */}
+          {/* Earned badges showcase — hover any medallion to read what it means */}
           <div className="border-b border-neutral-200 px-6 py-5">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Achievements</p>
-            {pinnedBadges.length > 0 ? (
-              <div className="flex items-center gap-4">
-                <PinnedSeals ids={pinnedBadges} size={48} />
-                <div className="text-xs text-ink-soft">
-                  {pinnedBadges.map((id) => badgeById(id)?.title).filter(Boolean).join(" · ")}
-                </div>
-              </div>
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Achievements</p>
+              {earnedBadges.length > 0 && (
+                <span className="text-[10px] text-ink-faint">hover a medallion for its meaning</span>
+              )}
+            </div>
+            {earnedBadges.length > 0 ? (
+              <EarnedSealRow earnedIds={earnedBadges} pinnedIds={pinnedBadges} size={48} />
             ) : (
               <Link href="/badges" className="text-sm text-brand hover:underline">
                 Earn badges and pin up to 3 here →

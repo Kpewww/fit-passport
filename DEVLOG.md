@@ -28,6 +28,70 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 22 — Full-path URL extraction, real filing-cabinet folder view, passport badge tooltips
+
+**Context:** three founder asks. (1) The URL auto-fill was weak — the example
+`patagonia.com/product/womens-fitz-roy-down-hoody/85506.html?dwvar_85506_color=SMTB`
+returned an empty name + wrong category ("tshirt") even though the URL clearly
+carries brand, garment, and gender. (2) The Session-21 "manila tile per item"
+did not match the founder's mental model: a folder should be a real folder
+holding *stacked file cards*, each peeking one key-info row, front file open,
+hover to peek, click to pull fully out onto a "desk", plus a side "bucket" to
+set a few items aside for comparison (mirroring pulling clothes out to plan an
+outfit). (3) The passport should show the holder's badges and reveal each
+medallion's meaning on hover.
+
+**Built:**
+- **Extractor upgraded to whole-path parsing (`lib/extractor.ts`).** Root cause:
+  we only read the LAST path segment as the slug, so a trailing SKU (`85506.html`)
+  hid the descriptive segment. Now: parse ALL path segments; `pickNameSlug()`
+  scores each segment by real-word count and picks the richest; `detectCategory`
+  + new `detectGender` run over the full path. Expanded category keywords to the
+  whole taxonomy (bottoms/footwear/accessories) with order-sensitive matching —
+  insulated outerwear (`down`, `puffer`, `parka`) matches as *jacket* before the
+  generic hoodie rule, so "down hoody" → jacket. Gender detection (womens/mens/
+  unisex, women-before-men) added to `ExtractedProduct` and threaded through
+  `/api/closet/extract` → the closet add form now prefills the Line/gender field.
+  Pure-numeric tokens ("00", "42") are dropped from names. New `garmentNoun()`
+  gives a clean fallback ("Uniqlo T-shirt") when no name is recoverable.
+- **7 new tests** in `extractor.test.ts` (Patagonia, Zara bare-SKU, Levi's/J.Crew
+  bottoms, Nike footwear, women≠men, id-only URLs, unknown-brand provenance).
+  Verified live: the Patagonia URL now returns Patagonia · Fitz Roy Down Hoody ·
+  jacket · womens (was: empty name · tshirt).
+- **Folder view rebuilt as a real filing cabinet (`closet/page.tsx`).** Each
+  *collection* is now a colored, tabbed folder sleeve (6-color palette + neutral
+  for Uncategorized) that is visually distinct from the white "file" cards inside.
+  Items stack with a slight negative-margin tuck; every file shows one key-info
+  row (glyph · color · name · type · size), the front-most file is open, and
+  hovering any file expands its overview in place (thumb, brand, fit stars, color,
+  ＋Bucket). Empty collections render an explicit empty-folder graphic.
+  - **Detail sheet** (`DetailSheet`): clicking a file pulls it fully out onto a
+    right-side desk sheet with the large thumb, all fields, per-variant size rows
+    (edit/remove each), notes, Move-to-collection, and Add-to-bucket. Backdrop
+    click closes. Reuses `MoveMenu`/`ItemThumb`/`safeNotes`.
+  - **Comparison bucket** (`BucketPanel`): a floating panel that holds items set
+    aside for side-by-side viewing; add from any file or the sheet, remove/clear,
+    click a chip to reopen its sheet. Page-level `compareItems` state, reconciled
+    against the latest item data on every reload (stale ids dropped). Explicitly
+    labeled "not a saved list."
+  - Old per-item `ItemTile` removed.
+- **Passport badges (`components/Badges.tsx`, `passport/page.tsx`).** New
+  `BadgeHoverSeal` shows a styled tooltip (title · metal tier · what it means ·
+  cultural lore) on hover, anchored below-left so it stays inside the
+  `overflow-hidden` passport card. `EarnedSealRow` renders ALL earned badges
+  (pinned first). Passport now pulls `earnedBadgeIds` from `/api/status` and shows
+  the full set with a "hover a medallion for its meaning" hint (was: pinned-only
+  with a native title tooltip).
+
+**Verified:** `tsc --noEmit` clean · 62/62 vitest green · `next build` clean ·
+live: closet/passport/badges 200, extract endpoint returns correct
+brand/name/category/gender for Patagonia + Uniqlo/H&M/Nike samples.
+
+**Next:** collection drag-reorder; global "Apple-level" aesthetic pass;
+deployment (SQLite→Postgres); course deliverables (interviews, midterm PO deck).
+
+---
+
 ## 2026-08-11 · Session 21 — Manila-folder tiles, icon view toggle, variant grid, corner-save placement
 
 **Context:** founder UI polish (with a reference image of tabbed folder dividers):

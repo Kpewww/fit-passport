@@ -25,6 +25,7 @@ export async function POST(req: Request) {
     brand: ex.brand,
     suggestedName: ex.productName,
     category,
+    gender: ex.gender ?? null,
     sizes: ex.sizes.map((s) => s.label),
     // Any image the LLM extractor surfaced (may be null). It's a remote URL from
     // the product page; we only prefill it as a suggestion the user can keep.

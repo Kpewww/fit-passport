@@ -88,3 +88,63 @@ export function PinnedSeals({ ids, size = 34 }: { ids: string[]; size?: number }
     </div>
   );
 }
+
+// Metal → a small chip style for the tooltip's tier label.
+const METAL_CHIP: Record<Metal, string> = {
+  bronze: "bg-amber-100 text-amber-800",
+  silver: "bg-slate-100 text-slate-700",
+  gold: "bg-yellow-100 text-yellow-800",
+  obsidian: "bg-neutral-800 text-neutral-100",
+  diamond: "bg-sky-100 text-sky-800",
+  jade: "bg-emerald-100 text-emerald-800",
+};
+
+// A seal that reveals a styled tooltip (title · metal · what it means · lore) on
+// hover — used on the passport so a holder can read what each medallion means.
+// Tooltip is anchored below-left so it stays inside `overflow-hidden` cards.
+export function BadgeHoverSeal({ id, size = 48 }: { id: string; size?: number }) {
+  const b = badgeById(id);
+  if (!b) return null;
+  const st = METAL_STYLE[b.metal];
+  return (
+    <div className="group/badge relative">
+      <div className="transition-transform duration-200 group-hover/badge:-translate-y-0.5">
+        <BadgeSeal id={b.id} metal={b.metal} size={size} />
+      </div>
+      <div className="pointer-events-none absolute left-0 top-full z-30 mt-2 hidden w-60 rounded-xl border border-neutral-200 bg-white p-3 text-left shadow-lift group-hover/badge:block">
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-semibold text-ink">{b.title}</span>
+          <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${METAL_CHIP[b.metal]}`}>
+            {st.label}
+          </span>
+        </div>
+        <p className="mt-1 text-xs leading-snug text-ink-soft">{b.blurb}</p>
+        <p className="mt-1.5 border-t border-neutral-100 pt-1.5 text-[11px] italic leading-snug text-ink-faint">{b.lore}</p>
+      </div>
+    </div>
+  );
+}
+
+// A row of earned badges with hover tooltips. Pinned IDs are shown first.
+export function EarnedSealRow({
+  earnedIds,
+  pinnedIds = [],
+  size = 48,
+}: {
+  earnedIds: string[];
+  pinnedIds?: string[];
+  size?: number;
+}) {
+  const ordered = [
+    ...pinnedIds.filter((id) => earnedIds.includes(id)),
+    ...earnedIds.filter((id) => !pinnedIds.includes(id)),
+  ];
+  if (ordered.length === 0) return null;
+  return (
+    <div className="flex flex-wrap gap-2">
+      {ordered.map((id) => (
+        <BadgeHoverSeal key={id} id={id} size={size} />
+      ))}
+    </div>
+  );
+}
