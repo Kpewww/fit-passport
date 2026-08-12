@@ -71,8 +71,10 @@ export function MetalSurface({ theme, radius = 22 }: { theme: CardTheme; radius?
         className="pointer-events-none absolute inset-0"
         style={{ background: `linear-gradient(125deg, transparent 22%, ${theme.sheen} 47%, transparent 68%)`, opacity: 0.12 }}
       />
-      {/* glint: a quick sweep, then a long pause (see `glint` keyframes) */}
-      <div className="pointer-events-none absolute inset-0 animate-glint bg-[linear-gradient(110deg,transparent_44%,rgba(255,255,255,0.16)_50%,transparent_56%)]" />
+      {/* glint: a measured sweep, then a long pause (see `glint` keyframes).
+          The band is deliberately wide (~24%) with soft shoulders so it reads as
+          a broad reflection travelling across metal, not a thin laser line. */}
+      <div className="pointer-events-none absolute inset-0 animate-glint bg-[linear-gradient(110deg,transparent_38%,rgba(255,255,255,0.10)_44%,rgba(255,255,255,0.17)_50%,rgba(255,255,255,0.10)_56%,transparent_62%)]" />
       {/* inner hairline bevel */}
       <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-white/20" style={{ borderRadius: radius }} />
     </>
