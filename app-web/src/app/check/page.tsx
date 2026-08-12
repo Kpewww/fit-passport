@@ -60,7 +60,7 @@ type CheckResponse = {
   recommendationId: string;
 };
 
-type Status = { hasBody: boolean; closetCount: number; accuracy: "low" | "medium" | "high" };
+type Status = { hasBody: boolean; closetCount: number; accuracy: "low" | "medium" | "high"; claimed?: boolean };
 
 type FitPref = "slim" | "regular" | "relaxed" | "oversized";
 const FIT_LABELS: Record<FitPref, string> = {
@@ -167,7 +167,8 @@ function CheckInner() {
             className="mx-auto mt-7 flex max-w-xl items-center gap-2 rounded-full border border-line bg-paper-soft p-1.5 shadow-card focus-within:border-ink/30"
           >
             <input
-              type="url"
+              type="text"
+              inputMode="url"
               required
               placeholder="Paste a product URL…"
               value={url}
@@ -205,8 +206,11 @@ function CheckInner() {
             never a dead end while you go find a link. */}
         {!data && !loading && <LiveConverter />}
 
+        {/* Guidance: a first-time visitor pasting a link gets a size based on
+            almost nothing, so be honest about it and show exactly what would
+            sharpen it. Shown above the result too, since that's when it matters. */}
         {status && status.accuracy !== "high" && !loading && (
-          <AccuracyNudge status={status} />
+          <SignalGuide status={status} hasResult={!!data} />
         )}
 
         {err && (
@@ -320,22 +324,76 @@ function LiveConverter() {
   );
 }
 
-function AccuracyNudge({ status }: { status: Status }) {
+// An honest "how good is this answer, and how do I improve it" panel. The engine
+// is transparent by design, so we say plainly what it does and doesn't know yet.
+function SignalGuide({ status, hasResult }: { status: Status; hasResult: boolean }) {
+  const steps = [
+    {
+      done: status.hasBody,
+      label: "Add your measurements",
+      why: "Lets us compare you to the product's actual size chart.",
+      href: "/passport",
+      cta: "Open passport",
+    },
+    {
+      done: status.closetCount >= 3,
+      label: "Add 3 clothes that fit you well",
+      why: "The strongest signal there is — we learn how each brand runs on you.",
+      href: "/closet",
+      cta: "Add to closet",
+      progress: status.closetCount > 0 ? `${status.closetCount}/3 added` : undefined,
+    },
+    {
+      done: !!status.claimed,
+      label: "Create an account",
+      why: "Keeps your profile, badges and closet — and lets you share a passport.",
+      href: "/account",
+      cta: "Claim account",
+    },
+  ];
+  const remaining = steps.filter((s) => !s.done);
+  if (remaining.length === 0) return null;
+
   return (
-    <div className="mt-4 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm">
-      <span className="mt-0.5 text-amber-600">★</span>
-      <div className="text-amber-900">
-        {status.closetCount === 0 ? (
-          <>Recommendations get far sharper once we know what already fits you.{" "}
-            <Link href="/closet" className="font-medium underline">Add 3 clothes you own →</Link></>
-        ) : !status.hasBody ? (
-          <>Add your chest measurement to unlock measurement-based sizing.{" "}
-            <Link href="/passport" className="font-medium underline">Update passport →</Link></>
-        ) : (
-          <>Add a couple more known-good items to reach high accuracy.{" "}
-            <Link href="/closet" className="font-medium underline">Add to closet →</Link></>
-        )}
+    <div className="mt-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+      <div className="border-b border-line bg-paper-soft px-6 py-4">
+        <p className="eyebrow text-ink-faint">
+          {hasResult ? "How to sharpen this recommendation" : "Before you paste a link"}
+        </p>
+        <h3 className="mt-2 font-serif text-2xl leading-tight text-ink">
+          {status.closetCount === 0 && !status.hasBody
+            ? "Right now we'd be guessing."
+            : "Good start — here's what's still missing."}
+        </h3>
+        <p className="mt-2 max-w-xl text-sm text-ink-soft">
+          {status.closetCount === 0 && !status.hasBody
+            ? "We can read any product page, but with nothing about you we can only fall back on the brand's own chart. Two minutes of setup changes the answer completely."
+            : "Each of these makes the engine measurably more confident — and every recommendation still shows its reasoning."}
+        </p>
       </div>
+      <ul className="divide-y divide-line">
+        {steps.map((s) => (
+          <li key={s.label} className="flex items-center gap-4 px-6 py-4">
+            <span
+              className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
+                s.done ? "bg-green-600 text-white" : "bg-paper-dim text-ink-faint"
+              }`}
+            >
+              {s.done ? "✓" : ""}
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className={`text-sm font-medium ${s.done ? "text-ink-faint line-through" : "text-ink"}`}>
+                {s.label}
+                {s.progress && !s.done && <span className="ml-2 text-xs font-normal text-brand">{s.progress}</span>}
+              </p>
+              {!s.done && <p className="mt-0.5 text-xs text-ink-soft">{s.why}</p>}
+            </div>
+            {!s.done && (
+              <LinkButton href={s.href} variant="secondary" size="md">{s.cta}</LinkButton>
+            )}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

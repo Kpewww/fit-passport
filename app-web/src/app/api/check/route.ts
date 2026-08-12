@@ -7,12 +7,24 @@
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { normalizeUrl } from "@/lib/normalizeUrl";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { extractSmart } from "@/lib/extractorLLM";
 import { computeRecommendation } from "@/lib/recommendService";
 
-const Body = z.object({ url: z.string().url() });
+// Accept a loose string and normalize it (people paste bare domains), so
+// "patagonia.com/product/..." works the same as a full https:// link.
+const Body = z.object({
+  url: z.string().min(3).transform((v, ctx) => {
+    const u = normalizeUrl(v);
+    if (!u) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "that doesn't look like a product link" });
+      return z.NEVER;
+    }
+    return u;
+  }),
+});
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();

@@ -102,8 +102,87 @@ export default function Home() {
         )}
       </section>
 
+      <CommunityValue />
       <ClosingCTA />
     </main>
+  );
+}
+
+// ---------------- What the community adds ----------------
+//
+// The engine is the core, but the reason to STAY is social: seeing how clothes
+// fit real bodies like yours, and learning what to buy from people whose taste
+// you trust. Spelled out plainly, because it isn't obvious from the sizing tool.
+const COMMUNITY_VALUE = [
+  {
+    n: "01",
+    title: "Fit intelligence from real bodies",
+    body:
+      "Browse members' closets by account code and see which brands and sizes actually worked for people built like you — not a model in a studio.",
+    href: "/community",
+    cta: "Browse the directory",
+  },
+  {
+    n: "02",
+    title: "Share your taste, build a reputation",
+    body:
+      "Post outfits from your own closet, collect likes, and earn struck-metal badges as your archive and influence grow. Your passport card upgrades with you.",
+    href: "/outfits",
+    cta: "Compose a look",
+  },
+  {
+    n: "03",
+    title: "Learn what to buy next",
+    body:
+      "Every look shows its pieces, sizes and whether they're online or in-store only — so a look you like is something you can actually find and fit.",
+    href: "/badges",
+    cta: "See the badge ladder",
+  },
+];
+
+function CommunityValue() {
+  return (
+    <section className="border-y border-line bg-paper-soft py-24">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="max-w-2xl">
+          <p className="eyebrow text-ink-faint">More than a size calculator</p>
+          <h2 className="mt-4 font-serif text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
+            A community that
+            <br />
+            <span className="font-normal italic text-brand">dresses better together.</span>
+          </h2>
+          <p className="mt-6 text-ink-soft">
+            Sizing is the tool. The reason people stay is each other — seeing what
+            fits real bodies, sharing taste, and getting better at buying clothes.
+          </p>
+        </div>
+
+        <div className="mt-14 grid gap-6 sm:grid-cols-3">
+          {COMMUNITY_VALUE.map((v) => (
+            <motion.div
+              key={v.n}
+              initial={{ opacity: 0, y: 28 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-10%" }}
+              transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col rounded-2xl bg-white p-7 shadow-card ring-1 ring-line"
+            >
+              <span className="font-serif text-3xl italic text-brand">{v.n}</span>
+              <h3 className="mt-3 font-serif text-2xl leading-tight text-ink">{v.title}</h3>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-ink-soft">{v.body}</p>
+              <Link href={v.href} className="mt-5 text-sm font-medium text-ink underline decoration-line underline-offset-4 hover:decoration-ink">
+                {v.cta} →
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+
+        <p className="mt-8 max-w-xl text-xs text-ink-faint">
+          Everything social is opt-in: you choose to be listed, and precise
+          measurements are never shared — only coarse, useful signals.
+        </p>
+      </div>
+    </section>
   );
 }
 
@@ -147,7 +226,8 @@ function Hero({
           style={{ animationDelay: "180ms" }}
         >
           <input
-            type="url"
+            type="text"
+            inputMode="url"
             required
             value={url}
             onChange={(e) => setUrl(e.target.value)}
@@ -407,9 +487,14 @@ function ConvergingStack({ reduce }: { reduce: boolean }) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
 
-  // Spread → gathered. The deck converges to a diagonal stagger (not a pile),
-  // so every card still shows its heading.
-  const t = useTransform(scrollYProgress, [0.12, 0.55], reduce ? [1, 1] : [0, 1]);
+  // `open` peaks when the section is CENTRED in the viewport: closed (gathered)
+  // on the way in, fully spread while you're looking at it, closed again on the
+  // way out. Reduced motion → permanently open.
+  const open = useTransform(
+    scrollYProgress,
+    [0.12, 0.42, 0.58, 0.88],
+    reduce ? [1, 1, 1, 1] : [0, 1, 1, 0],
+  );
   const wordScale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [0.94, 1.08]);
 
   return (
@@ -425,26 +510,29 @@ function ConvergingStack({ reduce }: { reduce: boolean }) {
       <div className="relative mx-auto max-w-5xl px-6">
         <div className="text-center">
           <p className="eyebrow text-ink-faint">Three signals, one answer</p>
-          <h2 className="mx-auto mt-3 max-w-xl font-serif text-4xl leading-tight text-ink sm:text-5xl">
-            Everything you know about your fit, in one place.
+          {/* Deliberate two-line break so the sense isn't chopped mid-phrase. */}
+          <h2 className="mx-auto mt-4 max-w-4xl font-serif text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-7xl">
+            Everything you know
+            <br />
+            <span className="font-normal italic">about your fit.</span>
           </h2>
         </div>
 
-        {/* Mobile: a plain readable column. Desktop: the gathering deck. */}
+        {/* Mobile: a plain readable column. Desktop: the opening deck. */}
         <div className="mt-14 grid gap-4 sm:hidden">
           {SIGNALS.map((s) => (
             <SignalCard key={s.n} signal={s} />
           ))}
         </div>
 
-        <div className="relative mt-16 hidden h-64 sm:block">
+        <div className="relative mt-20 hidden h-72 sm:block">
           {SIGNALS.map((s, i) => (
-            <DeckCard key={s.n} signal={s} index={i} t={t} />
+            <DeckCard key={s.n} signal={s} index={i} open={open} />
           ))}
         </div>
 
-        <p className="mt-12 text-center text-sm text-ink-faint">
-          They converge into a single recommendation — with its reasoning attached.
+        <p className="mt-8 text-center text-sm text-ink-faint">
+          Three signals converge into a single recommendation — with its reasoning attached.
         </p>
       </div>
     </section>
@@ -461,37 +549,41 @@ function SignalCard({ signal }: { signal: (typeof SIGNALS)[number] }) {
   );
 }
 
-// One card in the gathering deck. Spread position → gathered position, with the
-// gathered offsets kept large enough that each card's heading stays readable.
+// One card in the deck. `open` 0 → 1 goes from a tight gathered pile (barely
+// fanned, as you approach) to fully spread side-by-side (when centred), so all
+// three are completely readable exactly when you're looking at them.
 function DeckCard({
   signal,
   index,
-  t,
+  open,
 }: {
   signal: (typeof SIGNALS)[number];
   index: number;
-  t: MotionValue<number>;
+  open: MotionValue<number>;
 }) {
-  const spreadX = [-320, 0, 320][index];
-  const spreadY = [0, -14, 0][index];
-  // Gathered: a diagonal stagger — 96px apart horizontally, 40px vertically.
-  const gatherX = [-96, 0, 96][index];
-  const gatherY = [-40, 0, 40][index];
-  const spreadRot = [-7, 0, 7][index];
-  const gatherRot = [-3.5, 0, 3.5][index];
+  // Closed: a near-pile with a slight fan, so you can tell there are three.
+  const closedX = [-40, 0, 40][index];
+  const closedY = [10, 0, -10][index];
+  const closedRot = [-6, 0, 6][index];
+  // Open: spread apart, level, and square-on — nothing overlaps.
+  const openX = [-340, 0, 340][index];
+  const openY = [0, -18, 0][index];
+  const openRot = [-2, 0, 2][index];
 
-  const x = useTransform(t, [0, 1], [spreadX, gatherX]);
-  const y = useTransform(t, [0, 1], [spreadY, gatherY]);
-  const rotate = useTransform(t, [0, 1], [spreadRot, gatherRot]);
+  const x = useTransform(open, [0, 1], [closedX, openX]);
+  const y = useTransform(open, [0, 1], [closedY, openY]);
+  const rotate = useTransform(open, [0, 1], [closedRot, openRot]);
+  // The two outer cards fade up as they emerge from behind the middle one.
+  const opacity = useTransform(open, [0, 0.35, 1], index === 1 ? [1, 1, 1] : [0.55, 1, 1]);
 
   return (
     <motion.div
-      style={{ x, y, rotate, zIndex: index + 1 }}
-      className="absolute left-1/2 top-6 -ml-[9.5rem] w-[19rem] rounded-2xl bg-white/95 p-5 shadow-lift ring-1 ring-line backdrop-blur-sm"
+      style={{ x, y, rotate, opacity, zIndex: index === 1 ? 3 : 1 }}
+      className="absolute left-1/2 top-4 -ml-[10rem] w-80 rounded-2xl bg-white p-6 shadow-lift ring-1 ring-line"
     >
       <span className="font-serif text-sm italic text-brand">{signal.n}</span>
-      <p className="mt-1 font-serif text-xl text-ink">{signal.title}</p>
-      <p className="mt-1 text-sm text-ink-soft">{signal.line}</p>
+      <p className="mt-1.5 font-serif text-2xl leading-tight text-ink">{signal.title}</p>
+      <p className="mt-2 text-sm leading-relaxed text-ink-soft">{signal.line}</p>
     </motion.div>
   );
 }

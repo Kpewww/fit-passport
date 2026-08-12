@@ -6,11 +6,21 @@
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { normalizeUrl } from "@/lib/normalizeUrl";
 import { getCurrentUser } from "@/lib/session";
 import { extractSmart } from "@/lib/extractorLLM";
 import { domainForCategory } from "@/lib/sizeSystems";
 
-const Body = z.object({ url: z.string().url() });
+const Body = z.object({
+  url: z.string().min(3).transform((v, ctx) => {
+    const u = normalizeUrl(v);
+    if (!u) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "that doesn't look like a product link" });
+      return z.NEVER;
+    }
+    return u;
+  }),
+});
 
 export async function POST(req: Request) {
   await getCurrentUser();
