@@ -13,6 +13,7 @@ import { deriveBodyType } from "@/lib/bodyType";
 import { Avatar, BadgeSeal, EarnedSealRow } from "@/components/Badges";
 import { badgeById, highestMetal } from "@/lib/badges";
 import { OutfitMannequin } from "@/components/OutfitMannequin";
+import { Logo } from "@/components/Logo";
 import { garmentLabel } from "@/lib/garments";
 import type { OutfitView } from "@/components/OutfitCard";
 
@@ -513,9 +514,7 @@ function ViewBook({
               <p className="text-[8px] uppercase tracking-[0.24em] opacity-50">Verification</p>
               <p className="truncate font-mono text-[10px] tracking-[0.2em] opacity-75">{mrz(profile, me)}</p>
             </div>
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border border-dashed border-white/25 text-[7px] uppercase tracking-widest opacity-50">
-              logo
-            </div>
+            <Logo size={34} className="flex-shrink-0 opacity-80" />
           </div>
         </MetalCard>
 

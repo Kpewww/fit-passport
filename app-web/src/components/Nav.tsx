@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Logo } from "@/components/Logo";
 
 const LINKS = [
   { href: "/check", label: "Check" },
@@ -29,8 +30,9 @@ export function Nav() {
   return (
     <header className="sticky top-0 z-20 border-b border-line bg-paper/80 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3.5">
-        <Link href="/" className="group flex items-baseline gap-2">
-          <span className="font-serif text-xl italic text-ink">Fit Passport</span>
+        <Link href="/" className="group flex items-center gap-2 text-ink">
+          <Logo size={26} className="transition-transform group-hover:-rotate-3" />
+          <span className="font-serif text-xl italic">Fit Passport</span>
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           {LINKS.map((l) => {

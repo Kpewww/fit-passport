@@ -50,26 +50,15 @@ export function Badge3D({ children, size }: { children: ReactNode; size: number 
         className="relative h-full w-full"
       >
         {children}
-        {/* Bright specular hot-spot — the obvious "lighting" pass. */}
+        {/* Restrained specular — a soft sheen that tracks the tilt, not a glare. */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 rounded-full"
           style={{
-            background: `radial-gradient(circle at ${hx}% ${hy}%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.45) 22%, transparent 52%)`,
-            opacity: t.active ? 0.9 : 0,
-            transition: "opacity 500ms ease",
-            mixBlendMode: "screen",
-          }}
-        />
-        {/* A sharper glint streak that rakes across the surface. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
-          style={{
-            background: `linear-gradient(${105 + t.ry * 2}deg, transparent 38%, rgba(255,255,255,0.75) 48%, transparent 58%)`,
-            opacity: t.active ? 0.55 : 0,
-            transition: "opacity 500ms ease",
-            mixBlendMode: "screen",
+            background: `radial-gradient(circle at ${hx}% ${hy}%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.14) 26%, transparent 58%)`,
+            opacity: t.active ? 0.5 : 0,
+            transition: "opacity 600ms ease",
+            mixBlendMode: "soft-light",
           }}
         />
       </div>
