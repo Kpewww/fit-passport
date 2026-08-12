@@ -28,6 +28,44 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 26 — Fashion-scrolling homepage (Lenis + Framer Motion)
+
+**Context:** founder wants the homepage to be a "fashion scrolling design" —
+parallax depth, sticky product-pinning, horizontal-scroll lookbook, scroll-driven
+reveals — borrowing the immersive magazine feel but WITHOUT the impractical
+load-wait/heavy intros. Asked for a complete first version to review.
+
+**Built (`src/app/page.tsx`, full rebuild):** added deps **framer-motion@11** +
+**lenis@1**. Homepage is now a scrolling narrative:
+- **Lenis smooth inertia scroll**, homepage-only (init/destroy in a `useEffect`,
+  scoped so other pages stay native) and **disabled under `prefers-reduced-motion`**.
+- **Hero** (black band): the bold serif statement, now with a subtle scroll
+  **parallax** (content drifts up + fades via `useScroll`/`useTransform`) + an
+  animated scroll cue.
+- **Sticky "how it works"**: a `sticky` pinned text column while three editorial
+  step panels glide past and reveal (`whileInView`) — the sticky-pinning pattern.
+- **Horizontal-scroll showcase**: a tall pinned section where vertical scroll
+  translates a row of 5 lookbook cards **sideways** (measured distance →
+  `useTransform` x). Cards use safe editorial visuals (color fields, the SVG
+  `OutfitMannequin`, type) — no scraped/brand imagery. Reduced-motion falls back
+  to a normal swipeable row.
+- **Parallax statement**: layered depth — a giant faint "FIT" background word
+  moves slower than the foreground serif statement.
+- **Closing CTA** + the preserved **value-first content** (URL form in hero,
+  returning-user dashboard / new-user guide) so nothing functional was lost.
+
+**Practicality kept:** no loader, no WebGL, one light dep set; all motion degrades
+gracefully. Legal: only type/color/our-own-SVG visuals — no brand images/video.
+
+**Verified:** `tsc` clean · 62/62 vitest green · `next build` clean (home 152kB
+first-load, framer-motion cost — acceptable for a marketing page) · live: home
+serves all sections; closet/passport/check still 200 (Lenis scoped to home).
+
+**Next:** optional real product photography/video into the lookbook frames;
+carry the system into inner pages; consider Spline 3D garment later (opt-in).
+
+---
+
 ## 2026-08-12 · Session 25 — Black-led + cobalt palette (research-grounded), bold black hero
 
 **Context:** founder shared two awwwards refs (K95 — cobalt WebGL portfolio;

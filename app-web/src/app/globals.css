@@ -36,3 +36,18 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.24em;
 }
+
+/* Lenis smooth-scroll (homepage only; class is added/removed by the Lenis instance). */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: clip;
+}
