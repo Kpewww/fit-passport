@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Lenis from "lenis";
-import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion, type MotionValue } from "framer-motion";
 import { Card, LinkButton, AccuracyBadge, Skeleton } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
 import { OutfitMannequin } from "@/components/OutfitMannequin";
@@ -394,31 +394,30 @@ function ColorField({ className, label, light }: { className: string; label: str
 // ---------------- Converging layers ----------------
 //
 // An oversized word sits behind three cards that start spread apart and, as you
-// scroll through the section, slide together until they stack into one — the
-// "elements overlap when you move" idea. Reduced motion → they stay laid out.
+// scroll, gather into a FANNED DECK — they overlap, but each card keeps its own
+// visible band (title + line), so nothing is ever hidden behind another. Reduced
+// motion → they stay in a plain row.
+const SIGNALS = [
+  { n: "01", title: "Measurements", line: "Your body, once — kept private." },
+  { n: "02", title: "Known-good items", line: "The clothes that already fit you." },
+  { n: "03", title: "Brand behaviour", line: "How each label runs on you." },
+];
+
 function ConvergingStack({ reduce }: { reduce: boolean }) {
   const ref = useRef<HTMLElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
 
-  // Cards travel inward: outer ones cover the most ground.
-  const xL = useTransform(scrollYProgress, [0.1, 0.6], reduce ? ["0%", "0%"] : ["-52%", "0%"]);
-  const xR = useTransform(scrollYProgress, [0.1, 0.6], reduce ? ["0%", "0%"] : ["52%", "0%"]);
-  const rotL = useTransform(scrollYProgress, [0.1, 0.6], reduce ? [0, 0] : [-9, -3]);
-  const rotR = useTransform(scrollYProgress, [0.1, 0.6], reduce ? [0, 0] : [9, 3]);
-  const wordScale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [0.9, 1.12]);
-
-  const LAYERS = [
-    { title: "Measurements", line: "Your body, once — kept private.", x: xL, rot: rotL, z: 10 },
-    { title: "Known-good items", line: "The clothes that already fit you.", x: undefined, rot: undefined, z: 30 },
-    { title: "Brand behaviour", line: "How each label runs on you.", x: xR, rot: rotR, z: 20 },
-  ];
+  // Spread → gathered. The deck converges to a diagonal stagger (not a pile),
+  // so every card still shows its heading.
+  const t = useTransform(scrollYProgress, [0.12, 0.55], reduce ? [1, 1] : [0, 1]);
+  const wordScale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [0.94, 1.08]);
 
   return (
-    <section ref={ref} className="relative overflow-hidden bg-paper py-28">
-      {/* oversized word behind everything */}
+    <section ref={ref} className="relative isolate overflow-hidden bg-paper py-28">
+      {/* oversized word behind everything (clipped by the section) */}
       <motion.p
         style={{ scale: wordScale }}
-        className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 select-none text-center font-serif text-[26vw] font-semibold leading-none text-ink/[0.055]"
+        className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 select-none whitespace-nowrap text-center font-serif text-[22vw] font-semibold leading-none text-ink/[0.05]"
       >
         ONE FIT
       </motion.p>
@@ -431,24 +430,69 @@ function ConvergingStack({ reduce }: { reduce: boolean }) {
           </h2>
         </div>
 
-        <div className="relative mt-16 flex items-center justify-center">
-          {LAYERS.map((l) => (
-            <motion.div
-              key={l.title}
-              style={{ x: l.x, rotate: l.rot, zIndex: l.z }}
-              className="relative -mx-6 w-56 rounded-2xl bg-white p-5 shadow-lift ring-1 ring-line sm:-mx-8 sm:w-64"
-            >
-              <p className="font-serif text-lg text-ink">{l.title}</p>
-              <p className="mt-1 text-xs text-ink-soft">{l.line}</p>
-            </motion.div>
+        {/* Mobile: a plain readable column. Desktop: the gathering deck. */}
+        <div className="mt-14 grid gap-4 sm:hidden">
+          {SIGNALS.map((s) => (
+            <SignalCard key={s.n} signal={s} />
           ))}
         </div>
 
-        <p className="mt-14 text-center text-sm text-ink-faint">
+        <div className="relative mt-16 hidden h-64 sm:block">
+          {SIGNALS.map((s, i) => (
+            <DeckCard key={s.n} signal={s} index={i} t={t} />
+          ))}
+        </div>
+
+        <p className="mt-12 text-center text-sm text-ink-faint">
           They converge into a single recommendation — with its reasoning attached.
         </p>
       </div>
     </section>
+  );
+}
+
+function SignalCard({ signal }: { signal: (typeof SIGNALS)[number] }) {
+  return (
+    <div className="rounded-2xl bg-white p-5 shadow-card ring-1 ring-line">
+      <span className="font-serif text-sm italic text-brand">{signal.n}</span>
+      <p className="mt-1 font-serif text-xl text-ink">{signal.title}</p>
+      <p className="mt-1 text-sm text-ink-soft">{signal.line}</p>
+    </div>
+  );
+}
+
+// One card in the gathering deck. Spread position → gathered position, with the
+// gathered offsets kept large enough that each card's heading stays readable.
+function DeckCard({
+  signal,
+  index,
+  t,
+}: {
+  signal: (typeof SIGNALS)[number];
+  index: number;
+  t: MotionValue<number>;
+}) {
+  const spreadX = [-320, 0, 320][index];
+  const spreadY = [0, -14, 0][index];
+  // Gathered: a diagonal stagger — 96px apart horizontally, 40px vertically.
+  const gatherX = [-96, 0, 96][index];
+  const gatherY = [-40, 0, 40][index];
+  const spreadRot = [-7, 0, 7][index];
+  const gatherRot = [-3.5, 0, 3.5][index];
+
+  const x = useTransform(t, [0, 1], [spreadX, gatherX]);
+  const y = useTransform(t, [0, 1], [spreadY, gatherY]);
+  const rotate = useTransform(t, [0, 1], [spreadRot, gatherRot]);
+
+  return (
+    <motion.div
+      style={{ x, y, rotate, zIndex: index + 1 }}
+      className="absolute left-1/2 top-6 -ml-[9.5rem] w-[19rem] rounded-2xl bg-white/95 p-5 shadow-lift ring-1 ring-line backdrop-blur-sm"
+    >
+      <span className="font-serif text-sm italic text-brand">{signal.n}</span>
+      <p className="mt-1 font-serif text-xl text-ink">{signal.title}</p>
+      <p className="mt-1 text-sm text-ink-soft">{signal.line}</p>
+    </motion.div>
   );
 }
 
@@ -488,8 +532,8 @@ function ParallaxStatement({ reduce }: { reduce: boolean }) {
 // ---------------- Closing CTA ----------------
 function ClosingCTA() {
   return (
-    <section className="mx-auto max-w-4xl px-6 py-24 text-center">
-      <h2 className="font-serif text-6xl font-semibold leading-[0.95] tracking-tight text-ink sm:text-[8.5rem]">
+    <section className="mx-auto max-w-4xl px-6 pb-40 pt-24 text-center">
+      <h2 className="font-serif text-6xl font-semibold leading-[0.95] tracking-tight text-ink sm:text-[8rem]">
         Start your
         <br />
         <span className="font-normal italic text-brand">fit passport.</span>

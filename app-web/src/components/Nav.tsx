@@ -28,7 +28,9 @@ export function Nav() {
   }, [pathname]); // re-check on navigation (e.g. after claim/login)
 
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-paper/80 backdrop-blur">
+    // z-50: must sit above every in-page layer (converging cards, parallax
+    // words) so the bar is always reachable.
+    <header className="sticky top-0 z-50 border-b border-line bg-paper/80 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3.5">
         <Link href="/" className="group flex items-center gap-2 text-ink">
           <Logo size={26} className="transition-transform group-hover:-rotate-3" />
