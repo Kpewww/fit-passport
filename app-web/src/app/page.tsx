@@ -83,6 +83,7 @@ export default function Home() {
       <Hero url={url} setUrl={setUrl} goCheck={goCheck} reduce={!!reduce} />
       <StickyHowItWorks />
       <HorizontalShowcase reduce={!!reduce} />
+      <ConvergingStack reduce={!!reduce} />
       <ParallaxStatement reduce={!!reduce} />
 
       {/* Value-first content preserved: returning users get their dashboard,
@@ -390,6 +391,67 @@ function ColorField({ className, label, light }: { className: string; label: str
   );
 }
 
+// ---------------- Converging layers ----------------
+//
+// An oversized word sits behind three cards that start spread apart and, as you
+// scroll through the section, slide together until they stack into one — the
+// "elements overlap when you move" idea. Reduced motion → they stay laid out.
+function ConvergingStack({ reduce }: { reduce: boolean }) {
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+
+  // Cards travel inward: outer ones cover the most ground.
+  const xL = useTransform(scrollYProgress, [0.1, 0.6], reduce ? ["0%", "0%"] : ["-52%", "0%"]);
+  const xR = useTransform(scrollYProgress, [0.1, 0.6], reduce ? ["0%", "0%"] : ["52%", "0%"]);
+  const rotL = useTransform(scrollYProgress, [0.1, 0.6], reduce ? [0, 0] : [-9, -3]);
+  const rotR = useTransform(scrollYProgress, [0.1, 0.6], reduce ? [0, 0] : [9, 3]);
+  const wordScale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [0.9, 1.12]);
+
+  const LAYERS = [
+    { title: "Measurements", line: "Your body, once — kept private.", x: xL, rot: rotL, z: 10 },
+    { title: "Known-good items", line: "The clothes that already fit you.", x: undefined, rot: undefined, z: 30 },
+    { title: "Brand behaviour", line: "How each label runs on you.", x: xR, rot: rotR, z: 20 },
+  ];
+
+  return (
+    <section ref={ref} className="relative overflow-hidden bg-paper py-28">
+      {/* oversized word behind everything */}
+      <motion.p
+        style={{ scale: wordScale }}
+        className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 select-none text-center font-serif text-[26vw] font-semibold leading-none text-ink/[0.055]"
+      >
+        ONE FIT
+      </motion.p>
+
+      <div className="relative mx-auto max-w-5xl px-6">
+        <div className="text-center">
+          <p className="eyebrow text-ink-faint">Three signals, one answer</p>
+          <h2 className="mx-auto mt-3 max-w-xl font-serif text-4xl leading-tight text-ink sm:text-5xl">
+            Everything you know about your fit, in one place.
+          </h2>
+        </div>
+
+        <div className="relative mt-16 flex items-center justify-center">
+          {LAYERS.map((l) => (
+            <motion.div
+              key={l.title}
+              style={{ x: l.x, rotate: l.rot, zIndex: l.z }}
+              className="relative -mx-6 w-56 rounded-2xl bg-white p-5 shadow-lift ring-1 ring-line sm:-mx-8 sm:w-64"
+            >
+              <p className="font-serif text-lg text-ink">{l.title}</p>
+              <p className="mt-1 text-xs text-ink-soft">{l.line}</p>
+            </motion.div>
+          ))}
+        </div>
+
+        <p className="mt-14 text-center text-sm text-ink-faint">
+          They converge into a single recommendation — with its reasoning attached.
+        </p>
+      </div>
+    </section>
+  );
+}
+
 // ---------------- Parallax statement: layered depth ----------------
 function ParallaxStatement({ reduce }: { reduce: boolean }) {
   const ref = useRef<HTMLElement>(null);
@@ -427,10 +489,10 @@ function ParallaxStatement({ reduce }: { reduce: boolean }) {
 function ClosingCTA() {
   return (
     <section className="mx-auto max-w-4xl px-6 py-24 text-center">
-      <h2 className="font-serif text-5xl leading-[1.02] text-ink sm:text-7xl">
+      <h2 className="font-serif text-6xl font-semibold leading-[0.95] tracking-tight text-ink sm:text-[8.5rem]">
         Start your
         <br />
-        <span className="italic text-brand">fit passport.</span>
+        <span className="font-normal italic text-brand">fit passport.</span>
       </h2>
       <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
         <LinkButton href="/passport" size="lg">Create your passport</LinkButton>

@@ -284,7 +284,7 @@ export default function ClosetPage() {
       <div className="mx-auto max-w-3xl px-6 py-10">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-ink">Your closet</h1>
+            <h1 className="font-serif text-4xl text-ink">Your closet</h1>
             <p className="mt-2 max-w-lg text-ink-soft">
               Add clothes that fit you well, organized into collections. New items
               auto-file by type — rename, reorder, recolor, and move anything.

@@ -83,7 +83,7 @@ export default function ViewByCodePage({
         <div className="mt-3 flex items-center gap-4">
           <Avatar src={data.avatarDataUrl} initials={data.username.slice(0, 2).toUpperCase()} size={64} />
           <div>
-            <h1 className="text-3xl font-bold text-ink">{data.username}</h1>
+            <h1 className="font-serif text-4xl text-ink">{data.username}</h1>
             {(data.pinnedBadges.length > 0 || data.badges.length > 0) && (
               <div className="mt-1.5">
                 <PinnedSeals ids={data.pinnedBadges.length > 0 ? data.pinnedBadges : data.badges.map((b) => b.id).slice(0, 3)} size={30} />

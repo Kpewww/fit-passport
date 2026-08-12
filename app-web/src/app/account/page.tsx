@@ -104,7 +104,7 @@ export default function AccountPage() {
     return (
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-6 py-10">
-          <h1 className="text-3xl font-bold text-ink">Your account is ready 🎉</h1>
+          <h1 className="font-serif text-4xl text-ink">Your account is ready 🎉</h1>
           <p className="mt-2 text-ink-soft">
             You can log in later with your <strong>username</strong> or your
             <strong> account code</strong>, plus your password.
@@ -166,7 +166,7 @@ export default function AccountPage() {
     return (
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-6 py-10">
-          <h1 className="text-3xl font-bold text-ink">Account</h1>
+          <h1 className="font-serif text-4xl text-ink">Account</h1>
           <Card className="mt-6 space-y-3">
             <Row label="Username" value={me.username ?? "—"} />
             <Row label="Account code" value={me.accountCode ?? "—"} mono />
@@ -205,7 +205,7 @@ export default function AccountPage() {
           <Link href="/passport" className="text-ink-faint hover:text-brand">← Edit my passport</Link>
           <Link href="/closet" className="text-ink-faint hover:text-brand">← Edit my closet</Link>
         </div>
-        <h1 className="text-3xl font-bold text-ink">Claim your account</h1>
+        <h1 className="font-serif text-4xl text-ink">Claim your account</h1>
         <p className="mt-2 text-ink-soft">
           You&apos;ve been using a private, temporary account. Claim it to get a
           shareable <strong>account code</strong> and lock editing behind a password.

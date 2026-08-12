@@ -66,7 +66,7 @@ export default function CommunityPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-6 py-12">
-        <h1 className="text-3xl font-bold text-ink">Community</h1>
+        <h1 className="font-serif text-4xl text-ink">Community</h1>
         <p className="mt-2 text-ink-soft">
           Fit is easier to trust when it comes from someone built like you. Browse
           public closets, or enter a friend&apos;s code to see theirs.

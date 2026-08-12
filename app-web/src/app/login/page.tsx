@@ -35,7 +35,7 @@ export default function LoginPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-md px-6 py-14">
-        <h1 className="text-3xl font-bold text-ink">Log in</h1>
+        <h1 className="font-serif text-4xl text-ink">Log in</h1>
         <p className="mt-2 text-ink-soft">
           Sign in with your username, email, or account code to edit your closet.
         </p>

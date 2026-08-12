@@ -8,7 +8,10 @@ import {
   ConfidenceRing,
   LinkButton,
   Skeleton,
+  inputClass,
 } from "@/components/ui";
+import { convert, detectScale, scalesForDomain } from "@/lib/sizeConvert";
+import type { SizeDomain } from "@/lib/sizeSystems";
 
 type SizeScore = {
   label: string;
@@ -198,6 +201,10 @@ function CheckInner() {
           </div>
         </div>
 
+        {/* Live size converter — usable before you paste anything, so the page is
+            never a dead end while you go find a link. */}
+        {!data && !loading && <LiveConverter />}
+
         {status && status.accuracy !== "high" && !loading && (
           <AccuracyNudge status={status} />
         )}
@@ -212,6 +219,104 @@ function CheckInner() {
         )}
       </div>
     </main>
+  );
+}
+
+// A live size converter: pick a garment kind, type the size you normally wear,
+// and every regional equivalent updates as you type. Pure client-side maths from
+// lib/sizeConvert — no request, no waiting.
+const CONV_KINDS: Array<{ label: string; domain: SizeDomain }> = [
+  { label: "Tops", domain: "top" },
+  { label: "Bottoms", domain: "bottom" },
+  { label: "Shoes", domain: "shoe" },
+];
+
+function LiveConverter() {
+  const [domain, setDomain] = useState<SizeDomain>("top");
+  const [raw, setRaw] = useState("M");
+  const [scaleId, setScaleId] = useState<string | null>(null);
+
+  const scales = scalesForDomain(domain);
+  // Use the explicit scale when the user picked one, else auto-detect what they typed.
+  const from = scaleId ?? detectScale(domain, raw);
+  const rows = from ? convert(domain, raw, from) : [];
+
+  function pickDomain(d: SizeDomain) {
+    setDomain(d);
+    setScaleId(null);
+    setRaw(d === "top" ? "M" : d === "bottom" ? "32" : "US 9");
+  }
+
+  return (
+    <div className="mt-10 rounded-2xl border border-line bg-white p-6 shadow-card">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="eyebrow text-ink-faint">Size converter</p>
+          <h2 className="mt-1.5 font-serif text-2xl text-ink">Know your size in every system</h2>
+        </div>
+        {/* garment kind toggle */}
+        <div className="inline-flex overflow-hidden rounded-full border border-line text-xs">
+          {CONV_KINDS.map((k) => (
+            <button
+              key={k.domain}
+              onClick={() => pickDomain(k.domain)}
+              className={`px-3 py-1.5 transition-colors ${
+                domain === k.domain ? "bg-ink text-paper" : "text-ink-soft hover:bg-paper-dim"
+              }`}
+            >
+              {k.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-5 flex flex-wrap items-end gap-3">
+        <label className="text-sm">
+          <span className="mb-1.5 block font-medium text-ink">Size you wear</span>
+          <input
+            value={raw}
+            onChange={(e) => setRaw(e.target.value)}
+            placeholder={domain === "shoe" ? "US 9" : domain === "bottom" ? "32" : "M"}
+            className={inputClass + " w-32"}
+          />
+        </label>
+        <label className="text-sm">
+          <span className="mb-1.5 block font-medium text-ink">In system</span>
+          <select
+            value={from ?? ""}
+            onChange={(e) => setScaleId(e.target.value || null)}
+            className={inputClass + " w-44"}
+          >
+            <option value="">Auto-detect</option>
+            {scales.map((s) => (
+              <option key={s.id} value={s.id}>{s.label}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+
+      {/* live outputs — zeros/dashes until the input parses */}
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {scales.map((s) => {
+          const hit = rows.find((r) => r.scaleId === s.id);
+          const isSource = s.id === from;
+          return (
+            <div
+              key={s.id}
+              className={`rounded-xl border px-3 py-3 ${isSource ? "border-ink bg-paper-dim" : "border-line"}`}
+            >
+              <p className="text-[9px] uppercase tracking-[0.2em] text-ink-faint">{s.label}</p>
+              <p className="mt-1 font-mono text-xl text-ink">{hit?.value ?? "—"}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      <p className="mt-4 text-[11px] text-ink-faint">
+        Indicative conversions only — brands differ. Paste a product link above for a
+        recommendation that also weighs your body and the clothes you already own.
+      </p>
+    </div>
   );
 }
 
