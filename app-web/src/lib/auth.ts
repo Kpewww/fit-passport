@@ -10,10 +10,28 @@ import { createHmac, randomBytes, timingSafeEqual } from "crypto";
 import bcrypt from "bcryptjs";
 
 // --- secret for signing session cookies ---
-// In production this MUST come from the environment. For the course dev MVP we
-// fall back to a fixed dev secret so `npm run dev` works with zero setup.
-const SESSION_SECRET =
-  process.env.SESSION_SECRET ?? "fit-passport-dev-secret-change-me";
+// In production this MUST come from the environment: without it, anyone could
+// forge a session cookie and read/write any account. We therefore FAIL FAST on a
+// production build that hasn't set it, rather than silently running insecure.
+// Locally we fall back to a fixed dev secret so `npm run dev` needs zero setup.
+const DEV_SECRET = "fit-passport-dev-secret-change-me";
+
+// Resolved per call, NOT at module load: `next build` runs with
+// NODE_ENV=production but doesn't need the secret, so throwing at import time
+// would break the build. This way a misconfigured deployment fails loudly on the
+// first request that actually touches a session.
+function sessionSecret(): string {
+  const fromEnv = process.env.SESSION_SECRET?.trim();
+  if (fromEnv) return fromEnv;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "SESSION_SECRET is not set. Generate one with " +
+        `node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))" ` +
+        "and set it in your deployment environment.",
+    );
+  }
+  return DEV_SECRET;
+}
 
 export const SESSION_COOKIE = "fp_session";
 
@@ -74,7 +92,7 @@ export type SessionPayload = {
 };
 
 function sign(data: string): string {
-  return createHmac("sha256", SESSION_SECRET).update(data).digest("base64url");
+  return createHmac("sha256", sessionSecret()).update(data).digest("base64url");
 }
 
 /** Encode + sign a session payload into a cookie string. */

@@ -7,7 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "db:push": "prisma db push --skip-generate && prisma generate",
+    "db:pg:schema": "node scripts/gen-postgres-schema.mjs",
+    "db:pg:migrate": "npm run db:pg:schema && prisma migrate deploy --schema prisma/schema.postgres.prisma",
+    "db:pg:generate": "npm run db:pg:schema && prisma generate --schema prisma/schema.postgres.prisma",
+    "vercel-build": "npm run db:pg:generate && prisma migrate deploy --schema prisma/schema.postgres.prisma && next build",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

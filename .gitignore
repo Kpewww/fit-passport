@@ -8,6 +8,8 @@ app-web/coverage
 # Prisma / SQLite dev DB
 app-web/prisma/dev.db
 app-web/prisma/dev.db-journal
+# Generated production schema (derived from schema.prisma at build time)
+app-web/prisma/schema.postgres.prisma
 
 # Env & secrets (do NOT commit real credentials)
 # Ignore all .env variants anywhere, but keep .env.example templates.

@@ -6,8 +6,17 @@
 // same secret, so a cookie signed here verifies with decodeSession() in auth.ts
 // and vice versa.
 
-const SESSION_SECRET =
-  process.env.SESSION_SECRET ?? "fit-passport-dev-secret-change-me";
+// Mirrors sessionSecret() in auth.ts — same fail-fast rule in production, same
+// dev fallback, and resolved per call (not at import) so builds don't need it.
+// Both sides must derive the SAME secret or cookies won't cross-verify.
+function sessionSecret(): string {
+  const fromEnv = process.env.SESSION_SECRET?.trim();
+  if (fromEnv) return fromEnv;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("SESSION_SECRET is not set — refusing to sign sessions with a known dev secret.");
+  }
+  return "fit-passport-dev-secret-change-me";
+}
 
 export const SESSION_COOKIE = "fp_session";
 
@@ -24,7 +33,7 @@ function utf8ToBase64url(s: string): string {
 async function signEdge(data: string): Promise<string> {
   const key = await crypto.subtle.importKey(
     "raw",
-    new TextEncoder().encode(SESSION_SECRET),
+    new TextEncoder().encode(sessionSecret()),
     { name: "HMAC", hash: "SHA-256" },
     false,
     ["sign"],
