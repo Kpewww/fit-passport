@@ -28,6 +28,51 @@ function scaleVein(d: string, size: number): string {
   return d.replace(/-?\d*\.?\d+/g, (n) => (parseFloat(n) * size).toFixed(2));
 }
 
+export type BadgeShape = "circle" | "shield" | "hexagon" | "rosette";
+
+/**
+ * Outer silhouette for a badge. Returns null for "circle" (drawn as a <circle>
+ * so it stays perfectly round at small sizes).
+ */
+function shapePath(shape: BadgeShape, c: number, r: number): string | null {
+  if (shape === "circle") return null;
+
+  if (shape === "hexagon") {
+    // Flat-top hexagon — reads as engineered/crafted.
+    const pts = Array.from({ length: 6 }, (_, i) => {
+      const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+      return `${(c + Math.cos(a) * r).toFixed(2)},${(c + Math.sin(a) * r).toFixed(2)}`;
+    });
+    return `M${pts.join(" L")} Z`;
+  }
+
+  if (shape === "shield") {
+    // Heraldic shield: straight shoulders, curved flanks, a point at the base.
+    const top = c - r * 0.92;
+    const side = r * 0.86;
+    const bottom = c + r * 0.98;
+    return [
+      `M ${c - side} ${top}`,
+      `L ${c + side} ${top}`,
+      `L ${c + side} ${c + r * 0.18}`,
+      `Q ${c + side} ${c + r * 0.72} ${c} ${bottom}`,
+      `Q ${c - side} ${c + r * 0.72} ${c - side} ${c + r * 0.18}`,
+      "Z",
+    ].join(" ");
+  }
+
+  // rosette — a scalloped medal edge for the rare honors
+  const lobes = 12;
+  const inner = r * 0.86;
+  const pts: string[] = [];
+  for (let i = 0; i < lobes * 2; i++) {
+    const a = (i / (lobes * 2)) * Math.PI * 2 - Math.PI / 2;
+    const rr = i % 2 === 0 ? r : inner;
+    pts.push(`${(c + Math.cos(a) * rr).toFixed(2)},${(c + Math.sin(a) * rr).toFixed(2)}`);
+  }
+  return `M${pts.join(" L")} Z`;
+}
+
 export const PALETTE: Record<Metal, { light: string; mid: string; dark: string; rim: string; ink: string; glow: string }> = {
   bronze:   { light: "#e7b98a", mid: "#b57838", dark: "#6f421c", rim: "#502f13", ink: "#3d2410", glow: "#f4d3a8" },
   silver:   { light: "#ffffff", mid: "#c2cad3", dark: "#828d99", rim: "#5f6872", ink: "#333a42", glow: "#eef2f6" },
@@ -93,6 +138,11 @@ export function BadgeMedallion({
   const rOuter = size * 0.44;
   const rDisc = size * 0.31;
   const iconColor = p.ink;
+  // Silhouette per track, the way dedicated badge designers frame a rank:
+  // a seal for the record, a shield for guardianship, a hex for craft, a
+  // rosette for the rare honors. The inner disc stays round for the motif.
+  const shape = def?.shape ?? "circle";
+  const bodyPath = shapePath(shape, c, rOuter);
 
   // Fluted edge — denser + longer notches at higher finishes.
   const notches = 24 + finish * 6;
@@ -173,9 +223,14 @@ export function BadgeMedallion({
       {points}
 
       <g filter={`url(#sh-${uid})`}>
-        {notchEls}
-        {/* medal body */}
-        <circle cx={c} cy={c} r={rOuter} fill={`url(#body-${uid})`} stroke={p.rim} strokeWidth={size * 0.02} />
+        {/* fluted edge only reads on a round seal */}
+        {shape === "circle" && notchEls}
+        {/* medal body — silhouette depends on the badge's shape */}
+        {bodyPath ? (
+          <path d={bodyPath} fill={`url(#body-${uid})`} stroke={p.rim} strokeWidth={size * 0.02} strokeLinejoin="round" />
+        ) : (
+          <circle cx={c} cy={c} r={rOuter} fill={`url(#body-${uid})`} stroke={p.rim} strokeWidth={size * 0.02} />
+        )}
       </g>
 
       {/* agate/marble white veining — the top metals (diamond and above) */}
@@ -195,8 +250,12 @@ export function BadgeMedallion({
         </g>
       )}
 
-      {/* engraved rings (more with finish) */}
-      <circle cx={c} cy={c} r={rOuter - size * 0.055} fill="none" stroke={p.light} strokeOpacity={0.45} strokeWidth={size * 0.01} />
+      {/* engraved rings (more with finish) — inset copy of the silhouette */}
+      {shape === "circle" ? (
+        <circle cx={c} cy={c} r={rOuter - size * 0.055} fill="none" stroke={p.light} strokeOpacity={0.45} strokeWidth={size * 0.01} />
+      ) : (
+        <path d={shapePath(shape, c, rOuter - size * 0.055) ?? ""} fill="none" stroke={p.light} strokeOpacity={0.45} strokeWidth={size * 0.01} strokeLinejoin="round" />
+      )}
       {finish >= 2 && <circle cx={c} cy={c} r={rOuter - size * 0.085} fill="none" stroke={p.rim} strokeOpacity={0.35} strokeWidth={size * 0.008} />}
       {guilloche}
 

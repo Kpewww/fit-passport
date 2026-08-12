@@ -1,11 +1,14 @@
 // Badge system — the "prestige layer" that makes a passport worth showing off.
 //
-// Structure (Tracks + Capstones — chosen 2026-08-11):
-//   • THREE progression TRACKS, each with 3 tiers (bronze → silver → gold):
-//       closet-building, feedback loop, outfits.
+// Structure (Tracks + Capstones):
+//   • THREE progression TRACKS, each with 4 tiers (bronze → silver → gold →
+//     platinum): closet-building, feedback loop, outfits.
 //     Tiers give everyday goals and a clear ladder within a category.
-//   • THREE rare CAPSTONES (diamond / obsidian / jade) that sit above the tracks
-//     and are genuinely hard — big like counts / total mastery. Scarcity = value.
+//   • FOUR rare CAPSTONES that sit above the tracks and are genuinely hard —
+//     diamond / obsidian for the ladder's summit, plus amethyst / jade as
+//     SPECIAL honors. Scarcity = value.
+//   • Each track also has its own SILHOUETTE (`shape`): shield for the wardrobe,
+//     seal for the fit record, hexagon for the atelier, rosette for rare honors.
 //
 // Everything is TRANSPARENT and earned from REAL data — never faked. Each badge
 // also carries a `motif`: a real textile/fashion-history reference, so the
@@ -96,6 +99,12 @@ export type BadgeDef = {
   tier: number; // 1..3 within a track; capstones use ascending rarity order
   glyph: string; // legacy/emoji fallback — medallion uses `motif` icons now
   motif: string; // icon key + cultural reference (see BadgeMedallion)
+  /**
+   * Outer silhouette, the way dedicated badge designers frame a rank. Defaults
+   * per track when omitted: a seal for the fit record, a shield for the wardrobe,
+   * a hexagon for the atelier, a rosette for the rare honors.
+   */
+  shape?: "circle" | "shield" | "hexagon" | "rosette";
   finish: number; // 0..5 ornateness of the medallion art
   blurb: string;
   lore: string; // the historical/cultural note shown on hover / help
@@ -131,7 +140,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "starter",
     title: "Verified Closet",
-    metal: "bronze", track: "closet", tier: 1, finish: 0,
+    metal: "bronze", track: "closet", tier: 1, finish: 0, shape: "shield",
     glyph: "🥉", motif: "hanger",
     blurb: "Added at least 8 known-good garments.",
     lore: "A plain struck token — every archive begins with a first inventory.",
@@ -141,7 +150,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "curator",
     title: "Curator",
-    metal: "silver", track: "closet", tier: 2, finish: 2,
+    metal: "silver", track: "closet", tier: 2, finish: 2, shape: "shield",
     glyph: "🥈", motif: "shelves",
     blurb: "20+ items organized across 4+ collections.",
     lore: "The Renaissance 'guardaroba' — the keeper of a well-ordered wardrobe.",
@@ -154,7 +163,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "archivist",
     title: "Wardrobe Archivist",
-    metal: "gold", track: "closet", tier: 3, finish: 3,
+    metal: "gold", track: "closet", tier: 3, finish: 3, shape: "shield",
     glyph: "🏅", motif: "archive",
     blurb: "45+ items spanning 10+ brands.",
     lore: "An imperial silk archive — breadth across houses and eras.",
@@ -167,7 +176,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "grand-wardrobe",
     title: "Grand Wardrobe",
-    metal: "platinum", track: "closet", tier: 4, finish: 4,
+    metal: "platinum", track: "closet", tier: 4, finish: 4, shape: "shield",
     glyph: "🏛", motif: "obelisk",
     blurb: "100+ items across 20+ brands, in 6+ collections.",
     lore: "A royal wardrobe office — scale that must be administered, not merely owned.",
@@ -182,7 +191,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "truth-teller",
     title: "Truth-Teller",
-    metal: "bronze", track: "feedback", tier: 1, finish: 0,
+    metal: "bronze", track: "feedback", tier: 1, finish: 0, shape: "circle",
     glyph: "📋", motif: "tablet",
     blurb: "Recorded how 5+ purchases actually fit.",
     lore: "A Roman wax tablet — the honest ledger of what fit and what didn't.",
@@ -192,7 +201,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "calibrated",
     title: "Calibrated",
-    metal: "silver", track: "feedback", tier: 2, finish: 2,
+    metal: "silver", track: "feedback", tier: 2, finish: 2, shape: "circle",
     glyph: "🎯", motif: "gnomon",
     blurb: "Logged 25+ comfort refreshes over time.",
     lore: "The gnomon of a sundial — measurement kept true as the body changes.",
@@ -202,7 +211,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "open-closet",
     title: "Open Closet",
-    metal: "gold", track: "feedback", tier: 3, finish: 3,
+    metal: "gold", track: "feedback", tier: 3, finish: 3, shape: "circle",
     glyph: "🌐", motif: "compass-rose",
     blurb: "Listed publicly with a substantiated closet (15+ items).",
     lore: "A cartographer's compass rose — putting your fit on the shared map.",
@@ -217,7 +226,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "fit-scholar",
     title: "Fit Scholar",
-    metal: "platinum", track: "feedback", tier: 4, finish: 4,
+    metal: "platinum", track: "feedback", tier: 4, finish: 4, shape: "circle",
     glyph: "📐", motif: "tablet",
     blurb: "60+ refreshes and 20+ recorded outcomes.",
     lore: "The surveyor's rod — truth accumulated by patient measurement.",
@@ -232,7 +241,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "first-look",
     title: "First Look",
-    metal: "bronze", track: "outfits", tier: 1, finish: 1,
+    metal: "bronze", track: "outfits", tier: 1, finish: 1, shape: "hexagon",
     glyph: "👗", motif: "needle",
     blurb: "Posted your first outfit.",
     lore: "A bone needle — the oldest tool of dress, 40,000 years old.",
@@ -242,7 +251,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "stylist",
     title: "Stylist",
-    metal: "silver", track: "outfits", tier: 2, finish: 2,
+    metal: "silver", track: "outfits", tier: 2, finish: 2, shape: "hexagon",
     glyph: "✂️", motif: "shears",
     blurb: "Posted 6 outfits to the community.",
     lore: "The tailor's shears — mark of a working atelier.",
@@ -252,7 +261,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "couturier",
     title: "Couturier",
-    metal: "gold", track: "outfits", tier: 3, finish: 4,
+    metal: "gold", track: "outfits", tier: 3, finish: 4, shape: "hexagon",
     glyph: "🧵", motif: "loom",
     blurb: "Posted 15 outfits and earned 150+ total likes.",
     lore: "The Jacquard loom — where pattern becomes craft at scale.",
@@ -265,7 +274,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "atelier-master",
     title: "Atelier Master",
-    metal: "platinum", track: "outfits", tier: 4, finish: 4,
+    metal: "platinum", track: "outfits", tier: 4, finish: 4, shape: "hexagon",
     glyph: "🏆", motif: "loom",
     blurb: "30 outfits and 500+ total likes.",
     lore: "A maison's head atelier — output sustained at the highest standard.",
@@ -282,7 +291,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "acclaimed",
     title: "Acclaimed",
-    metal: "diamond", track: "capstone", tier: 1, finish: 4,
+    metal: "diamond", track: "capstone", tier: 1, finish: 4, shape: "rosette",
     glyph: "💎", motif: "gem",
     blurb: "250+ likes on a single look.",
     lore: "A cut brilliant — one look the whole community admired.",
@@ -292,7 +301,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "tastemaker",
     title: "Tastemaker",
-    metal: "amethyst", track: "capstone", tier: 2, finish: 5,
+    metal: "amethyst", track: "capstone", tier: 2, finish: 5, shape: "rosette",
     glyph: "🔮", motif: "gem",
     blurb: "Special honor — 1,500+ total likes across your looks.",
     lore: "Amethyst, once valued with diamond — worn by those who set the taste.",
@@ -302,7 +311,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "polymath",
     title: "Polymath",
-    metal: "jade", track: "capstone", tier: 3, finish: 5,
+    metal: "jade", track: "capstone", tier: 3, finish: 5, shape: "rosette",
     glyph: "🌿", motif: "compass-rose",
     blurb: "Special honor — mastered all three tracks (gold or above in each).",
     lore: "Imperial jade with agate veining — breadth, not just depth.",
@@ -321,7 +330,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "head-designer",
     title: "Head Designer",
-    metal: "obsidian", track: "capstone", tier: 4, finish: 5,
+    metal: "obsidian", track: "capstone", tier: 4, finish: 5, shape: "rosette",
     glyph: "👑", motif: "crown",
     blurb: "The pinnacle — 4,000+ total likes across your looks.",
     lore: "Obsidian, prized since antiquity — rare, dark, and exacting.",

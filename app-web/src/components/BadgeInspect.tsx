@@ -6,17 +6,23 @@
 // rakes across the surface as it rotates. It idles with a slow drift so the
 // metal always reads as metal.
 //
-// Deliberately CSS 3D, not WebGL: the medallion art is already crisp SVG, so we
-// get true depth + rotation with no shader pipeline, no asset loading, and it
-// works instantly on any device.
+// Two renderers: the default is CSS 3D (instant, no dependencies — the art is
+// already crisp SVG), and a "True 3D" toggle lazy-loads a real three.js coin with
+// physical metal shading for the full weapon-inspect feel. The heavy path only
+// downloads if the viewer asks for it.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, lazy, Suspense } from "react";
 import { BadgeMedallion } from "@/components/BadgeMedallion";
 import { PALETTE } from "@/components/BadgeMedallion";
 import { METAL_STYLE, type EarnedBadge } from "@/lib/badges";
 
 const SLICES = 12; // rim slices → perceived thickness
 const THICKNESS = 15; // px of total depth
+
+// True-3D view is heavy (three.js), so it only loads if the viewer asks for it.
+const BadgeWebGL = lazy(() =>
+  import("@/components/BadgeWebGL").then((m) => ({ default: m.BadgeWebGL })),
+);
 
 export function BadgeInspect({
   badge,
@@ -26,6 +32,16 @@ export function BadgeInspect({
   onClose: () => void;
 }) {
   const [rot, setRot] = useState({ x: -8, y: 18 });
+  const [webgl, setWebgl] = useState(false);
+  const [faceSvg, setFaceSvg] = useState<string | null>(null);
+  const artRef = useRef<HTMLDivElement>(null);
+
+  // Serialize the medallion SVG so the 3D view can use it as a face texture.
+  function enable3D() {
+    const svgEl = artRef.current?.querySelector("svg");
+    if (svgEl) setFaceSvg(new XMLSerializer().serializeToString(svgEl));
+    setWebgl(true);
+  }
   const [dragging, setDragging] = useState(false);
   const drag = useRef({ down: false, x: 0, y: 0, rx: 0, ry: 0 });
   const idle = useRef<number>(0);
@@ -39,7 +55,7 @@ export function BadgeInspect({
 
   // Idle drift — a slow turn so light keeps moving when you're not dragging.
   useEffect(() => {
-    if (dragging) return;
+    if (dragging || webgl) return;
     let raf = 0;
     const tick = () => {
       idle.current += 0.16;
@@ -48,7 +64,7 @@ export function BadgeInspect({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [dragging]);
+  }, [dragging, webgl]);
 
   function onDown(e: React.PointerEvent) {
     drag.current = { down: true, x: e.clientX, y: e.clientY, rx: rot.x, ry: rot.y };
@@ -93,7 +109,35 @@ export function BadgeInspect({
         ×
       </button>
 
-      {/* the coin */}
+      {/* renderer switch */}
+      <div onClick={(e) => e.stopPropagation()} className="relative mb-6 flex gap-1 rounded-full border border-white/15 p-1 text-[11px]">
+        <button
+          onClick={() => setWebgl(false)}
+          className={`rounded-full px-3 py-1 transition-colors ${!webgl ? "bg-white/90 text-black" : "text-white/60 hover:text-white"}`}
+        >
+          Flat
+        </button>
+        <button
+          onClick={enable3D}
+          className={`rounded-full px-3 py-1 transition-colors ${webgl ? "bg-white/90 text-black" : "text-white/60 hover:text-white"}`}
+        >
+          True 3D
+        </button>
+      </div>
+
+      {/* hidden source art — serialized into a texture for the 3D view */}
+      <div ref={artRef} className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0" aria-hidden>
+        <BadgeMedallion id={badge.id} metal={badge.metal} size={512} />
+      </div>
+
+      {webgl ? (
+        <div onClick={(e) => e.stopPropagation()} className="relative">
+          <Suspense fallback={<div className="flex h-[300px] w-[300px] items-center justify-center text-xs text-white/50">Loading 3D…</div>}>
+            <BadgeWebGL metal={badge.metal} faceSvg={faceSvg ?? ""} size={300} />
+          </Suspense>
+        </div>
+      ) : (
+      /* the coin (CSS 3D) */
       <div
         onClick={(e) => e.stopPropagation()}
         onPointerDown={onDown}
@@ -158,6 +202,7 @@ export function BadgeInspect({
           </div>
         </div>
       </div>
+      )}
 
       {/* info panel */}
       <div onClick={(e) => e.stopPropagation()} className="relative mt-10 max-w-md px-8 text-center text-white">
