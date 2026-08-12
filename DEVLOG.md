@@ -28,6 +28,42 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 27 — Lighter homepage scroll + glass "credential" passport
+
+**Context:** founder feedback on the fashion-scroll homepage — the pinned
+"Why it works" horizontal section scroll-jacked (you had to scroll the whole
+block to reach the last card; felt heavy/sticky). Also shared open-source
+credential/badge references (Certo/Open Badges 3.0, OpenCred/W3C-VC Apple-Wallet
+cards, GitHub Learn geometric badges) + a glassmorphic "cyber passport + collectable
+badge wall" HTML template, to adopt. Chose (via options) the **cobalt-black luxe
+glass** skin (not the template's neon-purple, which reads dev-portfolio not fashion).
+Also noted faers.tech's clean live-calculator pattern for a future /check pass.
+
+**Built:**
+- **Homepage horizontal section reworked** to be **user-driven** (no scroll-jack):
+  a drag-to-scroll row (pointer capture) + swipe + trackpad + prev/next arrows,
+  proximity snap, hidden scrollbar, `data-lenis-prevent`, and a drag-vs-click
+  guard. Removed the pinned `useScroll`→`x` mechanic. Tuned Lenis `duration:1.1`
+  → `lerp:0.1` (snappier, less "sticky").
+- **Passport VIEW rebuilt as a glass credential** (`ViewBook`): dark `bg-ink`
+  band with ambient cobalt glow; a **holo foil edge** (cobalt→sky gradient 1px
+  border) over a **dark frosted `.glass-panel`**; header wordmark + pulsing
+  "Verified" pill; portrait in a cobalt ring; identity rows (`CredLine`, mono
+  IDs); achievements (hover-meaning medallions); signature look (dark select +
+  mannequin); body-type figure; and a footer with a **rotating dashed seal**
+  (the user's top medallion, `animate-[spin_20s]`), the MRZ verification string
+  (mono), and a decorative **QR motif**. All in the black/cobalt/porcelain system.
+  Edit mode unchanged. Added `.glass-panel` to globals; `.no-scrollbar` util.
+
+**Verified:** `tsc` clean · 62/62 vitest green · `next build` clean · live:
+home + passport/closet/badges 200 (credential renders in VIEW mode once the
+passport has content; markup validated by build).
+
+**Next (optional):** apply the collectable-wall polish to the /badges page;
+faers-style live calculator on /check; real product imagery in the lookbook.
+
+---
+
 ## 2026-08-12 · Session 26 — Fashion-scrolling homepage (Lenis + Framer Motion)
 
 **Context:** founder wants the homepage to be a "fashion scrolling design" —

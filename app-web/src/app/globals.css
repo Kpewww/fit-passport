@@ -52,6 +52,13 @@ html.lenis body {
   overflow: clip;
 }
 
+/* Dark "credential" glass panel — a translucent frosted interior on dark bands. */
+.glass-panel {
+  background: rgba(18, 18, 24, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
 /* Hide the scrollbar on drag-to-scroll rows (keeps them scrollable). */
 .no-scrollbar {
   -ms-overflow-style: none;
