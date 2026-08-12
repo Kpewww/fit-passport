@@ -56,7 +56,7 @@ export default function Home() {
   // Smooth inertia scroll — homepage only, and never when reduced motion is asked.
   useEffect(() => {
     if (reduce) return;
-    const lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+    const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
     let raf = 0;
     const loop = (t: number) => {
       lenis.raf(t);
@@ -298,67 +298,74 @@ const SHOW_CARDS: ShowCard[] = [
   },
 ];
 
+// A light, USER-CONTROLLED horizontal lookbook: drag it, swipe it, or use the
+// arrows / trackpad. No scroll-jacking — the page never pins or blocks you.
 function HorizontalShowcase({ reduce }: { reduce: boolean }) {
-  const wrapRef = useRef<HTMLDivElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [distance, setDistance] = useState(0);
+  const rowRef = useRef<HTMLDivElement>(null);
+  const drag = useRef({ down: false, startX: 0, startLeft: 0, moved: false });
 
-  useEffect(() => {
-    const measure = () => {
-      if (!trackRef.current) return;
-      setDistance(Math.max(0, trackRef.current.scrollWidth - window.innerWidth));
-    };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
-
-  const { scrollYProgress } = useScroll({ target: wrapRef, offset: ["start start", "end end"] });
-  const x = useTransform(scrollYProgress, [0, 1], [0, -distance]);
-
-  // Reduced motion → fall back to a normal horizontally-scrollable row (no pinning).
-  if (reduce) {
-    return (
-      <section className="bg-paper py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <ShowHeader />
-          <div className="mt-8 flex gap-6 overflow-x-auto pb-4">
-            {SHOW_CARDS.map((c) => (
-              <div key={c.n} className="w-[80vw] flex-shrink-0 sm:w-[380px]"><ShowCardView c={c} /></div>
-            ))}
-          </div>
-        </div>
-      </section>
-    );
+  function onPointerDown(e: React.PointerEvent) {
+    const el = rowRef.current;
+    if (!el) return;
+    drag.current = { down: true, startX: e.clientX, startLeft: el.scrollLeft, moved: false };
+    el.setPointerCapture(e.pointerId);
+  }
+  function onPointerMove(e: React.PointerEvent) {
+    const el = rowRef.current;
+    if (!el || !drag.current.down) return;
+    const dx = e.clientX - drag.current.startX;
+    if (Math.abs(dx) > 3) drag.current.moved = true;
+    el.scrollLeft = drag.current.startLeft - dx;
+  }
+  function endDrag(e: React.PointerEvent) {
+    const el = rowRef.current;
+    if (el?.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
+    drag.current.down = false;
+  }
+  function nudge(dir: -1 | 1) {
+    rowRef.current?.scrollBy({ left: dir * Math.min(440, window.innerWidth * 0.8), behavior: reduce ? "auto" : "smooth" });
   }
 
   return (
-    <section ref={wrapRef} style={{ height: `calc(100vh + ${distance}px)` }} className="relative bg-paper">
-      <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
-        <div className="mx-auto mb-8 w-full max-w-6xl px-6">
-          <ShowHeader />
+    <section className="bg-paper py-20">
+      <div className="mx-auto max-w-6xl px-6">
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow text-ink-faint">Why it works</p>
+            <h2 className="mt-3 font-serif text-4xl text-ink sm:text-5xl">A wardrobe that travels.</h2>
+          </div>
+          {/* arrows — an obvious way to move without dragging */}
+          <div className="hidden gap-2 sm:flex">
+            <button onClick={() => nudge(-1)} aria-label="Previous" className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-soft transition-colors hover:border-ink hover:text-ink">←</button>
+            <button onClick={() => nudge(1)} aria-label="Next" className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-soft transition-colors hover:border-ink hover:text-ink">→</button>
+          </div>
         </div>
-        <motion.div ref={trackRef} style={{ x }} className="flex gap-6 px-6 will-change-transform">
-          {SHOW_CARDS.map((c) => (
-            <div key={c.n} className="h-[54vh] w-[80vw] flex-shrink-0 sm:w-[420px]">
-              <ShowCardView c={c} />
-            </div>
-          ))}
-        </motion.div>
       </div>
-    </section>
-  );
-}
 
-function ShowHeader() {
-  return (
-    <div className="flex items-end justify-between gap-4">
-      <div>
-        <p className="eyebrow text-ink-faint">Why it works</p>
-        <h2 className="mt-3 font-serif text-4xl text-ink sm:text-5xl">A wardrobe that travels.</h2>
+      <div
+        ref={rowRef}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
+        data-lenis-prevent
+        className="no-scrollbar mt-8 flex cursor-grab snap-x gap-6 overflow-x-auto scroll-px-6 px-6 pb-4 active:cursor-grabbing"
+      >
+        {SHOW_CARDS.map((c) => (
+          <div
+            key={c.n}
+            className="h-[52vh] max-h-[460px] w-[82vw] flex-shrink-0 snap-start sm:w-[380px]"
+            // a drag that moved shouldn't also register as a click on card links
+            onClickCapture={(e) => { if (drag.current.moved) { e.preventDefault(); e.stopPropagation(); } }}
+          >
+            <ShowCardView c={c} />
+          </div>
+        ))}
+        {/* trailing spacer so the last card can snap fully into view */}
+        <div className="w-2 flex-shrink-0 sm:hidden" />
       </div>
-      <span className="hidden text-xs text-ink-faint sm:block">scroll →</span>
-    </div>
+      <p className="mx-auto mt-3 max-w-6xl px-6 text-xs text-ink-faint">Drag, swipe, or use the arrows →</p>
+    </section>
   );
 }
 
