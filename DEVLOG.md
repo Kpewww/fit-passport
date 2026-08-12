@@ -28,6 +28,67 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 30 — Card system (tilt/export/finish choice/banners), badge silhouettes + true 3D, converging layers, live converter
+
+**Context:** founder approved the whole backlog and added: card glint should be
+less obvious / a bit faster / less frequent; the card itself should turn in 3D on
+hover; the card should be **exportable**; in community it becomes the user's
+**banner**, so colour follows the person — and the user picks that colour **only
+from metals they own**. Plus: make badges rival dedicated badge-design tools;
+push the aesthetic further (oversized type, elements that overlap as you move).
+
+**Built — the card system:**
+- Extracted `components/MetalCard.tsx` (`CARD_THEMES` / `MetalSurface` /
+  `MetalCard` / `CardField` / `resolveTheme`) so passport and community share one
+  surface.
+- **Glint retuned**: new `glint` keyframe crosses fast then waits (11s cycle,
+  ~14% duty) at lower opacity — a passing reflection, not a running animation.
+- **3D tilt** on pointer, deliberately limited (±7°/±9°) so text stays legible,
+  with a pointer-tracked soft highlight.
+- **`User.cardMetal`**: pick your finish, validated server-side to a metal you
+  actually earned (`/api/profile/prefs`); `/api/status` returns `cardMetal` +
+  `earnedMetals`; `CardMetalPicker` greys locked metals so the ladder stays
+  aspirational. New `earnedMetals()` helper.
+- **Export** (`lib/cardExport.ts`): re-draws the card as a standalone 1600×1000
+  SVG then rasterises via canvas → PNG download. No html2canvas, exact gradients,
+  crisp at any scale, and only code-public fields are drawn (never measurements).
+- **Community rows are member cards** with a metal **banner** in that member's
+  finish (API now returns `cardMetal`, falling back to their highest metal), with
+  the avatar overlapping the banner edge.
+
+**Built — badges:**
+- **Silhouettes per track** (`BadgeDef.shape`), the way dedicated badge designers
+  frame a rank: **shield** = The Wardrobe, **seal** = The Fit Record, **hexagon**
+  = The Atelier, **rosette** = Rare Honors. `BadgeMedallion` draws the silhouette
+  plus an inset engraved copy; fluting now only on round seals.
+- **True 3D** (`BadgeWebGL`): a real three.js coin — cylinder rim + textured
+  faces, physical metal material, procedural studio environment so rotation
+  produces genuine specular travel; drag to turn, idle drift, graceful fallback.
+  `BadgeInspect` gained a **Flat / True 3D** switch and the heavy path sits behind
+  `React.lazy`, so `/badges` first load stays ~106kB. The face texture is the
+  medallion SVG serialized from a hidden node.
+
+**Built — aesthetics:**
+- **`ConvergingStack`**: an oversized 26vw word behind three cards that start
+  spread apart and **slide together into one stack as you scroll** (scroll-linked
+  x/rotate; reduced motion keeps them laid out). Closing CTA type up to 8.5rem.
+- **`LiveConverter` on /check**: choose tops/bottoms/shoes, type the size you
+  wear, and every regional equivalent updates live from `lib/sizeConvert`
+  (auto-detects + highlights the source scale, dashes until it parses, inline
+  "indicative only" disclaimer) — the faers pattern, so the page is useful before
+  you have a link.
+- **Serif headings everywhere**: all 13 remaining `text-3xl font-bold` page h1s
+  are now `font-serif text-4xl`.
+
+**Verified:** `tsc` clean · 63/63 vitest green · `next build` clean (three.js
+stays out of the initial bundle) · live: all 13 pages 200; converter + converging
+section render.
+
+**Next:** founder's finer card details; more badge motifs if wanted; deployment
+(SQLite→Postgres); course deliverables.
+
+---
+
 ## 2026-08-12 · Session 29 — Metal charge-card passport, 6-metal badge ladder, CS2-style inspect, first logo
 
 **Context:** founder feedback: badge light too strong + motion too fast, and the
