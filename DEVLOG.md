@@ -28,6 +28,63 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 31 — Docs sync + deployment prep (Vercel + Neon Postgres)
+
+**Context:** founder asked to sync the GitHub-facing docs (README etc.) and to
+look at deploying — SQLite → Postgres on Vercel + Neon, with env vars.
+
+**Docs:**
+- **README rewritten** (was 46 stale lines): what the app actually does now, an
+  architecture map, the **privacy invariant**, the no-brand-imagery rule, the key
+  design decisions a contributor must know (engine isn't an LLM; `category` vs
+  `Collection`; `authEdge` byte-compatibility; graceful degradation), current
+  scripts, and a deployment pointer.
+- **`docs/DEPLOYMENT.md`** — a real runbook: how the two databases coexist, Neon
+  setup (use the **pooled** host), Vercel setup (root dir `app-web`, build command
+  `npm run vercel-build`), required vs optional env-var tables, how to author
+  future migrations, a verification walkthrough that ends on the privacy check,
+  **honest known limitations**, and costs (~$0 at demo scale).
+- `.env.example` now documents the local-SQLite vs production-Postgres split.
+
+**Postgres without breaking local dev:**
+- Established empirically that **Prisma rejects `env()` for `datasource.provider`**
+  (validation error), so one schema can't serve both engines. Rather than
+  hand-maintain two schemas, **`scripts/gen-postgres-schema.mjs` derives**
+  `prisma/schema.postgres.prisma` from the single source schema (every model uses
+  portable scalars). Generated file is gitignored; the generator **refuses to run**
+  if the source stops being SQLite. Local `npm run dev` is completely unchanged.
+- **Committed `prisma/migrations/0_init`** (337 lines of Postgres DDL), produced
+  offline with `prisma migrate diff --from-empty`, so `prisma migrate deploy`
+  works against Neon without ever needing a live DB locally.
+- New scripts: `typecheck`, `db:push`, `db:pg:schema|generate|migrate`,
+  `vercel-build` (generate → migrate deploy → next build), `postinstall`.
+
+**Production hardening + two bugs my own changes caused (both caught by testing):**
+- `SESSION_SECRET` is now **required in production** — with the dev fallback,
+  anyone could forge a session cookie and read/write any account.
+- **Bug 1 (mine):** the first guard threw at *module load*, which broke
+  `next build` — the build runs with `NODE_ENV=production` but needs no secret.
+  Fixed by resolving the secret **per call**. Verified both ways: no secret →
+  `500` and **no cookie is minted**; with a secret → cookie signed, APIs 200.
+  `auth.ts` and `authEdge.ts` kept identical so Node/Edge cookies cross-verify.
+- **Bug 2 (environmental):** a production smoke test showed every page 404 while
+  APIs worked. Root cause was **clobbered `.next` artifacts** (a dev server had
+  overwritten the production build), not a code regression — a clean rebuild
+  serves all 8 pages 200 under `next start`. Worth remembering: never trust a
+  production smoke test taken after `npm run dev` has touched `.next`.
+- Confirmed `prisma generate` tolerates a Postgres `DATABASE_URL` against the
+  SQLite schema (exit 0), so `postinstall` can't break the Vercel build.
+
+**Verified:** `tsc` clean · 68/68 vitest green · `next build` clean · production
+`next start` serves home/check/passport/closet/badges/community/help/outfits +
+`/api/status` all 200 · local dev restored and serving.
+
+**Next:** the founder performs the actual Neon + Vercel account steps (I can't
+provision those); then swap the rate limiter to Upstash Redis before real users.
+Course deliverables (interviews, midterm Product Opportunity deck, BMC/VPC) remain.
+
+---
+
 ## 2026-08-12 · Session 30 — Card system (tilt/export/finish choice/banners), badge silhouettes + true 3D, converging layers, live converter
 
 **Context:** founder approved the whole backlog and added: card glint should be
