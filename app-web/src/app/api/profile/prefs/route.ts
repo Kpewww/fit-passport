@@ -9,7 +9,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, canEdit } from "@/lib/session";
 import { computeBadgeStats } from "@/lib/badgeStats";
-import { earnedBadgeIds } from "@/lib/badges";
+import { earnedBadgeIds, earnedMetals } from "@/lib/badges";
 
 const Body = z.object({
   pinnedBadges: z.array(z.string()).max(3).optional(),
@@ -17,6 +17,7 @@ const Body = z.object({
   showBodyType: z.boolean().optional(),
   bodyType: z.string().max(20).nullable().optional(),
   signatureOutfitId: z.string().nullable().optional(),
+  cardMetal: z.string().max(20).nullable().optional(),
 });
 
 export async function POST(req: Request) {
@@ -35,7 +36,21 @@ export async function POST(req: Request) {
     showBodyType?: boolean;
     bodyType?: string | null;
     signatureOutfitId?: string | null;
+    cardMetal?: string | null;
   } = {};
+
+  if (parsed.data.cardMetal !== undefined) {
+    const want = parsed.data.cardMetal;
+    if (!want) {
+      data.cardMetal = null; // back to automatic
+    } else {
+      // You may only wear a metal you've actually earned.
+      const listed = parsed.data.listedInCommunity ?? user.listedInCommunity;
+      const stats = await computeBadgeStats(user.id, listed);
+      const owned = earnedMetals(earnedBadgeIds(stats)) as string[];
+      data.cardMetal = owned.includes(want) ? want : null;
+    }
+  }
 
   if (parsed.data.signatureOutfitId !== undefined) {
     const id = parsed.data.signatureOutfitId;

@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { computeBadgeStats } from "@/lib/badgeStats";
-import { earnedBadgeIds, evaluateBadges, parsePinned } from "@/lib/badges";
+import { earnedBadgeIds, earnedMetals, evaluateBadges, parsePinned } from "@/lib/badges";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -94,6 +94,8 @@ export async function GET() {
     earnedBadgeIds: earned,
     pinnedBadges: pinned,
     signatureOutfitId: user.signatureOutfitId ?? null,
+    cardMetal: user.cardMetal ?? null,
+    earnedMetals: earnedMetals(earned),
     lastRecommendation: recentRec
       ? {
           size: recentRec.recommendedSizeLabel,

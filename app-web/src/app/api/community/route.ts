@@ -6,7 +6,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { computeBadgeStats } from "@/lib/badgeStats";
-import { earnedBadgeIds, parsePinned } from "@/lib/badges";
+import { earnedBadgeIds, highestMetal, parsePinned } from "@/lib/badges";
 
 export async function GET() {
   const users = await prisma.user.findMany({
@@ -18,6 +18,7 @@ export async function GET() {
       bodyType: true,
       showBodyType: true,
       pinnedBadges: true,
+      cardMetal: true,
       fitProfile: { select: { sex: true, shopsFor: true, avatarDataUrl: true } },
       _count: { select: { knownGood: true } },
     },
@@ -41,6 +42,9 @@ export async function GET() {
         closetCount: u._count.knownGood,
         badges: showBadges,
         badgeCount: earned.length,
+        // The member's card finish drives their banner colour in the directory
+        // (chosen metal → else their highest earned → else the default).
+        cardMetal: u.cardMetal ?? highestMetal(earned) ?? null,
       };
     }),
   );

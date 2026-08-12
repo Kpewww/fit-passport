@@ -53,6 +53,16 @@ export const VEINED_METALS: Metal[] = ["diamond", "obsidian", "amethyst", "jade"
  * The highest-prestige metal among a set of earned badge IDs. Used to theme the
  * passport card. Returns null when nothing is earned (caller uses the default).
  */
+/** The distinct metals a user owns, ascending in prestige. */
+export function earnedMetals(earnedIds: string[]): Metal[] {
+  const set = new Set<Metal>();
+  for (const id of earnedIds) {
+    const b = badgeById(id);
+    if (b) set.add(b.metal);
+  }
+  return [...set].sort((a, b) => METAL_RANK[a] - METAL_RANK[b]);
+}
+
 export function highestMetal(earnedIds: string[]): Metal | null {
   let best: Metal | null = null;
   for (const id of earnedIds) {

@@ -6,12 +6,14 @@ import Link from "next/link";
 import { Button, Card, Field, inputClass } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
 import { OutfitCard } from "@/components/OutfitCard";
+import { MetalSurface, resolveTheme } from "@/components/MetalCard";
 
 type Entry = {
   username: string;
   accountCode: string;
   avatarDataUrl: string | null;
   bodyType: string | null;
+  cardMetal: string | null;
   sex: string | null;
   shopsFor: string | null;
   closetCount: number;
@@ -146,18 +148,7 @@ export default function CommunityPage() {
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {entries.map((e) => (
               <Link key={e.accountCode} href={`/u/${encodeURIComponent(e.accountCode)}`}>
-                <Card className="flex items-center gap-3 !p-4 transition-shadow hover:shadow-lift">
-                  <Avatar src={e.avatarDataUrl} initials={e.username.slice(0, 2).toUpperCase()} size={48} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold text-ink">{e.username}</p>
-                    <p className="text-xs text-ink-faint">
-                      {e.closetCount} items
-                      {e.bodyType ? ` · ${e.bodyType}` : ""}
-                      {e.badgeCount > 0 ? ` · ${e.badgeCount} badge${e.badgeCount === 1 ? "" : "s"}` : ""}
-                    </p>
-                  </div>
-                  {e.badges.length > 0 && <PinnedSeals ids={e.badges} size={28} />}
-                </Card>
+                <MemberCard entry={e} />
               </Link>
             ))}
           </div>
@@ -174,5 +165,43 @@ export default function CommunityPage() {
         </Card>
       </div>
     </main>
+  );
+}
+
+// A member row whose BANNER wears their card metal — the same finish as their
+// passport card, so a colour reads as a person's identity across the app.
+function MemberCard({ entry }: { entry: Entry }) {
+  const theme = resolveTheme(entry.cardMetal, null);
+  return (
+    <div className="overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-line transition-shadow hover:shadow-lift">
+      {/* metal banner */}
+      <div
+        className="relative h-16"
+        style={{ background: `linear-gradient(140deg, ${theme.from} 0%, ${theme.via} 52%, ${theme.to} 100%)` }}
+      >
+        <MetalSurface theme={theme} radius={0} />
+        <span
+          className="absolute bottom-1.5 right-3 text-[8px] uppercase tracking-[0.24em]"
+          style={{ color: theme.text, opacity: 0.6 }}
+        >
+          {theme.label}
+        </span>
+      </div>
+      {/* details, with the avatar overlapping the banner edge */}
+      <div className="flex items-end gap-3 px-4 pb-4">
+        <div className="-mt-7 rounded-full ring-4 ring-white">
+          <Avatar src={entry.avatarDataUrl} initials={entry.username.slice(0, 2).toUpperCase()} size={48} ring={false} />
+        </div>
+        <div className="min-w-0 flex-1 pb-0.5">
+          <p className="truncate font-semibold text-ink">{entry.username}</p>
+          <p className="text-xs text-ink-faint">
+            {entry.closetCount} items
+            {entry.bodyType ? ` · ${entry.bodyType}` : ""}
+            {entry.badgeCount > 0 ? ` · ${entry.badgeCount} badge${entry.badgeCount === 1 ? "" : "s"}` : ""}
+          </p>
+        </div>
+        {entry.badges.length > 0 && <div className="pb-0.5"><PinnedSeals ids={entry.badges} size={26} /></div>}
+      </div>
+    </div>
   );
 }

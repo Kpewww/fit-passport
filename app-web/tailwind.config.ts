@@ -57,11 +57,19 @@ const config: Config = {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
+        // A metal glint: crosses quickly, then waits — so it reads as a passing
+        // reflection rather than a constant animation.
+        glint: {
+          "0%": { transform: "translateX(-120%)" },
+          "14%": { transform: "translateX(120%)" },
+          "100%": { transform: "translateX(120%)" },
+        },
       },
       animation: {
         "fade-in-up": "fade-in-up 0.4s ease-out both",
         "rise": "rise 0.7s cubic-bezier(0.16,1,0.3,1) both",
         shimmer: "shimmer 1.5s infinite",
+        glint: "glint 11s cubic-bezier(0.4,0,0.2,1) infinite",
       },
     },
   },

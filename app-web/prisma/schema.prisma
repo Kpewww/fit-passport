@@ -64,6 +64,11 @@ model User {
   // feature on the passport. Null = none chosen.
   signatureOutfitId String?
 
+  // Chosen colour/metal of the passport card (and the user's community banner).
+  // Must be a metal the user has actually EARNED — validated server-side.
+  // Null = automatic (their highest earned metal, else the default lapis).
+  cardMetal String?
+
   fitProfile  FitProfile?
   petProfiles PetProfile[]
   knownGood   KnownGoodItem[]

@@ -14,6 +14,8 @@ import { Avatar, BadgeSeal, EarnedSealRow } from "@/components/Badges";
 import { badgeById, highestMetal } from "@/lib/badges";
 import { OutfitMannequin } from "@/components/OutfitMannequin";
 import { Logo } from "@/components/Logo";
+import { MetalCard, CardField, resolveTheme, CARD_THEMES } from "@/components/MetalCard";
+import { downloadCardPng } from "@/lib/cardExport";
 import { garmentLabel } from "@/lib/garments";
 import type { OutfitView } from "@/components/OutfitCard";
 
@@ -84,6 +86,18 @@ export default function PassportPage() {
   const [showBodyType, setShowBodyType] = useState(true);
   const [myOutfits, setMyOutfits] = useState<OutfitView[]>([]);
   const [signatureOutfitId, setSignatureOutfitId] = useState<string | null>(null);
+  const [cardMetal, setCardMetal] = useState<string | null>(null);
+  const [ownedMetals, setOwnedMetals] = useState<string[]>([]);
+
+  // Choose the card's metal — the server only accepts metals you've earned.
+  async function saveCardMetal(metal: string | null) {
+    setCardMetal(metal);
+    await fetch("/api/profile/prefs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ cardMetal: metal }),
+    });
+  }
 
   async function saveSignature(id: string | null) {
     setSignatureOutfitId(id);
@@ -109,6 +123,8 @@ export default function PassportPage() {
       setPinnedBadges(s.pinnedBadges ?? []);
       setEarnedBadges(s.earnedBadgeIds ?? []);
       setSignatureOutfitId(s.signatureOutfitId ?? null);
+      setCardMetal(s.cardMetal ?? null);
+      setOwnedMetals(Array.isArray(s.earnedMetals) ? s.earnedMetals : []);
       setMyOutfits(Array.isArray(o.outfits) ? o.outfits : []);
       // Default to the polished VIEW card once the passport has real content;
       // brand-new/empty passports open straight into edit so there's something to do.
@@ -174,6 +190,9 @@ export default function PassportPage() {
         outfits={myOutfits}
         signatureOutfitId={signatureOutfitId}
         onSetSignature={saveSignature}
+        cardMetal={cardMetal}
+        ownedMetals={ownedMetals}
+        onSetCardMetal={saveCardMetal}
         onEdit={() => setMode("edit")}
       />
     );
@@ -440,6 +459,9 @@ function ViewBook({
   outfits,
   signatureOutfitId,
   onSetSignature,
+  cardMetal,
+  ownedMetals,
+  onSetCardMetal,
   onEdit,
 }: {
   profile: Profile;
@@ -456,20 +478,49 @@ function ViewBook({
   outfits: OutfitView[];
   signatureOutfitId: string | null;
   onSetSignature: (id: string | null) => void;
+  cardMetal: string | null;
+  ownedMetals: string[];
+  onSetCardMetal: (metal: string | null) => void;
   onEdit: () => void;
 }) {
   const fits = fitList(profile.preferredFit);
   // Seal glyph = the highest pinned badge, else the classic "FP".
   const sealBadge = pinnedBadges.map(badgeById).find(Boolean);
   const signature = outfits.find((o) => o.id === signatureOutfitId) ?? null;
-  // The card takes its metal from your highest EARNED badge (lapis by default).
-  const theme = CARD_THEMES[highestMetal(earnedBadges) ?? "lapis"] ?? CARD_THEMES.lapis;
+  // The card wears the metal you CHOSE (server-validated as one you own), else
+  // your highest earned metal, else the default lapis.
+  const theme = resolveTheme(cardMetal, highestMetal(earnedBadges));
 
   return (
     <main className="flex-1 bg-paper py-12">
       <div className="mx-auto max-w-2xl px-6">
-        <div className="mb-4 flex items-center justify-end">
-          <Button size="md" variant="secondary" onClick={onEdit}>✎ Edit passport</Button>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          {/* Card finish — only metals you've actually earned. */}
+          <CardMetalPicker
+            value={cardMetal}
+            owned={ownedMetals}
+            auto={highestMetal(earnedBadges)}
+            onPick={onSetCardMetal}
+          />
+          <div className="flex items-center gap-2">
+            <Button
+              size="md"
+              variant="secondary"
+              onClick={() =>
+                downloadCardPng({
+                  theme,
+                  holder,
+                  passportNo: idLine,
+                  region: profile.region || "—",
+                  preferredFit: fits.join(" · ").toUpperCase() || "—",
+                  avatarDataUrl: profile.avatarDataUrl,
+                })
+              }
+            >
+              ↓ Export card
+            </Button>
+            <Button size="md" variant="secondary" onClick={onEdit}>✎ Edit passport</Button>
+          </div>
         </div>
 
         {/* THE CARD — one solid metal slab, Amex-black in spirit. Its color comes
@@ -609,81 +660,50 @@ function ViewBook({
   );
 }
 
-// ---------- The metal card ----------
-//
-// One solid slab in the spirit of a metal charge card: a deep two-stop metal
-// gradient, brushed-metal micro-grain, a broad diagonal sheen, and a slow
-// travelling glint. Its color is driven by the holder's highest badge metal.
 
-type CardTheme = {
-  label: string;
-  from: string;
-  via: string;
-  to: string;
-  sheen: string; // highlight color for the sheen/ring
-  text: string; // body text color on the slab
-  veined?: boolean; // agate-style white striations (top metals)
-};
-
-const CARD_THEMES: Record<string, CardTheme> = {
-  // default — lapis lazuli cobalt
-  lapis: { label: "Lapis Edition", from: "#0f1a52", via: "#2438d6", to: "#0a0f2e", sheen: "rgba(190,205,255,0.9)", text: "#eef1ff" },
-  bronze: { label: "Bronze Edition", from: "#3a220e", via: "#b57838", to: "#2a1809", sheen: "rgba(255,224,186,0.9)", text: "#fdf1e2" },
-  silver: { label: "Silver Edition", from: "#5f6872", via: "#c2cad3", to: "#454c55", sheen: "rgba(255,255,255,0.95)", text: "#12161b" },
-  gold: { label: "Gold Edition", from: "#5c4406", via: "#e6b23d", to: "#3d2c04", sheen: "rgba(255,246,200,0.95)", text: "#221903" },
-  platinum: { label: "Platinum Edition", from: "#7c848f", via: "#e8ecf1", to: "#69717b", sheen: "rgba(255,255,255,0.98)", text: "#14181d" },
-  diamond: { label: "Diamond Edition", from: "#0e5b73", via: "#c4ecf6", to: "#0b465a", sheen: "rgba(255,255,255,0.98)", text: "#06303d", veined: true },
-  obsidian: { label: "Obsidian Edition", from: "#101216", via: "#2a2e35", to: "#000000", sheen: "rgba(200,210,225,0.75)", text: "#eef0f4", veined: true },
-  amethyst: { label: "Amethyst Edition", from: "#2c1553", via: "#8b5cd6", to: "#1d0e38", sheen: "rgba(232,214,251,0.92)", text: "#f6efff", veined: true },
-  jade: { label: "Jade Edition", from: "#0b3d23", via: "#43b972", to: "#072b18", sheen: "rgba(211,246,222,0.92)", text: "#f0fff6", veined: true },
-  amber: { label: "Amber Edition", from: "#4d2607", via: "#e8912f", to: "#331803", sheen: "rgba(255,225,168,0.95)", text: "#2b1504" },
-};
-
-function MetalCard({ theme, children }: { theme: CardTheme; children: React.ReactNode }) {
+// Choose the card's finish. You can only wear a metal you've earned — locked
+// metals are shown greyed with their name so the ladder stays visible/aspirational.
+function CardMetalPicker({
+  value,
+  owned,
+  auto,
+  onPick,
+}: {
+  value: string | null;
+  owned: string[];
+  auto: string | null;
+  onPick: (metal: string | null) => void;
+}) {
+  const all = Object.keys(CARD_THEMES).filter((k) => k !== "lapis");
   return (
-    <div
-      className="relative overflow-hidden rounded-[22px] p-7 shadow-lift sm:p-9"
-      style={{
-        background: `linear-gradient(140deg, ${theme.from} 0%, ${theme.via} 52%, ${theme.to} 100%)`,
-        color: theme.text,
-      }}
-    >
-      {/* brushed-metal micro-grain */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.14] mix-blend-overlay"
-        style={{
-          backgroundImage:
-            "repeating-linear-gradient(115deg, rgba(255,255,255,0.55) 0px, rgba(255,255,255,0) 2px, rgba(0,0,0,0.35) 3px, rgba(0,0,0,0) 5px)",
-        }}
-      />
-      {/* agate-style striations for the top metals */}
-      {theme.veined && (
-        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-40" preserveAspectRatio="none" viewBox="0 0 100 60">
-          <path d="M-2,14 C18,7 30,22 52,15 C72,9 86,20 102,12" fill="none" stroke="#fff" strokeOpacity="0.7" strokeWidth="0.7" />
-          <path d="M-2,34 C20,27 28,42 50,36 C70,30 84,43 102,34" fill="none" stroke="#fff" strokeOpacity="0.45" strokeWidth="0.4" />
-          <path d="M-2,48 C22,44 34,55 56,49 C74,44 88,53 102,47" fill="none" stroke="#fff" strokeOpacity="0.3" strokeWidth="0.35" />
-        </svg>
-      )}
-      {/* broad diagonal sheen */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: `linear-gradient(125deg, transparent 22%, ${theme.sheen} 47%, transparent 68%)`, opacity: 0.16 }}
-      />
-      {/* slow travelling glint */}
-      <div className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_9s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_42%,rgba(255,255,255,0.28)_50%,transparent_58%)]" />
-      {/* inner hairline bevel */}
-      <div className="pointer-events-none absolute inset-0 rounded-[22px] ring-1 ring-inset ring-white/20" />
-      <div className="relative">{children}</div>
-    </div>
-  );
-}
-
-// A quiet label/value pair rendered on the metal slab.
-function CardField({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
-  return (
-    <div className="min-w-0">
-      <p className="text-[8px] uppercase tracking-[0.24em] opacity-55">{label}</p>
-      <p className={`mt-1 truncate text-sm ${mono ? "font-mono tracking-tight" : "font-medium"}`}>{value}</p>
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">Finish</span>
+      {/* automatic = lapis, or your highest earned metal */}
+      <button
+        onClick={() => onPick(null)}
+        title={auto ? `Automatic — currently ${CARD_THEMES[auto]?.label ?? auto}` : "Automatic — Lapis Edition"}
+        className={`h-6 rounded-full border px-2 text-[10px] font-medium ${
+          !value ? "border-ink bg-ink text-paper" : "border-line text-ink-soft hover:border-ink"
+        }`}
+      >
+        Auto
+      </button>
+      {all.map((k) => {
+        const t = CARD_THEMES[k];
+        const unlocked = owned.includes(k);
+        return (
+          <button
+            key={k}
+            disabled={!unlocked}
+            onClick={() => onPick(k)}
+            title={unlocked ? t.label : `${t.label} — locked, earn a ${k} badge`}
+            className={`h-6 w-6 rounded-full ring-offset-1 transition-transform ${
+              value === k ? "ring-2 ring-ink" : ""
+            } ${unlocked ? "hover:scale-110" : "cursor-not-allowed opacity-25 grayscale"}`}
+            style={{ background: `linear-gradient(140deg, ${t.from}, ${t.via} 55%, ${t.to})` }}
+          />
+        );
+      })}
     </div>
   );
 }
