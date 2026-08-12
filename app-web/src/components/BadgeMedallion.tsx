@@ -11,15 +11,33 @@
 // (Roman fibula, wax tablet, tailor's shears, imperial crown…), passed from the
 // badge definition so the art carries meaning, not just decoration.
 
-import { badgeById, type Metal } from "@/lib/badges";
+import { badgeById, VEINED_METALS, type Metal } from "@/lib/badges";
 
-const PALETTE: Record<Metal, { light: string; mid: string; dark: string; rim: string; ink: string; glow: string }> = {
+// Irregular agate/marble veins, authored in a 0..1 unit box and scaled to the
+// medal. Only the top metals get them (see VEINED_METALS) — like the white
+// striations in real agate or a diamond's inclusions.
+const VEINS = [
+  "M0.06,0.34 C0.26,0.22 0.38,0.46 0.56,0.36 C0.72,0.27 0.84,0.42 0.97,0.31",
+  "M0.02,0.62 C0.22,0.54 0.31,0.72 0.5,0.66 C0.68,0.60 0.8,0.74 0.98,0.64",
+  "M0.18,0.05 C0.28,0.28 0.16,0.44 0.3,0.66 C0.4,0.83 0.34,0.92 0.42,0.99",
+  "M0.72,0.03 C0.66,0.24 0.8,0.4 0.7,0.6 C0.62,0.77 0.72,0.9 0.66,0.99",
+];
+
+/** Scale a unit-box vein path (0..1) to the medal's pixel size. */
+function scaleVein(d: string, size: number): string {
+  return d.replace(/-?\d*\.?\d+/g, (n) => (parseFloat(n) * size).toFixed(2));
+}
+
+export const PALETTE: Record<Metal, { light: string; mid: string; dark: string; rim: string; ink: string; glow: string }> = {
   bronze:   { light: "#e7b98a", mid: "#b57838", dark: "#6f421c", rim: "#502f13", ink: "#3d2410", glow: "#f4d3a8" },
   silver:   { light: "#ffffff", mid: "#c2cad3", dark: "#828d99", rim: "#5f6872", ink: "#333a42", glow: "#eef2f6" },
-  gold:     { light: "#fff1a8", mid: "#e6ب23d".replace("ب","b"), dark: "#a9770a", rim: "#7c5c08", ink: "#5c4406", glow: "#fff6c8" },
-  obsidian: { light: "#7b828c", mid: "#2a2e35", dark: "#0a0b0e", rim: "#000000", ink: "#e9ebef", glow: "#9aa2ad" },
+  gold:     { light: "#fff1a8", mid: "#e6b23d", dark: "#a9770a", rim: "#7c5c08", ink: "#5c4406", glow: "#fff6c8" },
+  platinum: { light: "#ffffff", mid: "#dfe3e8", dark: "#a4adb8", rim: "#7c848f", ink: "#3a4149", glow: "#f6f8fb" },
   diamond:  { light: "#ffffff", mid: "#c4ecf6", dark: "#79bcd6", rim: "#3f93b7", ink: "#0e5b73", glow: "#e9fbff" },
+  obsidian: { light: "#7b828c", mid: "#2a2e35", dark: "#0a0b0e", rim: "#000000", ink: "#e9ebef", glow: "#9aa2ad" },
+  amethyst: { light: "#e8d6fb", mid: "#8b5cd6", dark: "#4d2a8e", rim: "#361c66", ink: "#f2e9ff", glow: "#dcc7f8" },
   jade:     { light: "#d3f6de", mid: "#43b972", dark: "#187041", rim: "#0e5230", ink: "#0b3d23", glow: "#c9f3d7" },
+  amber:    { light: "#ffe1a8", mid: "#e8912f", dark: "#a55611", rim: "#7a3d0b", ink: "#4d2607", glow: "#ffdca0" },
 };
 
 // ---- Motif engravings (drawn in a 24×24 box, centered) ----
@@ -69,6 +87,7 @@ export function BadgeMedallion({
   const finish = finishProp ?? def?.finish ?? 0;
   const motif = motifProp ?? def?.motif ?? "gem";
   const p = PALETTE[metal];
+  const veined = VEINED_METALS.includes(metal);
   const uid = `${id}-${metal}`;
   const c = size / 2;
   const rOuter = size * 0.44;
@@ -140,6 +159,11 @@ export function BadgeMedallion({
             <stop offset="100%" stopColor={p.glow} stopOpacity="0.5" />
           </radialGradient>
         )}
+        {veined && (
+          <clipPath id={`veinclip-${uid}`}>
+            <circle cx={c} cy={c} r={rOuter - size * 0.02} />
+          </clipPath>
+        )}
       </defs>
 
       {/* soft halo for high tiers */}
@@ -153,6 +177,23 @@ export function BadgeMedallion({
         {/* medal body */}
         <circle cx={c} cy={c} r={rOuter} fill={`url(#body-${uid})`} stroke={p.rim} strokeWidth={size * 0.02} />
       </g>
+
+      {/* agate/marble white veining — the top metals (diamond and above) */}
+      {veined && (
+        <g clipPath={`url(#veinclip-${uid})`} opacity={0.55}>
+          {VEINS.map((d, i) => (
+            <path
+              key={`v${i}`}
+              d={scaleVein(d, size)}
+              fill="none"
+              stroke="#ffffff"
+              strokeOpacity={i % 2 ? 0.5 : 0.85}
+              strokeWidth={size * (i % 2 ? 0.012 : 0.022)}
+              strokeLinecap="round"
+            />
+          ))}
+        </g>
+      )}
 
       {/* engraved rings (more with finish) */}
       <circle cx={c} cy={c} r={rOuter - size * 0.055} fill="none" stroke={p.light} strokeOpacity={0.45} strokeWidth={size * 0.01} />

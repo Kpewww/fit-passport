@@ -6,7 +6,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui";
-import { BadgeSeal, Badge3D } from "@/components/Badges";
+import { BadgeSeal } from "@/components/Badges";
 import { badgesByTrack, METAL_STYLE, type EarnedBadge } from "@/lib/badges";
 
 type StatusResp = {
@@ -114,9 +114,7 @@ function BadgeCard({
   const dim = !badge.earnedNow;
   return (
     <Card className={`flex gap-3 !p-4 ${dim ? "bg-paper-dim" : ""}`}>
-      <Badge3D size={54}>
-        <BadgeSeal id={badge.id} metal={badge.metal} size={54} locked={!badge.earnedNow} title={badge.title} />
-      </Badge3D>
+      <BadgeSeal id={badge.id} metal={badge.metal} size={54} locked={!badge.earnedNow} title={badge.title} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className={`truncate font-semibold ${dim ? "text-ink-soft" : "text-ink"}`}>{badge.title}</p>

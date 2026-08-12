@@ -20,37 +20,56 @@ export function Badge3D({ children, size }: { children: ReactNode; size: number 
     const r = el.getBoundingClientRect();
     const px = (e.clientX - r.left) / r.width - 0.5;
     const py = (e.clientY - r.top) / r.height - 0.5;
-    setT({ rx: -py * 24, ry: px * 24, active: true });
+    setT({ rx: -py * 22, ry: px * 22, active: true });
   }
   function reset() {
     setT({ rx: 0, ry: 0, active: false });
   }
+
+  // Highlight position tracks the tilt, so the "light" sweeps as the coin turns.
+  const hx = 50 + t.ry * 1.8;
+  const hy = 50 - t.rx * 1.8;
 
   return (
     <div
       ref={ref}
       onPointerMove={onMove}
       onPointerLeave={reset}
-      style={{ perspective: 520, width: size, height: size }}
+      style={{ perspective: 560, width: size, height: size }}
       className="flex-shrink-0"
     >
       <div
         style={{
           transform: `rotateX(${t.rx}deg) rotateY(${t.ry}deg)`,
           transformStyle: "preserve-3d",
-          transition: t.active ? "transform 60ms linear" : "transform 450ms cubic-bezier(0.16,1,0.3,1)",
+          // Slower, weightier motion (feels like turning real metal).
+          transition: t.active
+            ? "transform 420ms cubic-bezier(0.22,1,0.36,1)"
+            : "transform 900ms cubic-bezier(0.16,1,0.3,1)",
         }}
         className="relative h-full w-full"
       >
         {children}
+        {/* Bright specular hot-spot — the obvious "lighting" pass. */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 rounded-full"
           style={{
-            background: `radial-gradient(circle at ${50 + t.ry * 2}% ${50 - t.rx * 2}%, rgba(255,255,255,0.55), transparent 55%)`,
+            background: `radial-gradient(circle at ${hx}% ${hy}%, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.45) 22%, transparent 52%)`,
+            opacity: t.active ? 0.9 : 0,
+            transition: "opacity 500ms ease",
+            mixBlendMode: "screen",
+          }}
+        />
+        {/* A sharper glint streak that rakes across the surface. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 overflow-hidden rounded-full"
+          style={{
+            background: `linear-gradient(${105 + t.ry * 2}deg, transparent 38%, rgba(255,255,255,0.75) 48%, transparent 58%)`,
             opacity: t.active ? 0.55 : 0,
-            transition: "opacity 300ms ease",
-            mixBlendMode: "overlay",
+            transition: "opacity 500ms ease",
+            mixBlendMode: "screen",
           }}
         />
       </div>
@@ -95,6 +114,7 @@ export function BadgeSeal({
   size = 44,
   locked = false,
   title,
+  flat = false,
 }: {
   id?: string;
   metal: Metal;
@@ -102,10 +122,16 @@ export function BadgeSeal({
   size?: number;
   locked?: boolean;
   title?: string;
+  /** Opt out of the 3D tilt (e.g. tiny decorative seals). */
+  flat?: boolean;
 }) {
+  const medallion = (
+    <BadgeMedallion id={id ?? "starter"} metal={metal} size={size} locked={locked} title={title} />
+  );
+  // Every badge is interactive by default — tilt + light it like real metal.
   return (
     <div className="flex flex-shrink-0 items-center justify-center" title={title}>
-      <BadgeMedallion id={id ?? "starter"} metal={metal} size={size} locked={locked} title={title} />
+      {flat ? medallion : <Badge3D size={size}>{medallion}</Badge3D>}
     </div>
   );
 }
@@ -146,9 +172,12 @@ const METAL_CHIP: Record<Metal, string> = {
   bronze: "bg-amber-100 text-amber-800",
   silver: "bg-slate-100 text-slate-700",
   gold: "bg-yellow-100 text-yellow-800",
-  obsidian: "bg-neutral-800 text-neutral-100",
+  platinum: "bg-zinc-100 text-zinc-700",
   diamond: "bg-sky-100 text-sky-800",
+  obsidian: "bg-neutral-800 text-neutral-100",
+  amethyst: "bg-violet-100 text-violet-800",
   jade: "bg-emerald-100 text-emerald-800",
+  amber: "bg-orange-100 text-orange-800",
 };
 
 // A seal that reveals a styled tooltip (title · metal · what it means · lore) on

@@ -11,7 +11,7 @@ import { Button, Card } from "@/components/ui";
 import { BodyFigure } from "@/components/BodyFigure";
 import { deriveBodyType } from "@/lib/bodyType";
 import { Avatar, BadgeSeal, EarnedSealRow } from "@/components/Badges";
-import { badgeById } from "@/lib/badges";
+import { badgeById, highestMetal } from "@/lib/badges";
 import { OutfitMannequin } from "@/components/OutfitMannequin";
 import { garmentLabel } from "@/lib/garments";
 import type { OutfitView } from "@/components/OutfitCard";
@@ -461,64 +461,82 @@ function ViewBook({
   // Seal glyph = the highest pinned badge, else the classic "FP".
   const sealBadge = pinnedBadges.map(badgeById).find(Boolean);
   const signature = outfits.find((o) => o.id === signatureOutfitId) ?? null;
+  // The card takes its metal from your highest EARNED badge (lapis by default).
+  const theme = CARD_THEMES[highestMetal(earnedBadges) ?? "lapis"] ?? CARD_THEMES.lapis;
 
   return (
     <main className="flex-1 bg-paper py-12">
       <div className="mx-auto max-w-2xl px-6">
-        <div className="mb-3 flex items-center justify-end">
+        <div className="mb-4 flex items-center justify-end">
           <Button size="md" variant="secondary" onClick={onEdit}>✎ Edit passport</Button>
         </div>
 
-        {/* THE CREDENTIAL — cohesive light card with a metallic cobalt banner */}
-        <div className="overflow-hidden rounded-2xl bg-white shadow-lift ring-1 ring-line">
-          {/* Metallic banner: cobalt→ink gradient + a static diagonal sheen and a
-              slow moving light streak for a brushed-metal look. */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-brand-dark via-brand to-ink px-7 py-6 text-white">
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent_25%,rgba(255,255,255,0.18)_45%,transparent_65%)]" />
-            <div className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_6s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_42%,rgba(255,255,255,0.22)_50%,transparent_58%)]" />
-            <div className="relative flex items-center justify-between">
-              <div>
-                <p className="font-serif text-2xl italic leading-none">Fit Passport</p>
-                <p className="mt-1.5 text-[10px] uppercase tracking-[0.28em] text-white/70">International Sizing Identity</p>
-              </div>
-              <span className="flex flex-shrink-0 items-center gap-1.5 rounded-full border border-white/30 bg-white/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-white backdrop-blur">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-300" /> Issued
-              </span>
+        {/* THE CARD — one solid metal slab, Amex-black in spirit. Its color comes
+            from your highest earned badge metal (cobalt lapis by default). */}
+        <MetalCard theme={theme}>
+          {/* top row: wordmark + issued */}
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="font-serif text-[26px] italic leading-none">Fit Passport</p>
+              <p className="mt-2 text-[9px] uppercase tracking-[0.3em] opacity-60">{theme.label}</p>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <span className="text-[9px] uppercase tracking-[0.24em] opacity-60">Issued 2026</span>
+              {sealBadge && <BadgeSeal id={sealBadge.id} metal={sealBadge.metal} size={40} title={sealBadge.title} />}
             </div>
           </div>
 
-          {/* Portrait + identity — high-contrast ink on white */}
-          <div className="grid gap-6 border-b border-line px-7 py-6 sm:grid-cols-[auto,1fr]">
-            <div className="flex flex-col items-center">
-              <div className="rounded-full bg-gradient-to-br from-brand to-brand-dark p-[2px]">
-                <Avatar src={profile.avatarDataUrl} initials={initials} size={86} ring={false} />
-              </div>
-              <p className="mt-1.5 text-[9px] uppercase tracking-widest text-ink-faint">portrait</p>
+          {/* middle: portrait + holder — big, quiet, confident */}
+          <div className="mt-9 flex items-end gap-5">
+            <div
+              className="rounded-full p-[2px]"
+              style={{ background: `linear-gradient(135deg, ${theme.sheen}, transparent 70%)` }}
+            >
+              <Avatar src={profile.avatarDataUrl} initials={initials} size={72} ring={false} />
             </div>
-            <div className="min-w-0 space-y-2.5">
-              <Line label="Holder" value={holder} mono />
-              <Line label="Passport no." value={idLine} mono />
-              <Line label="Region of issue" value={profile.region || "—"} mono />
-              <Line label="Preferred fit" value={fits.join(", ").toUpperCase() || "—"} />
+            <div className="min-w-0 pb-1">
+              <p className="text-[9px] uppercase tracking-[0.24em] opacity-55">Holder</p>
+              <p className="truncate font-serif text-2xl leading-tight">{holder}</p>
             </div>
           </div>
 
+          {/* card-style detail row */}
+          <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
+            <CardField label="Passport no." value={idLine} mono />
+            <CardField label="Region" value={profile.region || "—"} mono />
+            <CardField label="Preferred fit" value={fits.join(" · ").toUpperCase() || "—"} />
+          </div>
+
+          {/* bottom: verification + logo slot */}
+          <div className="mt-9 flex items-end justify-between gap-4 border-t border-white/15 pt-4">
+            <div className="min-w-0">
+              <p className="text-[8px] uppercase tracking-[0.24em] opacity-50">Verification</p>
+              <p className="truncate font-mono text-[10px] tracking-[0.2em] opacity-75">{mrz(profile, me)}</p>
+            </div>
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border border-dashed border-white/25 text-[7px] uppercase tracking-widest opacity-50">
+              logo
+            </div>
+          </div>
+        </MetalCard>
+
+        {/* Details live BELOW the card so the card itself stays clean. */}
+        <div className="mt-6 space-y-4">
           {/* Achievements */}
-          <div className="border-b border-line px-7 py-5">
-            <div className="mb-2.5 flex items-center justify-between">
+          <div className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-line">
+            <div className="mb-3 flex items-center justify-between">
               <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Achievements</p>
-              {earnedBadges.length > 0 && <span className="text-[10px] text-ink-faint">hover a medallion for its meaning</span>}
+              {earnedBadges.length > 0 && <span className="text-[10px] text-ink-faint">tilt a medallion to catch the light</span>}
             </div>
             {earnedBadges.length > 0 ? (
-              <EarnedSealRow earnedIds={earnedBadges} pinnedIds={pinnedBadges} size={48} />
+              <EarnedSealRow earnedIds={earnedBadges} pinnedIds={pinnedBadges} size={52} />
             ) : (
               <Link href="/badges" className="text-sm text-brand hover:underline">Earn badges and pin up to 3 here →</Link>
             )}
           </div>
 
           {/* Signature look */}
-          <div className="border-b border-line px-7 py-5">
-            <div className="mb-2.5 flex items-center justify-between">
+          <div className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-line">
+            <div className="mb-3 flex items-center justify-between">
               <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Signature look</p>
               {outfits.length > 0 && (
                 <select
@@ -559,40 +577,15 @@ function ViewBook({
             )}
           </div>
 
-          {/* Body type */}
-          <div className="flex items-center gap-4 border-b border-line px-7 py-5">
-            <div className="flex-shrink-0 rounded-2xl border border-line bg-paper-soft p-2">
-              <BodyFigure volume={figureKey} shape={shape} size={58} />
-            </div>
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Body type</p>
-              <p className="text-lg font-semibold text-ink">{showBodyType ? bodyLabel : "Hidden"}</p>
-              <p className="mt-0.5 text-xs text-ink-faint">
-                {showBodyType
-                  ? "Precise measurements stay private — never shared by code."
-                  : "You've hidden your body type from your public view."}
-              </p>
-            </div>
-          </div>
-
-          {/* Footer: issue seal + verification string + logo placeholder */}
-          <div className="flex items-center gap-4 bg-paper-soft px-7 py-5">
-            <div className="relative flex h-16 w-16 flex-shrink-0 items-center justify-center">
-              <div className="absolute inset-0 animate-[spin_20s_linear_infinite] rounded-full border border-dashed border-brand/40" />
-              {sealBadge ? (
-                <BadgeSeal id={sealBadge.id} metal={sealBadge.metal} size={42} title={sealBadge.title} />
-              ) : (
-                <div className="flex h-11 w-11 flex-col items-center justify-center rounded-full border border-brand/40 bg-brand-tint">
-                  <span className="text-[8px] font-bold uppercase tracking-tight text-brand">Issued</span>
-                  <span className="-mt-0.5 text-[7px] tracking-widest text-ink-faint">2026</span>
-                </div>
-              )}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[9px] uppercase tracking-widest text-ink-faint">Verification</p>
-              <p className="truncate font-mono text-[11px] tracking-widest text-ink-soft">{mrz(profile, me)}</p>
-            </div>
-            <LogoPlaceholder />
+          {/* Body type — text only; the figure is kept off the card for cleanliness */}
+          <div className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-line">
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Body type</p>
+            <p className="mt-1 text-lg font-semibold text-ink">{showBodyType ? bodyLabel : "Hidden"}</p>
+            <p className="mt-0.5 text-xs text-ink-faint">
+              {showBodyType
+                ? "Precise measurements stay private — never shared by code."
+                : "You've hidden your body type from your public view."}
+            </p>
           </div>
         </div>
 
@@ -617,11 +610,81 @@ function ViewBook({
   );
 }
 
-// A blank framed slot reserved for our future logo (design pending).
-function LogoPlaceholder() {
+// ---------- The metal card ----------
+//
+// One solid slab in the spirit of a metal charge card: a deep two-stop metal
+// gradient, brushed-metal micro-grain, a broad diagonal sheen, and a slow
+// travelling glint. Its color is driven by the holder's highest badge metal.
+
+type CardTheme = {
+  label: string;
+  from: string;
+  via: string;
+  to: string;
+  sheen: string; // highlight color for the sheen/ring
+  text: string; // body text color on the slab
+  veined?: boolean; // agate-style white striations (top metals)
+};
+
+const CARD_THEMES: Record<string, CardTheme> = {
+  // default — lapis lazuli cobalt
+  lapis: { label: "Lapis Edition", from: "#0f1a52", via: "#2438d6", to: "#0a0f2e", sheen: "rgba(190,205,255,0.9)", text: "#eef1ff" },
+  bronze: { label: "Bronze Edition", from: "#3a220e", via: "#b57838", to: "#2a1809", sheen: "rgba(255,224,186,0.9)", text: "#fdf1e2" },
+  silver: { label: "Silver Edition", from: "#5f6872", via: "#c2cad3", to: "#454c55", sheen: "rgba(255,255,255,0.95)", text: "#12161b" },
+  gold: { label: "Gold Edition", from: "#5c4406", via: "#e6b23d", to: "#3d2c04", sheen: "rgba(255,246,200,0.95)", text: "#221903" },
+  platinum: { label: "Platinum Edition", from: "#7c848f", via: "#e8ecf1", to: "#69717b", sheen: "rgba(255,255,255,0.98)", text: "#14181d" },
+  diamond: { label: "Diamond Edition", from: "#0e5b73", via: "#c4ecf6", to: "#0b465a", sheen: "rgba(255,255,255,0.98)", text: "#06303d", veined: true },
+  obsidian: { label: "Obsidian Edition", from: "#101216", via: "#2a2e35", to: "#000000", sheen: "rgba(200,210,225,0.75)", text: "#eef0f4", veined: true },
+  amethyst: { label: "Amethyst Edition", from: "#2c1553", via: "#8b5cd6", to: "#1d0e38", sheen: "rgba(232,214,251,0.92)", text: "#f6efff", veined: true },
+  jade: { label: "Jade Edition", from: "#0b3d23", via: "#43b972", to: "#072b18", sheen: "rgba(211,246,222,0.92)", text: "#f0fff6", veined: true },
+  amber: { label: "Amber Edition", from: "#4d2607", via: "#e8912f", to: "#331803", sheen: "rgba(255,225,168,0.95)", text: "#2b1504" },
+};
+
+function MetalCard({ theme, children }: { theme: CardTheme; children: React.ReactNode }) {
   return (
-    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-md border border-dashed border-line text-[8px] uppercase tracking-widest text-ink-faint">
-      logo
+    <div
+      className="relative overflow-hidden rounded-[22px] p-7 shadow-lift sm:p-9"
+      style={{
+        background: `linear-gradient(140deg, ${theme.from} 0%, ${theme.via} 52%, ${theme.to} 100%)`,
+        color: theme.text,
+      }}
+    >
+      {/* brushed-metal micro-grain */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.14] mix-blend-overlay"
+        style={{
+          backgroundImage:
+            "repeating-linear-gradient(115deg, rgba(255,255,255,0.55) 0px, rgba(255,255,255,0) 2px, rgba(0,0,0,0.35) 3px, rgba(0,0,0,0) 5px)",
+        }}
+      />
+      {/* agate-style striations for the top metals */}
+      {theme.veined && (
+        <svg className="pointer-events-none absolute inset-0 h-full w-full opacity-40" preserveAspectRatio="none" viewBox="0 0 100 60">
+          <path d="M-2,14 C18,7 30,22 52,15 C72,9 86,20 102,12" fill="none" stroke="#fff" strokeOpacity="0.7" strokeWidth="0.7" />
+          <path d="M-2,34 C20,27 28,42 50,36 C70,30 84,43 102,34" fill="none" stroke="#fff" strokeOpacity="0.45" strokeWidth="0.4" />
+          <path d="M-2,48 C22,44 34,55 56,49 C74,44 88,53 102,47" fill="none" stroke="#fff" strokeOpacity="0.3" strokeWidth="0.35" />
+        </svg>
+      )}
+      {/* broad diagonal sheen */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ background: `linear-gradient(125deg, transparent 22%, ${theme.sheen} 47%, transparent 68%)`, opacity: 0.16 }}
+      />
+      {/* slow travelling glint */}
+      <div className="pointer-events-none absolute inset-0 -translate-x-full animate-[shimmer_9s_ease-in-out_infinite] bg-[linear-gradient(110deg,transparent_42%,rgba(255,255,255,0.28)_50%,transparent_58%)]" />
+      {/* inner hairline bevel */}
+      <div className="pointer-events-none absolute inset-0 rounded-[22px] ring-1 ring-inset ring-white/20" />
+      <div className="relative">{children}</div>
+    </div>
+  );
+}
+
+// A quiet label/value pair rendered on the metal slab.
+function CardField({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="min-w-0">
+      <p className="text-[8px] uppercase tracking-[0.24em] opacity-55">{label}</p>
+      <p className={`mt-1 truncate text-sm ${mono ? "font-mono tracking-tight" : "font-medium"}`}>{value}</p>
     </div>
   );
 }

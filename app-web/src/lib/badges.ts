@@ -15,13 +15,53 @@
 // coins, high tiers gain deep relief, engraving, and a laurel that overflows the
 // rim. See components/BadgeMedallion.tsx.
 
+// The progression ladder, in ascending prestige:
+//   bronze → silver → gold → platinum → diamond → obsidian
+// plus SPECIAL metals reserved for unusual/rare achievements (not part of the
+// ladder): amethyst (gem purple), jade (agate green), amber (orange).
+// Diamond and above gain agate-style white veining in the medallion art.
 export type Metal =
   | "bronze"
   | "silver"
   | "gold"
-  | "obsidian"
+  | "platinum"
   | "diamond"
-  | "jade";
+  | "obsidian"
+  // specials
+  | "amethyst"
+  | "jade"
+  | "amber";
+
+/** Ascending prestige order — used to pick a user's highest metal. */
+export const METAL_RANK: Record<Metal, number> = {
+  bronze: 1,
+  silver: 2,
+  gold: 3,
+  platinum: 4,
+  diamond: 5,
+  obsidian: 6,
+  // specials rank alongside the top of the ladder but stay visually distinct
+  amethyst: 5,
+  jade: 5,
+  amber: 4,
+};
+
+/** Metals that get agate/marble white veining in the art (diamond and above). */
+export const VEINED_METALS: Metal[] = ["diamond", "obsidian", "amethyst", "jade"];
+
+/**
+ * The highest-prestige metal among a set of earned badge IDs. Used to theme the
+ * passport card. Returns null when nothing is earned (caller uses the default).
+ */
+export function highestMetal(earnedIds: string[]): Metal | null {
+  let best: Metal | null = null;
+  for (const id of earnedIds) {
+    const b = badgeById(id);
+    if (!b) continue;
+    if (!best || METAL_RANK[b.metal] > METAL_RANK[best]) best = b.metal;
+  }
+  return best;
+}
 
 export type BadgeTrack = "closet" | "feedback" | "outfits" | "capstone";
 
@@ -61,9 +101,12 @@ export const METAL_STYLE: Record<Metal, { ring: string; bg: string; text: string
   bronze: { ring: "ring-amber-700/40", bg: "bg-gradient-to-br from-amber-600 to-amber-800", text: "text-amber-50", label: "Bronze" },
   silver: { ring: "ring-slate-400/50", bg: "bg-gradient-to-br from-slate-300 to-slate-500", text: "text-slate-900", label: "Silver" },
   gold: { ring: "ring-yellow-500/50", bg: "bg-gradient-to-br from-yellow-400 to-amber-600", text: "text-yellow-950", label: "Gold" },
-  obsidian: { ring: "ring-neutral-700/60", bg: "bg-gradient-to-br from-neutral-800 to-black", text: "text-neutral-100", label: "Obsidian" },
+  platinum: { ring: "ring-zinc-300/60", bg: "bg-gradient-to-br from-zinc-100 via-zinc-300 to-zinc-400", text: "text-zinc-900", label: "Platinum" },
   diamond: { ring: "ring-cyan-300/60", bg: "bg-gradient-to-br from-cyan-200 via-white to-sky-300", text: "text-sky-900", label: "Diamond" },
+  obsidian: { ring: "ring-neutral-700/60", bg: "bg-gradient-to-br from-neutral-800 to-black", text: "text-neutral-100", label: "Obsidian" },
+  amethyst: { ring: "ring-violet-400/60", bg: "bg-gradient-to-br from-violet-300 to-purple-700", text: "text-violet-50", label: "Amethyst" },
   jade: { ring: "ring-emerald-400/60", bg: "bg-gradient-to-br from-emerald-300 to-green-600", text: "text-emerald-950", label: "Jade" },
+  amber: { ring: "ring-orange-400/60", bg: "bg-gradient-to-br from-amber-300 to-orange-600", text: "text-orange-950", label: "Amber" },
 };
 
 export const TRACK_LABEL: Record<BadgeTrack, string> = {
@@ -80,36 +123,49 @@ export const BADGES: BadgeDef[] = [
     title: "Verified Closet",
     metal: "bronze", track: "closet", tier: 1, finish: 0,
     glyph: "🥉", motif: "hanger",
-    blurb: "Added at least 5 known-good garments.",
+    blurb: "Added at least 8 known-good garments.",
     lore: "A plain struck token — every archive begins with a first inventory.",
-    earned: (s) => s.closetCount >= 5,
-    progress: (s) => (s.closetCount >= 5 ? null : `${s.closetCount}/5 items`),
+    earned: (s) => s.closetCount >= 8,
+    progress: (s) => (s.closetCount >= 8 ? null : `${s.closetCount}/8 items`),
   },
   {
     id: "curator",
     title: "Curator",
     metal: "silver", track: "closet", tier: 2, finish: 2,
     glyph: "🥈", motif: "shelves",
-    blurb: "12+ items organized across 3+ collections.",
+    blurb: "20+ items organized across 4+ collections.",
     lore: "The Renaissance 'guardaroba' — the keeper of a well-ordered wardrobe.",
-    earned: (s) => s.closetCount >= 12 && s.collectionsUsed >= 3,
+    earned: (s) => s.closetCount >= 20 && s.collectionsUsed >= 4,
     progress: (s) =>
-      s.closetCount >= 12 && s.collectionsUsed >= 3
+      s.closetCount >= 20 && s.collectionsUsed >= 4
         ? null
-        : `${Math.min(s.closetCount, 12)}/12 items · ${Math.min(s.collectionsUsed, 3)}/3 collections`,
+        : `${Math.min(s.closetCount, 20)}/20 items · ${Math.min(s.collectionsUsed, 4)}/4 collections`,
   },
   {
     id: "archivist",
     title: "Wardrobe Archivist",
     metal: "gold", track: "closet", tier: 3, finish: 3,
     glyph: "🏅", motif: "archive",
-    blurb: "25+ items spanning 6+ brands.",
+    blurb: "45+ items spanning 10+ brands.",
     lore: "An imperial silk archive — breadth across houses and eras.",
-    earned: (s) => s.closetCount >= 25 && s.brandsCount >= 6,
+    earned: (s) => s.closetCount >= 45 && s.brandsCount >= 10,
     progress: (s) =>
-      s.closetCount >= 25 && s.brandsCount >= 6
+      s.closetCount >= 45 && s.brandsCount >= 10
         ? null
-        : `${Math.min(s.closetCount, 25)}/25 items · ${Math.min(s.brandsCount, 6)}/6 brands`,
+        : `${Math.min(s.closetCount, 45)}/45 items · ${Math.min(s.brandsCount, 10)}/10 brands`,
+  },
+  {
+    id: "grand-wardrobe",
+    title: "Grand Wardrobe",
+    metal: "platinum", track: "closet", tier: 4, finish: 4,
+    glyph: "🏛", motif: "obelisk",
+    blurb: "100+ items across 20+ brands, in 6+ collections.",
+    lore: "A royal wardrobe office — scale that must be administered, not merely owned.",
+    earned: (s) => s.closetCount >= 100 && s.brandsCount >= 20 && s.collectionsUsed >= 6,
+    progress: (s) =>
+      s.closetCount >= 100 && s.brandsCount >= 20 && s.collectionsUsed >= 6
+        ? null
+        : `${Math.min(s.closetCount, 100)}/100 items · ${Math.min(s.brandsCount, 20)}/20 brands`,
   },
 
   // ============ TRACK 2 — The Fit Record (feedback loop) ============
@@ -118,30 +174,48 @@ export const BADGES: BadgeDef[] = [
     title: "Truth-Teller",
     metal: "bronze", track: "feedback", tier: 1, finish: 0,
     glyph: "📋", motif: "tablet",
-    blurb: "Recorded how 3+ purchases actually fit.",
+    blurb: "Recorded how 5+ purchases actually fit.",
     lore: "A Roman wax tablet — the honest ledger of what fit and what didn't.",
-    earned: (s) => s.outcomeCount >= 3,
-    progress: (s) => (s.outcomeCount >= 3 ? null : `${s.outcomeCount}/3 outcomes`),
+    earned: (s) => s.outcomeCount >= 5,
+    progress: (s) => (s.outcomeCount >= 5 ? null : `${s.outcomeCount}/5 outcomes`),
   },
   {
     id: "calibrated",
     title: "Calibrated",
     metal: "silver", track: "feedback", tier: 2, finish: 2,
     glyph: "🎯", motif: "gnomon",
-    blurb: "Logged 10+ comfort refreshes over time.",
+    blurb: "Logged 25+ comfort refreshes over time.",
     lore: "The gnomon of a sundial — measurement kept true as the body changes.",
-    earned: (s) => s.refreshCount >= 10,
-    progress: (s) => (s.refreshCount >= 10 ? null : `${s.refreshCount}/10 refreshes`),
+    earned: (s) => s.refreshCount >= 25,
+    progress: (s) => (s.refreshCount >= 25 ? null : `${s.refreshCount}/25 refreshes`),
   },
   {
     id: "open-closet",
     title: "Open Closet",
     metal: "gold", track: "feedback", tier: 3, finish: 3,
     glyph: "🌐", motif: "compass-rose",
-    blurb: "Shared your closet to the public community.",
+    blurb: "Listed publicly with a substantiated closet (15+ items).",
     lore: "A cartographer's compass rose — putting your fit on the shared map.",
-    earned: (s) => s.communityListed,
-    progress: (s) => (s.communityListed ? null : "List your closet in Community"),
+    earned: (s) => s.communityListed && s.closetCount >= 15,
+    progress: (s) =>
+      s.communityListed && s.closetCount >= 15
+        ? null
+        : s.communityListed
+          ? `${Math.min(s.closetCount, 15)}/15 items`
+          : "List your closet in Community",
+  },
+  {
+    id: "fit-scholar",
+    title: "Fit Scholar",
+    metal: "platinum", track: "feedback", tier: 4, finish: 4,
+    glyph: "📐", motif: "tablet",
+    blurb: "60+ refreshes and 20+ recorded outcomes.",
+    lore: "The surveyor's rod — truth accumulated by patient measurement.",
+    earned: (s) => s.refreshCount >= 60 && s.outcomeCount >= 20,
+    progress: (s) =>
+      s.refreshCount >= 60 && s.outcomeCount >= 20
+        ? null
+        : `${Math.min(s.refreshCount, 60)}/60 refreshes · ${Math.min(s.outcomeCount, 20)}/20 outcomes`,
   },
 
   // ============ TRACK 3 — The Atelier (outfits) ============
@@ -160,55 +234,89 @@ export const BADGES: BadgeDef[] = [
     title: "Stylist",
     metal: "silver", track: "outfits", tier: 2, finish: 2,
     glyph: "✂️", motif: "shears",
-    blurb: "Posted 3 outfits to the community.",
+    blurb: "Posted 6 outfits to the community.",
     lore: "The tailor's shears — mark of a working atelier.",
-    earned: (s) => s.outfitPosts >= 3,
-    progress: (s) => (s.outfitPosts >= 3 ? null : `${s.outfitPosts}/3 outfits posted`),
+    earned: (s) => s.outfitPosts >= 6,
+    progress: (s) => (s.outfitPosts >= 6 ? null : `${s.outfitPosts}/6 outfits posted`),
   },
   {
     id: "couturier",
     title: "Couturier",
     metal: "gold", track: "outfits", tier: 3, finish: 4,
     glyph: "🧵", motif: "loom",
-    blurb: "Posted 8 outfits and earned 50+ total likes.",
+    blurb: "Posted 15 outfits and earned 150+ total likes.",
     lore: "The Jacquard loom — where pattern becomes craft at scale.",
-    earned: (s) => s.outfitPosts >= 8 && s.outfitLikes >= 50,
+    earned: (s) => s.outfitPosts >= 15 && s.outfitLikes >= 150,
     progress: (s) =>
-      s.outfitPosts >= 8 && s.outfitLikes >= 50
+      s.outfitPosts >= 15 && s.outfitLikes >= 150
         ? null
-        : `${Math.min(s.outfitPosts, 8)}/8 posts · ${Math.min(s.outfitLikes, 50)}/50 likes`,
+        : `${Math.min(s.outfitPosts, 15)}/15 posts · ${Math.min(s.outfitLikes, 150)}/150 likes`,
+  },
+  {
+    id: "atelier-master",
+    title: "Atelier Master",
+    metal: "platinum", track: "outfits", tier: 4, finish: 4,
+    glyph: "🏆", motif: "loom",
+    blurb: "30 outfits and 500+ total likes.",
+    lore: "A maison's head atelier — output sustained at the highest standard.",
+    earned: (s) => s.outfitPosts >= 30 && s.outfitLikes >= 500,
+    progress: (s) =>
+      s.outfitPosts >= 30 && s.outfitLikes >= 500
+        ? null
+        : `${Math.min(s.outfitPosts, 30)}/30 posts · ${Math.min(s.outfitLikes, 500)}/500 likes`,
   },
 
   // ============ RARE CAPSTONES (hard; scarcity = prestige) ============
+  // Diamond and obsidian sit at the top of the LADDER; amethyst / jade / amber
+  // are SPECIAL honors for unusual feats, not steps on the ladder.
   {
     id: "acclaimed",
     title: "Acclaimed",
     metal: "diamond", track: "capstone", tier: 1, finish: 4,
     glyph: "💎", motif: "gem",
-    blurb: "100+ likes on a single look.",
+    blurb: "250+ likes on a single look.",
     lore: "A cut brilliant — one look the whole community admired.",
-    earned: (s) => s.topOutfitLikes >= 100,
-    progress: (s) => (s.topOutfitLikes >= 100 ? null : `${s.topOutfitLikes}/100 likes on your best look`),
+    earned: (s) => s.topOutfitLikes >= 250,
+    progress: (s) => (s.topOutfitLikes >= 250 ? null : `${s.topOutfitLikes}/250 likes on your best look`),
   },
   {
     id: "tastemaker",
     title: "Tastemaker",
-    metal: "obsidian", track: "capstone", tier: 2, finish: 5,
-    glyph: "🖤", motif: "obelisk",
-    blurb: "500+ total likes across your looks.",
-    lore: "Obsidian, prized since antiquity — rare, dark, and exacting.",
-    earned: (s) => s.outfitLikes >= 500,
-    progress: (s) => (s.outfitLikes >= 500 ? null : `${s.outfitLikes}/500 total likes`),
+    metal: "amethyst", track: "capstone", tier: 2, finish: 5,
+    glyph: "🔮", motif: "gem",
+    blurb: "Special honor — 1,500+ total likes across your looks.",
+    lore: "Amethyst, once valued with diamond — worn by those who set the taste.",
+    earned: (s) => s.outfitLikes >= 1500,
+    progress: (s) => (s.outfitLikes >= 1500 ? null : `${s.outfitLikes}/1500 total likes`),
+  },
+  {
+    id: "polymath",
+    title: "Polymath",
+    metal: "jade", track: "capstone", tier: 3, finish: 5,
+    glyph: "🌿", motif: "compass-rose",
+    blurb: "Special honor — mastered all three tracks (gold or above in each).",
+    lore: "Imperial jade with agate veining — breadth, not just depth.",
+    earned: (s) =>
+      s.closetCount >= 45 && s.brandsCount >= 10 &&
+      s.communityListed && s.closetCount >= 15 &&
+      s.outfitPosts >= 15 && s.outfitLikes >= 150,
+    progress: (s) => {
+      const done =
+        (s.closetCount >= 45 && s.brandsCount >= 10 ? 1 : 0) +
+        (s.communityListed && s.closetCount >= 15 ? 1 : 0) +
+        (s.outfitPosts >= 15 && s.outfitLikes >= 150 ? 1 : 0);
+      return done === 3 ? null : `${done}/3 tracks at gold`;
+    },
   },
   {
     id: "head-designer",
     title: "Head Designer",
-    metal: "jade", track: "capstone", tier: 3, finish: 5,
+    metal: "obsidian", track: "capstone", tier: 4, finish: 5,
     glyph: "👑", motif: "crown",
-    blurb: "A true tastemaker — 1000+ total likes across your looks.",
-    lore: "Imperial jade — reserved, in old China, for the very highest rank.",
-    earned: (s) => s.outfitLikes >= 1000,
-    progress: (s) => (s.outfitLikes >= 1000 ? null : `${s.outfitLikes}/1000 total likes`),
+    blurb: "The pinnacle — 4,000+ total likes across your looks.",
+    lore: "Obsidian, prized since antiquity — rare, dark, and exacting.",
+    earned: (s) => s.outfitLikes >= 4000,
+    progress: (s) => (s.outfitLikes >= 4000 ? null : `${s.outfitLikes}/4000 total likes`),
   },
 ];
 
@@ -228,9 +336,6 @@ export function evaluateBadges(stats: BadgeStats): EarnedBadge[] {
   }));
 }
 
-const METAL_RANK: Record<Metal, number> = {
-  jade: 6, diamond: 5, obsidian: 4, gold: 3, silver: 2, bronze: 1,
-};
 export function earnedBadgeIds(stats: BadgeStats): string[] {
   return evaluateBadges(stats)
     .filter((b) => b.earnedNow)
