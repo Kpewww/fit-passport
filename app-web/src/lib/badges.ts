@@ -1,14 +1,15 @@
 // Badge system — the "prestige layer" that makes a passport worth showing off.
 //
 // Structure (Tracks + Capstones):
-//   • THREE progression TRACKS, each with 4 tiers (bronze → silver → gold →
-//     platinum): closet-building, feedback loop, outfits.
+//   • FOUR progression TRACKS, each with 4 tiers (bronze → silver → gold →
+//     platinum): closet-building, feedback loop, outfits, and answering others.
 //     Tiers give everyday goals and a clear ladder within a category.
 //   • FOUR rare CAPSTONES that sit above the tracks and are genuinely hard —
 //     diamond / obsidian for the ladder's summit, plus amethyst / jade as
 //     SPECIAL honors. Scarcity = value.
 //   • Each track also has its own SILHOUETTE (`shape`): shield for the wardrobe,
-//     seal for the fit record, hexagon for the atelier, rosette for rare honors.
+//     seal for the fit record, hexagon for the atelier, quatrefoil for the
+//     counsel, rosette for rare honors.
 //
 // Everything is TRANSPARENT and earned from REAL data — never faked. Each badge
 // also carries a `motif`: a real textile/fashion-history reference, so the
@@ -76,7 +77,7 @@ export function highestMetal(earnedIds: string[]): Metal | null {
   return best;
 }
 
-export type BadgeTrack = "closet" | "feedback" | "outfits" | "capstone";
+export type BadgeTrack = "closet" | "feedback" | "outfits" | "help" | "capstone";
 
 export type BadgeStats = {
   closetCount: number;
@@ -89,6 +90,11 @@ export type BadgeStats = {
   outfitPosts: number; // # of outfits the user has posted
   outfitLikes: number; // total likes across all their outfits
   topOutfitLikes: number; // likes on their single most-liked outfit
+  // Ask & Answer. Answering is the one contribution that costs knowledge rather
+  // than money, so it gets its own ladder.
+  answersGiven: number; // answers written
+  answerHelpful: number; // total "helpful" votes across their answers
+  answersAccepted: number; // times an asker marked their answer as THE answer
 };
 
 export type BadgeDef = {
@@ -104,7 +110,7 @@ export type BadgeDef = {
    * per track when omitted: a seal for the fit record, a shield for the wardrobe,
    * a hexagon for the atelier, a rosette for the rare honors.
    */
-  shape?: "circle" | "shield" | "hexagon" | "rosette";
+  shape?: "circle" | "shield" | "hexagon" | "rosette" | "quatrefoil";
   finish: number; // 0..5 ornateness of the medallion art
   blurb: string;
   lore: string; // the historical/cultural note shown on hover / help
@@ -132,8 +138,22 @@ export const TRACK_LABEL: Record<BadgeTrack, string> = {
   closet: "The Wardrobe",
   feedback: "The Fit Record",
   outfits: "The Atelier",
+  help: "The Counsel",
   capstone: "Rare Honors",
 };
+
+/**
+ * How many of the four progression tracks stand at gold or above. Shared by the
+ * Polymath capstone so its rule can't drift from the gold badges it mirrors.
+ */
+function goldTracksDone(s: BadgeStats): number {
+  return (
+    (s.closetCount >= 45 && s.brandsCount >= 10 ? 1 : 0) + // archivist
+    (s.communityListed && s.closetCount >= 15 ? 1 : 0) + // open-closet
+    (s.outfitPosts >= 15 && s.outfitLikes >= 150 ? 1 : 0) + // couturier
+    (s.answersGiven >= 30 && s.answerHelpful >= 40 && s.answersAccepted >= 3 ? 1 : 0) // fit-oracle
+  );
+}
 
 export const BADGES: BadgeDef[] = [
   // ============ TRACK 1 — The Wardrobe (closet building) ============
@@ -285,6 +305,59 @@ export const BADGES: BadgeDef[] = [
         : `${Math.min(s.outfitPosts, 30)}/30 posts · ${Math.min(s.outfitLikes, 500)}/500 likes`,
   },
 
+  // ============ TRACK 4 — The Counsel (answering questions) ============
+  // Deliberately the hardest track to fake: it needs OTHER people to find you
+  // useful. Silhouette is a quatrefoil — the four-lobed guild mark.
+  {
+    id: "sounding-board",
+    title: "Sounding Board",
+    metal: "bronze", track: "help", tier: 1, finish: 0, shape: "quatrefoil",
+    glyph: "💬", motif: "thimble",
+    blurb: "Answered 3 questions from the community.",
+    lore: "A thimble — the humblest tool in the trade, and the one that protects the hand doing the work.",
+    earned: (s) => s.answersGiven >= 3,
+    progress: (s) => (s.answersGiven >= 3 ? null : `${s.answersGiven}/3 answers`),
+  },
+  {
+    id: "trusted-voice",
+    title: "Trusted Voice",
+    metal: "silver", track: "help", tier: 2, finish: 2, shape: "quatrefoil",
+    glyph: "🗣", motif: "tape",
+    blurb: "10 answers, and 8 of them voted helpful.",
+    lore: "The tailor's tape — advice worth taking is advice that was measured first.",
+    earned: (s) => s.answersGiven >= 10 && s.answerHelpful >= 8,
+    progress: (s) =>
+      s.answersGiven >= 10 && s.answerHelpful >= 8
+        ? null
+        : `${Math.min(s.answersGiven, 10)}/10 answers · ${Math.min(s.answerHelpful, 8)}/8 helpful`,
+  },
+  {
+    id: "fit-oracle",
+    title: "Fit Oracle",
+    metal: "gold", track: "help", tier: 3, finish: 3, shape: "quatrefoil",
+    glyph: "🔎", motif: "guild-mark",
+    blurb: "30 answers, 40 helpful votes, and 3 accepted as THE answer.",
+    lore: "A medieval guild mark — the sign a workshop stamped on work it would stand behind.",
+    earned: (s) => s.answersGiven >= 30 && s.answerHelpful >= 40 && s.answersAccepted >= 3,
+    progress: (s) =>
+      s.answersGiven >= 30 && s.answerHelpful >= 40 && s.answersAccepted >= 3
+        ? null
+        : `${Math.min(s.answersGiven, 30)}/30 answers · ${Math.min(s.answerHelpful, 40)}/40 helpful · ${Math.min(s.answersAccepted, 3)}/3 accepted`,
+  },
+  {
+    id: "community-pillar",
+    title: "Community Pillar",
+    metal: "platinum", track: "help", tier: 4, finish: 4, shape: "quatrefoil",
+    glyph: "🏛", motif: "fibula",
+    blurb: "80 answers, 150 helpful votes, and 12 accepted answers.",
+    lore: "The Roman fibula — the clasp that held the whole garment together.",
+    earned: (s) => s.answersGiven >= 80 && s.answerHelpful >= 150 && s.answersAccepted >= 12,
+    progress: (s) =>
+      s.answersGiven >= 80 && s.answerHelpful >= 150 && s.answersAccepted >= 12
+        ? null
+        : `${Math.min(s.answersGiven, 80)}/80 answers · ${Math.min(s.answerHelpful, 150)}/150 helpful · ${Math.min(s.answersAccepted, 12)}/12 accepted`,
+  },
+
   // ============ RARE CAPSTONES (hard; scarcity = prestige) ============
   // Diamond and obsidian sit at the top of the LADDER; amethyst / jade / amber
   // are SPECIAL honors for unusual feats, not steps on the ladder.
@@ -313,18 +386,15 @@ export const BADGES: BadgeDef[] = [
     title: "Polymath",
     metal: "jade", track: "capstone", tier: 3, finish: 5, shape: "rosette",
     glyph: "🌿", motif: "compass-rose",
-    blurb: "Special honor — mastered all three tracks (gold or above in each).",
+    blurb: "Special honor — mastered all four tracks (gold or above in each).",
     lore: "Imperial jade with agate veining — breadth, not just depth.",
-    earned: (s) =>
-      s.closetCount >= 45 && s.brandsCount >= 10 &&
-      s.communityListed && s.closetCount >= 15 &&
-      s.outfitPosts >= 15 && s.outfitLikes >= 150,
+    // Raised from three tracks to four when The Counsel was added: breadth has
+    // to mean breadth across everything the community values, including being
+    // useful to other people.
+    earned: (s) => goldTracksDone(s) === 4,
     progress: (s) => {
-      const done =
-        (s.closetCount >= 45 && s.brandsCount >= 10 ? 1 : 0) +
-        (s.communityListed && s.closetCount >= 15 ? 1 : 0) +
-        (s.outfitPosts >= 15 && s.outfitLikes >= 150 ? 1 : 0);
-      return done === 3 ? null : `${done}/3 tracks at gold`;
+      const done = goldTracksDone(s);
+      return done === 4 ? null : `${done}/4 tracks at gold`;
     },
   },
   {
@@ -364,7 +434,7 @@ export function earnedBadgeIds(stats: BadgeStats): string[] {
 
 /** Badges grouped by track, tiers in order — for the library UI. */
 export function badgesByTrack(): Array<{ track: BadgeTrack; label: string; badges: BadgeDef[] }> {
-  const order: BadgeTrack[] = ["closet", "feedback", "outfits", "capstone"];
+  const order: BadgeTrack[] = ["closet", "feedback", "outfits", "help", "capstone"];
   return order.map((track) => ({
     track,
     label: TRACK_LABEL[track],

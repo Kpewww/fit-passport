@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/closet", label: "Closet" },
   { href: "/passport", label: "Passport" },
   { href: "/outfits", label: "Outfits" },
+  { href: "/ask", label: "Ask" },
   { href: "/community", label: "Community" },
   { href: "/help", label: "Help" },
 ];
@@ -38,7 +39,8 @@ export function Nav() {
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           {LINKS.map((l) => {
-            const active = pathname === l.href;
+            // startsWith so nested routes (/ask/[id]) keep their tab lit.
+            const active = pathname === l.href || pathname.startsWith(`${l.href}/`);
             return (
               <Link
                 key={l.href}

@@ -80,6 +80,9 @@ model User {
   outfitLikes OutfitLike[]
   following   Follow[] @relation("follower")
   followers   Follow[] @relation("followee")
+  posts       Post[]
+  answers     Answer[]
+  answerVotes AnswerVote[]
 }
 
 /// A one-directional follow. This is the cheapest retention primitive we have:
@@ -168,6 +171,82 @@ model OutfitLike {
 
   @@unique([outfitId, voterKey])
   @@index([outfitId])
+}
+
+// ---------- Ask & Answer (community Q&A) ----------
+
+/// A question or recommendation thread. This is the community's utility loop
+/// (docs/design/community-ecosystem.md, step 2).
+///
+/// What makes it ours rather than a generic forum: both the question and every
+/// answer may ATTACH a real closet item as evidence, so a reply carries "this
+/// brand in this size fits a body like mine", not just an opinion.
+model Post {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// "HELP" (will this fit me?) | "RECOMMEND" (what should I buy?) |
+  /// "VERDICT" (I kept/returned this — here's why). Validated in lib/posts.ts.
+  kind  String
+  title String
+  body  String
+
+  /// Optional evidence from the ASKER's own closet — their reference garment.
+  /// A loose id, not a relation, matching OutfitItem.knownGoodId: if the item is
+  /// later deleted the attachment simply resolves to nothing.
+  knownGoodId String?
+  /// Optional product link the question is about. Text only — we never store or
+  /// display scraped brand imagery.
+  productUrl String?
+
+  /// The answer the asker marked as the one that solved it. Nullable = unresolved.
+  resolvedAnswerId String?
+
+  createdAt DateTime @default(now())
+
+  answers Answer[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+/// A reply to a Post, optionally backed by a garment the answerer actually owns.
+model Answer {
+  id     String @id @default(cuid())
+  postId String
+  post   Post   @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  body String
+  /// Evidence from the ANSWERER's closet — ownership is validated on write.
+  knownGoodId String?
+
+  createdAt DateTime @default(now())
+
+  votes AnswerVote[]
+
+  @@index([postId])
+  @@index([userId])
+}
+
+/// A "helpful" vote on an answer. Same anonymous-friendly shape as OutfitLike:
+/// keyed by a voter token so unclaimed visitors can still signal usefulness,
+/// deduped per answer.
+model AnswerVote {
+  id       String @id @default(cuid())
+  answerId String
+  answer   Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+
+  voterKey String
+  userId   String?
+  user     User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@unique([answerId, voterKey])
+  @@index([answerId])
 }
 
 // ---------- The Passport itself ----------

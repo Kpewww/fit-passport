@@ -74,6 +74,44 @@ CREATE TABLE "OutfitLike" (
 );
 
 -- CreateTable
+CREATE TABLE "Post" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "kind" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "knownGoodId" TEXT,
+    "productUrl" TEXT,
+    "resolvedAnswerId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Answer" (
+    "id" TEXT NOT NULL,
+    "postId" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "body" TEXT NOT NULL,
+    "knownGoodId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Answer_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "AnswerVote" (
+    "id" TEXT NOT NULL,
+    "answerId" TEXT NOT NULL,
+    "voterKey" TEXT NOT NULL,
+    "userId" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "AnswerVote_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "FitProfile" (
     "id" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
@@ -268,6 +306,24 @@ CREATE INDEX "OutfitLike_outfitId_idx" ON "OutfitLike"("outfitId");
 CREATE UNIQUE INDEX "OutfitLike_outfitId_voterKey_key" ON "OutfitLike"("outfitId", "voterKey");
 
 -- CreateIndex
+CREATE INDEX "Post_userId_idx" ON "Post"("userId");
+
+-- CreateIndex
+CREATE INDEX "Post_createdAt_idx" ON "Post"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "Answer_postId_idx" ON "Answer"("postId");
+
+-- CreateIndex
+CREATE INDEX "Answer_userId_idx" ON "Answer"("userId");
+
+-- CreateIndex
+CREATE INDEX "AnswerVote_answerId_idx" ON "AnswerVote"("answerId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "AnswerVote_answerId_voterKey_key" ON "AnswerVote"("answerId", "voterKey");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "FitProfile_userId_key" ON "FitProfile"("userId");
 
 -- CreateIndex
@@ -320,6 +376,21 @@ ALTER TABLE "OutfitLike" ADD CONSTRAINT "OutfitLike_outfitId_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "OutfitLike" ADD CONSTRAINT "OutfitLike_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Post" ADD CONSTRAINT "Post_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Answer" ADD CONSTRAINT "Answer_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Answer" ADD CONSTRAINT "Answer_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AnswerVote" ADD CONSTRAINT "AnswerVote_answerId_fkey" FOREIGN KEY ("answerId") REFERENCES "Answer"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "AnswerVote" ADD CONSTRAINT "AnswerVote_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "FitProfile" ADD CONSTRAINT "FitProfile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

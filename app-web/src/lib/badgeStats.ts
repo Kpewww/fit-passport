@@ -6,7 +6,7 @@ import { prisma } from "./db";
 import type { BadgeStats } from "./badges";
 
 export async function computeBadgeStats(userId: string, communityListed: boolean): Promise<BadgeStats> {
-  const [items, outcomeCount, refreshCount, outfits] = await Promise.all([
+  const [items, outcomeCount, refreshCount, outfits, answers] = await Promise.all([
     prisma.knownGoodItem.findMany({
       where: { userId },
       select: { brand: true, collectionId: true },
@@ -17,7 +17,18 @@ export async function computeBadgeStats(userId: string, communityListed: boolean
       where: { userId },
       select: { _count: { select: { likes: true } } },
     }),
+    prisma.answer.findMany({
+      where: { userId },
+      select: { id: true, _count: { select: { votes: true } } },
+    }),
   ]);
+
+  // "Accepted" = an asker marked this answer as the one that solved their post.
+  // Needs the answer ids, so it can't join the batch above.
+  const answerIds = answers.map((a) => a.id);
+  const answersAccepted = answerIds.length
+    ? await prisma.post.count({ where: { resolvedAnswerId: { in: answerIds } } })
+    : 0;
 
   const brands = new Set(items.map((i) => i.brand.toLowerCase()));
   const collections = new Set(items.map((i) => i.collectionId).filter(Boolean));
@@ -36,5 +47,8 @@ export async function computeBadgeStats(userId: string, communityListed: boolean
     outfitPosts,
     outfitLikes: totalLikes,
     topOutfitLikes,
+    answersGiven: answers.length,
+    answerHelpful: answers.reduce((n, a) => n + a._count.votes, 0),
+    answersAccepted,
   };
 }

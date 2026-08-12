@@ -28,6 +28,125 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 34 — Ask & Answer with receipts (ecosystem step 2) + two UI fixes
+
+**Context:** two bugs reported, then ecosystem step 2. Both bugs turned out to be
+worth writing down for different reasons.
+
+**Bug 1 — the feed's scope tabs "ran around" when switched.** Root cause was mine
+from last session: the `<h2>` next to the tabs changed text with the scope
+("Latest looks" ↔ "From people you follow"), so the tabs got pushed sideways by a
+different-width sibling. The tab label also carried the follow count
+(`Following · 3`), which resizes the control as you use it. Fix: **nothing in that
+header may change width with state** — fixed heading, fixed tab labels, and the
+scope is now explained by a caption line that always renders one line ("Most-liked
+first…" / "Newest first, from the people you follow."), so there's no reflow at all.
+
+**Bug 2 — "public closets 打不开, stuck loading."** Not a code bug: a **leftover
+`next start` process from the previous session's production smoke test was still
+holding port 3000**, my `pkill -f "next start"` hadn't matched it, and its `.next`
+had since been clobbered by a dev build. It served a 500 for `/api/view/[code]` and
+an HTML shell that never hydrated — which looks exactly like "loading forever".
+Killing every Next process and starting one clean dev server fixed it. Lesson
+logged: **when a page hangs on Loading, check what's actually listening on 3000
+before reading any code.**
+
+### Ecosystem step 2 — Ask & Answer
+
+**The bet.** An answer that says "size up" is an opinion. An answer that says "size
+up — here's the same brand in my closet, size M, rated 5/5, on an athletic build"
+is **evidence**. Every design decision here serves that one difference, because
+it's the thing a generic fashion forum structurally cannot do.
+
+**Data model.** `Post` (kind `HELP|RECOMMEND|VERDICT`, title, body, optional
+`knownGoodId` + `productUrl`, `resolvedAnswerId`), `Answer` (body, optional
+`knownGoodId`), `AnswerVote` (`@@unique([answerId, voterKey])`). Attachments are
+loose ids rather than relations, matching `OutfitItem.knownGoodId`: if the garment
+is deleted the attachment just resolves to nothing.
+
+**`src/lib/evidence.ts` is the privacy boundary.** One batched query returns
+exactly brand · displayName · garment · gender · size · region · fit rating ·
+colour · **the owner's coarse body type** — the same class of data
+`/api/view/[code]` already exposes publicly. Precise cm are not in the table it
+reads, let alone the response. Owners who deactivated are dropped, so an
+attachment from a hidden account disappears everywhere at once.
+`ownsClosetItem()` enforces that you may only attach **your own** garment —
+otherwise "evidence" would be hearsay. Verified live: 400.
+
+**`src/lib/posts.ts` holds the two decisions worth testing** (10 new tests):
+`parsePostKind` (rejects unknown kinds instead of guessing) and `rankAnswers` —
+**accepted answer first**, then most-helpful, then **oldest first**, so whoever
+showed up early isn't outranked by a late duplicate.
+
+**API.** `GET/POST /api/posts` (list with `?kind=`, `?unanswered=1`, `?mine=1`;
+create rate-limited 10/10min), `GET/PATCH/DELETE /api/posts/[id]` (PATCH = accept
+an answer, asker only), `POST/DELETE /api/answers` (20/10min), `POST
+/api/answers/vote`. Posting and answering need a **claimed** account; reading and
+voting are open, so a first-time visitor can still say an answer helped.
+
+**One real bug I caught in my own code before shipping:** `DELETE /api/answers`
+originally cleared `Post.resolvedAnswerId` *before* checking ownership — so anyone
+could un-accept someone else's answer just by asking to delete it. Reordered to
+authorize first. Verified live: A deleting B's answer → 404 **and the acceptance
+survives**; B deleting its own → post correctly returns to unresolved.
+
+**Badges — a fourth track, "The Counsel."** Answering is the only contribution
+that costs knowledge instead of money, and the only one that needs *other people*
+to rate you, so it earns its own ladder: Sounding Board (3 answers) → Trusted
+Voice (10 answers + 8 helpful) → Fit Oracle (30 + 40 helpful + 3 accepted) →
+Community Pillar (80 + 150 + 12). New **quatrefoil** silhouette (the four-lobed
+guild mark) in `BadgeMedallion`, plus four new motif engravings — thimble, tailor's
+tape, guild mark, and the Roman **fibula**, which the file's own header had
+referenced for sessions without ever using. **Polymath now requires gold in all
+four tracks** (was three); its rule and the four gold badges share one
+`goldTracksDone()` helper so they can't drift apart.
+
+**UI.** `/ask` — hero that states the receipts promise, a composer that asks for
+the *kind* first (each with its own example placeholder so a vague question is
+harder to write), kind filters + a **"Needs an answer"** filter, and rows that show
+whether a question is answered. `/ask/[id]` — the thread, `EvidenceCard`s for the
+receipts, helpful votes, "Mark as the answer" for the asker only, self-voting not
+even offered. `ClosetAttachPicker` is shared by both composers. Nav gained **Ask**,
+and active-tab matching became `startsWith` so `/ask/[id]` keeps the tab lit.
+
+**Verified.** tsc clean, **92 tests** green (77 → 92), clean production build, all
+11 pages 200. Three-cookie-jar live smoke: post with own evidence ✓, anonymous
+post 403, unknown kind 400, borrowed evidence 400, short title 400, answer with
+evidence ✓, anonymous answer 403, self-vote 400, duplicate vote deduped to 1,
+non-asker accept 403, asker accept ✓, `unanswered` filter correctly excludes an
+answered post, badge progress reads `1/3 answers`, and **deactivating the asker
+removed the question from the list and 404'd the thread**. Smoke accounts deleted
+from the dev DB afterwards; `0_init` Postgres migration regenerated (17 tables).
+
+**Next up.** Step 3 = **Daily Top Outfits** (a leaderboard is just a query, big
+perceived liveness), then **one manually-run $100 contest** to validate demand
+before building any event tooling. Before real users: report/flag on posts, and
+the in-memory rate limiter → Upstash Redis.
+
+**Files touched**
+```
+app-web/prisma/schema.prisma                  (Post, Answer, AnswerVote)
+app-web/prisma/migrations/0_init/migration.sql (regenerated)
+app-web/src/lib/posts.ts, posts.test.ts       (new — kinds + rankAnswers, 10 tests)
+app-web/src/lib/evidence.ts                   (new — attachment loader + privacy boundary)
+app-web/src/lib/timeAgo.ts                    (new)
+app-web/src/lib/badges.ts, badges.test.ts     (Counsel track, quatrefoil, Polymath ×4)
+app-web/src/lib/badgeStats.ts                 (answersGiven / answerHelpful / answersAccepted)
+app-web/src/components/BadgeMedallion.tsx     (quatrefoil + 4 motifs)
+app-web/src/components/Evidence.tsx           (new — EvidenceCard, ClosetAttachPicker)
+app-web/src/app/api/posts/route.ts            (new)
+app-web/src/app/api/posts/[id]/route.ts       (new)
+app-web/src/app/api/answers/route.ts          (new)
+app-web/src/app/api/answers/vote/route.ts     (new)
+app-web/src/app/ask/page.tsx                  (new)
+app-web/src/app/ask/[id]/page.tsx             (new)
+app-web/src/components/Nav.tsx                (Ask + nested-route active state)
+app-web/src/app/community/page.tsx            (no-reflow scope header, Ask link)
+README.md, DEVLOG.md, docs/design/community-ecosystem.md
+```
+
+---
+
 ## 2026-08-12 · Session 33 — Follow + a followed feed (ecosystem step 1)
 
 **Context:** the ecosystem outline written last session sequences the work

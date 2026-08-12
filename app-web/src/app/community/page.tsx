@@ -116,6 +116,12 @@ export default function CommunityPage() {
           </p>
         )}
 
+        <p className="mt-3 text-sm">
+          <Link href="/ask" className="font-medium text-brand hover:underline">
+            Ask the community about fit →
+          </Link>
+        </p>
+
         {/* Post yourself to community */}
         <Card className="mt-6 flex items-center justify-between gap-4 bg-brand-tint/40">
           <div>
@@ -143,14 +149,21 @@ export default function CommunityPage() {
           )}
         </Card>
 
-        {/* Outfit feed — two scopes, two orderings (see lib/feed.ts) */}
+        {/* Outfit feed — two scopes, two orderings (see lib/feed.ts).
+            NOTHING in this header may change width with the scope, or the tabs
+            visibly jump when you switch. So the heading text is fixed, the tab
+            labels are fixed (the follow count lives in the line above), and the
+            caption below always renders one line. */}
         <div className="mt-8 flex flex-wrap items-center gap-3">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-soft">
-            {scope === "following" ? "From people you follow" : "Latest looks"}
-          </h2>
-          <ScopeTabs scope={scope} onChange={setScope} followingCount={follow?.followingCount ?? 0} />
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-soft">Latest looks</h2>
+          <ScopeTabs scope={scope} onChange={setScope} />
           <Link href="/outfits" className="ml-auto text-xs font-medium text-brand hover:underline">Post an outfit →</Link>
         </div>
+        <p className="mt-1 text-xs text-ink-faint">
+          {scope === "following"
+            ? "Newest first, from the people you follow."
+            : "Most-liked first — what the community rated highest."}
+        </p>
         {feed === null ? (
           <p className="mt-3 text-sm text-ink-faint">Loading…</p>
         ) : feed.length === 0 ? (
@@ -236,20 +249,18 @@ export default function CommunityPage() {
   );
 }
 
-// Scope switch for the feed. Small, quiet, and it says how many people you
-// follow so an empty Following tab is never a surprise.
+// Scope switch for the feed. Labels are deliberately CONSTANT — putting the
+// follow count in here made the control resize and drift as you used it.
 function ScopeTabs({
   scope,
   onChange,
-  followingCount,
 }: {
   scope: FeedScope;
   onChange: (s: FeedScope) => void;
-  followingCount: number;
 }) {
   const tabs: Array<{ key: FeedScope; label: string }> = [
     { key: "everyone", label: "Everyone" },
-    { key: "following", label: followingCount > 0 ? `Following · ${followingCount}` : "Following" },
+    { key: "following", label: "Following" },
   ];
   return (
     <div className="inline-flex rounded-full border border-line bg-paper-soft p-0.5 text-xs font-medium">

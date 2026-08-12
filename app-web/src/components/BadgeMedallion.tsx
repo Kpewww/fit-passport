@@ -28,7 +28,7 @@ function scaleVein(d: string, size: number): string {
   return d.replace(/-?\d*\.?\d+/g, (n) => (parseFloat(n) * size).toFixed(2));
 }
 
-export type BadgeShape = "circle" | "shield" | "hexagon" | "rosette";
+export type BadgeShape = "circle" | "shield" | "hexagon" | "rosette" | "quatrefoil";
 
 /**
  * Outer silhouette for a badge. Returns null for "circle" (drawn as a <circle>
@@ -59,6 +59,25 @@ function shapePath(shape: BadgeShape, c: number, r: number): string | null {
       `Q ${c - side} ${c + r * 0.72} ${c - side} ${c + r * 0.18}`,
       "Z",
     ].join(" ");
+  }
+
+  if (shape === "quatrefoil") {
+    // Four-lobed guild mark for the counsel track: lobes on the diagonals so it
+    // still reads as a seal at 26px, with deep valleys on the axes to keep it
+    // clearly distinct from the 12-lobe rosette.
+    const valley = r * 0.6;
+    const ctrl = r * 1.14;
+    const at = (ang: number, rad: number) =>
+      `${(c + Math.cos(ang) * rad).toFixed(2)} ${(c + Math.sin(ang) * rad).toFixed(2)}`;
+    const step = (Math.PI * 2) / 4;
+    let d = `M ${at(-Math.PI / 2, valley)}`;
+    for (let i = 0; i < 4; i++) {
+      const v0 = -Math.PI / 2 + i * step; // valley
+      const tip = v0 + step / 2;
+      const v1 = v0 + step; // next valley
+      d += ` Q ${at(tip - 0.38, ctrl)} ${at(tip, r)} Q ${at(tip + 0.38, ctrl)} ${at(v1, valley)}`;
+    }
+    return `${d} Z`;
   }
 
   // rosette — a scalloped medal edge for the rare honors
@@ -101,6 +120,11 @@ function Motif({ motif, color, size }: { motif: string; color: string; size: num
     gem: <><path d="M6 9.5h12l-6 9.5z" {...s} /><path d="M6 9.5 8.5 6h7L18 9.5" {...s} /><path d="M9 9.5 12 19l3-9.5" {...s} /></>,
     obelisk: <><path d="M10.5 19h3l-.6-13h-1.8z" {...s} /><path d="M11.4 6 12 3l.6 3" {...s} /><path d="M9 19h6" {...s} /></>,
     crown: <><path d="M4.5 17 6 7l3.5 3.5L12 5l2.5 5.5L18 7l1.5 10z" {...s} /><path d="M4.5 17h15" {...s} /><circle cx="6" cy="7" r="0.8" fill={color} stroke="none" /><circle cx="12" cy="5" r="0.9" fill={color} stroke="none" /><circle cx="18" cy="7" r="0.8" fill={color} stroke="none" /></>,
+    // ---- The Counsel track ----
+    thimble: <><path d="M8.6 10.5a3.4 3.4 0 0 1 6.8 0v5.9a1.6 1.6 0 0 1-1.6 1.6h-3.6a1.6 1.6 0 0 1-1.6-1.6z" {...s} /><path d="M10.3 10.4h3.4M10.3 12.3h3.4" {...s} opacity={0.75} /></>,
+    tape: <><circle cx="10.2" cy="13.4" r="4.4" {...s} /><circle cx="10.2" cy="13.4" r="1.2" {...s} /><path d="M13.9 11 19.2 7.2" {...s} /><path d="M15.4 9.6v1.7M17.2 8.3V10" {...s} /></>,
+    "guild-mark": <><path d="M12 4.2v15.4" {...s} /><path d="M7.2 9.6 12 4.6l4.8 5" {...s} /><circle cx="12" cy="15.2" r="3.1" {...s} /></>,
+    fibula: <><path d="M5.8 14.6a6.2 6.2 0 0 1 12.4 0" {...s} /><path d="M5.8 14.6 18 17.1" {...s} /><circle cx="5.8" cy="14.6" r="1.3" {...s} /><path d="M18.2 14.6v3.2" {...s} /></>,
   };
   const box = size * 0.46;
   const off = (size - box) / 2;

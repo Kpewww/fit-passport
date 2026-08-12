@@ -49,7 +49,8 @@ without upgrading Node first.
 | **Fit refresh** | Re-rate how garments feel over time; bodies change, so the profile tracks drift. |
 | **Outfits** | Compose looks on a body-typed SVG mannequin, post them, collect likes. Optional photoreal try-on when an image key is set. |
 | **Community** | Opt-in directory of members (each with a metal banner in their card finish), plus an outfit feed you can switch between **Everyone** (most-liked first) and **Following** (people you follow, newest first). Following requires a claimed account on both sides, so follower counts stay earned. |
-| **Badges** | 4-tier tracks (bronze → silver → gold → platinum) + rare capstones (diamond / obsidian) and special honours (amethyst / jade / amber). Struck-metal SVG medallions with per-track silhouettes, an inspect stage you can turn in 3D, and an optional true-WebGL view. |
+| **Ask & Answer** | Fit questions with **receipts** — a question or an answer can attach a garment the author actually owns (brand · size · fit rating · the build it fits), so replies carry evidence, not hunches. Helpful votes, an accepted answer, and a "needs an answer" filter. |
+| **Badges** | Four 4-tier tracks (bronze → silver → gold → platinum) — wardrobe, fit record, atelier, counsel — plus rare capstones (diamond / obsidian) and special honours (amethyst / jade / amber). Struck-metal SVG medallions with per-track silhouettes, an inspect stage you can turn in 3D, and an optional true-WebGL view. |
 | **Identity** | Anonymous session → claim an account → a shareable high-entropy account code. Login by username, email, or code. Password reset by email, change password, soft-deactivate. |
 
 ### Privacy invariant

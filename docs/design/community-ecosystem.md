@@ -1,8 +1,8 @@
 # Community & Ecosystem — design outline
 
-> **Status: mostly PLANNED.** This is the thinking-ahead document — nothing here is
-> implemented except what's marked **SHIPPED**. Written 2026-08-12; step 1 shipped
-> the same day (Session 33).
+> **Status: partly built.** This is the thinking-ahead document — nothing here is
+> implemented except what's marked **SHIPPED**. Written 2026-08-12; steps 1 and 2
+> (follow/feed, Ask & Answer) shipped the same day, in Sessions 33 and 34.
 
 ## Why this matters
 
@@ -26,18 +26,28 @@ The strategy: **turn fit data into social proof, and social proof into retention
 
 ## The three loops
 
-### Loop 1 — Ask & Answer (utility → habit)
+### Loop 1 — Ask & Answer (utility → habit) — **SHIPPED** (Session 34)
 
 A member posts a question; the community answers; answers are anchored in real
 closets.
 
 - **Post types:** `HELP` ("Will this jacket work on a 178cm/short-torso frame?"),
   `RECOMMEND` ("Best white tee that survives 30 washes?"), `VERDICT` ("Kept or
-  returned?").
+  returned?"). Taxonomy lives in `src/lib/posts.ts`.
 - **Why we're better:** an answer can **attach a closet item** — brand, size, fit
-  rating, and the answerer's coarse body type. The reply carries evidence.
-- **Retention hook:** unanswered questions generate a daily digest; answering earns
-  reputation.
+  rating, and the answerer's coarse body type (`src/lib/evidence.ts`, which is also
+  the privacy boundary: never cm, never a deactivated owner). Ownership is
+  validated server-side, so evidence can't be borrowed.
+- **Shipped mechanics:** `/ask` + `/ask/[id]`, kind filters and a **Needs an
+  answer** filter, helpful votes (anonymous-friendly, deduped by voter key), an
+  **accepted answer** only the asker can set, and answer ordering in
+  `rankAnswers()` — accepted first, then most-helpful, then oldest, so early
+  answerers aren't outranked by late duplicates.
+- **Reputation:** answering earns **The Counsel** badge track (quatrefoil
+  silhouette): Sounding Board → Trusted Voice → Fit Oracle → Community Pillar.
+  It's the only track that needs *other people* to rate you, and Polymath now
+  requires gold in all four tracks.
+- **Still to do:** a daily digest of unanswered questions; report/flag.
 
 ### Loop 2 — Show & Be Seen (identity → status)
 
@@ -90,12 +100,14 @@ one brand's fit truth), *Fix My Fit* (before/after), *Capsule Challenge* (10 ite
 ## Data model sketch (when we build it)
 
 ```
-Post            id, userId, kind(HELP|RECOMMEND|OOTD|VERDICT), title, body,
-                outfitId?, createdAt, resolvedAnswerId?
-PostAttachment  postId, knownGoodId?   // evidence from a real closet
-Answer          id, postId, userId, body, knownGoodId?, createdAt, helpfulCount
-Vote            (postId|answerId, voterKey) unique   // reuse the OutfitLike pattern
-Follow          followerId, followeeId  unique
+# BUILT (Sessions 33–34) — actual shape:
+Post            id, userId, kind(HELP|RECOMMEND|VERDICT), title, body,
+                knownGoodId?, productUrl?, resolvedAnswerId?, createdAt
+Answer          id, postId, userId, body, knownGoodId?, createdAt
+AnswerVote      (answerId, voterKey) unique          # OutfitLike pattern
+Follow          (followerId, followeeId) unique
+
+# STILL PLANNED:
 Event           id, slug, title, budgetCents, theme, opensAt, votesAt, closesAt
 EventEntry      eventId, userId, outfitId, totalCents, itemsJson
 EventVote       (eventEntryId, voterKey) unique
@@ -122,7 +134,8 @@ Reuse what exists: the `OutfitLike` voter-key pattern (anonymous-friendly, dedup
 
 1. ~~**Follow + a followed feed**~~ — **SHIPPED** Session 33. Cheapest change with
    the biggest retention effect, so it went first.
-2. **Ask & Answer** with closet-item attachments — our unique utility.
+2. ~~**Ask & Answer** with closet-item attachments~~ — **SHIPPED** Session 34.
+   Our unique utility: the answer carries a receipt.
 3. **Daily Top Outfits** — a leaderboard is just a query; huge perceived liveness.
 4. **One $100 contest, run manually** — validate that people enter *before* building
    event tooling.
