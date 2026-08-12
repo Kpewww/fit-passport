@@ -28,6 +28,57 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 23 — Folder polish: custom colors, in-file inline edit + edit history, reorder mode, signature look
+
+**Context:** founder review of the Session-22 folder view produced a batch of
+fixes. (1) Folders should have a *user-chosen color*, settable at creation and
+changeable later. (2) Clicking into a file gave no way to edit — edit should
+happen right in the file. (3) The detail should show created / last-modified /
+full edit-history times, where a "formal" edit is only counted once the user
+stops editing for a while (rapid edits coalesce). (4) Community's toggle should
+just say "Unlist". (5) Passport should optionally feature a *signature outfit*.
+(6) The closet Refresh control needs a tooltip explaining what it does. (7)
+Reorder was always-on and cluttered — folders AND items should reorder only
+behind a single toggle.
+
+**Built:**
+- **Folder colors.** `Collection.color` (nullable key). `FOLDER_COLORS` map
+  (8 named sleeves) + `FolderColorPicker` swatch row. Chosen at creation ("Folder
+  color" field) and editable later via a swatch button in each folder header
+  (grid view; Uncategorized excluded). `folderColorFor(color, seed)` falls back
+  to the position-based auto color when none is picked. `/api/collections`
+  POST/PATCH accept `color`.
+- **In-file inline edit + timestamps.** `KnownGoodItem.editHistory` (JSON array
+  of ISO timestamps). Closet PATCH now fetches the row, checks whether a tracked
+  *content* field actually changed (reorder/move excluded), and **coalesces**:
+  edits within a 30-min window advance the last history entry, longer gaps append
+  a new one — so bursts count as one formal edit. `DetailSheet` now edits inline
+  (renders the existing `EditRow` right inside the sheet, no bounce to the list)
+  and shows a History block: Created · Last modified · expandable list of recorded
+  edits. Verified via API: two rapid edits → 1 entry; a sortIndex-only PATCH adds
+  none.
+- **Reorder mode.** One `⇅ Reorder` toggle in the toolbar. OFF = clean (no
+  arrows). ON = folder ▲▼ arrows in each collection header (swap sortIndex with
+  neighbor via two collection PATCHes) + item ▲▼ arrows in the list, plus a hint
+  banner. Item reorder arrows are now gated behind this instead of always showing.
+- **Signature look on the passport.** `User.signatureOutfitId`; `/api/profile/prefs`
+  accepts it (validated to be one of the user's own outfits); `/api/status`
+  returns it. Passport VIEW gained a "Signature look" section: a dropdown of your
+  outfits + an `OutfitMannequin` render of the chosen look (title/occasion/pieces/
+  likes). Falls back to a compose-an-outfit link when you have none.
+- **Community unlist** button label simplified from "Listed ✓ · Unlist" → "Unlist".
+- **Refresh tooltip.** Both the per-folder and top "Refresh fit" controls now
+  carry a title explaining it re-rates how pieces fit right now.
+
+**Verified:** `tsc --noEmit` clean · 62/62 vitest green · `next build` clean ·
+live: closet/passport/community/outfits/badges 200; collection color create +
+PATCH, edit-history coalescing, and reorder-exclusion all confirmed via API.
+
+**Next:** true drag-and-drop reorder (arrows shipped); global aesthetic pass;
+deployment (SQLite→Postgres); course deliverables.
+
+---
+
 ## 2026-08-12 · Session 22 — Full-path URL extraction, real filing-cabinet folder view, passport badge tooltips
 
 **Context:** three founder asks. (1) The URL auto-fill was weak — the example

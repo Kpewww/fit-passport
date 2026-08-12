@@ -83,7 +83,7 @@ export default function CommunityPage() {
           {me?.claimed ? (
             me.listedInCommunity ? (
               <Button variant="secondary" size="md" disabled={posting} onClick={() => toggleListing(false)}>
-                {posting ? "…" : "Listed ✓ · Unlist"}
+                {posting ? "…" : "Unlist"}
               </Button>
             ) : (
               <Button size="md" disabled={posting} onClick={() => toggleListing(true)}>

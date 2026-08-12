@@ -93,6 +93,7 @@ export async function GET() {
     badges: allBadges,
     earnedBadgeIds: earned,
     pinnedBadges: pinned,
+    signatureOutfitId: user.signatureOutfitId ?? null,
     lastRecommendation: recentRec
       ? {
           size: recentRec.recommendedSizeLabel,

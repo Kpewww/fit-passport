@@ -16,6 +16,7 @@ const Body = z.object({
   listedInCommunity: z.boolean().optional(),
   showBodyType: z.boolean().optional(),
   bodyType: z.string().max(20).nullable().optional(),
+  signatureOutfitId: z.string().nullable().optional(),
 });
 
 export async function POST(req: Request) {
@@ -33,7 +34,19 @@ export async function POST(req: Request) {
     listedInCommunity?: boolean;
     showBodyType?: boolean;
     bodyType?: string | null;
+    signatureOutfitId?: string | null;
   } = {};
+
+  if (parsed.data.signatureOutfitId !== undefined) {
+    const id = parsed.data.signatureOutfitId;
+    if (id) {
+      // Only allow featuring an outfit the user actually owns.
+      const owned = await prisma.outfit.findFirst({ where: { id, userId: user.id }, select: { id: true } });
+      data.signatureOutfitId = owned ? id : null;
+    } else {
+      data.signatureOutfitId = null;
+    }
+  }
 
   if (parsed.data.listedInCommunity !== undefined) {
     data.listedInCommunity = parsed.data.listedInCommunity;

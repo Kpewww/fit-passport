@@ -12,6 +12,9 @@ import { BodyFigure } from "@/components/BodyFigure";
 import { deriveBodyType } from "@/lib/bodyType";
 import { Avatar, BadgeSeal, EarnedSealRow } from "@/components/Badges";
 import { badgeById } from "@/lib/badges";
+import { OutfitMannequin } from "@/components/OutfitMannequin";
+import { garmentLabel } from "@/lib/garments";
+import type { OutfitView } from "@/components/OutfitCard";
 
 type Sex = "male" | "female" | "unspecified" | null;
 type Fit = "slim" | "regular" | "relaxed" | "oversized";
@@ -78,13 +81,25 @@ export default function PassportPage() {
   const [pinnedBadges, setPinnedBadges] = useState<string[]>([]);
   const [earnedBadges, setEarnedBadges] = useState<string[]>([]);
   const [showBodyType, setShowBodyType] = useState(true);
+  const [myOutfits, setMyOutfits] = useState<OutfitView[]>([]);
+  const [signatureOutfitId, setSignatureOutfitId] = useState<string | null>(null);
+
+  async function saveSignature(id: string | null) {
+    setSignatureOutfitId(id);
+    await fetch("/api/profile/prefs", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ signatureOutfitId: id }),
+    });
+  }
 
   useEffect(() => {
     Promise.all([
       fetch("/api/profile").then((r) => r.json()),
       fetch("/api/auth/me").then((r) => r.json()),
       fetch("/api/status").then((r) => r.json()).catch(() => ({ closetCount: 0 })),
-    ]).then(([p, m, s]) => {
+      fetch("/api/outfits?mine=1").then((r) => r.json()).catch(() => ({ outfits: [] })),
+    ]).then(([p, m, s, o]) => {
       const prof = { ...EMPTY, ...(p.profile ?? {}) };
       setProfile(prof);
       setMe({ claimed: m.claimed, username: m.username, accountCode: m.accountCode });
@@ -92,6 +107,8 @@ export default function PassportPage() {
       setClosetCount(s.closetCount ?? 0);
       setPinnedBadges(s.pinnedBadges ?? []);
       setEarnedBadges(s.earnedBadgeIds ?? []);
+      setSignatureOutfitId(s.signatureOutfitId ?? null);
+      setMyOutfits(Array.isArray(o.outfits) ? o.outfits : []);
       // Default to the polished VIEW card once the passport has real content;
       // brand-new/empty passports open straight into edit so there's something to do.
       setMode(p.profile && hasContent(prof) ? "view" : "edit");
@@ -153,6 +170,9 @@ export default function PassportPage() {
         showBodyType={showBodyType}
         pinnedBadges={pinnedBadges}
         earnedBadges={earnedBadges}
+        outfits={myOutfits}
+        signatureOutfitId={signatureOutfitId}
+        onSetSignature={saveSignature}
         onEdit={() => setMode("edit")}
       />
     );
@@ -416,6 +436,9 @@ function ViewBook({
   showBodyType,
   pinnedBadges,
   earnedBadges,
+  outfits,
+  signatureOutfitId,
+  onSetSignature,
   onEdit,
 }: {
   profile: Profile;
@@ -429,11 +452,15 @@ function ViewBook({
   showBodyType: boolean;
   pinnedBadges: string[];
   earnedBadges: string[];
+  outfits: OutfitView[];
+  signatureOutfitId: string | null;
+  onSetSignature: (id: string | null) => void;
   onEdit: () => void;
 }) {
   const fits = fitList(profile.preferredFit);
   // Seal glyph = the highest pinned badge, else the classic "FP".
   const sealBadge = pinnedBadges.map(badgeById).find(Boolean);
+  const signature = outfits.find((o) => o.id === signatureOutfitId) ?? null;
 
   return (
     <main className="flex-1 bg-neutral-100 py-10">
@@ -487,6 +514,51 @@ function ViewBook({
             ) : (
               <Link href="/badges" className="text-sm text-brand hover:underline">
                 Earn badges and pin up to 3 here →
+              </Link>
+            )}
+          </div>
+
+          {/* Signature look — an optional featured outfit */}
+          <div className="border-b border-neutral-200 px-6 py-5">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Signature look</p>
+              {outfits.length > 0 && (
+                <select
+                  value={signatureOutfitId ?? ""}
+                  onChange={(e) => onSetSignature(e.target.value || null)}
+                  className="rounded-md border border-neutral-200 bg-white px-2 py-1 text-xs text-ink-soft"
+                >
+                  <option value="">None</option>
+                  {outfits.map((o) => (
+                    <option key={o.id} value={o.id}>{o.title}</option>
+                  ))}
+                </select>
+              )}
+            </div>
+            {signature ? (
+              <div className="flex items-center gap-4">
+                <div className="flex-shrink-0 rounded-lg bg-neutral-50 p-1">
+                  <OutfitMannequin
+                    layers={signature.items.map((it) => ({ category: it.category, color: it.color }))}
+                    volume={figureKey as never}
+                    shape={shape as never}
+                    size={76}
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-semibold text-ink">{signature.title}</p>
+                  {signature.occasion && <p className="text-xs text-brand">{signature.occasion}</p>}
+                  <p className="mt-0.5 text-xs text-ink-faint">
+                    {signature.items.map((it) => garmentLabel(it.category)).join(" · ")}
+                  </p>
+                  <p className="mt-0.5 text-xs text-ink-faint">♥ {signature.likeCount}</p>
+                </div>
+              </div>
+            ) : outfits.length > 0 ? (
+              <p className="text-sm text-ink-soft">Pick one of your outfits above to feature it here.</p>
+            ) : (
+              <Link href="/outfits" className="text-sm text-brand hover:underline">
+                Compose an outfit to feature as your signature look →
               </Link>
             )}
           </div>

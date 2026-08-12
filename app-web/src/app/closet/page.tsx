@@ -26,9 +26,11 @@ type Item = {
   sortIndex: number;
   groupId: string | null;
   groupName: string | null;
+  createdAt?: string;
+  editHistory?: string | null;
 };
 
-type Collection = { id: string; name: string; sortIndex: number; itemCount: number };
+type Collection = { id: string; name: string; sortIndex: number; itemCount: number; color?: string | null };
 
 // Small preset palette for color tags (plus free text).
 // Two rows of common/on-trend apparel colors. Names are stored as-is; a hex is
@@ -80,6 +82,7 @@ export default function ClosetPage() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newCollectionName, setNewCollectionName] = useState("");
+  const [newCollectionColor, setNewCollectionColor] = useState<string | null>(null);
   // Merge-select mode
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -94,6 +97,24 @@ export default function ClosetPage() {
   // how you pull a few garments out of a real closet when planning an outfit.
   const [detailGroup, setDetailGroup] = useState<Group | null>(null);
   const [compareItems, setCompareItems] = useState<Item[]>([]);
+  // Reorder mode: only when ON do the drag/arrow controls appear (for both
+  // folders and items), so the closet reads cleanly the rest of the time.
+  const [reorderMode, setReorderMode] = useState(false);
+
+  // Swap a whole collection with its neighbor in the sort order.
+  async function moveCollection(id: string, dir: -1 | 1) {
+    const ordered = collections.slice().sort((a, b) => a.sortIndex - b.sortIndex);
+    const idx = ordered.findIndex((c) => c.id === id);
+    const swap = idx + dir;
+    if (idx < 0 || swap < 0 || swap >= ordered.length) return;
+    const a = ordered[idx];
+    const b = ordered[swap];
+    await Promise.all([
+      fetch("/api/collections", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: a.id, sortIndex: b.sortIndex }) }),
+      fetch("/api/collections", { method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ id: b.id, sortIndex: a.sortIndex }) }),
+    ]);
+    load();
+  }
 
   function toggleBucket(it: Item) {
     setCompareItems((prev) =>
@@ -241,9 +262,10 @@ export default function ClosetPage() {
     await fetch("/api/collections", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ name: newCollectionName.trim() }),
+      body: JSON.stringify({ name: newCollectionName.trim(), color: newCollectionColor }),
     });
     setNewCollectionName("");
+    setNewCollectionColor(null);
     load();
   }
 
@@ -281,15 +303,28 @@ export default function ClosetPage() {
               </LinkButton>
             )}
             {count > 0 && (
-              <div className="inline-flex overflow-hidden rounded-lg border border-neutral-300">
-                <button onClick={() => setView("list")} title="List view" aria-label="List view"
-                  className={`flex h-7 w-8 items-center justify-center ${view === "list" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+              <div className="flex items-center gap-2">
+                {/* Reorder toggle — reveals folder + item reorder controls */}
+                <button
+                  onClick={() => setReorderMode((v) => !v)}
+                  title={reorderMode ? "Done reordering" : "Reorder folders & items"}
+                  className={`inline-flex h-7 items-center gap-1 rounded-lg border px-2 text-xs font-medium ${
+                    reorderMode ? "border-brand bg-brand text-white" : "border-neutral-300 text-ink-soft hover:bg-neutral-100"
+                  }`}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6l-3 3 3 3M5 9h11M16 12l3 3-3 3M19 15H8" /></svg>
+                  {reorderMode ? "Done" : "Reorder"}
                 </button>
-                <button onClick={() => setView("grid")} title="Folder view" aria-label="Folder view"
-                  className={`flex h-7 w-8 items-center justify-center ${view === "grid" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h8a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" /></svg>
-                </button>
+                <div className="inline-flex overflow-hidden rounded-lg border border-neutral-300">
+                  <button onClick={() => setView("list")} title="List view" aria-label="List view"
+                    className={`flex h-7 w-8 items-center justify-center ${view === "list" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
+                  </button>
+                  <button onClick={() => setView("grid")} title="Folder view" aria-label="Folder view"
+                    className={`flex h-7 w-8 items-center justify-center ${view === "grid" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h8a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" /></svg>
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -426,6 +461,11 @@ export default function ClosetPage() {
           </div>
         ) : (
           <div className="mt-6 space-y-6">
+            {reorderMode && (
+              <p className="rounded-lg border border-brand/30 bg-brand-tint/40 px-3 py-2 text-xs text-ink-soft">
+                ⇅ Reorder mode — use the ▲▼ arrows to move folders, and the arrows on each item to reorder pieces. Tap <strong>Done</strong> when finished.
+              </p>
+            )}
             {buckets.map(({ collection, items: bucketItems }, i) => (
               <CollectionSection
                 key={collection.id}
@@ -446,6 +486,10 @@ export default function ClosetPage() {
                 onOpenDetail={setDetailGroup}
                 onBucket={toggleBucket}
                 inBucket={inBucket}
+                reorderMode={reorderMode}
+                canFolderUp={i > 0}
+                canFolderDown={i < buckets.length - 1}
+                onMoveFolder={(dir) => moveCollection(collection.id, dir)}
               />
             ))}
             {uncategorized.length > 0 && (
@@ -467,6 +511,10 @@ export default function ClosetPage() {
                 onOpenDetail={setDetailGroup}
                 onBucket={toggleBucket}
                 inBucket={inBucket}
+                reorderMode={reorderMode}
+                canFolderUp={false}
+                canFolderDown={false}
+                onMoveFolder={() => {}}
                 undeletable
               />
             )}
@@ -475,11 +523,16 @@ export default function ClosetPage() {
 
         {/* Add collection */}
         <Card className="mt-6">
-          <form onSubmit={addCollection} className="flex flex-col gap-2 sm:flex-row sm:items-end">
+          <form onSubmit={addCollection} className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="flex-1">
               <Field label="New collection">
                 <input className={inputClass} placeholder="e.g. Formal, Gym, Winter"
                   value={newCollectionName} onChange={(e) => setNewCollectionName(e.target.value)} />
+              </Field>
+            </div>
+            <div>
+              <Field label="Folder color" hint="optional">
+                <FolderColorPicker value={newCollectionColor} onPick={setNewCollectionColor} />
               </Field>
             </div>
             <Button variant="secondary" type="submit" disabled={!newCollectionName.trim()}>
@@ -506,7 +559,7 @@ export default function ClosetPage() {
           inBucket={inBucket}
           onBucket={toggleBucket}
           onClose={() => setDetailGroup(null)}
-          onEdit={(id) => { setDetailGroup(null); setEditingId(id); }}
+          onReload={load}
           onPatch={patch}
           onRemove={(id) => { remove(id); }}
         />
@@ -543,6 +596,10 @@ function CollectionSection({
   onOpenDetail,
   onBucket,
   inBucket,
+  reorderMode,
+  canFolderUp,
+  canFolderDown,
+  onMoveFolder,
   undeletable,
 }: {
   collection: Collection;
@@ -562,10 +619,25 @@ function CollectionSection({
   onBucket: (it: Item) => void;
   inBucket: (id: string) => boolean;
   view: "list" | "grid";
+  reorderMode: boolean;
+  canFolderUp: boolean;
+  canFolderDown: boolean;
+  onMoveFolder: (dir: -1 | 1) => void;
   undeletable?: boolean;
 }) {
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(collection.name);
+  const [pickingColor, setPickingColor] = useState(false);
+
+  async function setColor(color: string | null) {
+    setPickingColor(false);
+    await fetch("/api/collections", {
+      method: "PATCH",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ id: collection.id, color }),
+    });
+    onReload();
+  }
 
   // Build display groups: variants (shared groupId) collapse into one entry.
   const groups = buildGroups(items);
@@ -602,6 +674,15 @@ function CollectionSection({
           </div>
         ) : (
           <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-ink-soft">
+            {/* Reorder handle for the whole folder — only in reorder mode */}
+            {reorderMode && !undeletable && (
+              <span className="flex items-center gap-0.5">
+                <button onClick={() => onMoveFolder(-1)} disabled={!canFolderUp}
+                  className="text-ink-faint hover:text-brand disabled:opacity-30" title="Move folder up">▲</button>
+                <button onClick={() => onMoveFolder(1)} disabled={!canFolderDown}
+                  className="text-ink-faint hover:text-brand disabled:opacity-30" title="Move folder down">▼</button>
+              </span>
+            )}
             {collection.name}
             <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-normal normal-case text-ink-faint">
               {items.length}
@@ -609,9 +690,20 @@ function CollectionSection({
           </h2>
         )}
         {!renaming && (
-          <div className="flex items-center gap-3 text-xs">
+          <div className="relative flex items-center gap-3 text-xs">
+            {/* Folder color — editable in folder view (not for Uncategorized) */}
+            {view === "grid" && !undeletable && (
+              <button onClick={() => setPickingColor((v) => !v)} title="Folder color"
+                className={`h-4 w-4 rounded-full ring-1 ring-black/10 ${folderColorFor(collection.color, colorSeed).swatch}`} />
+            )}
+            {pickingColor && (
+              <div className="absolute right-0 top-6 z-30 rounded-xl border border-neutral-200 bg-white p-2 shadow-lift">
+                <FolderColorPicker value={collection.color} onPick={setColor} />
+              </div>
+            )}
             {items.length > 0 && collection.id !== "__uncat__" && (
-              <Link href={`/refresh?collections=${collection.id}`} className="text-ink-faint hover:text-brand">
+              <Link href={`/refresh?collections=${collection.id}`} className="text-ink-faint hover:text-brand"
+                title="Re-rate how these pieces fit right now — bodies change, so this keeps your fit data current.">
                 ↻ Refresh
               </Link>
             )}
@@ -629,6 +721,7 @@ function CollectionSection({
         <Folder
           groups={groups}
           colorSeed={colorSeed}
+          color={collection.color}
           onOpen={onOpenDetail}
           onBucket={onBucket}
           inBucket={inBucket}
@@ -662,6 +755,7 @@ function CollectionSection({
                 selectMode={selectMode}
                 selected={selected}
                 onToggleSelect={onToggleSelect}
+                reorderMode={reorderMode}
               />
             ),
           )}
@@ -718,6 +812,7 @@ function ItemCard({
   selectMode,
   selected,
   onToggleSelect,
+  reorderMode,
 }: {
   group: Group;
   collections: Collection[];
@@ -730,6 +825,7 @@ function ItemCard({
   selectMode: boolean;
   selected: Set<string>;
   onToggleSelect: (id: string) => void;
+  reorderMode: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const head = group.items[0];
@@ -791,8 +887,8 @@ function ItemCard({
             className="h-4 w-4 flex-shrink-0 accent-brand"
           />
         )}
-        {/* Reorder arrows (hidden in select mode) */}
-        {!selectMode && (
+        {/* Reorder arrows — only in reorder mode (and never in select mode) */}
+        {!selectMode && reorderMode && (
           <div className="flex flex-col leading-none">
             <button
               onClick={() => onMove(it.id, -1)}
@@ -1095,34 +1191,76 @@ function itemName(it: Item): string {
 }
 
 // Folder sleeve colors — each collection reads as its own folder, distinct from
-// the white file cards inside.
-const FOLDER_PALETTE = [
-  { tab: "bg-amber-300", body: "from-amber-100 to-amber-200/80", edge: "border-amber-400/60" },
-  { tab: "bg-sky-300", body: "from-sky-100 to-sky-200/80", edge: "border-sky-400/60" },
-  { tab: "bg-emerald-300", body: "from-emerald-100 to-emerald-200/80", edge: "border-emerald-400/60" },
-  { tab: "bg-rose-300", body: "from-rose-100 to-rose-200/80", edge: "border-rose-400/60" },
-  { tab: "bg-violet-300", body: "from-violet-100 to-violet-200/80", edge: "border-violet-400/60" },
-  { tab: "bg-orange-300", body: "from-orange-100 to-orange-200/80", edge: "border-orange-400/60" },
-];
-const UNCAT_FOLDER = { tab: "bg-neutral-300", body: "from-neutral-100 to-neutral-200/80", edge: "border-neutral-300" };
-function folderColor(seed: number) {
-  return seed < 0 ? UNCAT_FOLDER : FOLDER_PALETTE[seed % FOLDER_PALETTE.length];
+// the white file cards inside. Keyed by name so a user's pick can be stored.
+type FolderColor = { tab: string; body: string; edge: string; swatch: string };
+const FOLDER_COLORS: Record<string, FolderColor> = {
+  amber: { tab: "bg-amber-300", body: "from-amber-100 to-amber-200/80", edge: "border-amber-400/60", swatch: "bg-amber-300" },
+  sky: { tab: "bg-sky-300", body: "from-sky-100 to-sky-200/80", edge: "border-sky-400/60", swatch: "bg-sky-300" },
+  emerald: { tab: "bg-emerald-300", body: "from-emerald-100 to-emerald-200/80", edge: "border-emerald-400/60", swatch: "bg-emerald-300" },
+  rose: { tab: "bg-rose-300", body: "from-rose-100 to-rose-200/80", edge: "border-rose-400/60", swatch: "bg-rose-300" },
+  violet: { tab: "bg-violet-300", body: "from-violet-100 to-violet-200/80", edge: "border-violet-400/60", swatch: "bg-violet-300" },
+  orange: { tab: "bg-orange-300", body: "from-orange-100 to-orange-200/80", edge: "border-orange-400/60", swatch: "bg-orange-300" },
+  teal: { tab: "bg-teal-300", body: "from-teal-100 to-teal-200/80", edge: "border-teal-400/60", swatch: "bg-teal-300" },
+  slate: { tab: "bg-slate-300", body: "from-slate-100 to-slate-200/80", edge: "border-slate-400/60", swatch: "bg-slate-300" },
+};
+const FOLDER_COLOR_ORDER = ["amber", "sky", "emerald", "rose", "violet", "orange", "teal", "slate"];
+const UNCAT_FOLDER: FolderColor = { tab: "bg-neutral-300", body: "from-neutral-100 to-neutral-200/80", edge: "border-neutral-300", swatch: "bg-neutral-300" };
+
+function folderColorFor(color: string | null | undefined, seed: number): FolderColor {
+  if (color && FOLDER_COLORS[color]) return FOLDER_COLORS[color];
+  if (seed < 0) return UNCAT_FOLDER;
+  return FOLDER_COLORS[FOLDER_COLOR_ORDER[seed % FOLDER_COLOR_ORDER.length]];
+}
+
+// A compact row of color swatches for choosing a folder color.
+function FolderColorPicker({
+  value,
+  onPick,
+}: {
+  value: string | null | undefined;
+  onPick: (color: string | null) => void;
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <button
+        type="button"
+        onClick={() => onPick(null)}
+        title="Auto color"
+        className={`h-5 w-5 rounded-full border bg-white text-[9px] leading-none text-ink-faint ${
+          !value ? "ring-2 ring-brand ring-offset-1" : "border-neutral-300"
+        }`}
+      >A</button>
+      {FOLDER_COLOR_ORDER.map((name) => (
+        <button
+          key={name}
+          type="button"
+          onClick={() => onPick(name)}
+          title={name}
+          className={`h-5 w-5 rounded-full ${FOLDER_COLORS[name].swatch} ${
+            value === name ? "ring-2 ring-brand ring-offset-1" : ""
+          }`}
+        />
+      ))}
+    </div>
+  );
 }
 
 function Folder({
   groups,
   colorSeed,
+  color,
   onOpen,
   onBucket,
   inBucket,
 }: {
   groups: Group[];
   colorSeed: number;
+  color?: string | null;
   onOpen: (g: Group) => void;
   onBucket: (it: Item) => void;
   inBucket: (id: string) => boolean;
 }) {
-  const c = folderColor(colorSeed);
+  const c = folderColorFor(color, colorSeed);
   return (
     <div className="relative pt-3">
       {/* folder tab */}
@@ -1237,13 +1375,21 @@ function FileCard({
 }
 
 // The file pulled fully out onto the desk — a right-side sheet with everything.
+// Format an ISO timestamp as a short human date-time.
+function fmtWhen(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "—";
+  return d.toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
 function DetailSheet({
   group,
   collections,
   inBucket,
   onBucket,
   onClose,
-  onEdit,
+  onReload,
   onPatch,
   onRemove,
 }: {
@@ -1252,12 +1398,26 @@ function DetailSheet({
   inBucket: (id: string) => boolean;
   onBucket: (it: Item) => void;
   onClose: () => void;
-  onEdit: (id: string) => void;
+  onReload: () => void;
   onPatch: (id: string, data: Record<string, unknown>) => void;
   onRemove: (id: string) => void;
 }) {
   const head = group.items[0];
   const name = itemName(head);
+  // Which item (if any) is being edited inline, right here in the sheet.
+  const [editId, setEditId] = useState<string | null>(null);
+  const editItem = editId ? group.items.find((it) => it.id === editId) ?? null : null;
+
+  const history = (() => {
+    try {
+      const arr = JSON.parse(head.editHistory || "[]");
+      return Array.isArray(arr) ? (arr as string[]) : [];
+    } catch {
+      return [];
+    }
+  })();
+  const lastEdited = history.length ? history[history.length - 1] : null;
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
       <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
@@ -1273,55 +1433,93 @@ function DetailSheet({
           <button onClick={onClose} className="ml-3 flex-shrink-0 text-2xl leading-none text-ink-faint hover:text-ink" aria-label="Close">×</button>
         </div>
 
-        <div className="flex items-center gap-4 px-5 py-5">
-          <ItemThumb item={head} size={72} />
-          <div className="min-w-0 space-y-1 text-sm">
-            <p className="font-medium text-ink">{head.brand}</p>
-            <p className="text-ink-soft">{garmentLabel(head.category)}{head.gender ? ` · ${head.gender}` : ""}</p>
-            <p className="text-amber-500">{"★".repeat(head.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - head.fitRating)}</span></p>
+        {/* Inline editor lives right inside the file — no bouncing to the list */}
+        {editItem ? (
+          <div className="px-5 py-5">
+            <EditRow
+              item={editItem}
+              collections={collections}
+              onCancel={() => setEditId(null)}
+              onSaved={() => { setEditId(null); onReload(); }}
+            />
           </div>
-        </div>
-
-        {/* variants OR single size */}
-        <div className="border-t border-neutral-100 px-5 py-4">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
-            {group.isVariant ? `${group.items.length} variants` : "Details"}
-          </p>
-          <div className="space-y-1.5">
-            {group.items.map((v) => (
-              <div key={v.id} className="flex items-center justify-between rounded-lg border border-neutral-100 px-3 py-2 text-sm">
-                <span className="flex items-center gap-2">
-                  <ColorDot color={v.color} />
-                  <span className="font-medium text-ink">size {v.size}</span>
-                  {v.color && <span className="text-ink-faint">· {v.color}</span>}
-                </span>
-                <span className="flex items-center gap-3 text-xs">
-                  <button onClick={() => onEdit(v.id)} className="text-ink-soft hover:text-brand">Edit</button>
-                  <button onClick={() => onRemove(v.id)} className="text-ink-faint hover:text-red-600">Remove</button>
-                </span>
+        ) : (
+          <>
+            <div className="flex items-center gap-4 px-5 py-5">
+              <ItemThumb item={head} size={72} />
+              <div className="min-w-0 space-y-1 text-sm">
+                <p className="font-medium text-ink">{head.brand}</p>
+                <p className="text-ink-soft">{garmentLabel(head.category)}{head.gender ? ` · ${head.gender}` : ""}</p>
+                <p className="text-amber-500">{"★".repeat(head.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - head.fitRating)}</span></p>
               </div>
-            ))}
-          </div>
-          {head.areaNotesJson && safeNotes(head.areaNotesJson) && (
-            <p className="mt-3 rounded-lg bg-neutral-50 px-3 py-2 text-xs text-ink-soft">📝 {safeNotes(head.areaNotesJson)}</p>
-          )}
-        </div>
+              {!group.isVariant && (
+                <button onClick={() => setEditId(head.id)} className="ml-auto self-start rounded-lg border border-neutral-200 px-3 py-1.5 text-sm font-medium text-ink-soft hover:border-brand hover:text-brand">
+                  ✎ Edit
+                </button>
+              )}
+            </div>
 
-        {/* actions */}
-        <div className="mt-auto space-y-3 border-t border-neutral-200 px-5 py-4">
-          <div className="flex items-center gap-2">
-            <MoveMenu collections={collections} currentId={head.collectionId} onMove={(cid) => onPatch(head.id, { collectionId: cid })} />
-            <button
-              onClick={() => onBucket(head)}
-              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-                inBucket(head.id) ? "border-brand bg-brand-tint text-brand" : "border-neutral-200 text-ink-soft hover:border-brand hover:text-brand"
-              }`}
-            >
-              {inBucket(head.id) ? "✓ In bucket" : "＋ Add to bucket"}
-            </button>
-          </div>
-          <p className="text-[11px] text-ink-faint">Precise measurements stay private — never shared by code.</p>
-        </div>
+            {/* variants OR single size */}
+            <div className="border-t border-neutral-100 px-5 py-4">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
+                {group.isVariant ? `${group.items.length} variants` : "Details"}
+              </p>
+              <div className="space-y-1.5">
+                {group.items.map((v) => (
+                  <div key={v.id} className="flex items-center justify-between rounded-lg border border-neutral-100 px-3 py-2 text-sm">
+                    <span className="flex items-center gap-2">
+                      <ColorDot color={v.color} />
+                      <span className="font-medium text-ink">size {v.size}</span>
+                      {v.color && <span className="text-ink-faint">· {v.color}</span>}
+                    </span>
+                    <span className="flex items-center gap-3 text-xs">
+                      <button onClick={() => setEditId(v.id)} className="text-ink-soft hover:text-brand">Edit</button>
+                      <button onClick={() => onRemove(v.id)} className="text-ink-faint hover:text-red-600">Remove</button>
+                    </span>
+                  </div>
+                ))}
+              </div>
+              {head.areaNotesJson && safeNotes(head.areaNotesJson) && (
+                <p className="mt-3 rounded-lg bg-neutral-50 px-3 py-2 text-xs text-ink-soft">📝 {safeNotes(head.areaNotesJson)}</p>
+              )}
+            </div>
+
+            {/* timestamps: created · last modified · edit history */}
+            <div className="border-t border-neutral-100 px-5 py-4 text-xs">
+              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">History</p>
+              <dl className="space-y-1 text-ink-soft">
+                <div className="flex justify-between"><dt className="text-ink-faint">Created</dt><dd>{fmtWhen(head.createdAt)}</dd></div>
+                <div className="flex justify-between"><dt className="text-ink-faint">Last modified</dt><dd>{lastEdited ? fmtWhen(lastEdited) : "never"}</dd></div>
+              </dl>
+              {history.length > 1 && (
+                <details className="mt-2">
+                  <summary className="cursor-pointer text-ink-faint hover:text-brand">{history.length} recorded edits</summary>
+                  <ul className="mt-1 space-y-0.5 border-l border-neutral-200 pl-3 text-ink-faint">
+                    {history.slice().reverse().map((t, i) => (
+                      <li key={i}>{fmtWhen(t)}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </div>
+
+            {/* actions */}
+            <div className="mt-auto space-y-3 border-t border-neutral-200 px-5 py-4">
+              <div className="flex items-center gap-2">
+                <MoveMenu collections={collections} currentId={head.collectionId} onMove={(cid) => onPatch(head.id, { collectionId: cid })} />
+                <button
+                  onClick={() => onBucket(head)}
+                  className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
+                    inBucket(head.id) ? "border-brand bg-brand-tint text-brand" : "border-neutral-200 text-ink-soft hover:border-brand hover:text-brand"
+                  }`}
+                >
+                  {inBucket(head.id) ? "✓ In bucket" : "＋ Add to bucket"}
+                </button>
+              </div>
+              <p className="text-[11px] text-ink-faint">Precise measurements stay private — never shared by code.</p>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

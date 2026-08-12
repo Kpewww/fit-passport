@@ -60,6 +60,10 @@ model User {
   // body type value itself may be set but hidden — this is a separate choice.
   showBodyType Boolean @default(true)
 
+  // Optional "signature look" — the id of one of the user's own outfits to
+  // feature on the passport. Null = none chosen.
+  signatureOutfitId String?
+
   fitProfile  FitProfile?
   petProfiles PetProfile[]
   knownGood   KnownGoodItem[]
@@ -196,6 +200,9 @@ model Collection {
 
   name      String // "T-Shirts", "Jeans", "Winter", user-editable
   sortIndex Int      @default(0)
+  // User-chosen folder color KEY (e.g. "amber","sky","emerald"). Null = auto
+  // color picked by position. Purely cosmetic for the folder view.
+  color     String?
   createdAt DateTime @default(now())
 
   items KnownGoodItem[]
@@ -244,6 +251,10 @@ model KnownGoodItem {
   onlineAvailable Boolean @default(true)
   purchasedAt DateTime?
   createdAt   DateTime  @default(now())
+  // JSON array of ISO timestamps marking each "formal" edit session. Rapid
+  // successive edits coalesce into one entry (see closet PATCH); the last entry
+  // is the most-recent modification, the rest are the edit history.
+  editHistory String?
 
   comfortChecks ComfortCheck[]
 

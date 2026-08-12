@@ -27,7 +27,10 @@ export async function GET() {
   return NextResponse.json({ collections: withCounts });
 }
 
-const CreateSchema = z.object({ name: z.string().min(1).max(40) });
+const CreateSchema = z.object({
+  name: z.string().min(1).max(40),
+  color: z.string().max(20).optional().nullable(),
+});
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
@@ -37,7 +40,7 @@ export async function POST(req: Request) {
   }
   const count = await prisma.collection.count({ where: { userId: user.id } });
   const collection = await prisma.collection.create({
-    data: { userId: user.id, name: parsed.data.name, sortIndex: count },
+    data: { userId: user.id, name: parsed.data.name, color: parsed.data.color ?? null, sortIndex: count },
   });
   return NextResponse.json({ collection });
 }
@@ -45,6 +48,7 @@ export async function POST(req: Request) {
 const UpdateSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1).max(40).optional(),
+  color: z.string().max(20).optional().nullable(),
   sortIndex: z.coerce.number().int().min(0).optional(),
 });
 

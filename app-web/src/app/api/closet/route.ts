@@ -96,6 +96,29 @@ const UpdateSchema = z
     path: ["size"],
   });
 
+// Content fields whose change counts as a "modification" for the edit history.
+// Pure reorder (sortIndex) and folder moves (collectionId) are deliberately
+// excluded — they aren't edits to the garment itself.
+const HISTORY_KEYS = [
+  "brand", "displayName", "category", "gender", "size", "region", "fitRating",
+  "areaNotesJson", "productUrl", "imageDataUrl", "color", "groupId", "groupName",
+  "onlineAvailable",
+] as const;
+
+// Rapid successive edits within this window collapse into ONE formal edit — the
+// last history entry just advances in time until the user stops for a while.
+const EDIT_COALESCE_MS = 30 * 60 * 1000; // 30 minutes
+
+function parseHistory(json: string | null): string[] {
+  if (!json) return [];
+  try {
+    const arr = JSON.parse(json);
+    return Array.isArray(arr) ? arr.filter((x) => typeof x === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function PATCH(req: Request) {
   const user = await getCurrentUser();
   const parsed = UpdateSchema.safeParse(await req.json());
@@ -103,14 +126,31 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const { id, ...data } = parsed.data;
-  const result = await prisma.knownGoodItem.updateMany({
-    where: { id, userId: user.id },
-    data,
-  });
-  if (result.count === 0) {
+
+  const existing = await prisma.knownGoodItem.findFirst({ where: { id, userId: user.id } });
+  if (!existing) {
     return NextResponse.json({ error: "item not found" }, { status: 404 });
   }
-  const item = await prisma.knownGoodItem.findUnique({ where: { id } });
+
+  // Did any tracked content field actually change? If so, record/coalesce a
+  // formal edit timestamp.
+  const changed = HISTORY_KEYS.some(
+    (k) => data[k] !== undefined && data[k] !== (existing as Record<string, unknown>)[k],
+  );
+  const patch: Record<string, unknown> = { ...data };
+  if (changed) {
+    const hist = parseHistory(existing.editHistory);
+    const now = new Date();
+    const last = hist.length ? new Date(hist[hist.length - 1]) : null;
+    if (last && now.getTime() - last.getTime() < EDIT_COALESCE_MS) {
+      hist[hist.length - 1] = now.toISOString(); // same session → advance it
+    } else {
+      hist.push(now.toISOString()); // new formal edit
+    }
+    patch.editHistory = JSON.stringify(hist.slice(-20)); // keep the last 20
+  }
+
+  const item = await prisma.knownGoodItem.update({ where: { id }, data: patch });
   return NextResponse.json({ item });
 }
 
