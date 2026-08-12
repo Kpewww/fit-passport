@@ -180,7 +180,7 @@ export default function PassportPage() {
 
   // ---------- EDIT MODE — the existing inline-editable book ----------
   return (
-    <main className="flex-1 bg-neutral-100 py-10">
+    <main className="flex-1 bg-paper py-10">
       <div className="mx-auto max-w-2xl px-6">
         <div className="mb-3 flex items-center justify-between">
           <button onClick={() => setMode("view")} className="text-sm text-ink-faint hover:text-brand">
@@ -463,7 +463,7 @@ function ViewBook({
   const signature = outfits.find((o) => o.id === signatureOutfitId) ?? null;
 
   return (
-    <main className="flex-1 bg-neutral-100 py-10">
+    <main className="flex-1 bg-paper py-10">
       <div className="mx-auto max-w-2xl px-6">
         <div className="mb-3 flex items-center justify-end">
           <Button size="md" variant="secondary" onClick={onEdit}>✎ Edit passport</Button>

@@ -61,35 +61,44 @@ export default function Home() {
 
   return (
     <main className="flex-1">
-      {/* HERO — the one thing a visitor wants: "what size should I buy?" */}
-      <section className="mx-auto max-w-3xl px-6 pt-14 pb-8 text-center animate-fade-in-up">
-        <p className="text-xs font-medium uppercase tracking-[0.2em] text-brand">
-          One body · one fit identity · any store
-        </p>
-        <h1 className="mt-3 text-4xl font-bold leading-tight text-ink sm:text-5xl">
-          What size should I buy?
+      {/* HERO — editorial: a single evocative line, then the value-first action. */}
+      <section className="relative mx-auto max-w-4xl px-6 pt-20 pb-12 text-center sm:pt-28">
+        <p className="eyebrow text-ink-faint animate-rise">One body · one fit identity · any store</p>
+        <h1 className="mt-6 font-serif text-5xl leading-[1.04] text-ink animate-rise sm:text-7xl" style={{ animationDelay: "60ms" }}>
+          Know what fits,
+          <br />
+          <span className="italic text-brand">anywhere.</span>
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-lg text-ink-soft">
-          Paste any product link. We&apos;ll compare it to your fit profile and the
-          clothes you already love, then tell you the size — and&nbsp;why.
+        <p className="mx-auto mt-7 max-w-lg text-base leading-relaxed text-ink-soft animate-rise sm:text-lg" style={{ animationDelay: "120ms" }}>
+          Paste any product link. We read its sizing, weigh it against the clothes
+          you already love, and tell you the size — and&nbsp;why.
         </p>
 
-        <form onSubmit={goCheck} className="mx-auto mt-8 flex max-w-xl flex-col gap-2 sm:flex-row">
+        <form
+          onSubmit={goCheck}
+          className="mx-auto mt-10 flex max-w-xl items-center gap-2 rounded-full border border-line bg-paper-soft p-1.5 shadow-card animate-rise focus-within:border-ink/30"
+          style={{ animationDelay: "180ms" }}
+        >
           <input
             type="url"
             required
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Paste a product URL…"
-            className="flex-1 rounded-xl border border-neutral-300 bg-white px-4 py-3 text-sm shadow-card focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            className="flex-1 bg-transparent px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none"
           />
-          <Button type="submit" size="lg">
+          <button
+            type="submit"
+            className="flex-shrink-0 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-transform hover:scale-[0.98] active:scale-95"
+          >
             Get my size →
-          </Button>
+          </button>
         </form>
-        <p className="mt-3 text-xs text-ink-faint">
+        <p className="mt-4 text-xs text-ink-faint animate-rise" style={{ animationDelay: "220ms" }}>
           No account needed. Try a demo product on the next screen.
         </p>
+
+        <div className="mx-auto mt-14 h-px max-w-xs bg-line" />
       </section>
 
       {/* GUIDED STATE */}
@@ -140,10 +149,8 @@ function NewUserGuide() {
       <div className="grid gap-4 sm:grid-cols-3">
         {steps.map((s) => (
           <Card key={s.n} className="flex flex-col">
-            <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-brand-light text-sm font-semibold text-brand">
-              {s.n}
-            </div>
-            <h3 className="font-semibold text-ink">{s.title}</h3>
+            <div className="mb-3 font-serif text-2xl italic text-brand">{s.n}</div>
+            <h3 className="font-serif text-lg text-ink">{s.title}</h3>
             <p className="mt-1 text-sm text-ink-soft">{s.body}</p>
           </Card>
         ))}
@@ -199,7 +206,7 @@ function ReturningUserDashboard({ status }: { status: Status }) {
         <div className="flex items-start justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-ink">Your fit profile</h2>
+              <h2 className="font-serif text-2xl text-ink">Your fit profile</h2>
               <AccuracyBadge tier={status.accuracy} />
             </div>
             <p className="mt-1 text-sm text-ink-soft">

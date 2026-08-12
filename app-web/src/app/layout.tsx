@@ -1,10 +1,17 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Fraunces } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/components/Nav";
 import { ClaimNudge } from "@/components/ClaimNudge";
 
-const inter = Inter({ subsets: ["latin"] });
+// Clean sans for UI/body…
+const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
+// …paired with a characterful editorial serif for display headings.
+const fraunces = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-serif",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Fit Passport",
@@ -19,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="h-full">
-      <body className={`${inter.className} min-h-full flex flex-col bg-neutral-50 text-neutral-900`}>
+      <body className={`${inter.variable} ${fraunces.variable} font-sans min-h-full flex flex-col bg-paper text-ink antialiased`}>
         <Nav />
         {children}
         <ClaimNudge />

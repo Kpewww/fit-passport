@@ -27,13 +27,10 @@ export function Nav() {
   }, [pathname]); // re-check on navigation (e.g. after claim/login)
 
   return (
-    <header className="sticky top-0 z-20 border-b border-neutral-200/80 bg-white/80 backdrop-blur">
+    <header className="sticky top-0 z-20 border-b border-line bg-paper/80 backdrop-blur">
       <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3.5">
-        <Link href="/" className="flex items-center gap-2 font-semibold text-ink">
-          <span className="inline-flex h-6 w-6 items-center justify-center rounded-md bg-brand text-[10px] font-bold text-white">
-            FP
-          </span>
-          Fit Passport
+        <Link href="/" className="group flex items-baseline gap-2">
+          <span className="font-serif text-xl italic text-ink">Fit Passport</span>
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           {LINKS.map((l) => {
@@ -42,13 +39,12 @@ export function Nav() {
               <Link
                 key={l.href}
                 href={l.href}
-                className={`hidden rounded-lg px-3 py-1.5 transition-colors sm:block ${
-                  active
-                    ? "bg-brand-tint font-medium text-brand"
-                    : "text-ink-soft hover:bg-neutral-100 hover:text-ink"
+                className={`relative hidden px-3 py-1.5 transition-colors sm:block ${
+                  active ? "font-medium text-ink" : "text-ink-soft hover:text-ink"
                 }`}
               >
                 {l.label}
+                {active && <span className="absolute inset-x-3 -bottom-px h-px bg-ink" />}
               </Link>
             );
           })}
@@ -56,10 +52,8 @@ export function Nav() {
           {me?.claimed ? (
             <Link
               href="/account"
-              className={`ml-1 rounded-lg px-3 py-1.5 transition-colors ${
-                pathname === "/account"
-                  ? "bg-brand-tint font-medium text-brand"
-                  : "text-ink-soft hover:bg-neutral-100 hover:text-ink"
+              className={`ml-2 px-3 py-1.5 transition-colors ${
+                pathname === "/account" ? "font-medium text-ink" : "text-ink-soft hover:text-ink"
               }`}
             >
               @{me.username}
@@ -67,7 +61,7 @@ export function Nav() {
           ) : (
             <Link
               href="/account"
-              className="ml-1 rounded-lg bg-brand px-3 py-1.5 font-medium text-white hover:bg-brand-dark"
+              className="ml-2 rounded-full bg-ink px-4 py-1.5 text-xs font-medium tracking-wide text-paper hover:bg-black"
             >
               Claim account
             </Link>

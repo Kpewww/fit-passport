@@ -20,10 +20,10 @@ type ButtonProps = {
 const btnBase =
   "inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40";
 const btnVariants: Record<string, string> = {
-  primary: "bg-brand text-white hover:bg-brand-dark active:scale-[0.98] shadow-card",
+  primary: "bg-ink text-paper hover:bg-black active:scale-[0.98] shadow-card",
   secondary:
-    "border border-neutral-300 bg-white text-ink hover:border-neutral-400 hover:bg-neutral-50",
-  ghost: "text-ink-soft hover:bg-neutral-100",
+    "border border-line bg-paper-soft text-ink hover:border-ink/30 hover:bg-white",
+  ghost: "text-ink-soft hover:bg-ink/5",
 };
 const btnSizes: Record<string, string> = {
   md: "px-4 py-2 text-sm",
@@ -85,7 +85,7 @@ export function Card({
 }) {
   return (
     <div
-      className={`rounded-2xl bg-white p-6 shadow-card ring-1 ring-neutral-200/70 ${className}`}
+      className={`rounded-2xl bg-white p-6 shadow-card ring-1 ring-line ${className}`}
     >
       {children}
     </div>
@@ -115,7 +115,7 @@ export function Field({
 }
 
 export const inputClass =
-  "w-full rounded-xl border border-neutral-300 bg-white px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint transition-colors focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20";
+  "w-full rounded-xl border border-line bg-paper-soft px-3.5 py-2.5 text-sm text-ink placeholder:text-ink-faint transition-colors focus:border-ink/40 focus:bg-white focus:outline-none focus:ring-2 focus:ring-ink/10";
 
 // ---------- Empty state ----------
 

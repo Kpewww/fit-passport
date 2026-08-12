@@ -178,7 +178,7 @@ function RefreshInner() {
     const canStart = allSelected || picked.size > 0;
 
     return (
-      <main className="flex-1 bg-neutral-100">
+      <main className="flex-1 bg-paper">
         <div className="mx-auto max-w-md px-6 py-10">
           <div className="mb-4 flex items-center justify-between text-sm">
             <Link href="/closet" className="text-ink-faint hover:text-brand">← Closet</Link>
@@ -271,7 +271,7 @@ function RefreshInner() {
   const progress = Math.min(1, Math.abs(dragX) / COMMIT_DIST);
 
   return (
-    <main className="flex-1 bg-neutral-100">
+    <main className="flex-1 bg-paper">
       <div className="mx-auto max-w-md px-6 py-8">
         {/* Progress */}
         <div className="mb-4 flex items-center justify-between text-sm">

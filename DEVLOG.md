@@ -28,6 +28,50 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 24 — Editorial design system (foundation pass): fashion-magazine aesthetic
+
+**Context:** the founder wants a cross-cutting visual upgrade — "fashionable,
+high-end, minimal, tasteful" for an audience of fashion-minded users, bloggers,
+and taste-sharers; no text-heavy landing. Also cleared up a tech misconception
+(AWS = hosting, Node = runtime; neither determines how a site *looks* — that's
+CSS/typography/motion). Chosen direction (via a previewed options prompt):
+**Editorial / fashion-magazine** — warm ivory paper, a characterful serif
+display, hairline rules, generous whitespace.
+
+**Built (foundation + landing, first pass):**
+- **Design tokens** (`tailwind.config.ts`): `paper` ivory canvas (#F7F3EC + soft/
+  dim), warm near-black `ink` (#201c18) + warm grays, `line` hairline color,
+  `letterSpacing.editorial`, `boxShadow` warmed, new `rise` reveal animation.
+  `fontFamily.serif`/`sans` via CSS vars.
+- **Fonts** (`layout.tsx`): pair **Fraunces** (editorial serif display, `--font-serif`)
+  with **Inter** (`--font-sans`); body defaults to sans on the `bg-paper` canvas.
+  `globals.css`: paper/ink root vars, `optimizeLegibility`, `.eyebrow` small-caps
+  label helper, serif tracking.
+- **Landing hero** (`page.tsx`): rebuilt editorial — an eyebrow line, a large
+  serif headline ("Know what fits, / *anywhere.*"), one supporting sentence, a
+  refined pill URL field with an ink CTA, staggered `rise` entrance, and a
+  hairline divider. Step numbers + section headings now serif.
+- **Shared UI** (`ui.tsx`): primary button → **ink/black** (couture) with `paper`
+  text (brand red demoted to a rare accent); secondary/ghost + inputs use the
+  `line` hairline + `paper-soft` fills. `Card` ring → `line`.
+- **Nav**: serif italic wordmark, underline-on-active links (no more red pills),
+  ink pill for "Claim account", `bg-paper` bar.
+- **Canvas cohesion**: swapped the full-page gray canvases (passport ×2, refresh
+  ×2) to `bg-paper` so the whole site reads as one ivory surface. Small gray
+  insets/chips left as subtle accents.
+
+**Verified:** `tsc` clean · 62/62 vitest green · `next build` clean (Fraunces+Inter
+fetched) · live: home/passport/closet/refresh 200; landing serves the new serif
+hero markup.
+
+**Next (rollout):** carry the editorial system deeper into each page (closet,
+check, passport card, outfits, community, badges) — headings to serif, spacing/
+imagery to magazine rhythm; consider Framer Motion/GSAP for richer reveals; then
+a real product-photography treatment. Also still pending: drag-DnD reorder,
+deployment, course deliverables.
+
+---
+
 ## 2026-08-12 · Session 23 — Folder polish: custom colors, in-file inline edit + edit history, reorder mode, signature look
 
 **Context:** founder review of the Session-22 folder view produced a batch of

@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #1a1a1a;
+  --background: #f7f3ec; /* warm ivory paper */
+  --foreground: #201c18; /* warm near-black ink */
 }
 
 html,
@@ -17,8 +17,22 @@ body {
   color: var(--foreground);
   background: var(--background);
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 * {
   box-sizing: border-box;
+}
+
+/* Editorial display headings default to the serif + tighter tracking. */
+.font-serif {
+  letter-spacing: -0.01em;
+}
+
+/* A thin editorial "eyebrow" label — small caps, wide tracking. */
+.eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.24em;
 }
