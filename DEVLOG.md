@@ -28,6 +28,58 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 32 — Community card layering fix + ecosystem design outline
+
+**Context:** founder reported a bug on the Public closets grid ("背景在上,图表在下")
+and asked to think through how to grow the community into a real **ecosystem** —
+help/recommendation posts, OOTD, budget styling contests ($100/$1,000/$10,000),
+daily top outfits, top stylists — but **explicitly not to build it yet**, just to
+capture the outline.
+
+**Fixed — the layering bug.** In `community/page.tsx`'s `MemberCard`, the metal
+banner is `position: relative` while the details row below it overlaps upward with
+`-mt-7`. **Positioned siblings paint above STATIC ones regardless of DOM order**,
+so the banner's `MetalSurface` layers were covering the avatar and badges. Fix:
+the details row is now `relative z-10`. Checked `/u/[code]` — it doesn't use this
+pattern, so the bug was isolated to the community grid.
+
+**Written — `docs/design/community-ecosystem.md`** (planned, not built):
+- **The premise:** a size engine gets people in the door but isn't a reason to
+  return — once you know your size in a brand, you're done. Retention must come
+  from ecosystem.
+- **Two unfair advantages we already hold:** verified **fit context** (every member
+  has a real closet, so "this looks good" becomes "this fits a body like mine, in
+  this size, from this brand") and **earned-only prestige** (badges/metal card come
+  from real data, so status is scarce and unpurchasable).
+- **Three loops:** *Ask & Answer* (HELP/RECOMMEND/VERDICT posts whose answers can
+  **attach a real closet item** as evidence) · *Show & Be Seen* (OOTD, **Daily Top
+  Outfits** that reset so newcomers can win, **Top Stylists** ranked by earned
+  signals, plus the missing primitive — **follow + a followed feed**) · *Compete &
+  Belong* (**budget contests**: $100 weekly Thrift Run, $1,000 monthly Signature
+  Look as the flagship, $10,000 seasonal Atelier; itemised-price submissions →
+  voting → **commemorative badge**, which is exactly what the special metals
+  amber/jade/amethyst were reserved for).
+- **Defensibility:** fit-matched discovery ("people shaped like me" — doable
+  without exposing measurements, since coarse body type is already public-safe),
+  provenance on every look (buyable *and* wearable), earned-only status, and
+  crowd fit-knowledge feeding back into the engine — the real moat.
+- **Data-model sketch** (Post/Answer/Vote/Follow/Event/EventEntry/Leaderboard)
+  reusing the existing `OutfitLike` voter-key pattern, `badges.ts`, `rateLimit.ts`.
+- **Moderation is not an afterthought:** opt-in only, never loosen the privacy
+  invariant, and report/flag + posting limits + block list + photo takedown before
+  any launch.
+- **Sequencing, smallest first:** follow-feed → Ask&Answer → Daily Top (just a
+  query) → **run ONE $100 contest manually to validate demand** → only then build
+  event tooling → fit-matched filtering once there's member density.
+
+**Verified:** `tsc` clean · 68/68 vitest green · `next build` clean · `/community`
+200 with the fix in place.
+
+**Next:** founder returns to deployment later (Neon/Vercel account steps are
+theirs); ecosystem build starts with the follow-feed when he gives the word.
+
+---
+
 ## 2026-08-12 · Session 31 — Docs sync + deployment prep (Vercel + Neon Postgres)
 
 **Context:** founder asked to sync the GitHub-facing docs (README etc.) and to
