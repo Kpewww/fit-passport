@@ -30,20 +30,29 @@ function scaleVein(d: string, size: number): string {
 
 export type BadgeShape = "circle" | "shield" | "hexagon" | "rosette" | "quatrefoil";
 
+type Pt = [number, number];
+/** One outline step: a straight line, or a quadratic curve with a control point. */
+type Seg = { to: Pt; ctrl?: Pt };
+type Outline = { start: Pt; segs: Seg[] };
+
 /**
- * Outer silhouette for a badge. Returns null for "circle" (drawn as a <circle>
- * so it stays perfectly round at small sizes).
+ * THE single definition of every badge silhouette, as a start point plus line /
+ * quadratic segments.
+ *
+ * Two consumers read this: `shapePath()` renders it as an SVG path for the 2D
+ * art, and `shapePolygon()` flattens it to points so the WebGL view can extrude
+ * the SAME outline. Defining it once is the point — a badge that's a shield in
+ * SVG and a plain disc in 3D would look like two different awards.
  */
-function shapePath(shape: BadgeShape, c: number, r: number): string | null {
-  if (shape === "circle") return null;
+function outline(shape: BadgeShape, c: number, r: number): Outline | null {
+  const at = (ang: number, rad: number): Pt => [c + Math.cos(ang) * rad, c + Math.sin(ang) * rad];
+
+  if (shape === "circle") return null; // drawn as a real <circle> / cylinder
 
   if (shape === "hexagon") {
     // Flat-top hexagon — reads as engineered/crafted.
-    const pts = Array.from({ length: 6 }, (_, i) => {
-      const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
-      return `${(c + Math.cos(a) * r).toFixed(2)},${(c + Math.sin(a) * r).toFixed(2)}`;
-    });
-    return `M${pts.join(" L")} Z`;
+    const pts = Array.from({ length: 6 }, (_, i) => at((i / 6) * Math.PI * 2 - Math.PI / 2, r));
+    return { start: pts[0], segs: pts.slice(1).map((to) => ({ to })) };
   }
 
   if (shape === "shield") {
@@ -51,14 +60,15 @@ function shapePath(shape: BadgeShape, c: number, r: number): string | null {
     const top = c - r * 0.92;
     const side = r * 0.86;
     const bottom = c + r * 0.98;
-    return [
-      `M ${c - side} ${top}`,
-      `L ${c + side} ${top}`,
-      `L ${c + side} ${c + r * 0.18}`,
-      `Q ${c + side} ${c + r * 0.72} ${c} ${bottom}`,
-      `Q ${c - side} ${c + r * 0.72} ${c - side} ${c + r * 0.18}`,
-      "Z",
-    ].join(" ");
+    return {
+      start: [c - side, top],
+      segs: [
+        { to: [c + side, top] },
+        { to: [c + side, c + r * 0.18] },
+        { ctrl: [c + side, c + r * 0.72], to: [c, bottom] },
+        { ctrl: [c - side, c + r * 0.72], to: [c - side, c + r * 0.18] },
+      ],
+    };
   }
 
   if (shape === "quatrefoil") {
@@ -67,29 +77,72 @@ function shapePath(shape: BadgeShape, c: number, r: number): string | null {
     // clearly distinct from the 12-lobe rosette.
     const valley = r * 0.6;
     const ctrl = r * 1.14;
-    const at = (ang: number, rad: number) =>
-      `${(c + Math.cos(ang) * rad).toFixed(2)} ${(c + Math.sin(ang) * rad).toFixed(2)}`;
     const step = (Math.PI * 2) / 4;
-    let d = `M ${at(-Math.PI / 2, valley)}`;
+    const segs: Seg[] = [];
     for (let i = 0; i < 4; i++) {
-      const v0 = -Math.PI / 2 + i * step; // valley
+      const v0 = -Math.PI / 2 + i * step;
       const tip = v0 + step / 2;
-      const v1 = v0 + step; // next valley
-      d += ` Q ${at(tip - 0.38, ctrl)} ${at(tip, r)} Q ${at(tip + 0.38, ctrl)} ${at(v1, valley)}`;
+      const v1 = v0 + step;
+      segs.push({ ctrl: at(tip - 0.38, ctrl), to: at(tip, r) });
+      segs.push({ ctrl: at(tip + 0.38, ctrl), to: at(v1, valley) });
     }
-    return `${d} Z`;
+    return { start: at(-Math.PI / 2, valley), segs };
   }
 
   // rosette — a scalloped medal edge for the rare honors
   const lobes = 12;
   const inner = r * 0.86;
-  const pts: string[] = [];
-  for (let i = 0; i < lobes * 2; i++) {
-    const a = (i / (lobes * 2)) * Math.PI * 2 - Math.PI / 2;
-    const rr = i % 2 === 0 ? r : inner;
-    pts.push(`${(c + Math.cos(a) * rr).toFixed(2)},${(c + Math.sin(a) * rr).toFixed(2)}`);
+  const pts = Array.from({ length: lobes * 2 }, (_, i) =>
+    at((i / (lobes * 2)) * Math.PI * 2 - Math.PI / 2, i % 2 === 0 ? r : inner),
+  );
+  return { start: pts[0], segs: pts.slice(1).map((to) => ({ to })) };
+}
+
+/** SVG path for a silhouette. Null for "circle" (kept perfectly round at 26px). */
+function shapePath(shape: BadgeShape, c: number, r: number): string | null {
+  const o = outline(shape, c, r);
+  if (!o) return null;
+  const n = (v: number) => v.toFixed(2);
+  let d = `M ${n(o.start[0])} ${n(o.start[1])}`;
+  for (const s of o.segs) {
+    d += s.ctrl
+      ? ` Q ${n(s.ctrl[0])} ${n(s.ctrl[1])} ${n(s.to[0])} ${n(s.to[1])}`
+      : ` L ${n(s.to[0])} ${n(s.to[1])}`;
   }
-  return `M${pts.join(" L")} Z`;
+  return `${d} Z`;
+}
+
+/**
+ * The same silhouette flattened to a polygon, for extruding in 3D. Curves are
+ * sampled; `steps` per curve is plenty at inspect size. Returns null for
+ * "circle" so the caller can use a true cylinder instead of a many-sided prism.
+ */
+export function shapePolygon(
+  shape: BadgeShape,
+  c: number,
+  r: number,
+  steps = 14,
+): Pt[] | null {
+  const o = outline(shape, c, r);
+  if (!o) return null;
+  const pts: Pt[] = [o.start];
+  let from = o.start;
+  for (const s of o.segs) {
+    if (!s.ctrl) {
+      pts.push(s.to);
+    } else {
+      for (let i = 1; i <= steps; i++) {
+        const t = i / steps;
+        const u = 1 - t;
+        pts.push([
+          u * u * from[0] + 2 * u * t * s.ctrl[0] + t * t * s.to[0],
+          u * u * from[1] + 2 * u * t * s.ctrl[1] + t * t * s.to[1],
+        ]);
+      }
+    }
+    from = s.to;
+  }
+  return pts;
 }
 
 export const PALETTE: Record<Metal, { light: string; mid: string; dark: string; rim: string; ink: string; glow: string }> = {
@@ -225,8 +278,26 @@ export function BadgeMedallion({
           <stop offset="100%" stopColor="#fff" stopOpacity="0" />
         </linearGradient>
         <filter id={`sh-${uid}`} x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="0" dy={size * 0.02} stdDeviation={size * (0.02 + finish * 0.006)} floodOpacity={0.35} />
+          <feDropShadow dx="0" dy={size * 0.03} stdDeviation={size * (0.028 + finish * 0.006)} floodOpacity={0.45} />
         </filter>
+        {/* Bevelled rim: lit from the top-left, so the edge itself has a lip. */}
+        <linearGradient id={`bevel-${uid}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={p.light} />
+          <stop offset="45%" stopColor={p.mid} />
+          <stop offset="100%" stopColor={p.rim} />
+        </linearGradient>
+        {/* Inner shading: the wall of the medal casts into the field, bottom-right. */}
+        <linearGradient id={`inner-${uid}`} x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor={p.rim} stopOpacity="0" />
+          <stop offset="55%" stopColor={p.rim} stopOpacity="0.1" />
+          <stop offset="100%" stopColor={p.rim} stopOpacity="0.55" />
+        </linearGradient>
+        {/* The raised collar around the recessed field — a terrace, not a line. */}
+        <linearGradient id={`collar-${uid}`} x1="0.15" y1="0" x2="0.85" y2="1">
+          <stop offset="0%" stopColor={p.light} />
+          <stop offset="50%" stopColor={p.mid} />
+          <stop offset="100%" stopColor={p.dark} />
+        </linearGradient>
         {finish >= 4 && (
           <radialGradient id={`halo-${uid}`} cx="50%" cy="50%" r="50%">
             <stop offset="60%" stopColor={p.glow} stopOpacity="0" />
@@ -251,11 +322,18 @@ export function BadgeMedallion({
         {shape === "circle" && notchEls}
         {/* medal body — silhouette depends on the badge's shape */}
         {bodyPath ? (
-          <path d={bodyPath} fill={`url(#body-${uid})`} stroke={p.rim} strokeWidth={size * 0.02} strokeLinejoin="round" />
+          <path d={bodyPath} fill={`url(#body-${uid})`} stroke={`url(#bevel-${uid})`} strokeWidth={size * 0.035} strokeLinejoin="round" />
         ) : (
-          <circle cx={c} cy={c} r={rOuter} fill={`url(#body-${uid})`} stroke={p.rim} strokeWidth={size * 0.02} />
+          <circle cx={c} cy={c} r={rOuter} fill={`url(#body-${uid})`} stroke={`url(#bevel-${uid})`} strokeWidth={size * 0.035} />
         )}
       </g>
+
+      {/* Inner wall shading — the field sits BELOW the rim, so the rim shades it. */}
+      {shape === "circle" ? (
+        <circle cx={c} cy={c} r={rOuter - size * 0.03} fill="none" stroke={`url(#inner-${uid})`} strokeWidth={size * 0.07} />
+      ) : (
+        <path d={shapePath(shape, c, rOuter - size * 0.03) ?? ""} fill="none" stroke={`url(#inner-${uid})`} strokeWidth={size * 0.07} strokeLinejoin="round" />
+      )}
 
       {/* agate/marble white veining — the top metals (diamond and above) */}
       {veined && (
@@ -283,11 +361,25 @@ export function BadgeMedallion({
       {finish >= 2 && <circle cx={c} cy={c} r={rOuter - size * 0.085} fill="none" stroke={p.rim} strokeOpacity={0.35} strokeWidth={size * 0.008} />}
       {guilloche}
 
-      {/* recessed inner disc + bevel */}
-      <circle cx={c} cy={c} r={rDisc + size * 0.03} fill={p.rim} opacity={0.5} />
-      <circle cx={c} cy={c} r={rDisc} fill={`url(#disc-${uid})`} stroke={p.light} strokeOpacity={0.4} strokeWidth={size * 0.01} />
+      {/* Raised collar → recessed field → engraved motif: three stepped levels,
+          which is what makes the medal read as struck rather than printed. */}
+      <circle cx={c} cy={c} r={rDisc + size * 0.075} fill={`url(#collar-${uid})`} />
+      <circle cx={c} cy={c} r={rDisc + size * 0.075} fill="none" stroke={p.light} strokeOpacity={0.35} strokeWidth={size * 0.008} />
+      {/* the shadow the collar throws down into the field */}
+      <circle cx={c} cy={c} r={rDisc + size * 0.028} fill={p.rim} opacity={0.55} />
+      <circle cx={c} cy={c} r={rDisc} fill={`url(#disc-${uid})`} />
+      <circle cx={c} cy={c} r={rDisc} fill="none" stroke={`url(#inner-${uid})`} strokeWidth={size * 0.045} />
       {finish >= 3 && <circle cx={c} cy={c} r={rDisc - size * 0.02} fill="none" stroke={p.light} strokeOpacity={0.25} strokeWidth={size * 0.006} />}
 
+      {/* Embossed motif: a light lip up-left, a cast shadow down-right, then the
+          face on top. Three passes for the price of one path — it's what turns a
+          flat icon into raised metal. */}
+      <g transform={`translate(${-size * 0.012} ${-size * 0.012})`} opacity={0.55}>
+        <Motif motif={motif} color={p.light} size={size} />
+      </g>
+      <g transform={`translate(${size * 0.014} ${size * 0.014})`} opacity={0.45}>
+        <Motif motif={motif} color={p.rim} size={size} />
+      </g>
       <Motif motif={motif} color={iconColor} size={size} />
 
       {/* specular gloss */}

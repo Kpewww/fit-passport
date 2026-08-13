@@ -25,13 +25,21 @@ export async function GET(req: Request) {
 
   // --- likes cast inside the window, with the look they landed on ---
   const windowLikes = await prisma.outfitLike.findMany({
-    where: { createdAt: { gte: since }, outfit: { user: { deactivated: false } } },
+    // Taken-down looks earn nothing: excluded from the board outright, unlike
+    // the feed where the author can still see their own.
+    where: {
+      createdAt: { gte: since },
+      outfit: { hidden: false, user: { deactivated: false } },
+    },
     select: { outfitId: true, outfit: { select: { userId: true } } },
   });
 
   // --- helpful votes cast inside the window, with the answer's author ---
   const windowVotes = await prisma.answerVote.findMany({
-    where: { createdAt: { gte: since }, answer: { user: { deactivated: false } } },
+    where: {
+      createdAt: { gte: since },
+      answer: { hidden: false, user: { deactivated: false } },
+    },
     select: { answer: { select: { userId: true } } },
   });
 
@@ -54,7 +62,7 @@ export async function GET(req: Request) {
   const outfitIds = [...likesByOutfit.keys()];
   const outfits = outfitIds.length
     ? await prisma.outfit.findMany({
-        where: { id: { in: outfitIds } },
+        where: { id: { in: outfitIds }, hidden: false },
         select: {
           id: true,
           title: true,

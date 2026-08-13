@@ -23,7 +23,7 @@ const Body = z.object({
 });
 
 export async function POST(req: Request) {
-  const rl = rateLimit(clientKey(req, "recover"), 5, 15 * 60_000);
+  const rl = await rateLimit(clientKey(req, "recover"), 5, 15 * 60_000);
   if (!rl.ok) return tooMany(rl.retryAfterSec);
 
   const parsed = Body.safeParse(await req.json());

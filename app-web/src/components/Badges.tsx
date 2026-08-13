@@ -1,70 +1,21 @@
 "use client";
 
-// Shared badge + avatar visuals, used on the passport, home, community, and
+// Shared badge + avatar visuals, used on the passport, home, community, help and
 // public views. Kept dumb (presentational) — earning logic lives in badges.ts.
+//
+// Every badge on every screen is the same object: a dimensional struck coin that
+// TURNS when you hover it and lifts into the inspect stage when you click it.
+// There is deliberately no flat variant — see BadgeCoin.
 
-import { useRef, useState, type ReactNode } from "react";
+import { lazy, Suspense, useState } from "react";
 import { badgeById, METAL_STYLE, type EarnedBadge, type Metal } from "@/lib/badges";
-import { BadgeMedallion } from "@/components/BadgeMedallion";
+import { BadgeCoin } from "@/components/BadgeCoin";
+import { SafeBoundary } from "@/components/SafeBoundary";
 
-// Interactive 3D tilt — the medallion follows the cursor in 3D with a moving
-// gloss, so a badge can be "turned" and viewed like a real struck coin. Pure
-// CSS 3D transforms (no libraries); reverts smoothly on leave.
-export function Badge3D({ children, size }: { children: ReactNode; size: number }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const [t, setT] = useState({ rx: 0, ry: 0, active: false });
-
-  function onMove(e: React.PointerEvent) {
-    const el = ref.current;
-    if (!el) return;
-    const r = el.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width - 0.5;
-    const py = (e.clientY - r.top) / r.height - 0.5;
-    setT({ rx: -py * 22, ry: px * 22, active: true });
-  }
-  function reset() {
-    setT({ rx: 0, ry: 0, active: false });
-  }
-
-  // Highlight position tracks the tilt, so the "light" sweeps as the coin turns.
-  const hx = 50 + t.ry * 1.8;
-  const hy = 50 - t.rx * 1.8;
-
-  return (
-    <div
-      ref={ref}
-      onPointerMove={onMove}
-      onPointerLeave={reset}
-      style={{ perspective: 560, width: size, height: size }}
-      className="flex-shrink-0"
-    >
-      <div
-        style={{
-          transform: `rotateX(${t.rx}deg) rotateY(${t.ry}deg)`,
-          transformStyle: "preserve-3d",
-          // Slower, weightier motion (feels like turning real metal).
-          transition: t.active
-            ? "transform 420ms cubic-bezier(0.22,1,0.36,1)"
-            : "transform 900ms cubic-bezier(0.16,1,0.3,1)",
-        }}
-        className="relative h-full w-full"
-      >
-        {children}
-        {/* Restrained specular — a soft sheen that tracks the tilt, not a glare. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 rounded-full"
-          style={{
-            background: `radial-gradient(circle at ${hx}% ${hy}%, rgba(255,255,255,0.5) 0%, rgba(255,255,255,0.14) 26%, transparent 58%)`,
-            opacity: t.active ? 0.5 : 0,
-            transition: "opacity 600ms ease",
-            mixBlendMode: "soft-light",
-          }}
-        />
-      </div>
-    </div>
-  );
-}
+// The inspect stage is only downloaded once someone actually opens one.
+const BadgeInspect = lazy(() =>
+  import("@/components/BadgeInspect").then((m) => ({ default: m.BadgeInspect })),
+);
 
 // Round avatar that shows an uploaded portrait or falls back to initials.
 export function Avatar({
@@ -95,15 +46,21 @@ export function Avatar({
   );
 }
 
-// A circular badge "seal" — now a premium SVG medallion. `id` selects the
-// engraved icon; `glyph` is accepted for backward-compat but no longer used.
+/**
+ * A badge seal: a 3D coin you can turn with the cursor and open by clicking.
+ *
+ * `detail` carries earned/progress state when the caller has it (the badge
+ * library, the passport) so the inspect stage can show progress; without it the
+ * stage just describes the badge.
+ */
 export function BadgeSeal({
   id,
   metal,
   size = 44,
   locked = false,
   title,
-  flat = false,
+  detail,
+  inspect = true,
 }: {
   id?: string;
   metal: Metal;
@@ -111,17 +68,53 @@ export function BadgeSeal({
   size?: number;
   locked?: boolean;
   title?: string;
-  /** Opt out of the 3D tilt (e.g. tiny decorative seals). */
-  flat?: boolean;
+  detail?: { earnedNow?: boolean; progressText?: string | null };
+  /** Set false only where a modal would be wrong (inside another modal). */
+  inspect?: boolean;
 }) {
-  const medallion = (
-    <BadgeMedallion id={id ?? "starter"} metal={metal} size={size} locked={locked} title={title} />
+  const [open, setOpen] = useState(false);
+  const badgeId = id ?? "starter";
+  const def = badgeById(badgeId);
+
+  const coin = (
+    <BadgeCoin id={badgeId} metal={metal} size={size} locked={locked} title={title} />
   );
-  // Every badge is interactive by default — tilt + light it like real metal.
+
+  if (!inspect || !def) {
+    return (
+      <div className="flex flex-shrink-0 items-center justify-center" title={title}>
+        {coin}
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-shrink-0 items-center justify-center" title={title}>
-      {flat ? medallion : <Badge3D size={size}>{medallion}</Badge3D>}
-    </div>
+    <>
+      <button
+        type="button"
+        title={title ? `${title} — click to inspect` : "Click to inspect"}
+        onClick={(e) => {
+          // Seals live inside <Link> cards (community, passport). Without this,
+          // inspecting a badge navigates away instead.
+          e.preventDefault();
+          e.stopPropagation();
+          setOpen(true);
+        }}
+        className="flex flex-shrink-0 items-center justify-center rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+      >
+        {coin}
+      </button>
+      {open && (
+        <SafeBoundary fallback={<></>}>
+          <Suspense fallback={<></>}>
+            <BadgeInspect
+              badge={{ ...def, earnedNow: detail?.earnedNow ?? !locked, progressText: detail?.progressText ?? null }}
+              onClose={() => setOpen(false)}
+            />
+          </Suspense>
+        </SafeBoundary>
+      )}
+    </>
   );
 }
 
@@ -134,7 +127,14 @@ export function BadgeChip({ badge }: { badge: EarnedBadge }) {
         badge.earnedNow ? "border-neutral-200 bg-white" : "border-dashed border-neutral-200 bg-neutral-50 opacity-70"
       }`}
     >
-      <BadgeSeal id={badge.id} metal={badge.metal} size={34} locked={badge.locked} />
+      <BadgeSeal
+        id={badge.id}
+        metal={badge.metal}
+        size={34}
+        locked={badge.locked}
+        title={badge.title}
+        detail={badge}
+      />
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-ink">{badge.title}</p>
         <p className="text-[10px] uppercase tracking-wide text-ink-faint">{st.label}</p>
@@ -179,7 +179,7 @@ export function BadgeHoverSeal({ id, size = 48 }: { id: string; size?: number })
   return (
     <div className="group/badge relative">
       <div className="transition-transform duration-200 group-hover/badge:-translate-y-0.5">
-        <BadgeSeal id={b.id} metal={b.metal} size={size} />
+        <BadgeSeal id={b.id} metal={b.metal} size={size} title={b.title} />
       </div>
       <div className="pointer-events-none absolute left-0 top-full z-30 mt-2 hidden w-60 rounded-xl border border-neutral-200 bg-white p-3 text-left shadow-lift group-hover/badge:block">
         <div className="flex items-center gap-2">
@@ -190,6 +190,7 @@ export function BadgeHoverSeal({ id, size = 48 }: { id: string; size?: number })
         </div>
         <p className="mt-1 text-xs leading-snug text-ink-soft">{b.blurb}</p>
         <p className="mt-1.5 border-t border-neutral-100 pt-1.5 text-[11px] italic leading-snug text-ink-faint">{b.lore}</p>
+        <p className="mt-1.5 text-[10px] uppercase tracking-[0.16em] text-ink-faint">Hover to turn · click to inspect</p>
       </div>
     </div>
   );

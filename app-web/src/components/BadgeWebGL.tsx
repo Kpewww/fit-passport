@@ -1,21 +1,36 @@
 "use client";
 
-// TRUE 3D badge — a real cylinder "coin" lit as metal, for the inspect stage.
+// TRUE 3D badge — a real extruded medal lit as metal, for the inspect stage.
 //
-// Loaded lazily (only when someone opens inspect and switches to 3D), so the
-// three.js bundle never touches first paint. The medallion SVG is rasterised to
-// a texture for the faces, and the body uses a physical metal material with a
-// procedural studio environment, so turning it produces real specular travel —
-// closer to a game's weapon-inspect than any CSS approximation.
+// The body is the badge's ACTUAL silhouette (shield / hexagon / quatrefoil /
+// rosette / disc) extruded with a bevelled edge, using the same outline the SVG
+// art is drawn from — a shield that turned into a plain disc in 3D would read as
+// a different award. The struck art is rasterised from that SVG and laid on the
+// front face, so engraving and 3D geometry agree.
+//
+// Loaded lazily (only when the inspect stage opens), so three.js never touches
+// first paint.
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { PALETTE } from "@/components/BadgeMedallion";
+import { PALETTE, shapePolygon, type BadgeShape } from "@/components/BadgeMedallion";
 import type { Metal } from "@/lib/badges";
+
+/** The art box (0..1 in SVG space) maps to this many world units. */
+const W = 4;
+/** Extrusion depth and bevel — a medal, not a wafer. */
+const DEPTH = 0.34;
+const BEVEL = 0.07;
 
 /** Rasterise an SVG string into a THREE texture. */
 async function svgTexture(svg: string, px: number): Promise<THREE.Texture> {
-  const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  // Belt and braces: a serialized inline SVG normally carries its namespace, but
+  // an <img> refuses to decode it if anything stripped it, and the failure is a
+  // silent blank texture.
+  const withNs = svg.includes("xmlns=")
+    ? svg
+    : svg.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"');
+  const url = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(withNs)}`;
   const img = new Image();
   await new Promise<void>((res, rej) => {
     img.onload = () => res();
@@ -34,16 +49,23 @@ async function svgTexture(svg: string, px: number): Promise<THREE.Texture> {
 
 export function BadgeWebGL({
   metal,
+  shape = "circle",
   faceSvg,
+  faceAspect = 1,
   size = 300,
+  onUnavailable,
 }: {
   metal: Metal;
+  shape?: BadgeShape;
   /** The medallion rendered as an SVG string (used as the face texture). */
   faceSvg: string;
+  /** height / width of that SVG (>1 when a laurel overflows below the rim). */
+  faceAspect?: number;
   size?: number;
+  /** Called when this device can't give us a WebGL context. */
+  onUnavailable?: () => void;
 }) {
   const mount = useRef<HTMLDivElement>(null);
-  const [failed, setFailed] = useState(false);
   // Drag state lives in a ref so the render loop reads it without re-rendering.
   const drag = useRef({ down: false, x: 0, y: 0, rx: -0.12, ry: 0.3, vy: 0.004 });
 
@@ -54,8 +76,9 @@ export function BadgeWebGL({
     let renderer: THREE.WebGLRenderer;
     try {
       renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    } catch {
-      setFailed(true);
+    } catch (err) {
+      console.warn("[BadgeWebGL] no WebGL context:", err);
+      onUnavailable?.();
       return;
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -64,10 +87,10 @@ export function BadgeWebGL({
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
-    camera.position.set(0, 0, 7.2);
+    camera.position.set(0, 0, 8.4);
 
     const p = PALETTE[metal];
-    const coin = new THREE.Group();
+    const medal = new THREE.Group();
 
     // A small studio environment gives the metal something to reflect.
     const pmrem = new THREE.PMREMGenerator(renderer);
@@ -78,46 +101,62 @@ export function BadgeWebGL({
     key.position.set(4, 6, 4);
     key.lookAt(0, 0, 0);
     envScene.add(key);
-    const fill = new THREE.Mesh(keyGeo, new THREE.MeshBasicMaterial({ color: new THREE.Color(p.glow).multiplyScalar(0.5) }));
+    const fill = new THREE.Mesh(
+      keyGeo,
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(p.glow).multiplyScalar(0.5) }),
+    );
     fill.position.set(-6, -3, 3);
     fill.lookAt(0, 0, 0);
     envScene.add(fill);
     const env = pmrem.fromScene(envScene, 0.05).texture;
     scene.environment = env;
 
-    // Rim (the coin's edge) — brushed metal.
-    const rimMat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(p.dark),
-      metalness: 1,
-      roughness: 0.38,
-      envMapIntensity: 1.1,
-    });
-    const rim = new THREE.Mesh(new THREE.CylinderGeometry(2, 2, 0.28, 96, 1, true), rimMat);
-    rim.rotation.x = Math.PI / 2;
-    coin.add(rim);
-
-    // Faces — textured with the medallion art, still metallic underneath.
-    const faceMat = new THREE.MeshPhysicalMaterial({
-      color: 0xffffff,
-      metalness: 0.75,
-      roughness: 0.3,
-      envMapIntensity: 1.0,
-      transparent: true,
-    });
-    const backMat = new THREE.MeshPhysicalMaterial({
+    // ---- Body: the real silhouette, extruded ----
+    const poly = shapePolygon(shape, 0.5, 0.44, 16);
+    let bodyGeo: THREE.BufferGeometry;
+    if (poly) {
+      const outline = new THREE.Shape(
+        // SVG y grows downward; world y grows up.
+        poly.map(([px, py]) => new THREE.Vector2((px - 0.5) * W, -(py - 0.5) * W)),
+      );
+      bodyGeo = new THREE.ExtrudeGeometry(outline, {
+        depth: DEPTH,
+        bevelEnabled: true,
+        bevelThickness: BEVEL,
+        bevelSize: BEVEL * 0.85,
+        bevelSegments: 3,
+        curveSegments: 2,
+      });
+      bodyGeo.translate(0, 0, -DEPTH / 2);
+    } else {
+      bodyGeo = new THREE.CylinderGeometry(W * 0.44, W * 0.44, DEPTH + BEVEL, 128);
+      bodyGeo.rotateX(Math.PI / 2);
+    }
+    const bodyMat = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(p.mid),
       metalness: 1,
-      roughness: 0.34,
-      envMapIntensity: 1.0,
+      roughness: 0.32,
+      envMapIntensity: 1.15,
     });
-    const faceGeo = new THREE.CircleGeometry(2, 96);
-    const front = new THREE.Mesh(faceGeo, faceMat);
-    front.position.z = 0.141;
-    const back = new THREE.Mesh(faceGeo, backMat);
-    back.position.z = -0.141;
-    back.rotation.y = Math.PI;
-    coin.add(front, back);
-    scene.add(coin);
+    medal.add(new THREE.Mesh(bodyGeo, bodyMat));
+
+    // ---- Front face: the struck art, laid on the bevelled top ----
+    const frontZ = DEPTH / 2 + (poly ? BEVEL : 0) + 0.02;
+    const artGeo = new THREE.PlaneGeometry(W, W * faceAspect);
+    const artMat = new THREE.MeshPhysicalMaterial({
+      color: 0xffffff,
+      metalness: 0.7,
+      roughness: 0.28,
+      envMapIntensity: 1.0,
+      transparent: true,
+      depthWrite: false,
+    });
+    const art = new THREE.Mesh(artGeo, artMat);
+    // The SVG box grows DOWNWARD when a laurel overflows, so keep the medal's top
+    // edge aligned rather than centring the taller box.
+    art.position.set(0, (W * (1 - faceAspect)) / 2, frontZ);
+    medal.add(art);
+    scene.add(medal);
 
     // Practical lights on top of the environment for crisp highlights.
     scene.add(new THREE.AmbientLight(0xffffff, 0.5));
@@ -130,20 +169,28 @@ export function BadgeWebGL({
 
     let disposed = false;
     let tex: THREE.Texture | null = null;
-    svgTexture(faceSvg, 1024)
-      .then((t) => {
-        if (disposed) { t.dispose(); return; }
-        tex = t;
-        faceMat.map = t;
-        faceMat.needsUpdate = true;
-      })
-      .catch(() => {/* keep the untextured metal coin */});
+    if (faceSvg) {
+      svgTexture(faceSvg, 1024)
+        .then((t) => {
+          if (disposed) {
+            t.dispose();
+            return;
+          }
+          tex = t;
+          artMat.map = t;
+          artMat.needsUpdate = true;
+        })
+        .catch((err) => {
+          // Keep the untextured metal medal rather than showing nothing.
+          console.warn("[BadgeWebGL] face texture failed:", err);
+        });
+    }
 
     let raf = 0;
     const loop = () => {
       if (!drag.current.down) drag.current.ry += drag.current.vy; // idle drift
-      coin.rotation.x = drag.current.rx;
-      coin.rotation.y = drag.current.ry;
+      medal.rotation.x = drag.current.rx;
+      medal.rotation.y = drag.current.ry;
       renderer.render(scene, camera);
       raf = requestAnimationFrame(loop);
     };
@@ -157,50 +204,39 @@ export function BadgeWebGL({
       pmrem.dispose();
       env.dispose();
       keyGeo.dispose();
-      faceGeo.dispose();
-      rim.geometry.dispose();
-      rimMat.dispose();
-      faceMat.dispose();
-      backMat.dispose();
+      bodyGeo.dispose();
+      artGeo.dispose();
+      bodyMat.dispose();
+      artMat.dispose();
       tex?.dispose();
     };
-  }, [metal, faceSvg, size]);
-
-  function onDown(e: React.PointerEvent) {
-    drag.current.down = true;
-    drag.current.x = e.clientX;
-    drag.current.y = e.clientY;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
-  }
-  function onMove(e: React.PointerEvent) {
-    if (!drag.current.down) return;
-    const dx = e.clientX - drag.current.x;
-    const dy = e.clientY - drag.current.y;
-    drag.current.x = e.clientX;
-    drag.current.y = e.clientY;
-    drag.current.ry += dx * 0.008;
-    drag.current.rx = Math.max(-1.2, Math.min(1.2, drag.current.rx + dy * 0.008));
-  }
-  function onUp(e: React.PointerEvent) {
-    drag.current.down = false;
-    (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
-  }
-
-  if (failed) {
-    return (
-      <p className="flex h-40 items-center justify-center text-xs text-white/50">
-        3D unavailable on this device — showing the flat view instead.
-      </p>
-    );
-  }
+  }, [metal, shape, faceSvg, faceAspect, size, onUnavailable]);
 
   return (
     <div
       ref={mount}
-      onPointerDown={onDown}
-      onPointerMove={onMove}
-      onPointerUp={onUp}
-      onPointerCancel={onUp}
+      onPointerDown={(e) => {
+        drag.current.down = true;
+        drag.current.x = e.clientX;
+        drag.current.y = e.clientY;
+        (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+      }}
+      onPointerMove={(e) => {
+        if (!drag.current.down) return;
+        const dx = e.clientX - drag.current.x;
+        const dy = e.clientY - drag.current.y;
+        drag.current.x = e.clientX;
+        drag.current.y = e.clientY;
+        drag.current.ry += dx * 0.008;
+        drag.current.rx = Math.max(-1.2, Math.min(1.2, drag.current.rx + dy * 0.008));
+      }}
+      onPointerUp={(e) => {
+        drag.current.down = false;
+        (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+      }}
+      onPointerCancel={() => {
+        drag.current.down = false;
+      }}
       className="cursor-grab active:cursor-grabbing"
       style={{ width: size, height: size, touchAction: "none" }}
     />

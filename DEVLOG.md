@@ -28,6 +28,143 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 36 — Badges made genuinely 3D, Ask folded into Community, moderation, Redis rate limits
+
+**Context:** four asks in one batch — badges look flat and their True-3D view was
+missing; make every badge turnable everywhere; fold Ask into Community; then the
+two items that had been sitting in the "before real users" pile.
+
+### 1. Badges are now dimensional objects, everywhere
+
+The complaint was fair: a badge was a flat SVG that *tilted*. Now there is exactly
+one way a badge is drawn — **`components/BadgeCoin.tsx`** — and it's a struck medal:
+a stack of rim slices for real thickness, a **back face** you can turn it over to
+see, a **contact shadow** so it sits on the page rather than being printed on it,
+and a specular that travels as it turns. **The `flat` prop is gone** along with
+`Badge3D`; there is no flat variant to opt into.
+
+Cost control matters because a community grid can hold 60 seals: slice count and
+depth scale with size, so a 26px seal builds 3 extra divs while the 300px inspect
+hero builds 12.
+
+**The medallion art itself got real relief** (`BadgeMedallion.tsx`): a bevelled rim
+lit from the top-left, an inner wall that shades the field below it, a **raised
+collar → recessed field → engraved motif** three-level terrace, and the motif drawn
+in **three passes** (light lip up-left, cast shadow down-right, face on top) so an
+icon reads as raised metal rather than a printed glyph.
+
+**Hover to turn, click to inspect — on every screen.** `BadgeSeal` now opens its
+own inspect stage, so the `/help` "how to earn each" list, the passport, community
+cards and `/u/[code]` all became interactive without touching those files. Two
+details: seals live **inside `<Link>` cards**, so the click is `preventDefault` +
+`stopPropagation`'d (following the same lesson as FollowButton), and `/badges` lost
+its wrapper `<button>` because that would have nested a button in a button.
+
+### 2. Why "True 3D" had gone missing — and the fix
+
+Root cause was structural, not a typo: `lazy()` + `<Suspense>` with **no error
+boundary**. If the chunk fails to load or the component throws on mount, React tears
+down the subtree and you get a blank stage with nothing explaining it. Added
+**`SafeBoundary`** (which logs rather than swallowing) and used it everywhere heavy
+optional code is loaded.
+
+Then I removed the choice entirely, per the brief: **no Flat / True-3D switch.** The
+inspect stage always attempts WebGL and silently degrades to the dimensional CSS
+medal if a context can't be created (`onUnavailable`), so nothing there is ever flat.
+
+**And the 3D badge now has the badge's actual shape.** It used to be a cylinder for
+every badge, which meant a shield rendered as a disc — two different awards. I
+refactored the silhouettes into a single `outline()` definition of line/quadratic
+segments, and both consumers read it: `shapePath()` emits the SVG path (identical
+coordinates, so the 2D art didn't move) and the new `shapePolygon()` flattens the
+same curves into points that `ExtrudeGeometry` extrudes with a bevel. The struck art
+is laid on the front face as a texture, so engraving and geometry agree. Also fixed
+a latent bug in the texture path: an `xmlns` is now injected if serialization ever
+drops it, because the failure mode was a *silently blank* texture.
+
+### 3. Ask folded into Community
+
+`/ask` as a separate page made the community look emptier than it was, and asking
+about fit and browsing other people's fit are the same activity. The page became
+**`components/AskSection.tsx`**, rendered inside `/community` as a `#questions`
+section; `/ask` is now a **redirect** so shared links still land somewhere sensible;
+threads keep their own URL at `/ask/[id]`; the nav tab is gone, and `Community`
+lights up for `/ask/*` via a new `also` prefix list.
+
+### 4. Moderation — report + takedown
+
+- **`Report`** model, unique on `(kind, targetId, reporterKey)`, session-keyed so an
+  unclaimed visitor who lands on something abusive can still flag it.
+- **`hidden`** on `Post` / `Answer` / `Outfit`. Hidden content leaves every listing,
+  the board **and badge stats** (taken-down work shouldn't earn prestige) — but stays
+  **visible to its author with an explanation**, because content that silently
+  evaporates is how people conclude a product is broken.
+- **Auto-hide at 3 distinct reporters** (`lib/reports.ts`, 12 tests). I've written
+  down honestly that this is abusable by three coordinated accounts; it's set low
+  anyway because nobody is watching a queue yet, `hidden` is reversible, and the
+  failure mode I care about more is abuse staying up for days.
+- **"Not their photo / brand imagery"** is an explicit report reason — that's our
+  specific legal exposure, not a generic one.
+- **`scripts/moderate.mjs`** is the authoritative operator path (`reports` / `show` /
+  `hide` / `unhide` / `delete`). A CLI you need database credentials for beats
+  inventing an admin role and its auth surface.
+
+### 5. Rate limiting moved to Upstash Redis
+
+Per-process counters are *meaningless* on serverless: with N instances the real limit
+is `limit × N`. `rateLimit()` is now async and uses Upstash's REST API over plain
+`fetch` when `UPSTASH_REDIS_REST_URL` + `_TOKEN` are set, otherwise the in-memory
+path (so local dev still needs no services). No SDK, deliberately — one HTTP call is
+the whole protocol and a dependency could drag the pinned Node 18 toolchain forward.
+
+The window index is **baked into the key** (`rl:<key>:<window>`), which makes it one
+atomic `INCR` plus an idempotent `EXPIRE … NX` — no read-modify-write race between
+instances, and no way for a later hit to stretch the window. On a Redis error it
+falls back to in-memory and **says so in the log**, rather than either locking
+everyone out or silently dropping all protection.
+
+**Verified against a real Redis-shaped server**, not just by reading the code: I ran
+a stub Upstash `/pipeline` on port 7391, pointed dev at it, and hammered
+`/api/report` — the 21st request returned **429** with a limit of 20, exactly as
+specified. Then I pointed it at a dead port and confirmed requests still succeed with
+`[rateLimit] Redis unavailable` in the log.
+
+**Other verification.** tsc clean, **115 tests** green (107 → 115), clean production
+build, 11 pages + 6 APIs 200 in production, `/ask` → 307. Reporting smoke with four
+sessions: self-report 400, unknown reason 400, duplicate report deduped to 1,
+third distinct reporter flipped `hidden` → the post vanished for outsiders (list
+excluded it, thread 404) **while the author still saw it flagged**; then
+`moderate.mjs unhide` restored it and `delete` removed it. Smoke data cleaned;
+`0_init` regenerated (18 tables).
+
+**Next up.** Ecosystem step 4 — run **one $100 contest manually** — plus a block
+list and a real review queue before any public launch.
+
+**Files touched**
+```
+app-web/src/components/BadgeCoin.tsx          (new — the one dimensional badge)
+app-web/src/components/SafeBoundary.tsx       (new — no more blank lazy subtrees)
+app-web/src/components/BadgeMedallion.tsx     (relief: bevel, terrace, embossed motif; outline()/shapePolygon())
+app-web/src/components/BadgeInspect.tsx       (always 3D, CSS fallback, no toggle)
+app-web/src/components/BadgeWebGL.tsx         (extrudes the real silhouette)
+app-web/src/components/Badges.tsx             (flat removed; every seal inspectable)
+app-web/src/app/badges/page.tsx               (no wrapper button / page-level modal)
+app-web/src/components/AskSection.tsx         (moved from src/app/ask/page.tsx)
+app-web/src/app/ask/page.tsx                  (now a redirect)
+app-web/src/components/Nav.tsx                (Ask tab removed, `also` prefixes)
+app-web/prisma/schema.prisma                  (Report + hidden on Post/Answer/Outfit)
+app-web/src/lib/reports.ts, reports.test.ts   (new — 12 tests)
+app-web/src/app/api/report/route.ts           (new)
+app-web/src/components/ReportButton.tsx       (new)
+app-web/scripts/moderate.mjs                  (new — operator takedown/restore)
+app-web/src/lib/rateLimit.ts                  (Upstash REST + fallback, now async)
+app-web/src/app/api/{posts,posts/[id],answers,outfits,leaderboard}/route.ts  (hidden filters, await rateLimit)
+app-web/src/lib/badgeStats.ts                 (hidden content earns nothing)
+app-web/.env.example, README.md, DEVLOG.md, docs/DEPLOYMENT.md, docs/design/community-ecosystem.md
+```
+
+---
+
 ## 2026-08-12 · Session 35 — Daily Top Outfits + Top Stylists (ecosystem step 3)
 
 **Context:** step 3 in the sequencing list, described there as *"a leaderboard is

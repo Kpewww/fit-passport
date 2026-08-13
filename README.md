@@ -28,7 +28,14 @@ Other scripts:
 npm test               # unit tests (fit engine, badges, extractor, converters…)
 npm run typecheck      # tsc --noEmit
 npm run build          # production build
+
+node scripts/moderate.mjs reports              # open content reports
+node scripts/moderate.mjs unhide POST <id>     # restore something hidden wrongly
 ```
+
+If `npm run build` fails on *"Failed to fetch Fraunces from Google Fonts"* while
+`curl` to the same URL works, your network has no usable IPv6 route and Node is
+preferring it: `NODE_OPTIONS=--dns-result-order=ipv4first npm run build`.
 
 Local dev needs **no API keys and no cloud services** — SQLite plus sensible
 fallbacks everywhere. Optional keys unlock extras (see
@@ -50,8 +57,9 @@ without upgrading Node first.
 | **Outfits** | Compose looks on a body-typed SVG mannequin, post them, collect likes. Optional photoreal try-on when an image key is set. |
 | **Community** | Opt-in directory of members (each with a metal banner in their card finish), plus an outfit feed you can switch between **Everyone** (most-liked first) and **Following** (people you follow, newest first). Following requires a claimed account on both sides, so follower counts stay earned. |
 | **The board** | Daily **Top looks** and **Top stylists**, counted inside a UTC-day (or rolling-week) window so it resets and a newcomer can win today. Stylist standing is `likes + 3 × helpful answers` — never follower count. |
-| **Ask & Answer** | Fit questions with **receipts** — a question or an answer can attach a garment the author actually owns (brand · size · fit rating · the build it fits), so replies carry evidence, not hunches. Helpful votes, an accepted answer, and a "needs an answer" filter. |
-| **Badges** | Four 4-tier tracks (bronze → silver → gold → platinum) — wardrobe, fit record, atelier, counsel — plus rare capstones (diamond / obsidian) and special honours (amethyst / jade / amber). Struck-metal SVG medallions with per-track silhouettes, an inspect stage you can turn in 3D, and an optional true-WebGL view. |
+| **Ask & Answer** | Fit questions with **receipts** — a question or an answer can attach a garment the author actually owns (brand · size · fit rating · the build it fits), so replies carry evidence, not hunches. Helpful votes, an accepted answer, and a "needs an answer" filter. Lives inside **Community**; threads get their own URL. |
+| **Moderation** | Report any post, answer or look. Three distinct reporters auto-hide it (reversible); hidden content stays visible to its author so it never silently vanishes. `node scripts/moderate.mjs` is the operator takedown/restore path. |
+| **Badges** | Four 4-tier tracks (bronze → silver → gold → platinum) — wardrobe, fit record, atelier, counsel — plus rare capstones (diamond / obsidian) and special honours (amethyst / jade / amber). Every badge everywhere is a **dimensional struck medal**: real thickness, a back face, a contact shadow, hover to turn it, click to lift it onto an inspect stage that extrudes its actual silhouette in WebGL. There is no flat variant. |
 | **Identity** | Anonymous session → claim an account → a shareable high-entropy account code. Login by username, email, or code. Password reset by email, change password, soft-deactivate. |
 
 ### Privacy invariant

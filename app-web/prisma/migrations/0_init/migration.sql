@@ -24,6 +24,20 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
+CREATE TABLE "Report" (
+    "id" TEXT NOT NULL,
+    "kind" TEXT NOT NULL,
+    "targetId" TEXT NOT NULL,
+    "reporterKey" TEXT NOT NULL,
+    "userId" TEXT,
+    "reason" TEXT NOT NULL,
+    "note" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "Report_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Follow" (
     "id" TEXT NOT NULL,
     "followerId" TEXT NOT NULL,
@@ -41,6 +55,7 @@ CREATE TABLE "Outfit" (
     "description" TEXT,
     "occasion" TEXT,
     "onlineAvailable" BOOLEAN NOT NULL DEFAULT true,
+    "hidden" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Outfit_pkey" PRIMARY KEY ("id")
@@ -83,6 +98,7 @@ CREATE TABLE "Post" (
     "knownGoodId" TEXT,
     "productUrl" TEXT,
     "resolvedAnswerId" TEXT,
+    "hidden" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Post_pkey" PRIMARY KEY ("id")
@@ -95,6 +111,7 @@ CREATE TABLE "Answer" (
     "userId" TEXT NOT NULL,
     "body" TEXT NOT NULL,
     "knownGoodId" TEXT,
+    "hidden" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "Answer_pkey" PRIMARY KEY ("id")
@@ -285,6 +302,12 @@ CREATE UNIQUE INDEX "User_accountCode_key" ON "User"("accountCode");
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- CreateIndex
+CREATE INDEX "Report_kind_targetId_idx" ON "Report"("kind", "targetId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Report_kind_targetId_reporterKey_key" ON "Report"("kind", "targetId", "reporterKey");
+
+-- CreateIndex
 CREATE INDEX "Follow_followeeId_idx" ON "Follow"("followeeId");
 
 -- CreateIndex
@@ -358,6 +381,9 @@ CREATE INDEX "FitOutcome_userId_idx" ON "FitOutcome"("userId");
 
 -- CreateIndex
 CREATE INDEX "PetProfile_userId_idx" ON "PetProfile"("userId");
+
+-- AddForeignKey
+ALTER TABLE "Report" ADD CONSTRAINT "Report_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Follow" ADD CONSTRAINT "Follow_followerId_fkey" FOREIGN KEY ("followerId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

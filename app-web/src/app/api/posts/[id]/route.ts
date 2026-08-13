@@ -24,6 +24,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       knownGoodId: true,
       productUrl: true,
       resolvedAnswerId: true,
+      hidden: true,
       createdAt: true,
       userId: true,
       user: {
@@ -37,11 +38,16 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         },
       },
       answers: {
-        where: { user: { deactivated: false } },
+        // Hidden answers stay visible to whoever wrote them, nobody else.
+        where: {
+          user: { deactivated: false },
+          OR: [{ hidden: false }, { userId: user.id }],
+        },
         select: {
           id: true,
           body: true,
           knownGoodId: true,
+          hidden: true,
           createdAt: true,
           userId: true,
           user: {
@@ -60,7 +66,8 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     },
   });
 
-  if (!post || post.user.deactivated) {
+  // A taken-down question is gone for everyone except its author.
+  if (!post || post.user.deactivated || (post.hidden && post.userId !== user.id)) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
@@ -77,6 +84,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       helpfulCount: a._count.votes,
       votedByMe: a.votes.length > 0,
       mine: a.userId === user.id,
+      hidden: a.hidden,
       accepted: post.resolvedAnswerId === a.id,
       author: {
         username: a.user.username,
@@ -99,6 +107,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       createdAt: post.createdAt,
       resolvedAnswerId: post.resolvedAnswerId,
       mine: post.userId === user.id,
+      hidden: post.hidden,
       author: {
         username: post.user.username,
         accountCode: post.user.accountCode,

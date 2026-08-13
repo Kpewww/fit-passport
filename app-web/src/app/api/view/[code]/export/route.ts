@@ -12,7 +12,7 @@ export async function GET(
   req: Request,
   { params }: { params: { code: string } },
 ) {
-  const rl = rateLimit(clientKey(req, "export"), 20, 60_000);
+  const rl = await rateLimit(clientKey(req, "export"), 20, 60_000);
   if (!rl.ok) return tooMany(rl.retryAfterSec);
 
   const code = normalizeAccountCode(decodeURIComponent(params.code));

@@ -18,7 +18,7 @@ export async function GET(
   { params }: { params: { code: string } },
 ) {
   // Anti-scrape: 60 reads / min per IP.
-  const rl = rateLimit(clientKey(req, "view"), 60, 60_000);
+  const rl = await rateLimit(clientKey(req, "view"), 60, 60_000);
   if (!rl.ok) return tooMany(rl.retryAfterSec);
 
   const code = normalizeAccountCode(decodeURIComponent(params.code));

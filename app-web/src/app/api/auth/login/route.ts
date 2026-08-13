@@ -23,7 +23,7 @@ const Body = z.object({
 
 export async function POST(req: Request) {
   // Brute-force guard: 10 attempts / 5 min per IP.
-  const rl = rateLimit(clientKey(req, "login"), 10, 5 * 60_000);
+  const rl = await rateLimit(clientKey(req, "login"), 10, 5 * 60_000);
   if (!rl.ok) return tooMany(rl.retryAfterSec);
 
   const parsed = Body.safeParse(await req.json());

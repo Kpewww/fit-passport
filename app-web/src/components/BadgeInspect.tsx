@@ -1,50 +1,57 @@
 "use client";
 
-// Badge INSPECT view — modelled on a game's weapon-inspect screen (CS2): the
-// item is lifted onto a dark stage where you drag to turn it in 3D, it has real
-// thickness (a rim of stacked slices, not a flat image), and a restrained light
-// rakes across the surface as it rotates. It idles with a slow drift so the
-// metal always reads as metal.
+// Badge INSPECT stage — modelled on a game's weapon-inspect screen (CS2): the
+// medal is lifted onto a dark stage, drag turns it, a restrained light rakes
+// across the metal, and it idles with a slow drift so metal keeps reading as
+// metal.
 //
-// Two renderers: the default is CSS 3D (instant, no dependencies — the art is
-// already crisp SVG), and a "True 3D" toggle lazy-loads a real three.js coin with
-// physical metal shading for the full weapon-inspect feel. The heavy path only
-// downloads if the viewer asks for it.
+// There is no longer a Flat / True-3D switch. It is ALWAYS the real 3D renderer;
+// the CSS coin is only a fallback for devices that can't give us a WebGL context,
+// and it's dimensional too, so nothing here is ever flat.
 
-import { useEffect, useRef, useState, lazy, Suspense } from "react";
-import { BadgeMedallion } from "@/components/BadgeMedallion";
-import { PALETTE } from "@/components/BadgeMedallion";
-import { METAL_STYLE, type EarnedBadge } from "@/lib/badges";
+import { useCallback, useEffect, useRef, useState, lazy, Suspense } from "react";
+import { BadgeMedallion, PALETTE } from "@/components/BadgeMedallion";
+import { BadgeCoin } from "@/components/BadgeCoin";
+import { SafeBoundary } from "@/components/SafeBoundary";
+import { METAL_STYLE, type BadgeDef } from "@/lib/badges";
 
-const SLICES = 12; // rim slices → perceived thickness
-const THICKNESS = 15; // px of total depth
-
-// True-3D view is heavy (three.js), so it only loads if the viewer asks for it.
+// three.js is heavy, so it arrives with the stage rather than with the page.
 const BadgeWebGL = lazy(() =>
   import("@/components/BadgeWebGL").then((m) => ({ default: m.BadgeWebGL })),
 );
+
+/** Earned state is optional — a seal anywhere in the app can open this. */
+type InspectBadge = BadgeDef & { earnedNow?: boolean; progressText?: string | null };
 
 export function BadgeInspect({
   badge,
   onClose,
 }: {
-  badge: EarnedBadge;
+  badge: InspectBadge;
   onClose: () => void;
 }) {
   const [rot, setRot] = useState({ x: -8, y: 18 });
-  const [webgl, setWebgl] = useState(false);
-  const [faceSvg, setFaceSvg] = useState<string | null>(null);
-  const artRef = useRef<HTMLDivElement>(null);
-
-  // Serialize the medallion SVG so the 3D view can use it as a face texture.
-  function enable3D() {
-    const svgEl = artRef.current?.querySelector("svg");
-    if (svgEl) setFaceSvg(new XMLSerializer().serializeToString(svgEl));
-    setWebgl(true);
-  }
+  const [face, setFace] = useState<{ svg: string; aspect: number } | null>(null);
+  const [cssOnly, setCssOnly] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const artRef = useRef<HTMLDivElement>(null);
   const drag = useRef({ down: false, x: 0, y: 0, rx: 0, ry: 0 });
-  const idle = useRef<number>(0);
+
+  // Serialize the medallion art once, so the 3D face texture is the same drawing
+  // the 2D seals use — one source of truth for the engraving.
+  useEffect(() => {
+    const svgEl = artRef.current?.querySelector("svg");
+    if (!svgEl) {
+      setCssOnly(true); // no art to texture with → stay on the CSS coin
+      return;
+    }
+    const w = parseFloat(svgEl.getAttribute("width") ?? "0");
+    const h = parseFloat(svgEl.getAttribute("height") ?? "0");
+    setFace({
+      svg: new XMLSerializer().serializeToString(svgEl),
+      aspect: w > 0 && h > 0 ? h / w : 1,
+    });
+  }, [badge.id, badge.metal]);
 
   // Close on Escape.
   useEffect(() => {
@@ -53,23 +60,24 @@ export function BadgeInspect({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  // Idle drift — a slow turn so light keeps moving when you're not dragging.
+  // Idle drift for the CSS fallback (the WebGL loop drifts on its own).
   useEffect(() => {
-    if (dragging || webgl) return;
+    if (!cssOnly || dragging) return;
     let raf = 0;
     const tick = () => {
-      idle.current += 0.16;
       setRot((r) => ({ x: r.x, y: r.y + 0.16 }));
       raf = requestAnimationFrame(tick);
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [dragging, webgl]);
+  }, [cssOnly, dragging]);
+
+  const fallBackToCss = useCallback(() => setCssOnly(true), []);
 
   function onDown(e: React.PointerEvent) {
     drag.current = { down: true, x: e.clientX, y: e.clientY, rx: rot.x, ry: rot.y };
     setDragging(true);
-    (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+    (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
   }
   function onMove(e: React.PointerEvent) {
     if (!drag.current.down) return;
@@ -87,13 +95,13 @@ export function BadgeInspect({
 
   const p = PALETTE[badge.metal];
   const st = METAL_STYLE[badge.metal];
-  const size = 260;
-  // Light angle follows rotation, so the sheen sweeps as the coin turns.
-  const lightX = 50 + Math.sin((rot.y * Math.PI) / 180) * 34;
-  const lightY = 42 - Math.sin((rot.x * Math.PI) / 180) * 26;
+  const size = 300;
 
   return (
-    <div className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[#0b0c0f]/95 backdrop-blur-sm" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-[#0b0c0f]/95 backdrop-blur-sm"
+      onClick={onClose}
+    >
       {/* stage lighting */}
       <div
         className="pointer-events-none absolute inset-0"
@@ -109,103 +117,62 @@ export function BadgeInspect({
         ×
       </button>
 
-      {/* renderer switch */}
-      <div onClick={(e) => e.stopPropagation()} className="relative mb-6 flex gap-1 rounded-full border border-white/15 p-1 text-[11px]">
-        <button
-          onClick={() => setWebgl(false)}
-          className={`rounded-full px-3 py-1 transition-colors ${!webgl ? "bg-white/90 text-black" : "text-white/60 hover:text-white"}`}
-        >
-          Flat
-        </button>
-        <button
-          onClick={enable3D}
-          className={`rounded-full px-3 py-1 transition-colors ${webgl ? "bg-white/90 text-black" : "text-white/60 hover:text-white"}`}
-        >
-          True 3D
-        </button>
-      </div>
-
-      {/* hidden source art — serialized into a texture for the 3D view */}
+      {/* hidden source art — serialized into the 3D face texture */}
       <div ref={artRef} className="pointer-events-none absolute h-0 w-0 overflow-hidden opacity-0" aria-hidden>
         <BadgeMedallion id={badge.id} metal={badge.metal} size={512} />
       </div>
 
-      {webgl ? (
-        <div onClick={(e) => e.stopPropagation()} className="relative">
-          <Suspense fallback={<div className="flex h-[300px] w-[300px] items-center justify-center text-xs text-white/50">Loading 3D…</div>}>
-            <BadgeWebGL metal={badge.metal} faceSvg={faceSvg ?? ""} size={300} />
-          </Suspense>
-        </div>
-      ) : (
-      /* the coin (CSS 3D) */
-      <div
-        onClick={(e) => e.stopPropagation()}
-        onPointerDown={onDown}
-        onPointerMove={onMove}
-        onPointerUp={onUp}
-        onPointerCancel={onUp}
-        className={`relative select-none ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
-        style={{ perspective: 1400, width: size, height: size, touchAction: "none" }}
-      >
-        <div
-          className="relative h-full w-full"
-          style={{
-            transformStyle: "preserve-3d",
-            transform: `rotateX(${rot.x}deg) rotateY(${rot.y}deg)`,
-            transition: dragging ? "none" : "transform 120ms linear",
-          }}
-        >
-          {/* rim: stacked slices give the coin real thickness */}
-          {Array.from({ length: SLICES }, (_, i) => {
-            const z = -THICKNESS / 2 + (i / (SLICES - 1)) * THICKNESS;
-            const shade = 0.45 + (i / (SLICES - 1)) * 0.3;
-            return (
-              <div
-                key={i}
-                className="absolute inset-0 rounded-full"
-                style={{
-                  transform: `translateZ(${z}px)`,
-                  background: p.dark,
-                  filter: `brightness(${shade})`,
-                }}
-              />
-            );
-          })}
-
-          {/* front face */}
-          <div className="absolute inset-0 flex items-center justify-center" style={{ transform: `translateZ(${THICKNESS / 2 + 0.5}px)` }}>
-            <BadgeMedallion id={badge.id} metal={badge.metal} size={size} title={badge.title} />
-            {/* restrained raking light */}
-            <div
-              className="pointer-events-none absolute inset-0 rounded-full"
-              style={{
-                background: `radial-gradient(circle at ${lightX}% ${lightY}%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.12) 24%, transparent 56%)`,
-                mixBlendMode: "soft-light",
-              }}
+      <div onClick={(e) => e.stopPropagation()} className="relative">
+        {cssOnly ? (
+          // Dimensional CSS medal: drag to turn, real thickness, back face.
+          <div
+            onPointerDown={onDown}
+            onPointerMove={onMove}
+            onPointerUp={onUp}
+            onPointerCancel={onUp}
+            className={`select-none ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
+            style={{ touchAction: "none" }}
+          >
+            <BadgeCoin
+              id={badge.id}
+              metal={badge.metal}
+              size={size}
+              title={badge.title}
+              rot={rot}
+              interactive={false}
+              showBackPlate
             />
           </div>
-
-          {/* back face — engraved plate with the metal name */}
-          <div
-            className="absolute inset-0 flex flex-col items-center justify-center rounded-full"
-            style={{
-              transform: `translateZ(-${THICKNESS / 2 + 0.5}px) rotateY(180deg)`,
-              background: `radial-gradient(circle at 42% 32%, ${p.mid}, ${p.dark} 70%, ${p.rim})`,
-              border: `2px solid ${p.rim}`,
-              color: p.ink,
-            }}
+        ) : face ? (
+          <SafeBoundary
+            fallback={
+              <BadgeCoin id={badge.id} metal={badge.metal} size={size} title={badge.title} showBackPlate />
+            }
           >
-            <span className="text-[10px] uppercase tracking-[0.3em] opacity-70">Fit Passport</span>
-            <span className="mt-1 font-serif text-2xl italic">{st.label}</span>
-            <span className="mt-3 h-px w-16" style={{ background: p.light, opacity: 0.4 }} />
-            <span className="mt-3 px-10 text-center text-[10px] leading-snug opacity-70">{badge.title}</span>
-          </div>
-        </div>
+            <Suspense
+              fallback={
+                <div className="flex h-[300px] w-[300px] items-center justify-center text-xs text-white/40">
+                  Preparing the metal…
+                </div>
+              }
+            >
+              <BadgeWebGL
+                metal={badge.metal}
+                shape={badge.shape ?? "circle"}
+                faceSvg={face.svg}
+                faceAspect={face.aspect}
+                size={size}
+                onUnavailable={fallBackToCss}
+              />
+            </Suspense>
+          </SafeBoundary>
+        ) : (
+          <div className="h-[300px] w-[300px]" />
+        )}
       </div>
-      )}
 
       {/* info panel */}
-      <div onClick={(e) => e.stopPropagation()} className="relative mt-10 max-w-md px-8 text-center text-white">
+      <div onClick={(e) => e.stopPropagation()} className="relative mt-8 max-w-md px-8 text-center text-white">
         <div className="flex items-center justify-center gap-2">
           <h3 className="font-serif text-3xl">{badge.title}</h3>
           <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white/70">
@@ -214,10 +181,12 @@ export function BadgeInspect({
         </div>
         <p className="mt-3 text-sm text-white/70">{badge.blurb}</p>
         <p className="mt-2 text-xs italic text-white/45">{badge.lore}</p>
-        {!badge.earnedNow && badge.progressText && (
+        {badge.earnedNow === false && badge.progressText && (
           <p className="mt-3 text-xs font-medium text-white/80">{badge.progressText}</p>
         )}
-        <p className="mt-6 text-[10px] uppercase tracking-[0.24em] text-white/30">Drag to turn · Esc to close</p>
+        <p className="mt-6 text-[10px] uppercase tracking-[0.24em] text-white/30">
+          Drag to turn · Esc to close
+        </p>
       </div>
     </div>
   );

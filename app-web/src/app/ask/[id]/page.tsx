@@ -15,6 +15,7 @@ import {
   type ClosetPick,
   type EvidenceView,
 } from "@/components/Evidence";
+import { ReportButton } from "@/components/ReportButton";
 import { postKindLabel } from "@/lib/posts";
 import { timeAgo } from "@/lib/timeAgo";
 
@@ -35,6 +36,7 @@ type Thread = {
     createdAt: string;
     resolvedAnswerId: string | null;
     mine: boolean;
+    hidden: boolean;
     author: Author;
     evidence: EvidenceView | null;
   };
@@ -45,6 +47,7 @@ type Thread = {
     helpfulCount: number;
     votedByMe: boolean;
     mine: boolean;
+    hidden: boolean;
     accepted: boolean;
     author: Author;
     evidence: EvidenceView | null;
@@ -86,7 +89,7 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
 
   async function removePost() {
     await fetch(`/api/posts/${encodeURIComponent(id)}`, { method: "DELETE" }).catch(() => {});
-    router.push("/ask");
+    router.push("/community#questions");
   }
 
   if (gone) {
@@ -96,7 +99,7 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
           <EmptyState
             title="That question is gone"
             body="It may have been deleted, or its author deactivated their account."
-            action={<LinkButton href="/ask">Back to questions</LinkButton>}
+            action={<LinkButton href="/community#questions">Back to questions</LinkButton>}
           />
         </div>
       </main>
@@ -113,7 +116,7 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-6 py-10">
         <p className="text-xs text-ink-faint">
-          <Link href="/ask" className="hover:underline">← All questions</Link>
+          <Link href="/community#questions" className="hover:underline">← All questions</Link>
         </p>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -143,7 +146,10 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
           {post.mine && (
             <button onClick={removePost} className="ml-2 hover:text-red-600">Delete</button>
           )}
+          {!post.mine && <ReportButton kind="POST" targetId={post.id} className="ml-2" />}
         </div>
+
+        {post.hidden && <HiddenNotice what="question" />}
 
         <p className="mt-4 whitespace-pre-wrap text-ink-soft">{post.body}</p>
 
@@ -239,6 +245,7 @@ function AnswerCard({
           ✓ Accepted by the asker
         </p>
       )}
+      {answer.hidden && <HiddenNotice what="answer" />}
       <p className="whitespace-pre-wrap text-sm text-ink">{answer.body}</p>
 
       {answer.evidence && (
@@ -261,6 +268,7 @@ function AnswerCard({
         </span>
         <span>{timeAgo(answer.createdAt)}</span>
         {answer.mine && <button onClick={remove} className="hover:text-red-600">Delete</button>}
+        {!answer.mine && <ReportButton kind="ANSWER" targetId={answer.id} />}
 
         <span className="ml-auto flex items-center gap-2">
           {askerIsMe && (
@@ -290,6 +298,19 @@ function AnswerCard({
         </span>
       </div>
     </Card>
+  );
+}
+
+/**
+ * Shown only to the author of hidden content. The alternative — content that
+ * silently disappears — is how people conclude a product is broken.
+ */
+function HiddenNotice({ what }: { what: string }) {
+  return (
+    <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900 ring-1 ring-amber-200">
+      Only you can see this {what}. It was hidden after reports — edit or delete
+      it, or reply to us if you think that was wrong.
+    </p>
   );
 }
 

@@ -39,9 +39,13 @@ export async function GET(req: Request) {
     where: {
       // Deactivated authors disappear from every external surface.
       user: { deactivated: false },
+      // Taken-down content stays visible to its AUTHOR — otherwise a post just
+      // silently evaporates and they never learn it was reported.
+      OR: [{ hidden: false }, { userId: user.id }],
       ...(kind ? { kind } : {}),
       ...(mine ? { userId: user.id } : {}),
-      ...(unanswered ? { answers: { none: {} } } : {}),
+      // A question whose only answers are hidden still needs answering.
+      ...(unanswered ? { answers: { none: { hidden: false } } } : {}),
     },
     orderBy: { createdAt: "desc" },
     take: 60,
@@ -53,6 +57,7 @@ export async function GET(req: Request) {
       knownGoodId: true,
       productUrl: true,
       resolvedAnswerId: true,
+      hidden: true,
       createdAt: true,
       userId: true,
       user: {
@@ -64,7 +69,7 @@ export async function GET(req: Request) {
           fitProfile: { select: { avatarDataUrl: true } },
         },
       },
-      _count: { select: { answers: true } },
+      _count: { select: { answers: { where: { hidden: false } } } },
     },
   });
 
@@ -82,6 +87,7 @@ export async function GET(req: Request) {
       resolved: !!p.resolvedAnswerId,
       answerCount: p._count.answers,
       mine: p.userId === user.id,
+      hidden: p.hidden,
       author: {
         username: p.user.username,
         accountCode: p.user.accountCode,
@@ -95,7 +101,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   // Posting is the abuse surface here, so it's the tighter limit.
-  const rl = rateLimit(clientKey(req, "post-create"), 10, 10 * 60_000);
+  const rl = await rateLimit(clientKey(req, "post-create"), 10, 10 * 60_000);
   if (!rl.ok) return tooMany(rl.retryAfterSec);
 
   const user = await getCurrentUser();

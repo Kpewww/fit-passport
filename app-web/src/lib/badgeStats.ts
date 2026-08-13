@@ -13,12 +13,14 @@ export async function computeBadgeStats(userId: string, communityListed: boolean
     }),
     prisma.fitOutcome.count({ where: { userId } }),
     prisma.comfortCheck.count({ where: { userId } }),
+    // Taken-down content earns no prestige — a badge has to mean the community
+    // valued the work, and hidden work by definition didn't survive review.
     prisma.outfit.findMany({
-      where: { userId },
+      where: { userId, hidden: false },
       select: { _count: { select: { likes: true } } },
     }),
     prisma.answer.findMany({
-      where: { userId },
+      where: { userId, hidden: false },
       select: { id: true, _count: { select: { votes: true } } },
     }),
   ]);

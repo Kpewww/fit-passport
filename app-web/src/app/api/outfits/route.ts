@@ -51,11 +51,16 @@ export async function GET(req: Request) {
   }
 
   const outfits = await prisma.outfit.findMany({
-    where: mine
-      ? { userId: user.id }
-      : followeeIds
-        ? { userId: { in: followeeIds } }
-        : undefined,
+    where: {
+      // Taken-down looks stay visible to their author, so they know why the look
+      // dropped out of the feed.
+      OR: [{ hidden: false }, { userId: user.id }],
+      ...(mine
+        ? { userId: user.id }
+        : followeeIds
+          ? { userId: { in: followeeIds } }
+          : {}),
+    },
     orderBy: { createdAt: "desc" },
     take: 100,
     include: {

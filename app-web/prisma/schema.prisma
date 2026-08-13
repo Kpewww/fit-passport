@@ -83,6 +83,39 @@ model User {
   posts       Post[]
   answers     Answer[]
   answerVotes AnswerVote[]
+  reports     Report[]
+}
+
+// ---------- Moderation ----------
+
+/// A report on user-generated content.
+///
+/// Anonymous-friendly, like votes: keyed by session so a first-time visitor who
+/// lands on something abusive can still flag it. Unique per (target, reporter) so
+/// one person can't manufacture a takedown by clicking repeatedly.
+///
+/// Reports are a SIGNAL, not a verdict — see lib/reports.ts for the auto-hide
+/// rule and its known weakness (coordinated reporting). The operator script at
+/// scripts/moderate.mjs is the authoritative takedown/restore path.
+model Report {
+  id String @id @default(cuid())
+
+  /// "POST" | "ANSWER" | "OUTFIT" — validated in lib/reports.ts.
+  kind     String
+  targetId String
+
+  reporterKey String
+  userId      String?
+  user        User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  /// Why, from a fixed list. Free text goes in `note`.
+  reason String
+  note   String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([kind, targetId, reporterKey])
+  @@index([kind, targetId])
 }
 
 /// A one-directional follow. This is the cheapest retention primitive we have:
@@ -123,6 +156,10 @@ model Outfit {
   occasion    String?
   // If the whole look is only buyable in-store (nothing online), flag it.
   onlineAvailable Boolean @default(true)
+
+  /// Taken down after reports (or by an operator). Hidden content stays visible
+  /// to its author — so they know why it vanished — and to nobody else.
+  hidden Boolean @default(false)
 
   createdAt DateTime @default(now())
 
@@ -203,6 +240,9 @@ model Post {
   /// The answer the asker marked as the one that solved it. Nullable = unresolved.
   resolvedAnswerId String?
 
+  /// Taken down after reports (or by an operator). See the Report model.
+  hidden Boolean @default(false)
+
   createdAt DateTime @default(now())
 
   answers Answer[]
@@ -222,6 +262,9 @@ model Answer {
   body String
   /// Evidence from the ANSWERER's closet — ownership is validated on write.
   knownGoodId String?
+
+  /// Taken down after reports (or by an operator). See the Report model.
+  hidden Boolean @default(false)
 
   createdAt DateTime @default(now())
 

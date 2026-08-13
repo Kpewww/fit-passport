@@ -3,7 +3,8 @@
 > **Status: partly built.** This is the thinking-ahead document — nothing here is
 > implemented except what's marked **SHIPPED**. Written 2026-08-12; sequencing steps
 > **1–3** (follow/feed · Ask & Answer · Daily Top + Top Stylists) shipped over
-> Sessions 33–35. Next up is step 4, which is deliberately a *manual* experiment.
+> Sessions 33–35, with moderation added in Session 36. Next up is step 4, which is
+> deliberately a *manual* experiment.
 
 ## Why this matters
 
@@ -39,7 +40,7 @@ closets.
   rating, and the answerer's coarse body type (`src/lib/evidence.ts`, which is also
   the privacy boundary: never cm, never a deactivated owner). Ownership is
   validated server-side, so evidence can't be borrowed.
-- **Shipped mechanics:** `/ask` + `/ask/[id]`, kind filters and a **Needs an
+- **Shipped mechanics:** the Questions section of `/community` + `/ask/[id]` threads, kind filters and a **Needs an
   answer** filter, helpful votes (anonymous-friendly, deduped by voter key), an
   **accepted answer** only the asker can set, and answer ordering in
   `rankAnswers()` — accepted first, then most-helpful, then oldest, so early
@@ -48,7 +49,7 @@ closets.
   silhouette): Sounding Board → Trusted Voice → Fit Oracle → Community Pillar.
   It's the only track that needs *other people* to rate you, and Polymath now
   requires gold in all four tracks.
-- **Still to do:** a daily digest of unanswered questions; report/flag.
+- **Still to do:** a daily digest of unanswered questions. (Report/flag shipped in Session 36 — see Moderation below.)
 
 ### Loop 2 — Show & Be Seen (identity → status)
 
@@ -133,9 +134,16 @@ Reuse what exists: the `OutfitLike` voter-key pattern (anonymous-friendly, dedup
 - Everything social stays **opt-in**, as today.
 - **Never** loosen the privacy invariant: precise measurements never become social
   data, no matter how useful it would be for matching.
-- Needs before launch: report/flag, per-user rate limits on posting, a block list,
-  and a takedown path for user photos. Contest entries need a rule against
-  scraped/brand imagery (our existing legal position).
+- **SHIPPED** (Session 36): report/flag on posts, answers and looks; rate limits on
+  posting, answering and reporting; a `hidden` flag that removes content from every
+  listing, the board and badge stats while keeping it visible to its author; and
+  `scripts/moderate.mjs` as the operator takedown/restore path. "Not their photo /
+  brand imagery" is an explicit report reason, because that's our specific legal
+  exposure. Rate-limit counters now live in Upstash Redis in production — per-process
+  counters were meaningless on serverless.
+- Still needed before launch: a **block list**, a real **review queue** (auto-hide at
+  3 reporters is abusable by 3 coordinated accounts), and a takedown rule for contest
+  entries using scraped/brand imagery.
 
 ---
 

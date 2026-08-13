@@ -94,6 +94,16 @@ diffed `--from-empty`.)
 | `DATABASE_URL` | Neon **pooled** connection string | the database |
 | `SESSION_SECRET` | 32 random bytes | signs session cookies |
 | `APP_URL` | `https://your-app.vercel.app` | absolute links in reset emails |
+| `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL | shared rate-limit counters |
+| `UPSTASH_REDIS_REST_TOKEN` | its REST token | ditto |
+
+**Why the Upstash pair is in the *required* table:** without it, rate limits are
+counted per serverless instance, so the effective limit is `limit × instances` —
+i.e. no limit. Create a free Redis at **upstash.com**, copy the REST URL and REST
+token from its dashboard. The app talks to it over the REST API with plain
+`fetch` (no SDK, so nothing drags the pinned Node 18 toolchain forward), and falls
+back to in-process counters if Redis is unreachable rather than locking everyone
+out — check the logs for `[rateLimit] Redis unavailable` if limits behave oddly.
 
 Generate the secret:
 
@@ -125,10 +135,10 @@ See `app-web/.env.example` for the full annotated list.
 These are honest gaps, not oversights — they're fine for a course demo and must
 be addressed before a public launch.
 
-1. **Rate limiting is per-instance.** `src/lib/rateLimit.ts` keeps buckets in
-   process memory, so on Vercel each serverless instance has its own counters and
-   a restart clears them. Swap the store for **Upstash Redis** to make the login /
-   reset / public-view limits real.
+1. **Moderation has no review queue.** Reports auto-hide content at 3 distinct
+   reporters (`src/lib/reports.ts`), which three coordinated accounts could abuse.
+   `hidden` is reversible and `node scripts/moderate.mjs` is the authoritative
+   takedown/restore path, but a real queue is needed before scale.
 2. **Images are base64 data URLs** in Postgres (portraits, item photos). Simple
    and private, but it bloats rows. Move to object storage (Vercel Blob / S3) if
    the closet grows.

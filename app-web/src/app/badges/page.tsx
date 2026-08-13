@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui";
 import { BadgeSeal } from "@/components/Badges";
-import { BadgeInspect } from "@/components/BadgeInspect";
 import { badgesByTrack, METAL_STYLE, type EarnedBadge } from "@/lib/badges";
 
 type StatusResp = {
@@ -21,8 +20,6 @@ export default function BadgesPage() {
   const [data, setData] = useState<StatusResp | null>(null);
   const [pinned, setPinned] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
-  // The badge currently lifted into the inspect stage (CS2-style), if any.
-  const [inspecting, setInspecting] = useState<EarnedBadge | null>(null);
 
   useEffect(() => {
     fetch("/api/status").then((r) => r.json()).then((d) => {
@@ -83,15 +80,13 @@ export default function BadgesPage() {
                 <BadgeCard key={b.id} badge={b}
                   pinned={pinned.includes(b.id)}
                   canPin={b.earnedNow && (pinned.length < 3 || pinned.includes(b.id))}
-                  onPin={b.earnedNow ? () => togglePin(b.id) : undefined}
-                  onInspect={() => setInspecting(b)} />
+                  onPin={b.earnedNow ? () => togglePin(b.id) : undefined} />
               ))}
             </div>
           </Section>
         ))}
       </div>
 
-      {inspecting && <BadgeInspect badge={inspecting} onClose={() => setInspecting(null)} />}
     </main>
   );
 }
@@ -110,25 +105,26 @@ function BadgeCard({
   pinned,
   canPin,
   onPin,
-  onInspect,
 }: {
   badge: EarnedBadge;
   pinned?: boolean;
   canPin?: boolean;
   onPin?: () => void;
-  onInspect?: () => void;
 }) {
   const st = METAL_STYLE[badge.metal];
   const dim = !badge.earnedNow;
   return (
     <Card className={`flex gap-3 !p-4 ${dim ? "bg-paper-dim" : ""}`}>
-      <button
-        onClick={onInspect}
-        title="Inspect"
-        className="flex-shrink-0 rounded-full transition-transform hover:scale-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
-      >
-        <BadgeSeal id={badge.id} metal={badge.metal} size={54} locked={!badge.earnedNow} title={badge.title} />
-      </button>
+      {/* The seal opens its own inspect stage — no wrapper button, or we'd nest
+          one button inside another. */}
+      <BadgeSeal
+        id={badge.id}
+        metal={badge.metal}
+        size={54}
+        locked={!badge.earnedNow}
+        title={badge.title}
+        detail={badge}
+      />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <p className={`truncate font-semibold ${dim ? "text-ink-soft" : "text-ink"}`}>{badge.title}</p>

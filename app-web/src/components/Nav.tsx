@@ -10,8 +10,9 @@ const LINKS = [
   { href: "/closet", label: "Closet" },
   { href: "/passport", label: "Passport" },
   { href: "/outfits", label: "Outfits" },
-  { href: "/ask", label: "Ask" },
-  { href: "/community", label: "Community" },
+  // Questions live inside /community, so they get no tab of their own. Thread
+  // pages sit at /ask/[id] and don't share the prefix, hence `also`.
+  { href: "/community", label: "Community", also: ["/ask"] },
   { href: "/help", label: "Help" },
 ];
 
@@ -39,8 +40,12 @@ export function Nav() {
         </Link>
         <nav className="flex items-center gap-1 text-sm">
           {LINKS.map((l) => {
-            // startsWith so nested routes (/ask/[id]) keep their tab lit.
-            const active = pathname === l.href || pathname.startsWith(`${l.href}/`);
+            // startsWith so nested routes keep their tab lit; `also` covers
+            // sections whose detail pages live under a different path.
+            const prefixes = [l.href, ...(("also" in l && l.also) || [])];
+            const active = prefixes.some(
+              (pfx) => pathname === pfx || pathname.startsWith(`${pfx}/`),
+            );
             return (
               <Link
                 key={l.href}

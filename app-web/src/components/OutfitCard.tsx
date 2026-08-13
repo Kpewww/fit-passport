@@ -8,6 +8,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui";
 import { OutfitMannequin, type OutfitLayer } from "@/components/OutfitMannequin";
 import { Avatar } from "@/components/Badges";
+import { ReportButton } from "@/components/ReportButton";
 import { garmentLabel } from "@/lib/garments";
 
 export type OutfitItemView = {
@@ -26,6 +27,7 @@ export type OutfitView = {
   description: string | null;
   occasion: string | null;
   onlineAvailable: boolean;
+  hidden?: boolean;
   likeCount: number;
   likedByMe: boolean;
   mine: boolean;
@@ -76,7 +78,13 @@ export function OutfitCard({
             {outfit.mine && onDelete && (
               <button onClick={onDelete} className="text-xs text-ink-faint hover:text-red-600">Delete</button>
             )}
+            {!outfit.mine && <ReportButton kind="OUTFIT" targetId={outfit.id} />}
           </div>
+          {outfit.hidden && (
+            <p className="mt-1 rounded bg-amber-50 px-2 py-1 text-[11px] text-amber-900 ring-1 ring-amber-200">
+              Only you can see this — hidden after reports.
+            </p>
+          )}
           {outfit.occasion && <p className="text-xs text-brand">{outfit.occasion}</p>}
           {outfit.description && <p className="mt-0.5 text-xs text-ink-soft">{outfit.description}</p>}
           <p className="mt-1 text-xs text-ink-faint">

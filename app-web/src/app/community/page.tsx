@@ -8,6 +8,7 @@ import { Avatar, PinnedSeals } from "@/components/Badges";
 import { OutfitCard } from "@/components/OutfitCard";
 import { FollowButton } from "@/components/FollowButton";
 import { TodayBoard } from "@/components/TodayBoard";
+import { AskSection } from "@/components/AskSection";
 import { MetalSurface, resolveTheme } from "@/components/MetalCard";
 import type { FeedScope } from "@/lib/feed";
 
@@ -118,9 +119,9 @@ export default function CommunityPage() {
         )}
 
         <p className="mt-3 text-sm">
-          <Link href="/ask" className="font-medium text-brand hover:underline">
+          <a href="#questions" className="font-medium text-brand hover:underline">
             Ask the community about fit →
-          </Link>
+          </a>
         </p>
 
         {/* The live band — what's happening right now, before anything static. */}
@@ -197,6 +198,9 @@ export default function CommunityPage() {
             ))}
           </div>
         )}
+
+        {/* Questions — the utility loop, merged in rather than a separate page */}
+        <AskSection />
 
         {/* Code lookup */}
         <Card className="mt-8">
