@@ -28,6 +28,95 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-13 · Session 38 — Badges made actually dimensional; platinum → titanium
+
+**Context:** the founder, on the previous session's badge work: *"仍然不是立体的,每个
+上面目前只是镀了一层膜而已"* — still not three-dimensional, each one just has a film
+plated on it. Plus: silver and platinum are too close, replace one.
+
+The feedback was right, and last session's answer was wrong for a reason worth
+writing down.
+
+### Why they looked like a film — three real causes
+
+**1. A disc seen head-on IS a flat circle.** The rim slices that gave the coin its
+thickness sat at rotation zero, which hides the edge *exactly* behind the face. So
+thickness only existed while you were hovering — the rest of the time the geometry
+was, correctly, a circle with a gradient on it. No amount of shading fixes that.
+Every badge now sits at a **standing angle** (−15°/−22° at large sizes, gentler at
+26px where foreshortening would eat the engraving), and hovering turns it *from*
+there rather than *to* it.
+
+**2. The perspective was nearly orthographic.** `perspective: size * 9` puts the
+camera so far away that nothing foreshortens — another way of spelling "flat". Now
+`size * 4.2`, so the turn produces visible trapezoidal projection.
+
+**3. A bug I'd shipped: every 3D layer was a `rounded-full` box 6% WIDER than the
+medal.** The edge stack, the back face and the travelling sheen were all circles of
+the layout box (radius `size/2`) while the art is drawn at radius `size*0.44`. Round
+badges therefore wore a phantom outer rim, and **a shield sat on a disc it had
+nothing to do with** — which is very literally "a film on a disc". All three layers
+are now clipped to the badge's real silhouette via `clip-path: path(…)`, reusing the
+exported `shapePath()` so the CSS clip and the SVG art can't disagree.
+
+### And the face got a real lighting model
+
+The old art was gradients that didn't agree with each other. Now **one light
+direction (top-left) drives everything**, which is the whole trick:
+
+- **dome** — convex body gradient, light→mid→dark→rim, hotspot offset up-left;
+- **terminator** — a shaded band hugging the away-from-light edge, clipped to the
+  silhouette (so a shield shades like a shield);
+- **rim light** — a thin catch of light on the top-left edge *only*, on the bevelled wall;
+- **speck** — an offset elliptical hotspot, the single strongest cue that a surface
+  is curved rather than printed;
+- **recessed field, lit the OTHER way round** — dark where the light comes from,
+  because the wall in front of it casts into it. That inversion is what says
+  "sunken" instead of "raised", and it's what makes the collar read as a step;
+- **occlusion** — the shadow the collar throws into the field, strongest on the
+  light side;
+- **motif in three passes** — a heavier cast shadow away from the light, a light lip
+  toward it, then the face, all off one path.
+
+Four stepped levels (rim → collar → field → motif), each with its own light and
+shadow edge. That stack is what makes a medal read as *struck* rather than drawn —
+and it survives a screenshot, unlike a hover effect.
+
+### Platinum → titanium
+
+Platinum's pale cool grey was near-identical to silver **two rungs below it**, which
+breaks the one job a ladder has: showing rank at a glance. Replaced with
+**Titanium** — mid-dark, violet-warm, and **brushed** (a new `BRUSHED_METALS` grain,
+because that's what titanium actually looks like). Unmistakable against bright
+silver, yellow gold and glassy obsidian, and it still reads as *above* gold.
+
+Renamed everywhere in one pass: the `Metal` union, `METAL_RANK`, `METAL_STYLE`,
+`METAL_CHIP`, `PALETTE`, `CARD_THEMES` (a "Titanium Edition" card finish), the four
+tier-4 badge definitions, and the tests. Also migrated any stored
+`User.cardMetal = "platinum"` — otherwise those cards would have silently fallen
+back to the default lapis, since `resolveTheme` can't find a theme that no longer
+exists (0 rows locally, but the migration belongs in the record).
+
+**Verified.** tsc clean, 115 tests green. Rendered-HTML inspection of `/help` (all
+20 badges, server-rendered): **0 NaN**, all eight new lighting layers present on
+every badge (`dome/bevel/term/rimlight/speck/field/occl/collar/bodyclip` × 20), the
+brushed pattern on **exactly the 4 titanium badges**, `clip-path: path(…)` carrying
+a real shield outline, `Platinum` gone and `Titanium` present. Clean production
+build; pages 200.
+
+**Files touched**
+```
+app-web/src/components/BadgeMedallion.tsx   (one-light-direction relief; BRUSHED_METALS; shapePath exported)
+app-web/src/components/BadgeCoin.tsx        (standing angle, thicker milled edge, tight perspective, silhouette-clipped layers)
+app-web/src/lib/badges.ts                   (platinum → titanium)
+app-web/src/lib/badges.test.ts              (titanium wording)
+app-web/src/components/Badges.tsx           (titanium chip)
+app-web/src/components/MetalCard.tsx        (Titanium Edition card finish)
+README.md, DEVLOG.md
+```
+
+---
+
 ## 2026-08-12 · Session 37 — Admin account + review queue, membership numbers, block list, self-hosted fonts
 
 **Context:** the founder asked for an admin account (`AK`) with every badge and

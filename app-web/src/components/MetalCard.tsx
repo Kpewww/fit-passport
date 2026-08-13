@@ -29,7 +29,7 @@ export const CARD_THEMES: Record<string, CardTheme> = {
   bronze: { key: "bronze", label: "Bronze Edition", from: "#3a220e", via: "#b57838", to: "#2a1809", sheen: "rgba(255,224,186,0.9)", text: "#fdf1e2" },
   silver: { key: "silver", label: "Silver Edition", from: "#5f6872", via: "#c2cad3", to: "#454c55", sheen: "rgba(255,255,255,0.95)", text: "#12161b" },
   gold: { key: "gold", label: "Gold Edition", from: "#5c4406", via: "#e6b23d", to: "#3d2c04", sheen: "rgba(255,246,200,0.95)", text: "#221903" },
-  platinum: { key: "platinum", label: "Platinum Edition", from: "#7c848f", via: "#e8ecf1", to: "#69717b", sheen: "rgba(255,255,255,0.98)", text: "#14181d" },
+  titanium: { key: "titanium", label: "Titanium Edition", from: "#332e3a", via: "#8b8194", to: "#25212b", sheen: "rgba(233,225,242,0.85)", text: "#f4f1f8" },
   diamond: { key: "diamond", label: "Diamond Edition", from: "#0e5b73", via: "#c4ecf6", to: "#0b465a", sheen: "rgba(255,255,255,0.98)", text: "#06303d", veined: true },
   obsidian: { key: "obsidian", label: "Obsidian Edition", from: "#101216", via: "#2a2e35", to: "#000000", sheen: "rgba(200,210,225,0.75)", text: "#eef0f4", veined: true },
   amethyst: { key: "amethyst", label: "Amethyst Edition", from: "#2c1553", via: "#8b5cd6", to: "#1d0e38", sheen: "rgba(232,214,251,0.92)", text: "#f6efff", veined: true },

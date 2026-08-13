@@ -161,7 +161,7 @@ const METAL_CHIP: Record<Metal, string> = {
   bronze: "bg-amber-100 text-amber-800",
   silver: "bg-slate-100 text-slate-700",
   gold: "bg-yellow-100 text-yellow-800",
-  platinum: "bg-zinc-100 text-zinc-700",
+  titanium: "bg-[#efeaf3] text-[#4a4354]",
   diamond: "bg-sky-100 text-sky-800",
   obsidian: "bg-neutral-800 text-neutral-100",
   amethyst: "bg-violet-100 text-violet-800",

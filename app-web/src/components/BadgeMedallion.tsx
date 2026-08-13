@@ -98,8 +98,13 @@ function outline(shape: BadgeShape, c: number, r: number): Outline | null {
   return { start: pts[0], segs: pts.slice(1).map((to) => ({ to })) };
 }
 
-/** SVG path for a silhouette. Null for "circle" (kept perfectly round at 26px). */
-function shapePath(shape: BadgeShape, c: number, r: number): string | null {
+/**
+ * SVG path for a silhouette. Null for "circle" (kept perfectly round at 26px).
+ * Exported because BadgeCoin clips its edge stack and back face to the SAME
+ * outline — a circular edge behind a shield is exactly what made these look like
+ * stickers sitting on a disc.
+ */
+export function shapePath(shape: BadgeShape, c: number, r: number): string | null {
   const o = outline(shape, c, r);
   if (!o) return null;
   const n = (v: number) => v.toFixed(2);
@@ -145,11 +150,20 @@ export function shapePolygon(
   return pts;
 }
 
+/**
+ * Metals with a brushed (anisotropic) grain. Titanium gets it because that grain
+ * is what titanium actually looks like, and because it puts more daylight between
+ * it and the smooth bright silver two rungs down the ladder.
+ */
+export const BRUSHED_METALS: Metal[] = ["titanium"];
+
 export const PALETTE: Record<Metal, { light: string; mid: string; dark: string; rim: string; ink: string; glow: string }> = {
   bronze:   { light: "#e7b98a", mid: "#b57838", dark: "#6f421c", rim: "#502f13", ink: "#3d2410", glow: "#f4d3a8" },
   silver:   { light: "#ffffff", mid: "#c2cad3", dark: "#828d99", rim: "#5f6872", ink: "#333a42", glow: "#eef2f6" },
   gold:     { light: "#fff1a8", mid: "#e6b23d", dark: "#a9770a", rim: "#7c5c08", ink: "#5c4406", glow: "#fff6c8" },
-  platinum: { light: "#ffffff", mid: "#dfe3e8", dark: "#a4adb8", rim: "#7c848f", ink: "#3a4149", glow: "#f6f8fb" },
+  // Titanium: mid-dark and violet-warm on purpose, so it can never be mistaken
+  // for the bright cool silver two rungs below it. Brushed grain adds identity.
+  titanium: { light: "#c6bcd1", mid: "#6f6675", dark: "#3b3542", rim: "#241f29", ink: "#f2edf7", glow: "#c9c0d2" },
   diamond:  { light: "#ffffff", mid: "#c4ecf6", dark: "#79bcd6", rim: "#3f93b7", ink: "#0e5b73", glow: "#e9fbff" },
   obsidian: { light: "#7b828c", mid: "#2a2e35", dark: "#0a0b0e", rim: "#000000", ink: "#e9ebef", glow: "#9aa2ad" },
   amethyst: { light: "#e8d6fb", mid: "#8b5cd6", dark: "#4d2a8e", rim: "#361c66", ink: "#f2e9ff", glow: "#dcc7f8" },
@@ -158,8 +172,8 @@ export const PALETTE: Record<Metal, { light: string; mid: string; dark: string; 
 };
 
 // ---- Motif engravings (drawn in a 24×24 box, centered) ----
-function Motif({ motif, color, size }: { motif: string; color: string; size: number }) {
-  const s = { fill: "none", stroke: color, strokeWidth: 1.8, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+function Motif({ motif, color, size, weight = 1.8 }: { motif: string; color: string; size: number; weight?: number }) {
+  const s = { fill: "none", stroke: color, strokeWidth: weight, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
   const M: Record<string, React.ReactNode> = {
     hanger: <><path d="M12 5.2a1.5 1.5 0 1 1 1.1 2.5c-.8.1-1.1.6-1.1 1.3" {...s} /><path d="M4.5 15.5 12 10l7.5 5.5" {...s} /><path d="M4.5 15.5h15" {...s} /></>,
     shelves: <><rect x="5" y="6" width="14" height="4" rx="1" {...s} /><rect x="5" y="12" width="14" height="4" rx="1" {...s} /><path d="M8 6v-.5M16 12v-.5" {...s} /></>,
@@ -210,6 +224,7 @@ export function BadgeMedallion({
   const motif = motifProp ?? def?.motif ?? "gem";
   const p = PALETTE[metal];
   const veined = VEINED_METALS.includes(metal);
+  const brushed = BRUSHED_METALS.includes(metal);
   const uid = `${id}-${metal}`;
   const c = size / 2;
   const rOuter = size * 0.44;
@@ -263,51 +278,93 @@ export function BadgeMedallion({
       className={locked ? "grayscale" : ""} style={{ opacity: locked ? 0.5 : 1, overflow: "visible" }}
       role="img" aria-label={title}>
       <defs>
-        <radialGradient id={`body-${uid}`} cx="38%" cy="30%" r="75%">
+        {/* ONE light direction for everything below: top-left. Every highlight,
+            terminator, cast shadow and occlusion band is derived from it. Relief
+            reads as relief only when the lighting agrees with itself. */}
+        <clipPath id={`bodyclip-${uid}`}>
+          {bodyPath ? <path d={bodyPath} /> : <circle cx={c} cy={c} r={rOuter} />}
+        </clipPath>
+
+        {/* Convex dome: the medal's face bulges toward the viewer. */}
+        <radialGradient id={`dome-${uid}`} cx="33%" cy="27%" r="82%">
           <stop offset="0%" stopColor={p.light} />
-          <stop offset="42%" stopColor={p.mid} />
-          <stop offset="100%" stopColor={p.dark} />
+          <stop offset="26%" stopColor={p.mid} />
+          <stop offset="78%" stopColor={p.dark} />
+          <stop offset="100%" stopColor={p.rim} />
         </radialGradient>
-        <radialGradient id={`disc-${uid}`} cx="50%" cy="66%" r="72%">
-          <stop offset="0%" stopColor={p.mid} />
-          <stop offset="100%" stopColor={p.dark} />
-        </radialGradient>
-        <linearGradient id={`gloss-${uid}`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#fff" stopOpacity={0.5 + finish * 0.06} />
-          <stop offset="55%" stopColor="#fff" stopOpacity="0.04" />
-          <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-        </linearGradient>
-        <filter id={`sh-${uid}`} x="-40%" y="-40%" width="180%" height="180%">
-          <feDropShadow dx="0" dy={size * 0.03} stdDeviation={size * (0.028 + finish * 0.006)} floodOpacity={0.45} />
-        </filter>
-        {/* Bevelled rim: lit from the top-left, so the edge itself has a lip. */}
-        <linearGradient id={`bevel-${uid}`} x1="0" y1="0" x2="1" y2="1">
+
+        {/* Bevelled rim: a torus lit at the top-left, dark at the bottom-right. */}
+        <linearGradient id={`bevel-${uid}`} x1="0.1" y1="0" x2="0.9" y2="1">
           <stop offset="0%" stopColor={p.light} />
-          <stop offset="45%" stopColor={p.mid} />
+          <stop offset="38%" stopColor={p.mid} />
           <stop offset="100%" stopColor={p.rim} />
         </linearGradient>
-        {/* Inner shading: the wall of the medal casts into the field, bottom-right. */}
-        <linearGradient id={`inner-${uid}`} x1="0" y1="0" x2="1" y2="1">
+
+        {/* Terminator: the shaded band hugging the away-from-light edge. */}
+        <radialGradient id={`term-${uid}`} cx="68%" cy="74%" r="88%">
           <stop offset="0%" stopColor={p.rim} stopOpacity="0" />
-          <stop offset="55%" stopColor={p.rim} stopOpacity="0.1" />
-          <stop offset="100%" stopColor={p.rim} stopOpacity="0.55" />
+          <stop offset="46%" stopColor={p.rim} stopOpacity="0" />
+          <stop offset="100%" stopColor={p.rim} stopOpacity="0.5" />
+        </radialGradient>
+
+        {/* Rim light: a thin catch of light on the top-left edge only. */}
+        <linearGradient id={`rimlight-${uid}`} x1="0.05" y1="0" x2="0.85" y2="1">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity="0.85" />
+          <stop offset="32%" stopColor="#ffffff" stopOpacity="0.16" />
+          <stop offset="60%" stopColor="#ffffff" stopOpacity="0" />
         </linearGradient>
-        {/* The raised collar around the recessed field — a terrace, not a line. */}
+
+        {/* Dome highlight — an offset elliptical hotspot, the single strongest cue
+            that a surface is curved rather than printed. */}
+        <radialGradient id={`speck-${uid}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#ffffff" stopOpacity={0.42 + finish * 0.05} />
+          <stop offset="55%" stopColor="#ffffff" stopOpacity="0.1" />
+          <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
+        </radialGradient>
+
+        {/* The RECESSED field is lit the OTHER way round — dark where the light
+            comes from, because the wall in front of it casts into it. That
+            inversion is what says "sunken" rather than "raised". */}
+        <linearGradient id={`field-${uid}`} x1="0.15" y1="0.05" x2="0.9" y2="1">
+          <stop offset="0%" stopColor={p.rim} />
+          <stop offset="52%" stopColor={p.dark} />
+          <stop offset="100%" stopColor={p.mid} />
+        </linearGradient>
+
+        {/* Occlusion the collar throws down into the field: strongest on the
+            light side, fading away from it. */}
+        <linearGradient id={`occl-${uid}`} x1="0.1" y1="0" x2="0.9" y2="1">
+          <stop offset="0%" stopColor={p.rim} stopOpacity="0.85" />
+          <stop offset="55%" stopColor={p.rim} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={p.rim} stopOpacity="0.05" />
+        </linearGradient>
+
+        {/* The raised collar around the field — a terrace, not a line. */}
         <linearGradient id={`collar-${uid}`} x1="0.15" y1="0" x2="0.85" y2="1">
           <stop offset="0%" stopColor={p.light} />
-          <stop offset="50%" stopColor={p.mid} />
+          <stop offset="46%" stopColor={p.mid} />
           <stop offset="100%" stopColor={p.dark} />
         </linearGradient>
+
+        {/* Cast shadow onto the page. */}
+        <filter id={`sh-${uid}`} x="-40%" y="-40%" width="180%" height="180%">
+          <feDropShadow dx={size * 0.012} dy={size * 0.036} stdDeviation={size * (0.03 + finish * 0.006)} floodOpacity={0.5} />
+        </filter>
+
+        {brushed && (
+          <pattern id={`brush-${uid}`} width={size * 0.07} height={size * 0.07}
+            patternUnits="userSpaceOnUse" patternTransform="rotate(28)">
+            <rect width={size * 0.07} height={size * 0.07} fill="none" />
+            <rect width={size * 0.014} height={size * 0.07} fill="#ffffff" opacity="0.09" />
+            <rect x={size * 0.032} width={size * 0.01} height={size * 0.07} fill="#000000" opacity="0.14" />
+          </pattern>
+        )}
+
         {finish >= 4 && (
           <radialGradient id={`halo-${uid}`} cx="50%" cy="50%" r="50%">
             <stop offset="60%" stopColor={p.glow} stopOpacity="0" />
             <stop offset="100%" stopColor={p.glow} stopOpacity="0.5" />
           </radialGradient>
-        )}
-        {veined && (
-          <clipPath id={`veinclip-${uid}`}>
-            <circle cx={c} cy={c} r={rOuter - size * 0.02} />
-          </clipPath>
         )}
       </defs>
 
@@ -322,69 +379,87 @@ export function BadgeMedallion({
         {shape === "circle" && notchEls}
         {/* medal body — silhouette depends on the badge's shape */}
         {bodyPath ? (
-          <path d={bodyPath} fill={`url(#body-${uid})`} stroke={`url(#bevel-${uid})`} strokeWidth={size * 0.035} strokeLinejoin="round" />
+          <path d={bodyPath} fill={`url(#dome-${uid})`} strokeLinejoin="round" />
         ) : (
-          <circle cx={c} cy={c} r={rOuter} fill={`url(#body-${uid})`} stroke={`url(#bevel-${uid})`} strokeWidth={size * 0.035} />
+          <circle cx={c} cy={c} r={rOuter} fill={`url(#dome-${uid})`} />
         )}
       </g>
 
-      {/* Inner wall shading — the field sits BELOW the rim, so the rim shades it. */}
-      {shape === "circle" ? (
-        <circle cx={c} cy={c} r={rOuter - size * 0.03} fill="none" stroke={`url(#inner-${uid})`} strokeWidth={size * 0.07} />
-      ) : (
-        <path d={shapePath(shape, c, rOuter - size * 0.03) ?? ""} fill="none" stroke={`url(#inner-${uid})`} strokeWidth={size * 0.07} strokeLinejoin="round" />
-      )}
+      {/* Everything that shades the FACE is clipped to the silhouette, so a
+          shield is shaded like a shield instead of like the circle it isn't. */}
+      <g clipPath={`url(#bodyclip-${uid})`}>
+        {brushed && <rect x="0" y="0" width={size} height={size * 1.2} fill={`url(#brush-${uid})`} />}
 
-      {/* agate/marble white veining — the top metals (diamond and above) */}
-      {veined && (
-        <g clipPath={`url(#veinclip-${uid})`} opacity={0.55}>
-          {VEINS.map((d, i) => (
-            <path
-              key={`v${i}`}
-              d={scaleVein(d, size)}
-              fill="none"
-              stroke="#ffffff"
-              strokeOpacity={i % 2 ? 0.5 : 0.85}
-              strokeWidth={size * (i % 2 ? 0.012 : 0.022)}
-              strokeLinecap="round"
-            />
-          ))}
-        </g>
+        {/* agate/marble white veining — the top metals (diamond and above) */}
+        {veined && (
+          <g opacity={0.55}>
+            {VEINS.map((d, i) => (
+              <path
+                key={`v${i}`}
+                d={scaleVein(d, size)}
+                fill="none"
+                stroke="#ffffff"
+                strokeOpacity={i % 2 ? 0.5 : 0.85}
+                strokeWidth={size * (i % 2 ? 0.012 : 0.022)}
+                strokeLinecap="round"
+              />
+            ))}
+          </g>
+        )}
+
+        {/* shaded side, then the curved hotspot */}
+        <rect x="0" y="0" width={size} height={size * 1.2} fill={`url(#term-${uid})`} />
+        <ellipse
+          cx={c - rOuter * 0.3}
+          cy={c - rOuter * 0.38}
+          rx={rOuter * 0.62}
+          ry={rOuter * 0.34}
+          transform={`rotate(-34 ${c - rOuter * 0.3} ${c - rOuter * 0.38})`}
+          fill={`url(#speck-${uid})`}
+        />
+      </g>
+
+      {/* Rim: a bevelled wall, then a catch of light along its top-left only. */}
+      {bodyPath ? (
+        <>
+          <path d={bodyPath} fill="none" stroke={`url(#bevel-${uid})`} strokeWidth={size * 0.055} strokeLinejoin="round" />
+          <path d={shapePath(shape, c, rOuter - size * 0.028) ?? ""} fill="none" stroke={`url(#rimlight-${uid})`} strokeWidth={size * 0.016} strokeLinejoin="round" />
+        </>
+      ) : (
+        <>
+          <circle cx={c} cy={c} r={rOuter} fill="none" stroke={`url(#bevel-${uid})`} strokeWidth={size * 0.055} />
+          <circle cx={c} cy={c} r={rOuter - size * 0.028} fill="none" stroke={`url(#rimlight-${uid})`} strokeWidth={size * 0.016} />
+        </>
       )}
 
       {/* engraved rings (more with finish) — inset copy of the silhouette */}
       {shape === "circle" ? (
-        <circle cx={c} cy={c} r={rOuter - size * 0.055} fill="none" stroke={p.light} strokeOpacity={0.45} strokeWidth={size * 0.01} />
+        <circle cx={c} cy={c} r={rOuter - size * 0.075} fill="none" stroke={p.light} strokeOpacity={0.32} strokeWidth={size * 0.009} />
       ) : (
-        <path d={shapePath(shape, c, rOuter - size * 0.055) ?? ""} fill="none" stroke={p.light} strokeOpacity={0.45} strokeWidth={size * 0.01} strokeLinejoin="round" />
+        <path d={shapePath(shape, c, rOuter - size * 0.075) ?? ""} fill="none" stroke={p.light} strokeOpacity={0.32} strokeWidth={size * 0.009} strokeLinejoin="round" />
       )}
-      {finish >= 2 && <circle cx={c} cy={c} r={rOuter - size * 0.085} fill="none" stroke={p.rim} strokeOpacity={0.35} strokeWidth={size * 0.008} />}
+      {finish >= 2 && <circle cx={c} cy={c} r={rOuter - size * 0.1} fill="none" stroke={p.rim} strokeOpacity={0.4} strokeWidth={size * 0.008} />}
       {guilloche}
 
-      {/* Raised collar → recessed field → engraved motif: three stepped levels,
-          which is what makes the medal read as struck rather than printed. */}
-      <circle cx={c} cy={c} r={rDisc + size * 0.075} fill={`url(#collar-${uid})`} />
-      <circle cx={c} cy={c} r={rDisc + size * 0.075} fill="none" stroke={p.light} strokeOpacity={0.35} strokeWidth={size * 0.008} />
-      {/* the shadow the collar throws down into the field */}
-      <circle cx={c} cy={c} r={rDisc + size * 0.028} fill={p.rim} opacity={0.55} />
-      <circle cx={c} cy={c} r={rDisc} fill={`url(#disc-${uid})`} />
-      <circle cx={c} cy={c} r={rDisc} fill="none" stroke={`url(#inner-${uid})`} strokeWidth={size * 0.045} />
-      {finish >= 3 && <circle cx={c} cy={c} r={rDisc - size * 0.02} fill="none" stroke={p.light} strokeOpacity={0.25} strokeWidth={size * 0.006} />}
+      {/* Raised collar → occlusion → recessed field → engraved motif. Four
+          stepped levels, each with its own light and shadow edge: that stack is
+          what makes the medal read as STRUCK rather than drawn. */}
+      <circle cx={c} cy={c} r={rDisc + size * 0.085} fill={`url(#collar-${uid})`} />
+      <circle cx={c} cy={c} r={rDisc + size * 0.085} fill="none" stroke={`url(#rimlight-${uid})`} strokeWidth={size * 0.014} />
+      <circle cx={c} cy={c} r={rDisc + size * 0.032} fill={`url(#field-${uid})`} />
+      <circle cx={c} cy={c} r={rDisc + size * 0.016} fill="none" stroke={`url(#occl-${uid})`} strokeWidth={size * 0.048} />
+      {finish >= 3 && <circle cx={c} cy={c} r={rDisc - size * 0.03} fill="none" stroke={p.light} strokeOpacity={0.2} strokeWidth={size * 0.006} />}
 
-      {/* Embossed motif: a light lip up-left, a cast shadow down-right, then the
-          face on top. Three passes for the price of one path — it's what turns a
-          flat icon into raised metal. */}
-      <g transform={`translate(${-size * 0.012} ${-size * 0.012})`} opacity={0.55}>
-        <Motif motif={motif} color={p.light} size={size} />
+      {/* Embossed motif: a heavier cast shadow away from the light, a light lip
+          toward it, then the face on top. Three passes off one path — that's what
+          turns a flat icon into raised metal. */}
+      <g transform={`translate(${size * 0.02} ${size * 0.022})`} opacity={0.6}>
+        <Motif motif={motif} color={p.rim} size={size} weight={2.9} />
       </g>
-      <g transform={`translate(${size * 0.014} ${size * 0.014})`} opacity={0.45}>
-        <Motif motif={motif} color={p.rim} size={size} />
+      <g transform={`translate(${-size * 0.014} ${-size * 0.016})`} opacity={0.7}>
+        <Motif motif={motif} color={p.light} size={size} weight={2} />
       </g>
       <Motif motif={motif} color={iconColor} size={size} />
-
-      {/* specular gloss */}
-      <path d={`M ${c - rOuter * 0.82} ${c} A ${rOuter * 0.82} ${rOuter * 0.82} 0 0 1 ${c + rOuter * 0.82} ${c} Z`}
-        fill={`url(#gloss-${uid})`} />
 
       {locked && (
         <g>

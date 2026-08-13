@@ -36,7 +36,7 @@ describe("badges", () => {
     expect(earnedBadgeIds({ ...EMPTY, communityListed: true, closetCount: 14 })).not.toContain("open-closet");
   });
 
-  it("earns the platinum tiers only at the hard thresholds", () => {
+  it("earns the titanium tiers only at the hard thresholds", () => {
     expect(earnedBadgeIds({ ...EMPTY, closetCount: 100, brandsCount: 20, collectionsUsed: 6 })).toContain("grand-wardrobe");
     expect(earnedBadgeIds({ ...EMPTY, closetCount: 99, brandsCount: 20, collectionsUsed: 6 })).not.toContain("grand-wardrobe");
     expect(earnedBadgeIds({ ...EMPTY, refreshCount: 60, outcomeCount: 20 })).toContain("fit-scholar");
@@ -95,7 +95,7 @@ describe("badges", () => {
     expect(earnedBadgeIds({ ...almost, answersAccepted: 3 })).toContain("fit-oracle");
   });
 
-  it("Community Pillar sits at the platinum bar", () => {
+  it("Community Pillar sits at the titanium bar", () => {
     expect(earnedBadgeIds({ ...EMPTY, answersGiven: 80, answerHelpful: 150, answersAccepted: 12 }))
       .toContain("community-pillar");
     expect(earnedBadgeIds({ ...EMPTY, answersGiven: 79, answerHelpful: 150, answersAccepted: 12 }))

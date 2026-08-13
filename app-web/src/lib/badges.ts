@@ -2,7 +2,7 @@
 //
 // Structure (Tracks + Capstones):
 //   • FOUR progression TRACKS, each with 4 tiers (bronze → silver → gold →
-//     platinum): closet-building, feedback loop, outfits, and answering others.
+//     titanium): closet-building, feedback loop, outfits, and answering others.
 //     Tiers give everyday goals and a clear ladder within a category.
 //   • FOUR rare CAPSTONES that sit above the tracks and are genuinely hard —
 //     diamond / obsidian for the ladder's summit, plus amethyst / jade as
@@ -20,7 +20,12 @@
 // rim. See components/BadgeMedallion.tsx.
 
 // The progression ladder, in ascending prestige:
-//   bronze → silver → gold → platinum → diamond → obsidian
+//   bronze → silver → gold → titanium → diamond → obsidian
+//
+// TITANIUM replaced platinum (Session 38). Platinum's pale cool grey was almost
+// indistinguishable from silver two rungs below it, which broke the one job a
+// ladder has: showing rank at a glance. Titanium is mid-dark, violet-warm and
+// brushed — unmistakable against bright silver, yellow gold, and glassy obsidian.
 // plus SPECIAL metals reserved for unusual/rare achievements (not part of the
 // ladder): amethyst (gem purple), jade (agate green), amber (orange).
 // Diamond and above gain agate-style white veining in the medallion art.
@@ -28,7 +33,7 @@ export type Metal =
   | "bronze"
   | "silver"
   | "gold"
-  | "platinum"
+  | "titanium"
   | "diamond"
   | "obsidian"
   // specials
@@ -41,7 +46,7 @@ export const METAL_RANK: Record<Metal, number> = {
   bronze: 1,
   silver: 2,
   gold: 3,
-  platinum: 4,
+  titanium: 4,
   diamond: 5,
   obsidian: 6,
   // specials rank alongside the top of the ladder but stay visually distinct
@@ -126,7 +131,7 @@ export const METAL_STYLE: Record<Metal, { ring: string; bg: string; text: string
   bronze: { ring: "ring-amber-700/40", bg: "bg-gradient-to-br from-amber-600 to-amber-800", text: "text-amber-50", label: "Bronze" },
   silver: { ring: "ring-slate-400/50", bg: "bg-gradient-to-br from-slate-300 to-slate-500", text: "text-slate-900", label: "Silver" },
   gold: { ring: "ring-yellow-500/50", bg: "bg-gradient-to-br from-yellow-400 to-amber-600", text: "text-yellow-950", label: "Gold" },
-  platinum: { ring: "ring-zinc-300/60", bg: "bg-gradient-to-br from-zinc-100 via-zinc-300 to-zinc-400", text: "text-zinc-900", label: "Platinum" },
+  titanium: { ring: "ring-violet-300/40", bg: "bg-gradient-to-br from-[#b9aec4] via-[#6f6675] to-[#3b3542]", text: "text-violet-50", label: "Titanium" },
   diamond: { ring: "ring-cyan-300/60", bg: "bg-gradient-to-br from-cyan-200 via-white to-sky-300", text: "text-sky-900", label: "Diamond" },
   obsidian: { ring: "ring-neutral-700/60", bg: "bg-gradient-to-br from-neutral-800 to-black", text: "text-neutral-100", label: "Obsidian" },
   amethyst: { ring: "ring-violet-400/60", bg: "bg-gradient-to-br from-violet-300 to-purple-700", text: "text-violet-50", label: "Amethyst" },
@@ -196,7 +201,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "grand-wardrobe",
     title: "Grand Wardrobe",
-    metal: "platinum", track: "closet", tier: 4, finish: 4, shape: "shield",
+    metal: "titanium", track: "closet", tier: 4, finish: 4, shape: "shield",
     glyph: "🏛", motif: "obelisk",
     blurb: "100+ items across 20+ brands, in 6+ collections.",
     lore: "A royal wardrobe office — scale that must be administered, not merely owned.",
@@ -246,7 +251,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "fit-scholar",
     title: "Fit Scholar",
-    metal: "platinum", track: "feedback", tier: 4, finish: 4, shape: "circle",
+    metal: "titanium", track: "feedback", tier: 4, finish: 4, shape: "circle",
     glyph: "📐", motif: "tablet",
     blurb: "60+ refreshes and 20+ recorded outcomes.",
     lore: "The surveyor's rod — truth accumulated by patient measurement.",
@@ -294,7 +299,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "atelier-master",
     title: "Atelier Master",
-    metal: "platinum", track: "outfits", tier: 4, finish: 4, shape: "hexagon",
+    metal: "titanium", track: "outfits", tier: 4, finish: 4, shape: "hexagon",
     glyph: "🏆", motif: "loom",
     blurb: "30 outfits and 500+ total likes.",
     lore: "A maison's head atelier — output sustained at the highest standard.",
@@ -347,7 +352,7 @@ export const BADGES: BadgeDef[] = [
   {
     id: "community-pillar",
     title: "Community Pillar",
-    metal: "platinum", track: "help", tier: 4, finish: 4, shape: "quatrefoil",
+    metal: "titanium", track: "help", tier: 4, finish: 4, shape: "quatrefoil",
     glyph: "🏛", motif: "fibula",
     blurb: "80 answers, 150 helpful votes, and 12 accepted answers.",
     lore: "The Roman fibula — the clasp that held the whole garment together.",
