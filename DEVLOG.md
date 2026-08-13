@@ -28,6 +28,92 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 35 — Daily Top Outfits + Top Stylists (ecosystem step 3)
+
+**Context:** step 3 in the sequencing list, described there as *"a leaderboard is
+just a query; huge perceived liveness."* It is indeed just a query — the design
+work was entirely in deciding **what** to count.
+
+**Why a DAILY board beats a lifetime one.** Lifetime totals are a closed shop: the
+top is occupied by whoever arrived first, and a newcomer can never appear, so they
+stop looking. A board that resets at midnight means a look posted this morning can
+top it tonight. So every number here is counted **inside a window** — never
+all-time — and all-time likes are only ever a **tie-break**, which stops an old
+favourite from camping at the top of today's board.
+
+**`src/lib/leaderboard.ts`** (15 new tests) holds every decision:
+- `windowStart()` uses **UTC** day boundaries, not the viewer's local midnight. A
+  leaderboard has to be the *same* board for everyone or two people comparing ranks
+  disagree. `week` is a **rolling** 7 UTC days including today, not an ISO calendar
+  week — a rolling window keeps the board alive on a Monday morning.
+- `STYLIST_WEIGHTS = { like: 1, helpful: 3 }`. A helpful vote on an answer outweighs
+  a like on a look because it **costs the voter more thought** — somebody read a
+  paragraph and decided it was useful. Verified live: an answerer with 1 like + 1
+  helpful (score 4) outranks a poster with 2 likes (score 2).
+- **Follower count is deliberately not an input.** Status here is what you did in
+  the window, not an audience accumulated once.
+- Zero-score members are dropped — appearing on a leaderboard with a score of 0 is
+  worse than not appearing at all.
+- Ties break deterministically (helpful, then username), because a board that
+  reorders itself on refresh reads as broken.
+
+**`/api/leaderboard?window=today|week`.** Counts likes and helpful votes cast
+inside the window, attributing each to the *author* of the look/answer. That
+attribution is why it tallies in JS instead of `groupBy`: the outfit's author isn't
+a scalar on `OutfitLike`. Volumes are tiny now; the comment records that this
+becomes a cached daily rollup if the feed grows (the doc's `Leaderboard` sketch —
+derived, never stored as truth). Deactivated members are filtered at the query
+level on both boards.
+
+**Who may appear:** claimed, non-deactivated members — *not* gated on
+`listedInCommunity`. That flag governs the public **closet directory**, whereas
+posting a look or an answer is already a public act shown in the feed. The board
+exposes nothing a feed row doesn't.
+
+**UI — `components/TodayBoard.tsx`**, a two-card band at the **top** of
+`/community`, above everything static, because it's the "what's happening right
+now" hook. Top looks show the mannequin thumbnail, author and likes-in-window; top
+stylists show **the make-up of the score** ("2 likes · 1 helpful answer"), not just
+the number — same "explain the number" rule the fit engine follows. Rank 1–3 wear
+gold/silver/bronze numerals drawn from the badge `PALETTE`, so the board speaks the
+same metal language as the passport card. Both empty states point at the next
+useful action rather than saying "nothing here", and the header obeys last
+session's rule: fixed heading, fixed tab labels, no reflow on switch.
+
+**What didn't work — a build failure with nothing to do with the code.**
+`next build` failed twice on `next/font` — *"Failed to fetch Fraunces from Google
+Fonts"* — while `curl` to the same URL returned 200 in 0.4s. The stack gave it
+away: `connect ETIMEDOUT 2607:f8b0:400e:c1e::5f:443`, an **IPv6** address. Node was
+preferring IPv6 where this network has no working route; curl had used IPv4.
+`NODE_OPTIONS=--dns-result-order=ipv4first npm run build` built clean immediately.
+Worth knowing that our production build depends on Google Fonts being reachable at
+build time — **self-hosting the two fonts via `next/font/local` would remove that
+dependency entirely**, and both Fraunces and Inter are OFL-licensed so we may
+redistribute them. Left as a deliberate follow-up rather than smuggling a font
+migration into a leaderboard commit.
+
+**Verified.** tsc clean, **107 tests** green (92 → 107), clean production build,
+all 12 pages + 5 APIs 200. Live smoke with three cookie jars: likes and a helpful
+vote produced the expected board, `?window=week` widened it, `?window=decade` fell
+back to today, and **deactivating a member removed both their look and their
+helpful votes from the board in one step**. Smoke accounts deleted afterwards.
+
+**Next up.** Step 4 is deliberately **not** code: run **one $100 contest manually**
+and see whether anyone enters, before building any event tooling. Still open before
+real users: report/flag on posts, and swapping the in-memory rate limiter for
+Upstash Redis.
+
+**Files touched**
+```
+app-web/src/lib/leaderboard.ts, leaderboard.test.ts   (new — windows + weights, 15 tests)
+app-web/src/app/api/leaderboard/route.ts              (new)
+app-web/src/components/TodayBoard.tsx                 (new)
+app-web/src/app/community/page.tsx                    (board band + #looks anchor)
+README.md, DEVLOG.md, docs/design/community-ecosystem.md
+```
+
+---
+
 ## 2026-08-12 · Session 34 — Ask & Answer with receipts (ecosystem step 2) + two UI fixes
 
 **Context:** two bugs reported, then ecosystem step 2. Both bugs turned out to be

@@ -1,8 +1,9 @@
 # Community & Ecosystem — design outline
 
 > **Status: partly built.** This is the thinking-ahead document — nothing here is
-> implemented except what's marked **SHIPPED**. Written 2026-08-12; steps 1 and 2
-> (follow/feed, Ask & Answer) shipped the same day, in Sessions 33 and 34.
+> implemented except what's marked **SHIPPED**. Written 2026-08-12; sequencing steps
+> **1–3** (follow/feed · Ask & Answer · Daily Top + Top Stylists) shipped over
+> Sessions 33–35. Next up is step 4, which is deliberately a *manual* experiment.
 
 ## Why this matters
 
@@ -52,9 +53,17 @@ closets.
 ### Loop 2 — Show & Be Seen (identity → status)
 
 - **OOTD** posts (shipped in primitive form: outfits + likes).
-- **Daily Top Outfits** — a rotating leaderboard, reset daily so newcomers can win.
-- **Top Stylists** — weekly/monthly ranking by *earned* signals (likes per look,
-  answer helpfulness), not by follower count.
+- **Daily Top Outfits** — **SHIPPED** (Session 35). `/api/leaderboard?window=today|week`
+  + the "board" band at the top of `/community`. Everything is counted **inside the
+  window** (UTC day boundaries, so it's one board for everyone; `week` is a rolling
+  7 days), and all-time likes only break ties — an old favourite can't camp at the
+  top of today's board.
+- **Top Stylists** — **SHIPPED** (Session 35). Ranked by *earned* signals in the
+  window: `score = likes + 3 × helpful answers`. A helpful vote outweighs a like
+  because it costs the voter more thought, so an answerer can outrank a
+  better-liked poster. **Follower count is deliberately not an input.** Zero-score
+  members are omitted, and ties break deterministically so ranks don't shuffle on
+  refresh. Weights live in `src/lib/leaderboard.ts`, unit-tested.
 - **Follow / feed** — **SHIPPED** (Session 33). `Follow` table, `/api/follow`,
   `/api/outfits?scope=following`, an `Everyone | Following` switch on `/community`,
   follow buttons on member cards, outfit cards and `/u/[code]`. Both sides must be
@@ -136,7 +145,8 @@ Reuse what exists: the `OutfitLike` voter-key pattern (anonymous-friendly, dedup
    the biggest retention effect, so it went first.
 2. ~~**Ask & Answer** with closet-item attachments~~ — **SHIPPED** Session 34.
    Our unique utility: the answer carries a receipt.
-3. **Daily Top Outfits** — a leaderboard is just a query; huge perceived liveness.
+3. ~~**Daily Top Outfits**~~ — **SHIPPED** Session 35. A leaderboard is just a
+   query; huge perceived liveness. Top Stylists came with it.
 4. **One $100 contest, run manually** — validate that people enter *before* building
    event tooling.
 5. **Event system + commemorative badges** — only after step 4 proves demand.

@@ -7,6 +7,7 @@ import { Button, Card, Field, inputClass } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
 import { OutfitCard } from "@/components/OutfitCard";
 import { FollowButton } from "@/components/FollowButton";
+import { TodayBoard } from "@/components/TodayBoard";
 import { MetalSurface, resolveTheme } from "@/components/MetalCard";
 import type { FeedScope } from "@/lib/feed";
 
@@ -122,6 +123,9 @@ export default function CommunityPage() {
           </Link>
         </p>
 
+        {/* The live band — what's happening right now, before anything static. */}
+        <TodayBoard />
+
         {/* Post yourself to community */}
         <Card className="mt-6 flex items-center justify-between gap-4 bg-brand-tint/40">
           <div>
@@ -154,7 +158,7 @@ export default function CommunityPage() {
             visibly jump when you switch. So the heading text is fixed, the tab
             labels are fixed (the follow count lives in the line above), and the
             caption below always renders one line. */}
-        <div className="mt-8 flex flex-wrap items-center gap-3">
+        <div id="looks" className="mt-8 flex flex-wrap items-center gap-3 scroll-mt-20">
           <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-soft">Latest looks</h2>
           <ScopeTabs scope={scope} onChange={setScope} />
           <Link href="/outfits" className="ml-auto text-xs font-medium text-brand hover:underline">Post an outfit →</Link>
