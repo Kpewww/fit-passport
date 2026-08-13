@@ -417,16 +417,26 @@ export function badgeById(id: string): BadgeDef | undefined {
 
 export type EarnedBadge = BadgeDef & { earnedNow: boolean; progressText: string | null };
 
-export function evaluateBadges(stats: BadgeStats): EarnedBadge[] {
+/**
+ * `grantAll` is the DEMO-ACCOUNT override (User.grantAllBadges): it presents every
+ * badge as earned so the whole prestige ladder can be shown in a pitch. It does
+ * not touch `stats` — the numbers stay honest — and it can only be set by
+ * scripts/seed-admin.mjs, never through an API. Real accounts earn or don't.
+ */
+export function evaluateBadges(stats: BadgeStats, grantAll = false): EarnedBadge[] {
   return BADGES.map((b) => ({
     ...b,
-    earnedNow: !b.locked && !!b.earned?.(stats),
-    progressText: b.locked ? (b.comingSoon ?? null) : (b.progress?.(stats) ?? null),
+    earnedNow: !b.locked && (grantAll || !!b.earned?.(stats)),
+    progressText: b.locked
+      ? (b.comingSoon ?? null)
+      : grantAll
+        ? null
+        : (b.progress?.(stats) ?? null),
   }));
 }
 
-export function earnedBadgeIds(stats: BadgeStats): string[] {
-  return evaluateBadges(stats)
+export function earnedBadgeIds(stats: BadgeStats, grantAll = false): string[] {
+  return evaluateBadges(stats, grantAll)
     .filter((b) => b.earnedNow)
     .sort((a, b) => METAL_RANK[b.metal] - METAL_RANK[a.metal])
     .map((b) => b.id);

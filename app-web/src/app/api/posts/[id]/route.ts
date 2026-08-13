@@ -10,9 +10,11 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { rankAnswers } from "@/lib/posts";
 import { loadEvidence } from "@/lib/evidence";
+import { invisibleUserIds } from "@/lib/blocks";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const user = await getCurrentUser();
+  const hiddenUsers = await invisibleUserIds(user.id);
 
   const post = await prisma.post.findUnique({
     where: { id: params.id },
@@ -42,6 +44,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         where: {
           user: { deactivated: false },
           OR: [{ hidden: false }, { userId: user.id }],
+          ...(hiddenUsers.length ? { userId: { notIn: hiddenUsers } } : {}),
         },
         select: {
           id: true,
@@ -66,8 +69,14 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     },
   });
 
-  // A taken-down question is gone for everyone except its author.
-  if (!post || post.user.deactivated || (post.hidden && post.userId !== user.id)) {
+  // A taken-down question is gone for everyone except its author; a blocked
+  // author's thread is gone too, and says so no differently from a bad id.
+  if (
+    !post ||
+    post.user.deactivated ||
+    (post.hidden && post.userId !== user.id) ||
+    hiddenUsers.includes(post.userId)
+  ) {
     return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 

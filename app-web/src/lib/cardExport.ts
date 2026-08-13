@@ -14,6 +14,8 @@ export type CardExportData = {
   theme: CardTheme;
   holder: string;
   passportNo: string;
+  /** Pre-formatted membership number, e.g. "No. 00000042". */
+  memberNo?: string;
   region: string;
   preferredFit: string;
   /** Optional portrait as a data URL (already client-resized). */
@@ -78,7 +80,8 @@ export function cardSvg(d: CardExportData): string {
   </g>
   <g fill="${t.text}" font-family="Helvetica, Arial, sans-serif">
     <text x="98" y="196" font-size="24" letter-spacing="7" opacity="0.6">${esc(t.label.toUpperCase())}</text>
-    <text x="${W - 96}" y="150" font-size="24" letter-spacing="6" opacity="0.6" text-anchor="end">ISSUED 2026</text>
+    ${d.memberNo ? `<text x="${W - 96}" y="146" font-size="34" letter-spacing="8" opacity="0.85" text-anchor="end" font-family="'Courier New', monospace">${esc(d.memberNo)}</text>` : ""}
+    <text x="${W - 96}" y="196" font-size="24" letter-spacing="6" opacity="0.6" text-anchor="end">ISSUED 2026</text>
   </g>
 
   ${portrait}

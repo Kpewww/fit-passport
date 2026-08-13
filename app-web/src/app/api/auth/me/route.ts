@@ -15,6 +15,10 @@ export async function GET() {
     bodyType: user.bodyType,
     showBodyType: user.showBodyType,
     exportPolicy: user.exportPolicy,
+    memberNo: user.memberNo,
+    // The nav uses this to show the review queue. It's not a secret — knowing
+    // you're an admin doesn't grant anything; lib/admin.ts re-checks server-side.
+    role: user.role,
     canEdit: canEdit(),
   });
 }

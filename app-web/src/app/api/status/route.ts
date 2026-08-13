@@ -70,8 +70,8 @@ export async function GET() {
 
   // Badges + prestige layer.
   const badgeStats = await computeBadgeStats(user.id, user.listedInCommunity);
-  const earned = earnedBadgeIds(badgeStats);
-  const allBadges = evaluateBadges(badgeStats);
+  const earned = earnedBadgeIds(badgeStats, user.grantAllBadges);
+  const allBadges = evaluateBadges(badgeStats, user.grantAllBadges);
   const pinned = parsePinned(user.pinnedBadges).filter((id) => earned.includes(id));
 
   return NextResponse.json({
@@ -88,6 +88,8 @@ export async function GET() {
     username: user.username,
     accountCode: user.accountCode,
     claimed: user.claimed,
+    memberNo: user.memberNo,
+    role: user.role,
     avatarDataUrl: profile?.avatarDataUrl ?? null,
     listedInCommunity: user.listedInCommunity,
     badges: allBadges,

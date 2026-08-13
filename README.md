@@ -29,13 +29,13 @@ npm test               # unit tests (fit engine, badges, extractor, converters�
 npm run typecheck      # tsc --noEmit
 npm run build          # production build
 
+node scripts/seed-admin.mjs                    # create/refresh the admin account
 node scripts/moderate.mjs reports              # open content reports
 node scripts/moderate.mjs unhide POST <id>     # restore something hidden wrongly
 ```
 
-If `npm run build` fails on *"Failed to fetch Fraunces from Google Fonts"* while
-`curl` to the same URL works, your network has no usable IPv6 route and Node is
-preferring it: `NODE_OPTIONS=--dns-result-order=ipv4first npm run build`.
+Fonts are **self-hosted** (`src/app/fonts/`, both OFL 1.1) rather than fetched from
+Google at build time — a build shouldn't depend on a third party being reachable.
 
 Local dev needs **no API keys and no cloud services** — SQLite plus sensible
 fallbacks everywhere. Optional keys unlock extras (see
@@ -58,7 +58,9 @@ without upgrading Node first.
 | **Community** | Opt-in directory of members (each with a metal banner in their card finish), plus an outfit feed you can switch between **Everyone** (most-liked first) and **Following** (people you follow, newest first). Following requires a claimed account on both sides, so follower counts stay earned. |
 | **The board** | Daily **Top looks** and **Top stylists**, counted inside a UTC-day (or rolling-week) window so it resets and a newcomer can win today. Stylist standing is `likes + 3 × helpful answers` — never follower count. |
 | **Ask & Answer** | Fit questions with **receipts** — a question or an answer can attach a garment the author actually owns (brand · size · fit rating · the build it fits), so replies carry evidence, not hunches. Helpful votes, an accepted answer, and a "needs an answer" filter. Lives inside **Community**; threads get their own URL. |
-| **Moderation** | Report any post, answer or look. Three distinct reporters auto-hide it (reversible); hidden content stays visible to its author so it never silently vanishes. `node scripts/moderate.mjs` is the operator takedown/restore path. |
+| **Moderation** | Report any post, answer or look. Three distinct reporters auto-hide it (reversible); hidden content stays visible to its author so it never silently vanishes. Admins get a **review queue** at `/admin` to override the threshold either way; `node scripts/moderate.mjs` is the CLI equivalent. |
+| **Blocking** | Block a person from their profile. Enforced **both ways** — their looks, questions and answers leave your feeds and the directory, and yours leave theirs. Blocking also unfollows in both directions. They're never told. |
+| **Membership number** | Every claimed account gets a sequential `No. 00000042`, embossed on the passport card (and in its PNG export) and shown on the public profile. Issued at claim — an anonymous session isn't a membership yet. |
 | **Badges** | Four 4-tier tracks (bronze → silver → gold → platinum) — wardrobe, fit record, atelier, counsel — plus rare capstones (diamond / obsidian) and special honours (amethyst / jade / amber). Every badge everywhere is a **dimensional struck medal**: real thickness, a back face, a contact shadow, hover to turn it, click to lift it onto an inspect stage that extrudes its actual silhouette in WebGL. There is no flat variant. |
 | **Identity** | Anonymous session → claim an account → a shareable high-entropy account code. Login by username, email, or code. Password reset by email, change password, soft-deactivate. |
 

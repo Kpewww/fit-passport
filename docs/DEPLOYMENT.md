@@ -150,6 +150,24 @@ be addressed before a public launch.
 
 ---
 
+## 4b. Creating the admin account
+
+The review queue at `/admin` needs an account with `role = "ADMIN"`. There is
+deliberately **no API** that grants the role, so it comes from a script run against
+the production database:
+
+```bash
+cd app-web
+DATABASE_URL="<neon pooled url>" ADMIN_USERNAME=AK ADMIN_PASSWORD='<a real password>' \
+  node scripts/seed-admin.mjs
+```
+
+It is idempotent, and it also backfills membership numbers (founder = 1, everyone
+else by join order). **Change the password from the local default before running it
+against production.**
+
+---
+
 ## 5. Verifying a deployment
 
 After the first deploy, walk the critical path:

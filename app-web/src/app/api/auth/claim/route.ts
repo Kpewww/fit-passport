@@ -61,21 +61,18 @@ export async function POST(req: Request) {
 
   const passwordHash = await hashSecret(password);
 
-  const updated = await prisma.user.update({
-    where: { id: user.id },
-    data: {
-      claimed: true,
-      accountCode,
-      username,
-      email,
-      passwordHash,
-      // recoveryHash column stays in the schema for now; explicitly cleared
-      // so any leftover from a previous flow doesn't linger.
-      recoveryHash: null,
-      bodyType: bodyType ?? null,
-      showBodyType: showBodyType ?? true,
-      exportPolicy: exportPolicy ?? "owner",
-    },
+  // Membership number. SQLite only allows autoincrement on a primary key, so we
+  // take max+1 and let the unique constraint reject the (very rare) race — then
+  // retry. Numbers are for CLAIMED accounts: it's a membership number, and an
+  // anonymous session isn't a membership yet.
+  const updated = await claimWithMemberNo(user.id, {
+    accountCode,
+    username,
+    email,
+    passwordHash,
+    bodyType: bodyType ?? null,
+    showBodyType: showBodyType ?? true,
+    exportPolicy: exportPolicy ?? "owner",
   });
 
   setSession({ userId: updated.id, canEdit: true });
@@ -83,6 +80,42 @@ export async function POST(req: Request) {
   return NextResponse.json({
     accountCode: updated.accountCode,
     username: updated.username,
+    memberNo: updated.memberNo,
     hasEmail: !!email,
   });
+}
+
+type ClaimData = {
+  accountCode: string;
+  username: string;
+  email: string | null;
+  passwordHash: string;
+  bodyType: string | null;
+  showBodyType: boolean;
+  exportPolicy: string;
+};
+
+async function claimWithMemberNo(userId: string, data: ClaimData) {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const max = await prisma.user.aggregate({ _max: { memberNo: true } });
+    const memberNo = (max._max.memberNo ?? 0) + 1;
+    try {
+      return await prisma.user.update({
+        where: { id: userId },
+        data: {
+          claimed: true,
+          memberNo,
+          // recoveryHash column stays in the schema for now; explicitly cleared
+          // so any leftover from a previous flow doesn't linger.
+          recoveryHash: null,
+          ...data,
+        },
+      });
+    } catch (err) {
+      // Only a memberNo collision is worth retrying; anything else is a real error.
+      const code = (err as { code?: string })?.code;
+      if (code !== "P2002" || attempt === 4) throw err;
+    }
+  }
+  throw new Error("could not allocate a member number");
 }

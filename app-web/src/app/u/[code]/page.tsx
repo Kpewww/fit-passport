@@ -28,6 +28,7 @@ type PublicView = {
   shopsFor: string | null;
   canExport: boolean;
   followerCount: number;
+  memberNo: number | null;
   collections: Array<{ id: string; name: string; sortIndex: number }>;
   closet: ClosetItem[];
   badges: Array<{ id: string; title: string; metal: string }>;
@@ -47,6 +48,8 @@ export default function ViewByCodePage({
     accountCode: string | null;
     following: string[];
   } | null>(null);
+  const [blocked, setBlocked] = useState<string[] | null>(null);
+  const [blocking, setBlocking] = useState(false);
 
   const loadView = useCallback(() => {
     fetch(`/api/view/${encodeURIComponent(code)}`)
@@ -62,7 +65,27 @@ export default function ViewByCodePage({
     fetch("/api/follow").then((r) => r.json()).then(setFollow).catch(() => setFollow(null));
   }, []);
 
-  useEffect(() => { loadView(); loadFollow(); }, [loadView, loadFollow]);
+  const loadBlocks = useCallback(() => {
+    fetch("/api/block").then((r) => r.json()).then((d) => setBlocked(d.blocked ?? [])).catch(() => setBlocked([]));
+  }, []);
+
+  useEffect(() => { loadView(); loadFollow(); loadBlocks(); }, [loadView, loadFollow, loadBlocks]);
+
+  // Blocking is a decision about a PERSON, so it belongs on their profile rather
+  // than buried in a content menu.
+  async function toggleBlock(next: boolean) {
+    if (!data) return;
+    if (next && !confirm(`Block ${data.username}? Their looks and answers disappear from your feeds, and yours from theirs. They're not told.`)) return;
+    setBlocking(true);
+    await fetch("/api/block", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ accountCode: data.accountCode, block: next }),
+    }).catch(() => {});
+    setBlocking(false);
+    loadBlocks();
+    loadFollow();
+  }
 
   if (notFound) {
     return (
@@ -101,6 +124,11 @@ export default function ViewByCodePage({
               {(data.pinnedBadges.length > 0 || data.badges.length > 0) && (
                 <PinnedSeals ids={data.pinnedBadges.length > 0 ? data.pinnedBadges : data.badges.map((b) => b.id).slice(0, 3)} size={30} />
               )}
+              {data.memberNo != null && (
+                <span className="font-mono text-xs tracking-[0.16em] text-ink-faint">
+                  No. {String(data.memberNo).padStart(8, "0")}
+                </span>
+              )}
               {data.followerCount > 0 && (
                 <span className="text-xs text-ink-faint">
                   {data.followerCount} follower{data.followerCount === 1 ? "" : "s"}
@@ -111,7 +139,7 @@ export default function ViewByCodePage({
           {/* No follow button on your own profile — the server rejects it anyway,
               but offering it would just look broken. */}
           {follow?.accountCode !== data.accountCode && (
-            <div className="ml-auto flex-shrink-0">
+            <div className="ml-auto flex flex-shrink-0 flex-col items-end gap-1.5">
               <FollowButton
                 accountCode={data.accountCode}
                 following={!!follow?.following.includes(data.accountCode)}
@@ -119,6 +147,15 @@ export default function ViewByCodePage({
                 size="md"
                 onChange={() => { loadView(); loadFollow(); }}
               />
+              {follow?.claimed && blocked && (
+                <button
+                  onClick={() => toggleBlock(!blocked.includes(data.accountCode))}
+                  disabled={blocking}
+                  className="text-[11px] text-ink-faint underline-offset-2 hover:text-red-600 hover:underline disabled:opacity-50"
+                >
+                  {blocked.includes(data.accountCode) ? "Unblock" : "Block"}
+                </button>
+              )}
             </div>
           )}
         </div>

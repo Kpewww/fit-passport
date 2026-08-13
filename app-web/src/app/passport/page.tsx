@@ -39,7 +39,7 @@ type Profile = {
   notes: string | null;
 };
 
-type Me = { claimed: boolean; username: string | null; accountCode: string | null };
+type Me = { claimed: boolean; username: string | null; accountCode: string | null; memberNo: number | null; role?: string };
 
 const EMPTY: Profile = {
   sex: null, shopsFor: null,
@@ -117,7 +117,7 @@ export default function PassportPage() {
     ]).then(([p, m, s, o]) => {
       const prof = { ...EMPTY, ...(p.profile ?? {}) };
       setProfile(prof);
-      setMe({ claimed: m.claimed, username: m.username, accountCode: m.accountCode });
+      setMe({ claimed: m.claimed, username: m.username, accountCode: m.accountCode, memberNo: m.memberNo ?? null, role: m.role });
       setShowBodyType(m.showBodyType ?? true);
       setClosetCount(s.closetCount ?? 0);
       setPinnedBadges(s.pinnedBadges ?? []);
@@ -181,6 +181,7 @@ export default function PassportPage() {
         initials={initials}
         holder={holder ?? "—"}
         idLine={idLine ?? "—"}
+        memberNo={me.memberNo}
         bodyLabel={bt.label}
         figureKey={bt.figureKey}
         shape={bt.shape}
@@ -450,6 +451,7 @@ function ViewBook({
   initials,
   holder,
   idLine,
+  memberNo,
   bodyLabel,
   figureKey,
   shape,
@@ -469,6 +471,7 @@ function ViewBook({
   initials: string;
   holder: string;
   idLine: string;
+  memberNo: number | null;
   bodyLabel: string;
   figureKey: Parameters<typeof BodyFigure>[0]["volume"];
   shape: Parameters<typeof BodyFigure>[0]["shape"];
@@ -490,6 +493,9 @@ function ViewBook({
   // The card wears the metal you CHOSE (server-validated as one you own), else
   // your highest earned metal, else the default lapis.
   const theme = resolveTheme(cardMetal, highestMetal(earnedBadges));
+  // Zero-padded to 8, the way a membership number is printed. Em dashes rather
+  // than a fake number while the account is unclaimed — nothing is issued yet.
+  const memberLabel = memberNo == null ? "No. ————————" : `No. ${String(memberNo).padStart(8, "0")}`;
 
   return (
     <main className="flex-1 bg-paper py-12">
@@ -511,6 +517,7 @@ function ViewBook({
                   theme,
                   holder,
                   passportNo: idLine,
+                  memberNo: memberLabel,
                   region: profile.region || "—",
                   preferredFit: fits.join(" · ").toUpperCase() || "—",
                   avatarDataUrl: profile.avatarDataUrl,
@@ -533,6 +540,9 @@ function ViewBook({
               <p className="mt-2 text-[9px] uppercase tracking-[0.3em] opacity-60">{theme.label}</p>
             </div>
             <div className="flex flex-col items-end gap-2">
+              {/* Membership number, embossed like a charge card's. Issued when the
+                  account is claimed, so an anonymous bearer hasn't got one. */}
+              <span className="font-mono text-[13px] tracking-[0.22em] opacity-85">{memberLabel}</span>
               <span className="text-[9px] uppercase tracking-[0.24em] opacity-60">Issued 2026</span>
               {sealBadge && <BadgeSeal id={sealBadge.id} metal={sealBadge.metal} size={40} title={sealBadge.title} />}
             </div>

@@ -34,6 +34,8 @@ export async function GET(
       showBodyType: true,
       exportPolicy: true,
       listedInCommunity: true,
+      memberNo: true,
+      grantAllBadges: true,
       pinnedBadges: true,
       // Only COARSE profile fields are exposed. Precise measurements
       // (chest/waist/height/…) are intentionally NOT selected and must never
@@ -73,7 +75,7 @@ export async function GET(
 
   // Earned + pinned badges (from real stats).
   const stats = await computeBadgeStats(user.id, user.listedInCommunity);
-  const earned = earnedBadgeIds(stats);
+  const earned = earnedBadgeIds(stats, user.grantAllBadges);
   const pinned = parsePinned(user.pinnedBadges).filter((id) => earned.includes(id));
 
   return NextResponse.json({
@@ -87,7 +89,8 @@ export async function GET(
     followerCount: user._count.followers,
     collections: user.collections,
     closet: user.knownGood,
-    badges: evaluateBadges(stats).filter((b) => b.earnedNow),
+    memberNo: user.memberNo,
+    badges: evaluateBadges(stats, user.grantAllBadges).filter((b) => b.earnedNow),
     pinnedBadges: pinned,
   });
 }

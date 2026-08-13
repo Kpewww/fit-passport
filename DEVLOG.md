@@ -28,6 +28,127 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-12 · Session 37 — Admin account + review queue, membership numbers, block list, self-hosted fonts
+
+**Context:** the founder asked for an admin account (`AK`) with every badge and
+"all permissions", a membership number on every account shown on the passport, and
+for me to start on the two things I'd flagged as missing before real users.
+
+### 1. The `AK` admin account — and what "all permissions" honestly means
+
+`node scripts/seed-admin.mjs` creates or refreshes it (idempotent): username **AK**,
+password **12345678**, `role = "ADMIN"`, `grantAllBadges = true`, listed in the
+community, plus a believable starter set — a full fit profile, **4 collections, 12
+closet items across 9 brands, 2 outfits and 1 question**. The closet deliberately
+isn't all 5-star: a wardrobe where everything fits perfectly teaches the engine
+nothing, so there are three 3-star items with notes about *where* they sit wrong.
+
+Three decisions worth defending:
+
+- **There is no API that grants admin.** An endpoint that can mint admins is an
+  endpoint that can be abused into minting admins, and this app has no second
+  factor to fall back on. The role comes from a script you need database
+  credentials to run.
+- **"All permissions" is one permission: the review queue.** Admins deliberately
+  *cannot* read anyone's measurements — the privacy invariant isn't a permission
+  level, it's a property of the data model, and `/api/view/[code]` still doesn't
+  select the cm fields for *anybody*, including AK.
+- **`grantAllBadges` shows every badge without faking a single statistic.**
+  `computeBadgeStats` still returns the truth; only `evaluateBadges(stats, grantAll)`
+  presents them as earned. So the leaderboard, the engine and every other account's
+  badges stay honest. Verified: AK shows 20/20 badges and all 8 metals while its
+  real stats are unchanged.
+
+`/admin` is guarded with a **404, not a 403** — an admin surface shouldn't confirm
+it exists. Non-admins get the same page a typo gets.
+
+### 2. Membership numbers
+
+`User.memberNo`, unique, rendered as **`No. 00000001`** — embossed top-right on the
+metal card (where a charge card carries its number), included in the PNG export, and
+shown on the public profile and in the review queue.
+
+Two constraints shaped it:
+- **SQLite only allows `autoincrement()` on a primary key**, so `/api/auth/claim`
+  takes `max+1` and retries on the unique-constraint violation. Cheap, and correct
+  under the race that constraint exists to catch.
+- **Numbers are issued at CLAIM, not on first visit.** It's a *membership* number;
+  an anonymous session isn't a membership. An unclaimed passport shows
+  `No. ————————` rather than inventing one. The seed script backfills existing
+  accounts by join order, with the founder as **1**.
+
+### 3. Block list
+
+Reporting is for content that breaks the rules; **blocking is for someone you simply
+don't want to see**. Conflating them is how a review queue fills with personal
+friction and buries the actual abuse.
+
+`Block` is one-directional to create and **enforced both ways**: blocking someone
+removes their looks, questions and answers from your feeds *and* removes yours from
+theirs — so it's an exit from someone's attention, not just a way to avert your own
+eyes. It also **unfollows in both directions**, because leaving a follow in place
+would keep pushing them into a feed you just opted out of. They are never told.
+
+`lib/blocks.ts` centralises it (`invisibleUserIds` + `notBlocked`) because a feed
+that forgets the filter leaks exactly the person the user asked never to see again.
+Applied to the outfit feed, questions list, thread answers *and* the thread itself
+(404, indistinguishable from a bad id), the leaderboard, and the directory. The two
+public endpoints use `readSession()` rather than `getCurrentUser()` — minting an
+anonymous account for every scraper that hits `/api/community` would be absurd.
+
+### 4. Self-hosted fonts
+
+`next/font/google` downloads at **build** time, so a deploy fails whenever Google
+Fonts is unreachable — which happened twice last session on a network with no usable
+IPv6 route. Both families now ship as latin variable subsets in `src/app/fonts/`
+(120KB + 73KB), loaded with `next/font/local`. Both are **OFL 1.1**, which permits
+redistribution, and neither is renamed, so no Reserved Font Name condition applies;
+`src/app/fonts/LICENSE.md` records the provenance.
+
+**The proof it worked:** this session's production build succeeded **without** the
+`NODE_OPTIONS=--dns-result-order=ipv4first` workaround, and the served HTML contains
+**zero** references to `fonts.gstatic.com` — the woff2 files come from
+`/_next/static/media/`.
+
+**Verified.** tsc clean, 115 tests green, clean production build, **12 pages + APIs
+200**. Live: AK logs in → `memberNo 1`, `role ADMIN`, 20/20 badges, 8 metals, 12
+items, 2 outfits, 1 question; `/api/admin/reports` **200 for AK, 404 for a
+stranger** (GET and POST). Block smoke: before/after showed B's look and question
+disappearing from AK's feeds, B's thread 404, **and the reverse** — AK's outfits and
+AK's directory entry vanished for B; self-block 400; unblock restored everything.
+Review-queue smoke: 2 reports (below the auto-hide threshold) appeared in the queue
+with reasons and notes → admin **hid it manually** (a human overriding the
+threshold) → gone for strangers → **restore cleared the reports** so three can't
+instantly re-hide it → delete removed it (thread 404). Smoke accounts cleaned;
+`0_init` regenerated (19 tables).
+
+**Next up.** Ecosystem step 4 — run one **$100 contest manually**. Then appeals: a
+hidden author currently learns *that* they were hidden but has no way to reply.
+
+**Files touched**
+```
+app-web/prisma/schema.prisma                  (memberNo, role, grantAllBadges, Block)
+app-web/scripts/seed-admin.mjs                (new — AK + membership backfill)
+app-web/src/lib/admin.ts                      (new — the admin gate, 404 not 403)
+app-web/src/lib/blocks.ts                     (new — both-ways block filter)
+app-web/src/app/api/admin/reports/route.ts    (new — review queue GET/POST)
+app-web/src/app/admin/page.tsx                (new — the queue UI)
+app-web/src/app/api/block/route.ts            (new)
+app-web/src/lib/badges.ts                     (evaluateBadges/earnedBadgeIds grantAll)
+app-web/src/app/api/auth/claim/route.ts       (member number allocation + retry)
+app-web/src/app/api/{status,auth/me,view/[code],community}/route.ts  (memberNo, role, grant)
+app-web/src/app/api/{outfits,posts,posts/[id],leaderboard,community}/route.ts (block filters)
+app-web/src/app/passport/page.tsx             (No. on the card)
+app-web/src/lib/cardExport.ts                 (No. in the PNG)
+app-web/src/app/u/[code]/page.tsx             (No. + Block control)
+app-web/src/components/Nav.tsx                (Review tab for admins)
+app-web/src/app/layout.tsx                    (next/font/local)
+app-web/src/app/fonts/{Inter,Fraunces}.woff2, LICENSE.md   (new)
+README.md, DEVLOG.md, docs/DEPLOYMENT.md, docs/design/community-ecosystem.md
+```
+
+---
+
 ## 2026-08-12 · Session 36 — Badges made genuinely 3D, Ask folded into Community, moderation, Redis rate limits
 
 **Context:** four asks in one batch — badges look flat and their True-3D view was

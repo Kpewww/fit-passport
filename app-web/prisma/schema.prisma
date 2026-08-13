@@ -69,6 +69,27 @@ model User {
   // Null = automatic (their highest earned metal, else the default lapis).
   cardMetal String?
 
+  /// Sequential membership number, shown on the passport as "No. 00000042".
+  /// Assigned when an account is CLAIMED — it's a membership number, so an
+  /// anonymous session hasn't got one yet. Not autoincrement: SQLite only allows
+  /// that on the primary key, so /api/auth/claim takes max+1 and relies on the
+  /// unique constraint to reject the rare race.
+  memberNo Int? @unique
+
+  /// "USER" | "ADMIN". Admins get the moderation review queue at /admin.
+  /// Only settable by scripts/seed-admin.mjs — there is deliberately no API that
+  /// grants this, because an endpoint that can mint admins is an endpoint that
+  /// can be abused into minting admins.
+  role String @default("USER")
+
+  /// DEMO ONLY: show every badge as earned regardless of stats.
+  ///
+  /// This exists so the founder's demo account can present the whole prestige
+  /// ladder in a pitch. It deliberately does NOT fake the underlying stats —
+  /// `computeBadgeStats` still returns the truth — and it can only be set by the
+  /// seed script. Real accounts earn badges or don't have them.
+  grantAllBadges Boolean @default(false)
+
   fitProfile  FitProfile?
   petProfiles PetProfile[]
   knownGood   KnownGoodItem[]
@@ -84,6 +105,31 @@ model User {
   answers     Answer[]
   answerVotes AnswerVote[]
   reports     Report[]
+  blocking    Block[] @relation("blocker")
+  blockedBy   Block[] @relation("blocked")
+}
+
+/// A block. One-directional and private: the blocked person is never told.
+///
+/// Reporting handles content that breaks the rules; blocking handles someone you
+/// simply don't want to see. Both are needed — telling a user to report somebody
+/// they merely find unpleasant is how moderation queues fill with noise.
+///
+/// Effect: their looks, questions and answers disappear from your feeds, and
+/// yours from theirs (blocks are enforced BOTH ways, so blocking is also an exit
+/// from someone else's attention).
+model Block {
+  id String @id @default(cuid())
+
+  blockerId String
+  blocker   User   @relation("blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blockedId String
+  blocked   User   @relation("blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([blockerId, blockedId])
+  @@index([blockedId])
 }
 
 // ---------- Moderation ----------

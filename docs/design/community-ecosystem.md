@@ -141,9 +141,13 @@ Reuse what exists: the `OutfitLike` voter-key pattern (anonymous-friendly, dedup
   brand imagery" is an explicit report reason, because that's our specific legal
   exposure. Rate-limit counters now live in Upstash Redis in production — per-process
   counters were meaningless on serverless.
-- Still needed before launch: a **block list**, a real **review queue** (auto-hide at
-  3 reporters is abusable by 3 coordinated accounts), and a takedown rule for contest
-  entries using scraped/brand imagery.
+- **SHIPPED** (Session 37): the **block list** (`Block`, enforced both ways across
+  feeds, threads, the board and the directory; also unfollows both ways) and the
+  **review queue** at `/admin` — a human can hide or restore regardless of the
+  threshold, and restoring clears the reports so the same three can't re-hide it.
+- Still needed before launch: a takedown rule for contest entries using
+  scraped/brand imagery, and appeals (a hidden author currently sees *that* they
+  were hidden, but has no way to reply).
 
 ---
 

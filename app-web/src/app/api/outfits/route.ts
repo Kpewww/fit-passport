@@ -13,6 +13,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, canEdit } from "@/lib/session";
 import { parseFeedScope, rankFeed } from "@/lib/feed";
+import { invisibleUserIds, notBlocked } from "@/lib/blocks";
 
 const ItemSchema = z.object({
   knownGoodId: z.string().optional().nullable(),
@@ -50,8 +51,12 @@ export async function GET(req: Request) {
     followeeIds = follows.map((f) => f.followeeId);
   }
 
+  // Blocked in either direction → invisible in both directions.
+  const hiddenUsers = mine ? [] : await invisibleUserIds(user.id);
+
   const outfits = await prisma.outfit.findMany({
     where: {
+      ...notBlocked(hiddenUsers),
       // Taken-down looks stay visible to their author, so they know why the look
       // dropped out of the feed.
       OR: [{ hidden: false }, { userId: user.id }],

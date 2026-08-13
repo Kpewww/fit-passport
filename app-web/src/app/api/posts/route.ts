@@ -14,6 +14,7 @@ import { getCurrentUser } from "@/lib/session";
 import { parsePostKind, POST_KINDS } from "@/lib/posts";
 import { loadEvidence, ownsClosetItem } from "@/lib/evidence";
 import { normalizeUrl } from "@/lib/normalizeUrl";
+import { invisibleUserIds, notBlocked } from "@/lib/blocks";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 
 const CreateSchema = z.object({
@@ -35,10 +36,14 @@ export async function GET(req: Request) {
   const unanswered = params.get("unanswered") === "1";
   const mine = params.get("mine") === "1";
 
+  const hiddenUsers = mine ? [] : await invisibleUserIds(user.id);
+
   const posts = await prisma.post.findMany({
     where: {
       // Deactivated authors disappear from every external surface.
       user: { deactivated: false },
+      // …and so do people either side of a block.
+      ...notBlocked(hiddenUsers),
       // Taken-down content stays visible to its AUTHOR — otherwise a post just
       // silently evaporates and they never learn it was reported.
       OR: [{ hidden: false }, { userId: user.id }],

@@ -11,6 +11,8 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { invisibleUserIds } from "@/lib/blocks";
+import { readSession } from "@/lib/session";
 import {
   parseLeaderWindow,
   rankStylists,
@@ -22,6 +24,10 @@ import {
 export async function GET(req: Request) {
   const w = parseLeaderWindow(new URL(req.url).searchParams.get("window"));
   const since = windowStart(w, Date.now());
+  // Public endpoint, so read the session without minting one.
+  const session = readSession();
+  const hiddenUsers = session ? await invisibleUserIds(session.userId) : [];
+  const notBlockedUser = hiddenUsers.length ? { userId: { notIn: hiddenUsers } } : {};
 
   // --- likes cast inside the window, with the look they landed on ---
   const windowLikes = await prisma.outfitLike.findMany({
@@ -29,7 +35,7 @@ export async function GET(req: Request) {
     // the feed where the author can still see their own.
     where: {
       createdAt: { gte: since },
-      outfit: { hidden: false, user: { deactivated: false } },
+      outfit: { hidden: false, user: { deactivated: false }, ...notBlockedUser },
     },
     select: { outfitId: true, outfit: { select: { userId: true } } },
   });
@@ -38,7 +44,7 @@ export async function GET(req: Request) {
   const windowVotes = await prisma.answerVote.findMany({
     where: {
       createdAt: { gte: since },
-      answer: { hidden: false, user: { deactivated: false } },
+      answer: { hidden: false, user: { deactivated: false }, ...notBlockedUser },
     },
     select: { answer: { select: { userId: true } } },
   });

@@ -16,7 +16,7 @@ const LINKS = [
   { href: "/help", label: "Help" },
 ];
 
-type Me = { claimed: boolean; username: string | null };
+type Me = { claimed: boolean; username: string | null; role?: string };
 
 export function Nav() {
   const pathname = usePathname();
@@ -25,7 +25,7 @@ export function Nav() {
   useEffect(() => {
     fetch("/api/auth/me")
       .then((r) => r.json())
-      .then((d) => setMe({ claimed: d.claimed, username: d.username }))
+      .then((d) => setMe({ claimed: d.claimed, username: d.username, role: d.role }))
       .catch(() => {});
   }, [pathname]); // re-check on navigation (e.g. after claim/login)
 
@@ -59,6 +59,17 @@ export function Nav() {
               </Link>
             );
           })}
+          {/* Review queue — only rendered for admins; the API re-checks anyway. */}
+          {me?.role === "ADMIN" && (
+            <Link
+              href="/admin"
+              className={`relative hidden px-3 py-1.5 transition-colors sm:block ${
+                pathname === "/admin" ? "font-medium text-ink" : "text-ink-soft hover:text-ink"
+              }`}
+            >
+              Review
+            </Link>
+          )}
           {/* Account chip */}
           {me?.claimed ? (
             <Link
