@@ -28,6 +28,58 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-14 · Session 39 — Investor-style prospectus + badge design document (with a from-scratch MD→PDF renderer)
+
+**Context:** the founder asked for two written deliverables, each as **Markdown +
+PDF**, in a dedicated folder: (1) a **badge design document** — the reasoning behind
+the system, how each medal's silhouette / colour / centre motif is chosen, and a
+"cost-no-object" section on how I'd design the medals at my most creative *while
+staying restrained and never gaudy*; (2) an **investor-prospectus-style** overview of
+the whole project — problem, product as built, defensibility, target users, status,
+and where it goes next.
+
+### What shipped
+
+- `docs/prospectus/Fit-Passport-Prospectus.md` + `.pdf` — the project prospectus.
+  Sections: the problem (returns cost, closet-as-dataset), the five product pillars,
+  why it's defensible (verified fit context, earned-only prestige, crowd fit-knowledge
+  feeding the engine, privacy-as-feature), the three target audiences and the wedge,
+  a status table (everything built + 115 tests), the honest monetisation options, the
+  forward sequence, and team/context. Framed as a prospectus but with an explicit
+  "not an offer of securities / figures are targets" disclaimer.
+- `docs/prospectus/Badge-Design.md` + `.pdf` — the badge design doc. Why badges exist,
+  the five design principles (legible rank, real depth, escalating-but-restrained
+  ornament, meaningful marks, one-object-everywhere), the track/tier/capstone
+  structure, the full metal ladder with the titanium-not-platinum rationale, every
+  live medal listed with its motif, and a **§6 "if cost were no object"** section:
+  PBR-lit material, quieter/more-precise silhouettes, deep-relief struck centres,
+  near-monochrome palette so the three special metals *mean* something, motion as the
+  luxury signal, and designing the twenty medals as one coherent jewellery-case set.
+
+### The interesting part — rendering the PDFs
+
+No `pandoc` / `weasyprint` / `wkhtmltopdf` on the machine, and no markdown lib in the
+tree. Rather than add a dependency, I wrote **`app-web/scripts/md-to-pdf.mjs`**: a
+small, correct Markdown-subset converter (headings, fenced code, GFM pipe tables,
+blockquotes, single-level lists *with lazy continuation lines*, inline
+bold/italic/code/links) that emits HTML styled in the **product's own design system**
+— self-hosted Fraunces + Inter embedded by absolute `file://` path, cobalt accent,
+porcelain paper, black table headers — then renders it via **headless Chrome
+`--print-to-pdf`**. So the deck reads like the app, not like a generic export.
+`npm run docs:pdf` regenerates both; `--keep-html` keeps the intermediate for
+debugging. First render exposed a parser bug (wrapped list-item continuation lines
+broke out into their own paragraph mid-list) — fixed by absorbing lazy continuations
+into the current `<li>`. Verified both PDFs visually via screenshot.
+
+**Verify:** `tsc` clean · 115/115 tests green · docs render clean. The script lives in
+`scripts/` and isn't imported by the app, so no build-surface impact.
+
+**Next:** deployment execution is still the founder's to do (Neon + Vercel). Ecosystem
+density work continues; the manual $100 contest remains the demand test before event
+tooling.
+
+---
+
 ## 2026-08-13 · Session 38 — Badges made actually dimensional; platinum → titanium
 
 **Context:** the founder, on the previous session's badge work: *"仍然不是立体的,每个

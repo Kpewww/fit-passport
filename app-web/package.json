@@ -10,6 +10,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "db:push": "prisma db push --skip-generate && prisma generate",
+    "docs:pdf": "node scripts/md-to-pdf.mjs --all",
     "db:pg:schema": "node scripts/gen-postgres-schema.mjs",
     "db:pg:migrate": "npm run db:pg:schema && prisma migrate deploy --schema prisma/schema.postgres.prisma",
     "db:pg:generate": "npm run db:pg:schema && prisma generate --schema prisma/schema.postgres.prisma",
