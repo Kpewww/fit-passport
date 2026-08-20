@@ -288,3 +288,83 @@ describe("cross-domain evidence [roadmap: only-shoes → shirt]", () => {
     expect(out.domainNote).toBeNull();
   });
 });
+
+// ---- Session 40 upgrades: multi-dim fit, body-range, garment ease, verdict, confidence ----
+
+describe("multi-dimensional measurement fit", () => {
+  // Two sizes with an identical chest, but one has shoulders that fit and one
+  // doesn't. The shoulder signal must break the tie toward the good-shoulder size.
+  const SIZES = [
+    { label: "M", chestCm: 110, shoulderCm: 45 }, // shoulders match a 44cm body
+    { label: "L", chestCm: 110, shoulderCm: 52 }, // same chest, shoulders too wide
+  ];
+  it("prefers the size whose shoulders fit when chest is tied", () => {
+    const out = recommend(
+      baseInput({ profile: { chestCm: 100, shoulderCm: 44, preferredFit: "regular" }, sizes: SIZES }),
+    );
+    expect(out.best.label).toBe("M");
+  });
+  it("names the binding dimension in the reason", () => {
+    const out = recommend(
+      baseInput({ profile: { chestCm: 100, shoulderCm: 44, preferredFit: "regular" }, sizes: SIZES }),
+    );
+    const L = out.ranked.find((r) => r.label === "L")!;
+    const fit = L.reasons.find((r) => r.signal === "measurement-fit")!;
+    expect(fit.message.toLowerCase()).toContain("shoulder");
+  });
+});
+
+describe("body-measurement range (retailer's intended fit)", () => {
+  // Levi's-style chart: bodyChest min/max is the intended BODY range per size.
+  const LEVIS = [
+    { label: "S", bodyChestMinCm: 92, bodyChestMaxCm: 98, chestCm: 112 },
+    { label: "M", bodyChestMinCm: 98, bodyChestMaxCm: 104, chestCm: 118 },
+    { label: "L", bodyChestMinCm: 104, bodyChestMaxCm: 110, chestCm: 124 },
+  ];
+  it("puts a 101cm body in the M range regardless of the garment chest", () => {
+    const out = recommend(
+      baseInput({ product: { brand: "Levi's", category: "jacket" }, profile: { chestCm: 101, preferredFit: "regular" }, sizes: LEVIS }),
+    );
+    expect(out.best.label).toBe("M");
+  });
+});
+
+describe("garment-aware ease", () => {
+  // Same body + preference: a jacket wants more room than a tee, so its
+  // recommended garment chest (hence size) should be at least as large.
+  const SIZES = [
+    { label: "S", chestCm: 100 },
+    { label: "M", chestCm: 106 },
+    { label: "L", chestCm: 112 },
+    { label: "XL", chestCm: 118 },
+  ];
+  it("recommends a size at least as large for a jacket as for a tee", () => {
+    const tee = recommend(baseInput({ product: { brand: "X", category: "tshirt" }, profile: { chestCm: 96, preferredFit: "regular" }, sizes: SIZES }));
+    const jacket = recommend(baseInput({ product: { brand: "X", category: "jacket" }, profile: { chestCm: 96, preferredFit: "regular" }, sizes: SIZES }));
+    const idx = (l: string) => SIZES.findIndex((s) => s.label === l);
+    expect(idx(jacket.best.label)).toBeGreaterThanOrEqual(idx(tee.best.label));
+  });
+});
+
+describe("ordinal fit verdict", () => {
+  it("labels the smallest offered size 'too small' and the largest 'too big' for a mid body", () => {
+    const out = recommend(baseInput({ profile: { chestCm: 100, preferredFit: "regular" } })); // target ~110
+    const xs = out.ranked.find((r) => r.label === "XS")!; // garment 92
+    const xl = out.ranked.find((r) => r.label === "XL")!; // garment 110
+    expect(xs.verdict).toBe("too small");
+    expect(xl.verdict).toBe("true to size");
+  });
+});
+
+describe("confidence tracks decisiveness", () => {
+  it("gives lower confidence when the top two sizes are near-tied", () => {
+    // Body target sits exactly between two offered garment chests → ambiguous.
+    const tied = recommend(baseInput({ profile: { chestCm: 98, preferredFit: "regular" }, sizes: [
+      { label: "M", chestCm: 106 }, { label: "L", chestCm: 110 }, // target 108, dead center
+    ] }));
+    const decisive = recommend(baseInput({ profile: { chestCm: 90, preferredFit: "regular" }, sizes: [
+      { label: "M", chestCm: 100 }, { label: "L", chestCm: 112 }, // target 100 = M exactly
+    ] }));
+    expect(tied.best.confidence).toBeLessThan(decisive.best.confidence);
+  });
+});

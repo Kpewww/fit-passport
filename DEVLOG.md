@@ -72,17 +72,46 @@ silently dropped before. `FIT_DISABLE_PAGE_FETCH=1` turns off network fetching e
 **Verify:** `tsc` clean · **127** tests green (was 115; +12 in `pageParse.test.ts`) · clean
 `next build` · live smoke with no key → `sizesFrom:"estimated"`, confidence capped 0.4.
 
-### Research (in flight)
+### Research → `docs/design/fit-algorithm-research.md`
 
-Dispatched web-research agents over commercial size-rec products, VTO image models, and
-academic size/fit papers (incl. Chinese channels). Synthesis will land at
-`docs/design/fit-algorithm-research.md`. Headline finding: **all mainstream image VTO
-transfers appearance, not fit** — Google's TryOnDiffusion states verbatim *"we don't
-promise fit."* That validates our measurement-based transparent engine as the real
-differentiator and says: keep size recommendation separate from any try-on visual.
+Web-research agents covered commercial size-rec products, VTO image models, and academic
+size/fit papers; findings synthesised into `docs/design/fit-algorithm-research.md`
+(Chinese-channel survey didn't complete — flagged as a gap). Headline: **all mainstream
+image VTO transfers appearance, not fit** — Google's TryOnDiffusion states verbatim *"we
+don't promise fit."* Validates our measurement-based transparent engine as the real
+differentiator (keep size-rec separate from any try-on visual). Also: the commercial
+"reference-garment" family == our closet anchor, and the academic "returns shift target
+size by ±1" (Zalando η term) == our brand-bias learning — both independently validated.
 
-**Next (founder to pick):** algorithm/confidence-calibration upgrades from the research
-file; real-fetch robustness (more sites, caching, anti-bot); deploy; or a manual contest.
+### Engine upgrade (phase 2, same session) — multi-dimensional, honest fit
+
+Acting on the research, the scoring engine went from **chest-only** to a real
+multi-signal fit model, all still transparent/testable:
+- **Multi-dimensional measurement fit** (`scoreMeasurementFit` replaces `scoreChestFit`):
+  scores chest + waist + shoulder, each a soft Gaussian around a garment target,
+  combined chest-dominant and **renormalised over whichever dims are present** — so
+  chest-only inputs behave EXACTLY as before (all prior tests unchanged), while
+  waist/shoulder refine it. The reason **names the binding dimension** ("chest works,
+  but the shoulders run 3cm narrow"). Signal renamed `chest-fit → measurement-fit`.
+- **Body-range awareness:** when a chart gives `bodyChestMin/Max` (the retailer's
+  intended BODY range, e.g. Levi's), score membership in that range instead of guessing
+  ease off the garment chest. (Was parsed but unused.)
+- **Garment-aware ease** (`easeAdjustForCategory` in sizing.ts): coats/jackets/hoodies
+  add layering room, base layers subtract; mid-weight tops stay at 0 (the tuned
+  baseline — keeps tests exact).
+- **Per-size ordinal verdict** (`too small / snug / true to size / relaxed / too big`),
+  from the signed chest delta — the small/fit/large framing from the literature; shown
+  as a coloured chip per size on `/check`.
+- **Confidence tracks decisiveness:** every size's confidence is scaled by the top-two
+  score margin, so two near-tied sizes (genuine ambiguity) report lower confidence, not
+  just data-sparse ones.
+
+**Verify:** `tsc` clean · **133** tests green (was 127; +6 engine tests for the new
+behaviours) · clean build · live smoke: chest 100 + regular → XL "true to size",
+`measurement-fit` signal + verdicts flowing through `/api/recommend`.
+
+**Next (founder to pick):** real-fetch robustness (more sites, caching, anti-bot);
+Chinese-channel research; deploy; or a manual contest.
 
 ---
 

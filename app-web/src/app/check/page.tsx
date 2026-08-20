@@ -19,6 +19,17 @@ type SizeScore = {
   score: number;
   confidence: number;
   reasons: Array<{ signal: string; weight: number; message: string }>;
+  verdict?: "too small" | "snug" | "true to size" | "relaxed" | "too big";
+};
+
+// Ordinal verdict → chip colour. Green = as you asked; amber = usable but off;
+// neutral for the extremes so the "pick" chip stays the loudest thing in the row.
+const VERDICT_STYLE: Record<string, string> = {
+  "too small": "bg-neutral-100 text-neutral-500",
+  snug: "bg-amber-100 text-amber-800",
+  "true to size": "bg-green-100 text-green-800",
+  relaxed: "bg-amber-100 text-amber-800",
+  "too big": "bg-neutral-100 text-neutral-500",
 };
 
 type SizeOption = {
@@ -604,6 +615,11 @@ function SizeRow({
           {isBest && (
             <span className="rounded-full bg-brand px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
               pick
+            </span>
+          )}
+          {score.verdict && (
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${VERDICT_STYLE[score.verdict] ?? "bg-neutral-100 text-neutral-500"}`}>
+              {score.verdict}
             </span>
           )}
         </div>

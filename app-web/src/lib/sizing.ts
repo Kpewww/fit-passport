@@ -99,6 +99,40 @@ export function easeChestCm(pref: FitPreference): number {
 }
 
 /**
+ * Garment-type adjustment (cm) added to the preference ease. The same "regular"
+ * fit implies more room in a coat you layer under than in a base-layer tee, so
+ * the target garment chest shifts by category. Additive on top of easeChestCm.
+ *
+ * Calibrated so mid-weight tops (tshirt / shirt / polo / sweater) stay at 0 — the
+ * value the engine and its tests were tuned against — and only outerwear and
+ * base layers diverge. Unknown categories default to 0 (a plain top).
+ */
+export function easeAdjustForCategory(category?: string | null): number {
+  if (!category) return 0;
+  switch (category.toLowerCase()) {
+    // Outerwear: worn over other layers, so more room is "regular".
+    case "coat":
+      return 8;
+    case "jacket":
+    case "parka":
+      return 6;
+    case "hoodie":
+    case "sweatshirt":
+      return 4;
+    case "blazer":
+      return 3;
+    // Base / close layers: less room is "regular".
+    case "tank":
+    case "tanktop":
+    case "base-layer":
+      return -3;
+    // Mid-weight tops — the tuned baseline.
+    default:
+      return 0;
+  }
+}
+
+/**
  * How many ladder steps to shift a known-good "true fit" anchor by, given the
  * user's preferred fit. `regular` is the neutral baseline (the anchor size),
  * `slim` sizes down one, `relaxed`/`oversized` size up. This lets the anchor

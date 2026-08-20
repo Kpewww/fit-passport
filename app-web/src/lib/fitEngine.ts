@@ -23,6 +23,7 @@ import {
   alphaDistance,
   alphaIndex,
   easeChestCm,
+  easeAdjustForCategory,
   normalizeToAlpha,
   preferenceShift,
   type AlphaSize,
@@ -80,10 +81,15 @@ export type EngineInput = {
 // ------------ Output contracts ------------
 
 export type Reason = {
-  signal: "chest-fit" | "known-good" | "preference" | "outcome" | "completeness" | "brand-bias";
+  signal: "measurement-fit" | "known-good" | "preference" | "outcome" | "completeness" | "brand-bias";
   weight: number; // contribution to this size's score, positive = supports
   message: string;
 };
+
+// Ordinal fit verdict for a size, from the signed body-vs-garment delta. This is
+// the small/fit/large framing the size-recommendation literature (Sembium,
+// Guigourès, Misra) uses — surfaced per size so the UI can label each option.
+export type FitVerdict = "too small" | "snug" | "true to size" | "relaxed" | "too big";
 
 export type SizeScore = {
   label: string;
@@ -91,6 +97,7 @@ export type SizeScore = {
   score: number; // 0..1 (higher = better)
   confidence: number; // 0..1
   reasons: Reason[];
+  verdict?: FitVerdict; // present when we have enough measurement data to judge
 };
 
 // How relevant the user's closet evidence is to the product's garment domain.
@@ -162,33 +169,122 @@ function hasStrongAnchor(
   );
 }
 
+// A soft Gaussian over how far a garment dimension is from its target, in cm.
+const gauss = (deltaCm: number, sigma: number) =>
+  Math.exp(-(deltaCm * deltaCm) / (2 * sigma * sigma));
+
+// Verdict thresholds (cm) on the CHEST delta from the preference-adjusted target.
+// Negative = garment smaller than you want; positive = roomier than you want.
+function verdictFromDelta(delta: number): FitVerdict {
+  if (delta <= -6) return "too small";
+  if (delta < -2) return "snug";
+  if (delta < 2) return "true to size";
+  if (delta < 6) return "relaxed";
+  return "too big";
+}
+
 /**
- * Score how well one size matches the user's chest circumference given their
- * preferred fit. Uses a soft Gaussian around the target chest = body + ease.
+ * Score how well one size fits, across EVERY measurement we have (chest, waist,
+ * shoulder) — not chest alone. A shirt can match the chest yet fail at the
+ * shoulders, and the size literature models fit as a multi-measurement signal.
+ *
+ * Per dimension we compute a soft-Gaussian sub-score around a garment target
+ * (body + ease); we then combine them chest-dominant, RENORMALISED over whichever
+ * dimensions are actually present. So when only chest data exists the combined
+ * score is identical to the old chest-only behaviour (keeps the engine's tuning
+ * and tests stable); waist/shoulder only ever refine it.
+ *
+ * Two refinements from the research:
+ *   • If the chart gives a BODY chest range (bodyChestMin/Max) — the retailer's own
+ *     intended fit — we score membership in that range instead of guessing ease.
+ *   • The reason names the BINDING dimension (the worst-fitting one), so "matches
+ *     your chest but the shoulders run narrow" is stated, not hidden.
  */
-function scoreChestFit(
+function scoreMeasurementFit(
   size: SizeOptionInput,
-  bodyChestCm: number | null | undefined,
+  profile: EngineInput["profile"],
   pref: FitPreference,
+  category: string | null | undefined,
   W: Weights,
-): { score: number; reason: Reason | null } {
-  if (bodyChestCm == null || size.chestCm == null) {
-    return { score: 0, reason: null };
+): { score: number; reason: Reason | null; verdict?: FitVerdict } {
+  const ease = easeChestCm(pref) + easeAdjustForCategory(category);
+
+  type Dim = { key: string; sub: number; delta: number; weight: number; sigma: number };
+  const dims: Dim[] = [];
+
+  // ---- Chest (primary) ----
+  let chestDelta: number | null = null;
+  if (profile.chestCm != null) {
+    if (size.bodyChestMinCm != null && size.bodyChestMaxCm != null) {
+      // Retailer gives the intended BODY range for this size — score membership.
+      const lo = size.bodyChestMinCm;
+      const hi = size.bodyChestMaxCm;
+      const b = profile.chestCm;
+      let sub: number;
+      let delta: number;
+      if (b >= lo && b <= hi) {
+        // Inside the range: best near the middle, still strong at the edges.
+        const mid = (lo + hi) / 2;
+        delta = b - mid; // for the verdict: below mid = snugger end
+        sub = 0.85 + 0.15 * gauss(b - mid, (hi - lo) / 2 || 1);
+      } else {
+        const outBy = b < lo ? b - lo : b - hi; // signed cm outside the range
+        delta = outBy < 0 ? outBy - 4 : outBy + 4; // push verdict past the edge
+        sub = gauss(outBy, 4);
+      }
+      chestDelta = delta;
+      dims.push({ key: "chest", sub, delta, weight: 0.6, sigma: 4 });
+    } else if (size.chestCm != null) {
+      const target = profile.chestCm + ease;
+      const delta = size.chestCm - target;
+      chestDelta = delta;
+      dims.push({ key: "chest", sub: gauss(delta, 4), delta, weight: 0.6, sigma: 4 });
+    }
   }
-  const targetGarment = bodyChestCm + easeChestCm(pref);
-  const delta = size.chestCm - targetGarment;
-  // sigma ~ 4cm — beyond ~8cm off, score collapses.
-  const sigma = 4;
-  const raw = Math.exp(-(delta * delta) / (2 * sigma * sigma));
-  const msg =
-    Math.abs(delta) < 1.5
-      ? `Chest matches your ${pref} target (${bodyChestCm.toFixed(0)}+${easeChestCm(pref)}cm ease)`
-      : delta > 0
-        ? `Chest ${delta.toFixed(1)}cm larger than your ${pref} target`
-        : `Chest ${(-delta).toFixed(1)}cm smaller than your ${pref} target`;
+
+  // ---- Waist (secondary) — tracks the body a little more tightly than chest ----
+  if (profile.waistCm != null && size.waistCm != null) {
+    const target = profile.waistCm + ease * 0.8;
+    const delta = size.waistCm - target;
+    dims.push({ key: "waist", sub: gauss(delta, 4), delta, weight: 0.22, sigma: 4 });
+  }
+
+  // ---- Shoulder — the least forgiving dimension, so a tighter sigma ----
+  if (profile.shoulderCm != null && size.shoulderCm != null) {
+    const target = profile.shoulderCm + 1; // shoulders want minimal ease
+    const delta = size.shoulderCm - target;
+    dims.push({ key: "shoulder", sub: gauss(delta, 2.5), delta, weight: 0.18, sigma: 2.5 });
+  }
+
+  if (dims.length === 0) return { score: 0, reason: null };
+
+  // Renormalise weights over present dimensions → chest-only stays identical.
+  const wsum = dims.reduce((a, d) => a + d.weight, 0);
+  const raw = dims.reduce((a, d) => a + (d.weight / wsum) * d.sub, 0);
+
+  // Message: lead with the chest verdict, but if a secondary dimension fits
+  // clearly worse, name it as the binding constraint.
+  const worst = dims.slice().sort((a, b) => a.sub - b.sub)[0];
+  const chest = dims.find((d) => d.key === "chest");
+  let msg: string;
+  if (chest && Math.abs(chest.delta) < 1.5 && (worst.key === "chest" || worst.sub > 0.82)) {
+    msg = `Matches your ${pref} target across ${dims.map((d) => d.key).join(" + ")}`;
+  } else if (worst.key !== "chest" && worst.sub < 0.7) {
+    const side = worst.delta > 0 ? "roomy" : "narrow";
+    msg = `Chest works, but the ${worst.key} runs ${Math.abs(worst.delta).toFixed(1)}cm ${side}`;
+  } else {
+    const d = chest?.delta ?? worst.delta;
+    const dimName = chest ? "Chest" : worst.key.charAt(0).toUpperCase() + worst.key.slice(1);
+    msg =
+      d > 0
+        ? `${dimName} ${d.toFixed(1)}cm larger than your ${pref} target`
+        : `${dimName} ${(-d).toFixed(1)}cm smaller than your ${pref} target`;
+  }
+
   return {
     score: raw,
-    reason: { signal: "chest-fit", weight: W.chestFit * raw, message: msg },
+    reason: { signal: "measurement-fit", weight: W.chestFit * raw, message: msg },
+    verdict: chestDelta != null ? verdictFromDelta(chestDelta) : undefined,
   };
 }
 
@@ -415,8 +511,8 @@ export function recommend(input: EngineInput): EngineOutput {
 
   const ranked: SizeScore[] = sizes.map((size) => {
     const reasons: Reason[] = [];
-    const chest = scoreChestFit(size, profile.chestCm, profile.preferredFit, W);
-    if (chest.reason) reasons.push(chest.reason);
+    const fit = scoreMeasurementFit(size, profile, profile.preferredFit, product.category, W);
+    if (fit.reason) reasons.push(fit.reason);
     const kg = scoreKnownGood(size, product, usableKnownGood, profile.preferredFit, W);
     if (kg.reason) reasons.push(kg.reason);
     const outc = scoreOutcome(size, product, outcomes, W);
@@ -434,10 +530,23 @@ export function recommend(input: EngineInput): EngineOutput {
       score,
       confidence,
       reasons,
+      verdict: fit.verdict,
     };
   });
 
   ranked.sort((a, b) => b.score - a.score);
+
+  // Confidence should track how DECISIVE the top pick is, not only how much data
+  // we had: two near-tied sizes is genuine ambiguity (the size-rec literature
+  // frames the pick as "most likely to be kept" — a coin-flip deserves lower
+  // confidence). Scale every size's confidence by the top-two margin.
+  if (ranked.length >= 2) {
+    const margin = ranked[0].score - ranked[1].score;
+    // margin 0 → ×0.6 (ambiguous); margin ≥0.1 → ×1.0 (decisive).
+    const marginFactor = Math.max(0.6, Math.min(1, 0.6 + margin * 4));
+    for (const r of ranked) r.confidence = Math.round(r.confidence * marginFactor * 100) / 100;
+  }
+
   const best = ranked[0];
 
   // Build the plain-language explanation without an LLM. Grounded, template-based.
@@ -451,9 +560,10 @@ export function recommend(input: EngineInput): EngineOutput {
   // user's target implies they'd want to go further, say so plainly instead of
   // leaving a confusing "chest N cm smaller/larger than target" as the only line.
   let edgeNote = "";
-  if (profile.chestCm != null && best.reasons.some((r) => r.signal === "chest-fit")) {
+  if (profile.chestCm != null && best.reasons.some((r) => r.signal === "measurement-fit")) {
     const bestSize = sizes.find((s) => s.label === best.label);
-    const target = profile.chestCm + easeChestCm(profile.preferredFit);
+    const target =
+      profile.chestCm + easeChestCm(profile.preferredFit) + easeAdjustForCategory(product.category);
     if (bestSize?.chestCm != null) {
       const chestVals = sizes
         .map((s) => s.chestCm)
