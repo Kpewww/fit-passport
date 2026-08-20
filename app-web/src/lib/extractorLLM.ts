@@ -17,7 +17,13 @@
 
 import { z } from "zod";
 import { extractFromUrl, type ExtractedProduct, type ExtractedSize } from "./extractor";
-import { parsePage, parseSizeLabels, parseChineseSizeCode, looksBlocked } from "./pageParse";
+import {
+  parsePage,
+  parseSizeLabels,
+  parseChineseSizeCode,
+  findSizeChartImages,
+  looksBlocked,
+} from "./pageParse";
 
 // Garment categories worn on the torso, where a Chinese 号型 code's 型 girth is the
 // intended BODY chest (bust). For these we can turn "160/84A" into a real body-
@@ -103,6 +109,14 @@ const LLMExtractSchema = z.object({
 });
 
 type LLMExtract = z.infer<typeof LLMExtractSchema>;
+
+// Vision (chart-image) schema: a chart image often shows measurements but not the
+// brand/name/category, so identity fields are optional here — we keep our
+// deterministic brand/name/category and take only the sizes from the image.
+const VisionExtractSchema = z.object({
+  sizes: LLMExtractSchema.shape.sizes,
+});
+type VisionExtract = z.infer<typeof VisionExtractSchema>;
 
 /** Ask Claude to extract structured product data from the page's rendered text. */
 async function callLLM(url: string, pageText: string): Promise<LLMExtract | null> {
@@ -247,6 +261,97 @@ function htmlToLlmText(html: string): string {
   return `SIZE TABLES:\n${tablesAsText}\n\nPAGE TEXT:\n${prose}`.slice(0, MAX_PAGE_BYTES);
 }
 
+const MAX_IMAGE_BYTES = 4_000_000; // 4MB — Anthropic image cap headroom
+const VISION_MAX_IMAGES = 2; // how many candidate chart images to try
+
+/** Fetch an image and return it as base64 + media type, or null. */
+async function fetchImageBase64(url: string): Promise<{ data: string; mediaType: string } | null> {
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), PAGE_FETCH_TIMEOUT_MS);
+  try {
+    const r = await fetch(url, { signal: controller.signal, headers: { "user-agent": UA } });
+    if (!r.ok) return null;
+    const mediaType = (r.headers.get("content-type") ?? "").split(";")[0].trim();
+    if (!/^image\/(png|jpe?g|webp|gif)$/i.test(mediaType)) return null;
+    const buf = await r.arrayBuffer();
+    if (buf.byteLength === 0 || buf.byteLength > MAX_IMAGE_BYTES) return null;
+    return { data: Buffer.from(buf).toString("base64"), mediaType };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+/**
+ * Read a size chart that's baked into an IMAGE (the common Chinese-PDP case) with
+ * a vision model. Key-gated; tries the best candidate chart images in turn.
+ *
+ * LEGAL: the image is fetched ONLY to read its numbers. We never store or display
+ * it — brand imagery stays off the platform; only the extracted measurements are
+ * kept. (See the no-scraped-imagery rule.)
+ */
+async function callVisionLLM(imageUrls: string[]): Promise<VisionExtract | null> {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) return null;
+
+  const system =
+    "You read apparel SIZE CHARTS from an image for a fit engine. Extract ONLY the " +
+    "numbers printed in the chart; never recommend a size. Respond with a SINGLE " +
+    "JSON object matching the schema and nothing else. Convert all measurements to " +
+    "CENTIMETRES (values near 30–50 for a chest are inches → ×2.54). Chinese headers: " +
+    "胸围=chest, 腰围=waist, 肩宽=shoulder, 袖长=sleeve, 衣长=length. If the image is " +
+    "not a size chart, return an empty sizes array.";
+  const schemaHint =
+    "Schema: {brand?, productName?, category?, material?, fitNotes?, sizes:[{label, " +
+    "region?, chestCm?, shoulderCm?, sleeveCm?, lengthCm?, bodyChestMinCm?, bodyChestMaxCm?}]}";
+
+  for (const url of imageUrls.slice(0, VISION_MAX_IMAGES)) {
+    const img = await fetchImageBase64(url);
+    if (!img) continue;
+    const controller = new AbortController();
+    const t = setTimeout(() => controller.abort(), PAGE_FETCH_TIMEOUT_MS);
+    try {
+      const r = await fetch(LLM_ENDPOINT, {
+        method: "POST",
+        signal: controller.signal,
+        headers: {
+          "content-type": "application/json",
+          "x-api-key": key,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: LLM_MODEL,
+          max_tokens: 1200,
+          temperature: 0,
+          system,
+          messages: [
+            {
+              role: "user",
+              content: [
+                { type: "image", source: { type: "base64", media_type: img.mediaType, data: img.data } },
+                { type: "text", text: `Read this size chart. ${schemaHint}` },
+              ],
+            },
+          ],
+        }),
+      });
+      if (!r.ok) continue;
+      const j = (await r.json()) as { content?: Array<{ type: string; text?: string }> };
+      const text = (j.content ?? []).find((c) => c.type === "text")?.text ?? "";
+      const match = text.match(/\{[\s\S]*\}/);
+      if (!match) continue;
+      const parsed = VisionExtractSchema.safeParse(JSON.parse(match[0]));
+      if (parsed.success && parsed.data.sizes.length >= 2) return parsed.data;
+    } catch {
+      /* try the next candidate image */
+    } finally {
+      clearTimeout(t);
+    }
+  }
+  return null;
+}
+
 function mapLlmSizes(sizes: LLMExtract["sizes"]): ExtractedSize[] {
   return sizes.map((s) => ({
     label: s.label,
@@ -270,7 +375,10 @@ function mapLlmSizes(sizes: LLMExtract["sizes"]): ExtractedSize[] {
  *      actual size chart (`sizesFrom: "page"`). This alone fixes most real pages.
  *   3. If a table wasn't found but an ANTHROPIC_API_KEY is set, ask the LLM to
  *      read the (table-preserving) page text (`sizesFrom: "page"`).
- *   4. Otherwise fall back to the URL-derived estimate (`sizesFrom: "estimated"`).
+ *   3b. Still nothing? The chart may be an IMAGE (common on Chinese PDPs) — run a
+ *      vision read of the best candidate chart images (`sizesFrom: "page"`).
+ *   4. Else use real offered labels / 号型 codes if present, else the URL-derived
+ *      estimate (`sizesFrom: "estimated"`, except 号型 which yields real body cm).
  */
 export async function extractSmart(url: string): Promise<ExtractedProduct> {
   const deterministic = extractFromUrl(url);
@@ -317,6 +425,18 @@ export async function extractSmart(url: string): Promise<ExtractedProduct> {
         source: { ...out.source, derived: false, sizesFrom: "page" },
       };
       return out;
+    }
+
+    // 3b. Still no chart in the text — the chart may be an IMAGE (common on
+    // Chinese PDPs). Try a vision read of the best candidate chart images.
+    const chartImgs = findSizeChartImages(html, url);
+    if (chartImgs.length > 0) {
+      const vision = await callVisionLLM(chartImgs);
+      if (vision && vision.sizes.length >= 2) {
+        out.sizes = mapLlmSizes(vision.sizes);
+        out.source = { ...out.source, derived: false, sizesFrom: "page" };
+        return out;
+      }
     }
   }
 

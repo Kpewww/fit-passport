@@ -130,6 +130,27 @@ Hardening the fetch so it works on more real sites and stays polite:
 
 `pageParse` tests 12→18; suite **133→139**.
 
+### Image size-chart OCR (A) + regional body prior (D)
+
+Founder greenlit "A和D". **A — vision OCR of image size charts** (the common Chinese-PDP
+case, key-gated): `findSizeChartImages` locates candidate chart `<img>`s (EN+CN tokens,
+lazy `data-src`, absolute-resolved, best-first); `callVisionLLM` fetches up to two and
+asks Claude vision to read the chart into our size schema (cm-normalised, extract-only).
+Wired as step 3b in `extractSmart`, after the text LLM, before falling back to labels.
+**Legal:** the image is fetched ONLY to read its numbers — never stored or displayed, so
+the no-scraped-imagery rule holds. No key ⇒ this simply doesn't run.
+
+**D — regional body prior** (governance-sensitive, done carefully): `regionBodyPrior`
+returns a coarse chest/waist/shoulder from published anthropometric survey means
+(SizeUSA/ANSUR, SizeUK, EN13402, HQL, SizeChina/GB-T), keyed off the self-reported
+`region` + sex. It **never infers or stores ethnicity**, returns null for unknown region
+or unspecified sex (never guesses sex), and is a **prior only** — filled in
+`recommendService` solely when the user has no chest of their own, and any real
+measurement/anchor dominates it. When used, the engine says "regional averages — add
+yours for accuracy" and caps confidence ≤0.4. Grounded per the research doc §4b.
+
+Suite **142→151**. Commits `3981713` (D) + this (A).
+
 ### Chinese-channel research → `docs/design/china-sizing-research.md` + 号型 parser
 
 Research written up. Key takeaways: **cm is the only reliable cross-market key**

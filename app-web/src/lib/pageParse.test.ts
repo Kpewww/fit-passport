@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePage, parseSizeTables, parseSizeLabels, parseChineseSizeCode, looksBlocked, inferGender } from "./pageParse";
+import { parsePage, parseSizeTables, parseSizeLabels, parseChineseSizeCode, findSizeChartImages, looksBlocked, inferGender } from "./pageParse";
 
 describe("pageParse — JSON-LD", () => {
   it("reads brand/name/material from a schema.org Product block", () => {
@@ -190,5 +190,30 @@ describe("pageParse — Chinese 号型 size codes", () => {
     expect(parseChineseSizeCode("M")).toBeNull();
     expect(parseChineseSizeCode("2024/01")).toBeNull(); // girth 1 out of range
     expect(parseChineseSizeCode("EU 48")).toBeNull();
+  });
+});
+
+
+describe("pageParse — size-chart image discovery", () => {
+  const base = "https://shop.example.com/products/coat";
+  it("finds a chart image by class and resolves a relative src to absolute", () => {
+    const html = `<img class="size-chart" src="/img/chart.png"><img src="/img/hero.jpg">`;
+    expect(findSizeChartImages(html, base)).toEqual(["https://shop.example.com/img/chart.png"]);
+  });
+  it("prefers data-src (lazy) over a placeholder src", () => {
+    const html = `<img alt="尺码表" src="/placeholder.gif" data-src="//cdn.example.com/size.jpg">`;
+    expect(findSizeChartImages(html, base)).toEqual(["https://cdn.example.com/size.jpg"]);
+  });
+  it("ranks a stronger chart token first", () => {
+    const html = `
+      <img src="/measurement-note.png" alt="measurement">
+      <img src="/the-size-chart.png" alt="size-chart">`;
+    const out = findSizeChartImages(html, base);
+    expect(out[0]).toContain("the-size-chart.png");
+    expect(out).toHaveLength(2);
+  });
+  it("ignores non-chart images and data: URIs", () => {
+    const html = `<img src="/hero.jpg" alt="model"><img class="size-chart" src="data:image/gif;base64,AAAA">`;
+    expect(findSizeChartImages(html, base)).toEqual([]);
   });
 });

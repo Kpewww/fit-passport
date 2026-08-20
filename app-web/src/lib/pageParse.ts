@@ -368,6 +368,56 @@ export function parseChineseSizeCode(label: string): ChineseSizeCode | null {
 }
 
 // ---------------------------------------------------------------------------
+// 5c. Size-chart IMAGES — Chinese PDPs (and many others) render the chart as a
+//     picture, so we locate candidate chart images for a vision pass upstream.
+// ---------------------------------------------------------------------------
+
+// Tokens that mark an <img> as (probably) the size chart, EN + CN. Ordered by
+// strength so the most chart-specific candidates rank first.
+const CHART_IMG_TOKENS = [
+  "size-chart", "sizechart", "size_chart", "size-guide", "sizeguide", "size-table",
+  "尺码表", "尺寸表", "尺码", "尺寸", "measurement", "measurements", "规格",
+];
+
+/**
+ * Candidate size-chart image URLs on a page, best-first, resolved to absolute.
+ * Pure and testable. Looks at src / data-src / data-original / alt / class / id.
+ * `baseUrl` is the product URL, used to resolve relative and protocol-relative
+ * srcs. Returns [] when nothing looks like a chart.
+ */
+export function findSizeChartImages(html: string, baseUrl: string): string[] {
+  const imgs = html.match(/<img\b[^>]*>/gi) ?? [];
+  const scored: Array<{ url: string; score: number }> = [];
+  const seen = new Set<string>();
+
+  for (const tag of imgs) {
+    const hay = tag.toLowerCase();
+    let score = 0;
+    for (let i = 0; i < CHART_IMG_TOKENS.length; i++) {
+      if (hay.includes(CHART_IMG_TOKENS[i])) score += CHART_IMG_TOKENS.length - i;
+    }
+    if (score === 0) continue;
+    // Prefer a real (often lazy-loaded) source over a 1px placeholder in src.
+    const src =
+      /data-src=["']([^"']+)["']/i.exec(tag)?.[1] ??
+      /data-original=["']([^"']+)["']/i.exec(tag)?.[1] ??
+      /\bsrc=["']([^"']+)["']/i.exec(tag)?.[1];
+    if (!src || /^data:/i.test(src)) continue;
+    let abs: string;
+    try {
+      abs = new URL(src, baseUrl).toString();
+    } catch {
+      continue;
+    }
+    if (seen.has(abs)) continue;
+    seen.add(abs);
+    scored.push({ url: abs, score });
+  }
+
+  return scored.sort((a, b) => b.score - a.score).map((s) => s.url);
+}
+
+// ---------------------------------------------------------------------------
 // 6. Bot-block / challenge detection
 // ---------------------------------------------------------------------------
 
