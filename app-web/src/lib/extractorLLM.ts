@@ -17,19 +17,56 @@
 
 import { z } from "zod";
 import { extractFromUrl, type ExtractedProduct, type ExtractedSize } from "./extractor";
-import { parsePage } from "./pageParse";
+import { parsePage, parseSizeLabels, looksBlocked } from "./pageParse";
 
 const LLM_MODEL = "claude-haiku-4-5-20251001"; // cheapest capable model
 const LLM_ENDPOINT = "https://api.anthropic.com/v1/messages";
 const PAGE_FETCH_TIMEOUT_MS = 8000;
 const MAX_PAGE_BYTES = 600_000; // ~600KB cap after stripping tags
 const MAX_HTML_BYTES = 2_000_000; // raw HTML cap before any parsing
+// A real browser UA. The old self-identifying "FitPassportBot" UA invited 403s;
+// we still fetch politely (one request, cached, timed out, size-capped) but many
+// retail CDNs simply refuse a non-browser agent outright.
 const UA =
-  "Mozilla/5.0 (compatible; FitPassportBot/1.0; +https://github.com/Kpewww/fit-passport)";
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 " +
+  "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
 
 // Fetching real pages can be turned OFF entirely (e.g. CI, offline demos) with
 // FIT_DISABLE_PAGE_FETCH=1 — then we behave exactly like the old URL-derived path.
 const PAGE_FETCH_DISABLED = process.env.FIT_DISABLE_PAGE_FETCH === "1";
+
+// Small in-memory cache of fetched HTML, keyed by URL. Repeated /check on the same
+// product (very common — a user re-checks, tweaks their profile, re-checks) then
+// costs one fetch, not N: faster for the user and far politer to the retailer.
+// Bounded + TTL'd so it can't grow without limit in a long-lived server process.
+const HTML_CACHE_TTL_MS = 10 * 60 * 1000;
+const HTML_CACHE_MAX = 200;
+type CacheEntry = { html: string | null; at: number };
+const htmlCache = new Map<string, CacheEntry>();
+
+function cacheGet(url: string): CacheEntry | undefined {
+  const e = htmlCache.get(url);
+  if (!e) return undefined;
+  if (Date.now() - e.at > HTML_CACHE_TTL_MS) {
+    htmlCache.delete(url);
+    return undefined;
+  }
+  return e;
+}
+
+function cacheSet(url: string, html: string | null): void {
+  if (htmlCache.size >= HTML_CACHE_MAX) {
+    // Drop the oldest inserted key (Map preserves insertion order).
+    const oldest = htmlCache.keys().next().value;
+    if (oldest !== undefined) htmlCache.delete(oldest);
+  }
+  htmlCache.set(url, { html, at: Date.now() });
+}
+
+/** Exposed for tests only — clears the module-level HTML cache. */
+export function __clearPageCache(): void {
+  htmlCache.clear();
+}
 
 // Zod schema the LLM output must conform to. Kept narrow: we only accept fields
 // we know how to use downstream. Anything else the model returns is discarded.
@@ -125,25 +162,51 @@ async function callLLM(url: string, pageText: string): Promise<LLMExtract | null
   }
 }
 
-/** Fetch the raw product-page HTML (capped, timed out). null on any failure. */
-async function fetchPageHtml(url: string): Promise<string | null> {
+/** One fetch attempt. Returns {html} on success, or null on any failure/block. */
+async function fetchOnce(url: string): Promise<string | null> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), PAGE_FETCH_TIMEOUT_MS);
   try {
     const r = await fetch(url, {
       signal: controller.signal,
-      headers: { "user-agent": UA, accept: "text/html,application/xhtml+xml" },
+      redirect: "follow",
+      headers: {
+        // Browser-like headers — many retail CDNs 403 anything that isn't.
+        "user-agent": UA,
+        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
+      },
     });
-    if (!r.ok) return null;
     const ct = r.headers.get("content-type") ?? "";
     if (ct && !ct.includes("html") && !ct.includes("xml")) return null;
-    const html = await r.text();
-    return html.length > MAX_HTML_BYTES ? html.slice(0, MAX_HTML_BYTES) : html;
+    const raw = await r.text();
+    const html = raw.length > MAX_HTML_BYTES ? raw.slice(0, MAX_HTML_BYTES) : raw;
+    // A bot-block / CAPTCHA page isn't the product — treat it as unreachable so we
+    // fall back to an honest estimate rather than parsing a challenge page.
+    if (!r.ok || looksBlocked(r.status, html)) return null;
+    return html;
   } catch {
     return null;
   } finally {
     clearTimeout(t);
   }
+}
+
+/**
+ * Fetch the raw product-page HTML: cached (per URL, TTL'd), one retry on a
+ * transient miss, block-aware. null on any failure (caller falls back honestly).
+ */
+async function fetchPageHtml(url: string): Promise<string | null> {
+  const cached = cacheGet(url);
+  if (cached) return cached.html;
+
+  let html = await fetchOnce(url);
+  // One retry — transient network/CDN hiccups are common; a second try is cheap
+  // and we cache the result either way so we never hammer.
+  if (html === null) html = await fetchOnce(url);
+
+  cacheSet(url, html);
+  return html;
 }
 
 /** Turn raw HTML into LLM-friendly text that PRESERVES table structure. A size
@@ -248,8 +311,15 @@ export async function extractSmart(url: string): Promise<ExtractedProduct> {
     }
   }
 
-  // 4. We read the page for brand/name/gender but found no real chart — the sizes
-  // remain the URL-derived estimate, and we say so.
+  // 4. No measurement chart anywhere. But if the page LISTS its offered sizes
+  // (a <select>/swatch), rank those REAL labels instead of a synthesized ladder —
+  // the closet-anchor, outcome, and brand-bias signals all work on labels, so
+  // this is a genuine improvement even without measurements. Measurements are
+  // still absent, so we remain honest: sizesFrom stays "estimated".
+  const labels = parseSizeLabels(html);
+  if (labels.length >= 2) {
+    out.sizes = labels.map((label) => ({ label }));
+  }
   out.source.sizesFrom = "estimated";
   return out;
 }

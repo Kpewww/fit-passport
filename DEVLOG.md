@@ -110,8 +110,32 @@ multi-signal fit model, all still transparent/testable:
 behaviours) · clean build · live smoke: chest 100 + regular → XL "true to size",
 `measurement-fit` signal + verdicts flowing through `/api/recommend`.
 
-**Next (founder to pick):** real-fetch robustness (more sites, caching, anti-bot);
-Chinese-channel research; deploy; or a manual contest.
+### Real-fetch robustness (phase 1b) + Chinese-channel research (in flight)
+
+Hardening the fetch so it works on more real sites and stays polite:
+- **Browser-like fetch.** Swapped the self-identifying "FitPassportBot" UA (which
+  invited 403s) for a real Chrome UA + `Accept-Language` (en + zh); follow redirects;
+  one retry on a transient miss.
+- **Bot-block detection** (`looksBlocked`, pure/tested): 403/429/503, plus CAPTCHA /
+  Cloudflare/PerimeterX/Akamai challenge markers and Chinese 安全验证/验证码 — a
+  challenge page is treated as unreachable so we fall back to an honest estimate
+  instead of parsing the challenge as if it were the product.
+- **In-memory TTL cache** (per URL, 10 min, bounded 200): a user who re-checks the
+  same product after tweaking their profile now costs ONE fetch, not N — measured
+  ~0.12s (fetch) → ~0.02s (cache hit). Politer to the retailer, faster for the user.
+- **Real offered size labels** (`parseSizeLabels`, pure/tested): when a page has no
+  measurement chart but lists its sizes in a `<select>`/swatch, we rank those REAL
+  labels instead of a synthesized ladder (the anchor / outcome / brand-bias signals
+  all work on labels). Measurements still absent ⇒ provenance stays `estimated`.
+
+`pageParse` tests 12→18; suite **133→139**. Also dispatched a research agent on the
+Chinese channels (Taobao/Tmall 尺码助手, 得物, 京东, SHEIN) + Chinese size-chart page
+structure (the "chart is an image" problem, 160/84A notation) → will land at
+`docs/design/china-sizing-research.md`.
+
+**Next (founder to pick):** deploy; a manual contest; population/anthropometric prior
+(most governance-sensitive — see roadmap); or JS-rendered-chart handling (needs a
+headless browser — currently out of scope).
 
 ---
 

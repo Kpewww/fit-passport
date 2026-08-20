@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePage, parseSizeTables, inferGender } from "./pageParse";
+import { parsePage, parseSizeTables, parseSizeLabels, looksBlocked, inferGender } from "./pageParse";
 
 describe("pageParse — JSON-LD", () => {
   it("reads brand/name/material from a schema.org Product block", () => {
@@ -136,5 +136,44 @@ describe("pageParse — full page merge", () => {
     expect(p.fitNotes).toBe("A relaxed wool coat.");
     expect(p.sizes).toHaveLength(2);
     expect(p.sizes![1]).toMatchObject({ label: "M", chestCm: 102, lengthCm: 112 });
+  });
+});
+
+
+describe("pageParse — offered size labels (no chart)", () => {
+  it("reads sizes from a size-labelled <select>", () => {
+    const html = `<select name="size" id="size">
+      <option value="">Choose a size</option>
+      <option>S</option><option>M</option><option>L</option><option>XL</option>
+    </select>`;
+    expect(parseSizeLabels(html).sort()).toEqual(["L", "M", "S", "XL"]);
+  });
+
+  it("reads sizes from data-size swatch attributes", () => {
+    const html = `<div>
+      <button data-size="S">S</button><button data-size="M">M</button><button data-size="L">L</button>
+    </div>`;
+    expect(parseSizeLabels(html).sort()).toEqual(["L", "M", "S"]);
+  });
+
+  it("ignores placeholder options and non-size selects", () => {
+    const html = `<select name="color"><option>Red</option><option>Blue</option></select>`;
+    expect(parseSizeLabels(html)).toEqual([]);
+  });
+});
+
+describe("pageParse — bot-block detection", () => {
+  it("flags 403/429/503 regardless of body", () => {
+    expect(looksBlocked(403, "<html>ok</html>")).toBe(true);
+    expect(looksBlocked(429, "")).toBe(true);
+    expect(looksBlocked(503, "")).toBe(true);
+  });
+  it("flags CAPTCHA / challenge bodies on a 200", () => {
+    expect(looksBlocked(200, "<html><body>Please verify you are a human. captcha</body></html>")).toBe(true);
+    expect(looksBlocked(200, "<html>cf-challenge platform</html>".replace("platform","challenge-platform"))).toBe(true);
+    expect(looksBlocked(200, "<html>请完成安全验证</html>")).toBe(true);
+  });
+  it("does NOT flag a normal product page", () => {
+    expect(looksBlocked(200, "<html><body><h1>Wool Coat</h1><table>...</table></body></html>")).toBe(false);
   });
 });

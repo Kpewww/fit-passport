@@ -296,6 +296,65 @@ export function parseSizeTables(html: string): ExtractedSize[] | null {
 }
 
 // ---------------------------------------------------------------------------
+// 5. Offered size LABELS (when there's no measurement chart)
+// ---------------------------------------------------------------------------
+
+// Many pages don't put a size *chart* in the initial HTML, but they DO list the
+// offered sizes in a <select>/<option> or a variant list. Those labels alone are
+// still worth a lot: the closet-anchor, outcome, and brand-bias signals all work
+// on labels, so ranking the REAL offered sizes beats a synthesized ladder.
+
+const NON_SIZE_OPTION = /^(select|choose|size|please|请选择|选择|尺码|--|—)$/i;
+
+/** Extract plausible size labels from <select>/<option> and common variant attrs. */
+export function parseSizeLabels(html: string): string[] {
+  const labels = new Set<string>();
+
+  // <option> values inside any <select> that looks size-related.
+  const selects = html.match(/<select[\s\S]*?<\/select>/gi) ?? [];
+  for (const sel of selects) {
+    const isSizeSelect = /size|尺码|规格/i.test(sel);
+    const opts = sel.match(/<option[\s\S]*?<\/option>/gi) ?? [];
+    for (const o of opts) {
+      const txt = stripTags(o);
+      if (!txt || NON_SIZE_OPTION.test(txt)) continue;
+      // In a size-labelled select, take short tokens; otherwise require a size shape.
+      if (isSizeSelect ? txt.length <= 8 : looksLikeSizeLabel(txt)) labels.add(txt.toUpperCase());
+    }
+  }
+
+  // data-size / data-value="S" style attributes on swatch buttons.
+  const attrRe = /data-(?:size|value|option-value)=["']([^"']{1,8})["']/gi;
+  let m: RegExpExecArray | null;
+  while ((m = attrRe.exec(html))) {
+    const v = m[1].trim();
+    if (v && !NON_SIZE_OPTION.test(v) && looksLikeSizeLabel(v)) labels.add(v.toUpperCase());
+  }
+
+  return [...labels];
+}
+
+// ---------------------------------------------------------------------------
+// 6. Bot-block / challenge detection
+// ---------------------------------------------------------------------------
+
+/**
+ * Recognise the response bodies retailers serve to bots — a CAPTCHA/challenge or
+ * an access-denied interstitial — so the caller can fall back honestly instead of
+ * parsing an error page as if it were the product. `status` is the HTTP status.
+ */
+export function looksBlocked(status: number, html: string): boolean {
+  if (status === 403 || status === 429 || status === 503) return true;
+  const head = html.slice(0, 4000).toLowerCase();
+  const enMarkers =
+    /captcha|are you a robot|verify you are (?:a )?human|access denied|request unsuccessful|enable javascript to continue/;
+  const vendorMarkers =
+    /px-captcha|cf-challenge|challenge-platform|distil_r_captcha|akamai|perimeterx/;
+  const cnMarkers = /滑动验证|人机验证|访问被拒绝|安全验证|验证码/;
+  return enMarkers.test(head) || vendorMarkers.test(head) || cnMarkers.test(head);
+}
+
+// ---------------------------------------------------------------------------
 // public entry point
 // ---------------------------------------------------------------------------
 
