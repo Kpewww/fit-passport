@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePage, parseSizeTables, parseSizeLabels, looksBlocked, inferGender } from "./pageParse";
+import { parsePage, parseSizeTables, parseSizeLabels, parseChineseSizeCode, looksBlocked, inferGender } from "./pageParse";
 
 describe("pageParse — JSON-LD", () => {
   it("reads brand/name/material from a schema.org Product block", () => {
@@ -175,5 +175,20 @@ describe("pageParse — bot-block detection", () => {
   });
   it("does NOT flag a normal product page", () => {
     expect(looksBlocked(200, "<html><body><h1>Wool Coat</h1><table>...</table></body></html>")).toBe(false);
+  });
+});
+
+
+describe("pageParse — Chinese 号型 size codes", () => {
+  it("parses height / girth / body-type from 160/84A", () => {
+    expect(parseChineseSizeCode("160/84A")).toEqual({ heightCm: 160, girthCm: 84, bodyType: "A" });
+  });
+  it("handles no letter and spacing", () => {
+    expect(parseChineseSizeCode(" 175 / 92 ")).toEqual({ heightCm: 175, girthCm: 92, bodyType: null });
+  });
+  it("rejects things that aren't size codes", () => {
+    expect(parseChineseSizeCode("M")).toBeNull();
+    expect(parseChineseSizeCode("2024/01")).toBeNull(); // girth 1 out of range
+    expect(parseChineseSizeCode("EU 48")).toBeNull();
   });
 });

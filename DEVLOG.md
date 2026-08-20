@@ -128,10 +128,25 @@ Hardening the fetch so it works on more real sites and stays polite:
   labels instead of a synthesized ladder (the anchor / outcome / brand-bias signals
   all work on labels). Measurements still absent ⇒ provenance stays `estimated`.
 
-`pageParse` tests 12→18; suite **133→139**. Also dispatched a research agent on the
-Chinese channels (Taobao/Tmall 尺码助手, 得物, 京东, SHEIN) + Chinese size-chart page
-structure (the "chart is an image" problem, 160/84A notation) → will land at
-`docs/design/china-sizing-research.md`.
+`pageParse` tests 12→18; suite **133→139**.
+
+### Chinese-channel research → `docs/design/china-sizing-research.md` + 号型 parser
+
+Research written up. Key takeaways: **cm is the only reliable cross-market key**
+(Chinese RTW runs ~2 US sizes small — never translate S/M/L across markets; validates
+our measurement-first design); **per-item/brand fit bias + community "true-to-size"
+sentiment** are high-value (得物 尺码感受, SHEIN runs-small reviews) — extends our
+brand-bias + ecosystem; and **Chinese size charts are frequently IMAGES** (stitched
+detail-page images) → OCR + table reconstruction should be a first-class future path,
+not an edge case. Return rates are high (brand stores 24%→35% 2021–H1 2024; livestream
+~80%) with 尺码不合适 named a leading driver — the pain point is validated.
+
+Shipped the one cheap, grounded win now: **`parseChineseSizeCode`** parses GB/T **号型**
+codes like `160/84A` → { height 160, girth(bust) 84, bodyType A }. For top categories,
+`extractSmart` turns a 号型 label into a real body-chest band (`bodyChestMin/Max`) that
+feeds the range scorer — so these labels carry REAL body measurements, not a guess
+(`sizesFrom:"page"`). Suite **139→142**. (Bottoms' waist 号型 and image-chart OCR are
+noted as future.)
 
 **Next (founder to pick):** deploy; a manual contest; population/anthropometric prior
 (most governance-sensitive — see roadmap); or JS-rendered-chart handling (needs a

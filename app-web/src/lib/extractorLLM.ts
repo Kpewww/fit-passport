@@ -17,7 +17,16 @@
 
 import { z } from "zod";
 import { extractFromUrl, type ExtractedProduct, type ExtractedSize } from "./extractor";
-import { parsePage, parseSizeLabels, looksBlocked } from "./pageParse";
+import { parsePage, parseSizeLabels, parseChineseSizeCode, looksBlocked } from "./pageParse";
+
+// Garment categories worn on the torso, where a Chinese 号型 code's 型 girth is the
+// intended BODY chest (bust). For these we can turn "160/84A" into a real body-
+// chest target the engine's range scorer understands. (Bottoms encode waist, which
+// our size model doesn't yet range-score — left for later.)
+const TOP_CATEGORIES = new Set([
+  "tshirt", "shirt", "polo", "sweater", "hoodie", "sweatshirt",
+  "jacket", "coat", "parka", "blazer", "tank", "dress",
+]);
 
 const LLM_MODEL = "claude-haiku-4-5-20251001"; // cheapest capable model
 const LLM_ENDPOINT = "https://api.anthropic.com/v1/messages";
@@ -318,7 +327,27 @@ export async function extractSmart(url: string): Promise<ExtractedProduct> {
   // still absent, so we remain honest: sizesFrom stays "estimated".
   const labels = parseSizeLabels(html);
   if (labels.length >= 2) {
-    out.sizes = labels.map((label) => ({ label }));
+    const isTop = TOP_CATEGORIES.has((out.category ?? "").toLowerCase());
+    out.sizes = labels.map((label) => {
+      const code = isTop ? parseChineseSizeCode(label) : null;
+      if (code) {
+        // A 号型 label carries the intended BODY bust — feed it to the range
+        // scorer as a small band, so the sizes have REAL measurements, not none.
+        return {
+          label,
+          bodyChestMinCm: code.girthCm - 3,
+          bodyChestMaxCm: code.girthCm + 3,
+        };
+      }
+      return { label };
+    });
+    // If we recovered real body measurements from 号型 codes, the sizes are no
+    // longer a blind estimate — they came off the page's own labels.
+    if (out.sizes.some((s) => s.bodyChestMinCm != null)) {
+      out.source.sizesFrom = "page";
+      out.source.derived = false;
+      return out;
+    }
   }
   out.source.sizesFrom = "estimated";
   return out;

@@ -335,6 +335,39 @@ export function parseSizeLabels(html: string): string[] {
 }
 
 // ---------------------------------------------------------------------------
+// 5b. Chinese 号型 (hào xíng) size codes — e.g. "160/84A"
+// ---------------------------------------------------------------------------
+
+// Chinese national sizing (GB/T) labels a garment by BODY dimensions, not S/M/L:
+//   号 (before the slash) = height in cm
+//   型 (after the slash)  = a key girth in cm — BUST for tops, WAIST for bottoms
+//   letter               = body type by chest−waist drop: Y / A(standard) / B / C
+// So "160/84A" = a 160 cm person, 84 cm bust, standard build. This hands us real
+// BODY measurements per label for free — far better than guessing from S/M/L.
+// (Source: docs/design/china-sizing-research.md.)
+export type ChineseSizeCode = {
+  heightCm: number;
+  girthCm: number; // bust for tops, waist for bottoms (caller decides by category)
+  bodyType: "Y" | "A" | "B" | "C" | null;
+};
+
+export function parseChineseSizeCode(label: string): ChineseSizeCode | null {
+  const m = label.trim().match(/^(\d{2,3})\s*\/\s*(\d{2,3})\s*([YABC])?$/i);
+  if (!m) return null;
+  const heightCm = Number(m[1]);
+  const girthCm = Number(m[2]);
+  // Sanity ranges so a random "160/84" that isn't a size code doesn't slip through
+  // with nonsense: adult height ~140–200, girth ~50–130.
+  if (heightCm < 140 || heightCm > 210 || girthCm < 50 || girthCm > 140) return null;
+  const letter = m[3]?.toUpperCase();
+  return {
+    heightCm,
+    girthCm,
+    bodyType: letter === "Y" || letter === "A" || letter === "B" || letter === "C" ? letter : null,
+  };
+}
+
+// ---------------------------------------------------------------------------
 // 6. Bot-block / challenge detection
 // ---------------------------------------------------------------------------
 
