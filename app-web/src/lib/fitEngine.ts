@@ -68,6 +68,10 @@ export type EngineInput = {
     waistCm?: number | null;
     shoulderCm?: number | null;
     preferredFit: FitPreference;
+    // True when the measurements above are a REGIONAL-AVERAGE prior, not the
+    // user's own (populationPrior.ts). The engine then softens its language and
+    // caps confidence, because a guess about your body isn't a fact about it.
+    chestIsEstimated?: boolean;
   };
   product: {
     brand?: string | null;
@@ -266,9 +270,10 @@ function scoreMeasurementFit(
   // clearly worse, name it as the binding constraint.
   const worst = dims.slice().sort((a, b) => a.sub - b.sub)[0];
   const chest = dims.find((d) => d.key === "chest");
+  const est = profile.chestIsEstimated ? " (regional averages — add yours for accuracy)" : "";
   let msg: string;
   if (chest && Math.abs(chest.delta) < 1.5 && (worst.key === "chest" || worst.sub > 0.82)) {
-    msg = `Matches your ${pref} target across ${dims.map((d) => d.key).join(" + ")}`;
+    msg = `Matches a ${pref} fit for ${dims.map((d) => d.key).join(" + ")}${est}`;
   } else if (worst.key !== "chest" && worst.sub < 0.7) {
     const side = worst.delta > 0 ? "roomy" : "narrow";
     msg = `Chest works, but the ${worst.key} runs ${Math.abs(worst.delta).toFixed(1)}cm ${side}`;
@@ -545,6 +550,12 @@ export function recommend(input: EngineInput): EngineOutput {
     // margin 0 → ×0.6 (ambiguous); margin ≥0.1 → ×1.0 (decisive).
     const marginFactor = Math.max(0.6, Math.min(1, 0.6 + margin * 4));
     for (const r of ranked) r.confidence = Math.round(r.confidence * marginFactor * 100) / 100;
+  }
+
+  // A regional-average body is a prior, not a fact — cap confidence so the number
+  // can never imply we know the user's measurements.
+  if (profile.chestIsEstimated) {
+    for (const r of ranked) r.confidence = Math.min(r.confidence, 0.4);
   }
 
   const best = ranked[0];

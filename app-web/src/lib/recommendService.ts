@@ -5,6 +5,7 @@
 import { prisma } from "./db";
 import { recommend, type EngineInput, type EngineOutput, type OutcomeInput } from "./fitEngine";
 import type { FitPreference } from "./sizing";
+import { regionBodyPrior } from "./populationPrior";
 
 type ProductWithSizes = {
   id: string;
@@ -45,12 +46,21 @@ export async function computeRecommendation(
     .trim() as FitPreference;
   const effectiveFit: FitPreference = overrideFit ?? primaryFit;
 
+  // Cold-start body prior: ONLY when the user has entered no chest of their own.
+  // Any real measurement below dominates it; the prior just gives a first-time
+  // visitor an explainable (low-confidence) answer instead of a pure guess. Keyed
+  // off self-reported region + sex; never inferred, never stored. See
+  // populationPrior.ts for the governance rules and survey sources.
+  const hasOwnChest = profile?.chestCm != null;
+  const prior = hasOwnChest ? null : regionBodyPrior(profile?.region, profile?.sex);
+
   const engineInput: EngineInput = {
     profile: {
-      chestCm: profile?.chestCm ?? null,
-      waistCm: profile?.waistCm ?? null,
-      shoulderCm: profile?.shoulderCm ?? null,
+      chestCm: profile?.chestCm ?? prior?.chestCm ?? null,
+      waistCm: profile?.waistCm ?? prior?.waistCm ?? null,
+      shoulderCm: profile?.shoulderCm ?? prior?.shoulderCm ?? null,
       preferredFit: effectiveFit,
+      chestIsEstimated: !hasOwnChest && prior != null,
     },
     product: { brand: product.brand, category: product.category },
     sizes: product.sizeOptions.map((s) => ({

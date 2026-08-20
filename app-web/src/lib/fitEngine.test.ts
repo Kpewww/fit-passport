@@ -368,3 +368,20 @@ describe("confidence tracks decisiveness", () => {
     expect(tied.best.confidence).toBeLessThan(decisive.best.confidence);
   });
 });
+
+describe("regional-average body prior (chestIsEstimated)", () => {
+  it("still ranks sizes, but caps confidence and flags the estimate", () => {
+    const out = recommend(baseInput({
+      profile: { chestCm: 100, preferredFit: "regular", chestIsEstimated: true },
+    }));
+    expect(out.best.label).toBe("XL"); // same ranking as a real chest 100
+    expect(out.best.confidence).toBeLessThanOrEqual(0.4);
+    const fit = out.best.reasons.find((r) => r.signal === "measurement-fit")!;
+    expect(fit.message.toLowerCase()).toContain("regional averages");
+  });
+  it("a real chest is NOT capped by the estimate rule", () => {
+    const real = recommend(baseInput({ profile: { chestCm: 100, preferredFit: "regular" } }));
+    const est = recommend(baseInput({ profile: { chestCm: 100, preferredFit: "regular", chestIsEstimated: true } }));
+    expect(real.best.confidence).toBeGreaterThan(est.best.confidence);
+  });
+});
