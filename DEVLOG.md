@@ -28,6 +28,64 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-20 · Session 40 — Real product-page fetching, phase 1 (deterministic size-chart parsing) + fit research
+
+**Context:** the Session-39 audit named the #1 gap: sizes were *derived* from the URL
+slug, not *read* from the page (`source.derived===true`). The founder said: make real
+fetching work, and go research every existing AI fit / try-on product and paper
+(Western + Chinese channels) to inform a better algorithm/prompt/logic. Contests,
+deployment, and badge beautification are explicitly deferred.
+
+**Also this session: the project moved.** The founder reorganised the Desktop; the repo
+is now at `~/Desktop/Summer Intern Amazon/Kong Info/Self-Project/` (was
+`~/Desktop/Kong Info/Self-Project/`). Nothing lost — same git repo, just relocated.
+
+### What shipped — deterministic page parsing (no API key needed)
+
+The biggest, cheapest win isn't the LLM — it's that a large share of real retail pages
+already embed machine-readable data we were discarding. New **`src/lib/pageParse.ts`**
+(pure, unit-tested, no network):
+- **JSON-LD** schema.org `Product` → brand / name / material (handles a single node, an
+  array, or an `@graph`; survives a malformed block by falling through to OpenGraph).
+- **OpenGraph / meta** → title, `product:brand`, description → fit notes.
+- **Gender inference** (women-before-men, plus 中文 女装/男装/中性).
+- **`parseSizeTables(html)`** — the high-value piece: reads a real size chart out of an
+  HTML `<table>`. Handles BOTH orientations (sizes-as-rows and sizes-as-columns),
+  English + Chinese measurement headers (chest/bust/胸围, waist/腰围, shoulder/肩宽,
+  sleeve/袖长, length/衣长), **inches→cm** auto-conversion (a chest median <65 reads as
+  inches → ×2.54), collapses ranges ("96-100" → 98), and picks the richest table when a
+  page has several.
+
+**`extractorLLM.extractSmart`** rewritten as honest layers: fixture → trust it; else
+**fetch the real page (no key required)** and parse deterministically — a found table
+means `source.sizesFrom="page"` and we stop (no LLM spend); else, if `ANTHROPIC_API_KEY`
+is set, the LLM reads a **table-preserving** text rendering (`htmlToLlmText` keeps
+`<table>` rows as `a | b | c`; the system prompt is extract-only, never-recommend,
+convert-to-cm); else we fall back to the URL estimate as `sizesFrom="estimated"`.
+
+**Honesty end-to-end:** `ExtractedProduct.source.sizesFrom: "fixture"|"page"|"estimated"`;
+`/check` shows **"✓ sizes read from the page"** vs **"⚠ sizes estimated — confirm the
+chart"**; `/api/check` **caps confidence ≤0.5 when estimated** (applied at the route,
+which knows provenance — the engine stays pure) and now **persists `waistCm`**, which was
+silently dropped before. `FIT_DISABLE_PAGE_FETCH=1` turns off network fetching entirely.
+
+**Verify:** `tsc` clean · **127** tests green (was 115; +12 in `pageParse.test.ts`) · clean
+`next build` · live smoke with no key → `sizesFrom:"estimated"`, confidence capped 0.4.
+
+### Research (in flight)
+
+Dispatched web-research agents over commercial size-rec products, VTO image models, and
+academic size/fit papers (incl. Chinese channels). Synthesis will land at
+`docs/design/fit-algorithm-research.md`. Headline finding: **all mainstream image VTO
+transfers appearance, not fit** — Google's TryOnDiffusion states verbatim *"we don't
+promise fit."* That validates our measurement-based transparent engine as the real
+differentiator and says: keep size recommendation separate from any try-on visual.
+
+**Next (founder to pick):** algorithm/confidence-calibration upgrades from the research
+file; real-fetch robustness (more sites, caching, anti-bot); deploy; or a manual contest.
+
+---
+
 ## 2026-08-14 · Session 39 — Investor-style prospectus + badge design document (with a from-scratch MD→PDF renderer)
 
 **Context:** the founder asked for two written deliverables, each as **Markdown +

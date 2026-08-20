@@ -4,11 +4,18 @@
 > constraints, what already exists, and the current top priority so work resumes
 > instantly. Keep it updated at the end of a session (it mirrors the memory files).
 >
-> **Last updated: Session 39 · 2026-08-14 · commit `65889a6`.**
+> **Last updated: Session 40 · 2026-08-20 · commit `a2bd889`+.**
+>
+> ⚠️ **The project MOVED.** It now lives at
+> `/Users/xkk/Desktop/Summer Intern Amazon/Kong Info/Self-Project/` (was
+> `/Users/xkk/Desktop/Kong Info/Self-Project/`). If a new session's auto-memory
+> looks empty, it's because the memory dir is keyed off the old path — this
+> RESUME.md (in the repo) is the path-independent source of truth; re-save memory
+> from it if needed.
 
 ---
 
-我在继续开发 **Fit Passport** —— CMU 49-800 创业课项目,"消费者自有、可跨店携带的合身档案"Web 应用。代码在 `/Users/xkk/Desktop/Kong Info/Self-Project/`,app 在 `app-web/`,已推私有仓库 **github.com/Kpewww/fit-passport**(keychain 有凭证,可直接 `git push`,提交邮箱 xchkong@gmail.com,**仅仓库内,别用全局 Amazon 邮箱**)。
+我在继续开发 **Fit Passport** —— CMU 49-800 创业课项目,"消费者自有、可跨店携带的合身档案"Web 应用。代码在 `/Users/xkk/Desktop/Summer Intern Amazon/Kong Info/Self-Project/`(**2026-08-20 从 `~/Desktop/Kong Info/Self-Project` 搬来的**),app 在 `app-web/`,已推私有仓库 **github.com/Kpewww/fit-passport**(keychain 有凭证,可直接 `git push`,提交邮箱 xchkong@gmail.com,**仅仓库内,别用全局 Amazon 邮箱**)。
 
 **【沟通约定】全程中文聊天;git commit message 用英文;DEVLOG.md 用英文。**
 
@@ -23,7 +30,9 @@
 - **最大软肋 = 尺码是"推断"不是"真读页面"**:`/api/check` 返回里 `rawJson.source.derived===true`——没配 `ANTHROPIC_API_KEY` 时,尺码表是从 URL slug + 品牌规律 + fixtures 拼的,**没真去 fetch 那个商品页**。这动摇了"paste any product link"的核心承诺。
 - **两个美术小项**:徽章缩略图 motif 在 ~64px 下几乎看不清;`/check` 粘链接前下半屏偏空。
 
-**下一步想做:【在这里写】**(候选,按优先级:① 让 extractor 有 key 时真 fetch+解析商品页、无 key 优雅回退——即 `extractorLLM.ts`;② 部署上线 Vercel+Neon 拿真实用户;③ 手动办一场 $100 搭配赛验证需求。)
+**Session 40 (2026-08-20) 做了:真实商品页抓取的第一阶段。** 新增 `src/lib/pageParse.ts`(纯函数,无 key、无网络即可测):解析 JSON-LD(schema.org Product)+ OpenGraph/meta + **HTML `<table>` 里的真实尺码表**(支持行/列两种朝向、英寸→厘米、范围取中值、中文 胸围/腰围/肩宽)。`extractorLLM.extractSmart` 重写为分层:命中 fixture→信任;否则 fetch 真页→确定性解析(免费拿到真尺码表→`sizesFrom:"page"`);解析不到表且有 key→LLM 读"保留表格结构"的文本;都不行→URL 估算→`sizesFrom:"estimated"`。`ExtractedProduct.source` 加了 `sizesFrom:"fixture"|"page"|"estimated"`;`/check` 据此显示 **"✓ sizes read from the page"** 或 **"⚠ sizes estimated — confirm the chart"**;估算时置信度封顶 0.5。修了 `/api/check` **漏存 waistCm** 的老 bug。新增 12 个解析器测试(共 **127** 绿)。可用 `FIT_DISABLE_PAGE_FETCH=1` 关闭真实抓取。**同时派了研究 agent 扒现有合身/试衣产品与论文**,产出会写到 `docs/design/fit-algorithm-research.md`(若还没落盘就是子agent还在跑)。关键结论:主流图像试衣只做外观迁移、不预测真合身(Google TryOnDiffusion 官方"we don't promise fit"),印证我们**基于测量的透明引擎才是差异化**。
+
+**下一步候选:** ① 依据 `docs/design/fit-algorithm-research.md` 升级**打分算法/置信度校准/尺码系统归一化**(研究里最高优先级项);② 真实抓取的健壮性(更多站点、反爬、缓存);③ 部署上线 Vercel+Neon 拿真实用户;④ 手动办一场 $100 搭配赛。**用户还没拍板下一个,先看研究文件再定。**
 
 **重要约束(不可违反):**
 1. fit 引擎是**透明打分不是 LLM**(LLM 只抽商品数据,永不决定尺码)。

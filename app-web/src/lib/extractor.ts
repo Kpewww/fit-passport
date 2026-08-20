@@ -47,6 +47,12 @@ export type ExtractedProduct = {
     host: string;
     derived: boolean; // true = layer-2 URL-derived, false = curated fixture
     slug?: string;
+    // Where the SIZE CHART specifically came from — this is what the audit cared
+    // about, and what /check surfaces so a user knows whether to trust the sizes:
+    //   "fixture"   — hand-verified demo product
+    //   "page"      — read off the real product page (JSON-LD/table or LLM)
+    //   "estimated" — synthesized from the brand + category (no real chart found)
+    sizesFrom?: "fixture" | "page" | "estimated";
   };
 };
 
@@ -301,7 +307,7 @@ export function extractFromUrl(url: string): ExtractedProduct {
   // Layer 1: curated fixture (exact demo products).
   for (const f of FIXTURES) {
     if (f.match.test(url)) {
-      return { ...f.data, source: { url, host, derived: false, slug } };
+      return { ...f.data, source: { url, host, derived: false, slug, sizesFrom: "fixture" } };
     }
   }
 
@@ -331,7 +337,7 @@ export function extractFromUrl(url: string): ExtractedProduct {
       material: "See product page",
       fitNotes: brandProfile.fitNotes,
       sizes: buildSizes(brandProfile, category),
-      source: { url, host, derived: true, slug },
+      source: { url, host, derived: true, slug, sizesFrom: "estimated" },
     };
   }
 
@@ -353,7 +359,7 @@ export function extractFromUrl(url: string): ExtractedProduct {
     material: "Unknown",
     fitNotes: genericProfile.fitNotes,
     sizes: buildSizes(genericProfile, category),
-    source: { url, host, derived: true, slug },
+    source: { url, host, derived: true, slug, sizesFrom: "estimated" },
   };
 }
 

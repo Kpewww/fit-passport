@@ -54,6 +54,7 @@ export async function POST(req: Request) {
           label: s.label,
           region: s.region,
           chestCm: s.chestCm,
+          waistCm: s.waistCm, // was dropped before — the parser now reads waist rows
           shoulderCm: s.shoulderCm,
           sleeveCm: s.sleeveCm,
           lengthCm: s.lengthCm,
@@ -66,6 +67,16 @@ export async function POST(req: Request) {
   });
 
   const { result, effectiveFit } = await computeRecommendation(user.id, product);
+
+  // Honesty gate: if the size chart was ESTIMATED from the brand (no real chart
+  // on the page), we cannot be highly confident — cap it so the number matches
+  // the "⚠ sizes estimated" banner the UI shows. The engine stays pure; the
+  // provenance discount is applied here, at the boundary that knows provenance.
+  if (extracted.source.sizesFrom === "estimated") {
+    const CAP = 0.5;
+    result.best.confidence = Math.min(result.best.confidence, CAP);
+    result.ranked = result.ranked.map((r) => ({ ...r, confidence: Math.min(r.confidence, CAP) }));
+  }
 
   const rec = await prisma.fitRecommendation.create({
     data: {

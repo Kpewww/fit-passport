@@ -44,7 +44,13 @@ type Product = {
   sizeOptions: SizeOption[];
 };
 
-type Source = { url: string; host: string; derived: boolean; slug?: string };
+type Source = {
+  url: string;
+  host: string;
+  derived: boolean;
+  slug?: string;
+  sizesFrom?: "fixture" | "page" | "estimated";
+};
 
 type CheckResponse = {
   product: Product;
@@ -434,14 +440,23 @@ function Result({
     <section className="mt-8 space-y-5 animate-fade-in-up">
       {/* PROVENANCE — prove we read THIS page */}
       <Card>
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex flex-wrap items-center gap-2 text-xs">
           <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 font-medium text-green-800">
             <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
             Read from {source.host || "the page"}
           </span>
-          {source.derived && (
-            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-ink-faint">
-              auto-extracted · confirm below
+          {/* Be honest about where the SIZE CHART came from — an estimated chart
+              is a guess, and the user deserves to know before trusting it. */}
+          {source.sizesFrom === "estimated" ? (
+            <span
+              className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-900"
+              title="We couldn't find a real size chart on the page, so these measurements are estimated from the brand and category. Check them against the retailer's chart, or add the real numbers."
+            >
+              ⚠ sizes estimated — confirm the chart
+            </span>
+          ) : (
+            <span className="rounded-full bg-green-50 px-2 py-0.5 font-medium text-green-700">
+              ✓ sizes read from the page
             </span>
           )}
         </div>
