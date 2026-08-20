@@ -126,6 +126,28 @@ scale we don't have), or an image/VTO fit model (the whole field says image ≠ 
 
 ---
 
+## 4b. Future direction — population/anthropometric sizing prior (responsible)
+
+Body-measurement distributions differ by population, and national size systems were
+built on region-specific anthropometric surveys — so a **cold-start prior keyed off the
+user's self-reported region** is a legitimate, research-grounded refinement. It must be
+done carefully:
+
+- **Ground it in published survey data**, not assumptions: SizeUSA / SizeUK / SizeChina,
+  Japan's HQL body-size database, and the US military **ANSUR II** dataset are the
+  standard, citable anthropometric references.
+- **Use the existing `region` field** (US/EU/UK/JP/CN) as the key. **Never infer, ask
+  for, or store ethnicity**; region ≠ ethnicity and we don't want a proxy that
+  stereotypes. Keep it opt-in.
+- **Prior only, always overridden.** It nudges a cold-start recommendation when we have
+  little else; the user's own measurements and closet anchors always dominate. It never
+  narrows what a person is shown.
+- Transparent as ever: if the prior moves a size, the reason says so ("regional sizing
+  tends to run smaller in the shoulders"), with the survey as the cited basis.
+
+This is the most governance-sensitive feature on the roadmap; build it only with real
+survey citations and the opt-in/override guarantees above.
+
 ## 5. Known gaps / to verify later
 
 - **Chinese channels (Taobao/Tmall 尺码助手, 得物, 京东, SHEIN) not surveyed** — the
