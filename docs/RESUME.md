@@ -4,7 +4,7 @@
 > constraints, what already exists, and the current top priority so work resumes
 > instantly. Keep it updated at the end of a session (it mirrors the memory files).
 >
-> **Last updated: Session 40 · 2026-08-20 · commit `a2bd889`+.**
+> **Last updated: Session 40 · 2026-08-20 · commit `567b869`+ (real-page fetch + multi-dim engine + region prior + vision OCR + heavy tests).**
 >
 > ⚠️ **The project MOVED.** It now lives at
 > `/Users/xkk/Desktop/Summer Intern Amazon/Kong Info/Self-Project/` (was
@@ -19,7 +19,7 @@
 
 **【沟通约定】全程中文聊天;git commit message 用英文;DEVLOG.md 用英文。**
 
-**技术栈(锁 Node 18.20,别升级):** Next.js 14.2.15 App Router + React 18 + TS + Tailwind 3 + Prisma 5.22 + SQLite + Zod + Vitest;动效 Framer Motion + Lenis;three.js 仅徽章 inspect 懒加载。命令:`npm run dev`、`npm run typecheck`、`npm test`(**115 个**)、`npm run build`、改 schema 后 `npm run db:push`、生成文档 PDF `npm run docs:pdf`。**每轮结束务必:tsc + test + build + live smoke 全过 → commit & push → 更新 DEVLOG + memory。**
+**技术栈(锁 Node 18.20,别升级):** Next.js 14.2.15 App Router + React 18 + TS + Tailwind 3 + Prisma 5.22 + SQLite + Zod + Vitest;动效 Framer Motion + Lenis;three.js 仅徽章 inspect 懒加载。命令:`npm run dev`、`npm run typecheck`、`npm test`(**172 个**)、`npm run build`、改 schema 后 `npm run db:push`、生成文档 PDF `npm run docs:pdf`。**每轮结束务必:tsc + test + build + live smoke 全过 → commit & push → 更新 DEVLOG + memory。**
 
 **动手前必读**:memory 里的 `project-fit-passport-build-state`(架构/坑,读它)、`project-fit-passport-roadmap`(顶部有第一优先级)、`project-fit-passport-design-system`、`project-fit-passport-deployment`、`project-fit-passport-community-ecosystem`;仓库里 `README.md`、`DEVLOG.md`(到 Session 39)、`docs/DEPLOYMENT.md`、`docs/design/community-ecosystem.md`、`docs/prospectus/`(招股书 + 徽章设计文档,各 md+pdf)。
 
@@ -31,6 +31,8 @@
 - **两个美术小项**:徽章缩略图 motif 在 ~64px 下几乎看不清;`/check` 粘链接前下半屏偏空。
 
 **Session 40 (2026-08-20) 做了:真实商品页抓取的第一阶段。** 新增 `src/lib/pageParse.ts`(纯函数,无 key、无网络即可测):解析 JSON-LD(schema.org Product)+ OpenGraph/meta + **HTML `<table>` 里的真实尺码表**(支持行/列两种朝向、英寸→厘米、范围取中值、中文 胸围/腰围/肩宽)。`extractorLLM.extractSmart` 重写为分层:命中 fixture→信任;否则 fetch 真页→确定性解析(免费拿到真尺码表→`sizesFrom:"page"`);解析不到表且有 key→LLM 读"保留表格结构"的文本;都不行→URL 估算→`sizesFrom:"estimated"`。`ExtractedProduct.source` 加了 `sizesFrom:"fixture"|"page"|"estimated"`;`/check` 据此显示 **"✓ sizes read from the page"** 或 **"⚠ sizes estimated — confirm the chart"**;估算时置信度封顶 0.5。修了 `/api/check` **漏存 waistCm** 的老 bug。新增 12 个解析器测试(共 **127** 绿)。可用 `FIT_DISABLE_PAGE_FETCH=1` 关闭真实抓取。**同时派了研究 agent 扒现有合身/试衣产品与论文**,产出会写到 `docs/design/fit-algorithm-research.md`(若还没落盘就是子agent还在跑)。关键结论:主流图像试衣只做外观迁移、不预测真合身(Google TryOnDiffusion 官方"we don't promise fit"),印证我们**基于测量的透明引擎才是差异化**。
+>
+> **Session 40 续(全部已做并推送):** 引擎升级为**多维(胸+腰+肩)** + 号型/body-range + 品类 ease + 有序 verdict + 置信度按 margin 缩放;抓取加固(真实 Chrome UA、反爬识别 `looksBlocked`、按 URL 的 TTL 缓存、真实在售标签、失败重试);**图片尺码表视觉 OCR**(key-gated,只读数字不存图);**人群体型先验** `populationPrior.ts`(普查均值、按 region+sex、只作低置信先验、绝不推断人种);研究文件 `docs/design/fit-algorithm-research.md` + `docs/design/china-sizing-research.md`。测试 **115→172**。
 
 **下一步候选:** ① 依据 `docs/design/fit-algorithm-research.md` 升级**打分算法/置信度校准/尺码系统归一化**(研究里最高优先级项);② 真实抓取的健壮性(更多站点、反爬、缓存);③ 部署上线 Vercel+Neon 拿真实用户;④ 手动办一场 $100 搭配赛。**用户还没拍板下一个,先看研究文件再定。**
 

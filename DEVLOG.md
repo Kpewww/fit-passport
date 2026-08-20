@@ -130,6 +130,28 @@ Hardening the fetch so it works on more real sites and stays polite:
 
 `pageParse` tests 12→18; suite **133→139**.
 
+### Detailed test hardening
+
+Broadened coverage of the Session-40 work, especially the parts that were only
+unit-tested at the leaf level:
+- **`extractorLLM.test.ts` (new, 9 tests): the whole `extractSmart` pipeline with the
+  network STUBBED** (`vi.stubGlobal("fetch")`, key unset so the deterministic path
+  runs). Covers: real `<table>` → `sizesFrom:"page"`; JSON-LD identity + table; a 403
+  and a 200-CAPTCHA both → honest `"estimated"`; offered `<select>` labels ranked
+  (still `"estimated"`); a top's 号型 labels → real body-chest bands + `"page"`; **cache
+  proven** (2nd check on a URL makes no new fetch); **one-retry-then-succeed** on a
+  transient throw; non-HTML content-type ignored. Found & fixed a test-only gotcha:
+  the `html.length < 200` "unreachable" guard tripped on too-small fixtures — padded
+  them to realistic length (real pages are huge; the guard is correct).
+- **`sizing.test.ts` (new, 8 tests):** ease monotonicity + the `regular=10` baseline
+  the engine is tuned to; `easeAdjustForCategory` ordering (coat>jacket>hoodie>blazer>0,
+  tops=0, tank<0, case-insensitive); `preferenceShift`; alpha normalization/distance.
+- **`fitEngine.test.ts` (+4):** waist-only scoring (no chest); verdict omitted with no
+  chest; body-range verdict lands snug/true/relaxed not too-small/big; never-crash with
+  zero signals.
+
+Suite **151 → 172**. `tsc` clean, build clean.
+
 ### Image size-chart OCR (A) + regional body prior (D)
 
 Founder greenlit "A和D". **A — vision OCR of image size charts** (the common Chinese-PDP

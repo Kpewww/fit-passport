@@ -385,3 +385,44 @@ describe("regional-average body prior (chestIsEstimated)", () => {
     expect(real.best.confidence).toBeGreaterThan(est.best.confidence);
   });
 });
+
+describe("measurement-fit edge cases", () => {
+  it("scores from WAIST alone when chest is unknown", () => {
+    const SIZES = [
+      { label: "S", waistCm: 76 },
+      { label: "M", waistCm: 84 },
+      { label: "L", waistCm: 92 },
+    ];
+    // waist target = body 80 + ease*0.8 (regular ease 10 → +8) = 88 → closest to M(84)/L(92)
+    const out = recommend(baseInput({ profile: { waistCm: 80, preferredFit: "regular" }, sizes: SIZES }));
+    expect(out.best.reasons.some((r) => r.signal === "measurement-fit")).toBe(true);
+    expect(["M", "L"]).toContain(out.best.label);
+  });
+
+  it("omits a verdict when there is no chest data at all", () => {
+    const out = recommend(baseInput({ profile: { waistCm: 80, preferredFit: "regular" }, sizes: [
+      { label: "M", waistCm: 84 }, { label: "L", waistCm: 92 },
+    ] }));
+    expect(out.best.verdict).toBeUndefined();
+  });
+
+  it("gives a body in a size's range a 'true to size'-ish verdict, not 'too small/big'", () => {
+    const out = recommend(baseInput({
+      product: { brand: "Levi's", category: "jacket" },
+      profile: { chestCm: 101, preferredFit: "regular" },
+      sizes: [
+        { label: "S", bodyChestMinCm: 92, bodyChestMaxCm: 98, chestCm: 112 },
+        { label: "M", bodyChestMinCm: 98, bodyChestMaxCm: 104, chestCm: 118 },
+        { label: "L", bodyChestMinCm: 104, bodyChestMaxCm: 110, chestCm: 124 },
+      ],
+    }));
+    expect(out.best.label).toBe("M");
+    expect(["snug", "true to size", "relaxed"]).toContain(out.best.verdict);
+  });
+
+  it("never crashes and returns every size, even with zero signals", () => {
+    const out = recommend(baseInput({ sizes: [{ label: "M" }, { label: "L" }] }));
+    expect(out.ranked).toHaveLength(2);
+    expect(out.best).toBeDefined();
+  });
+});

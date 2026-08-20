@@ -52,7 +52,7 @@ without upgrading Node first.
 |---|---|
 | **Passport** | A metal charge-card identity page — portrait, holder, region, preferred fit, verification line. Its finish is themed by your highest earned badge (and you can pick any metal you've earned). Exports as a PNG. |
 | **Closet** | Collections with custom folder colours, item photos, add-by-URL, variant merging, a filing-cabinet folder view (drag files out onto a "desk", set items aside in a comparison bucket), and edit history. |
-| **Size check** | Paste any product link (bare domains fine) → the extractor reads brand / garment / gender / size chart → the engine ranks every size with per-signal reasons. Plus a live multi-region size converter. |
+| **Size check** | Paste any product link (bare domains fine) → the extractor reads the **real page** (schema.org JSON-LD, OpenGraph, and on-page size-chart tables; optional vision OCR for image-only charts; Chinese `号型` codes) → a transparent engine ranks every size across **chest + waist + shoulder** with per-signal reasons and an ordinal verdict (*too small … true to size … too big*). It says honestly whether the sizes were **read from the page** or **estimated**, and caps confidence when estimating. Plus a live multi-region size converter. |
 | **Fit refresh** | Re-rate how garments feel over time; bodies change, so the profile tracks drift. |
 | **Outfits** | Compose looks on a body-typed SVG mannequin, post them, collect likes. Optional photoreal try-on when an image key is set. |
 | **Community** | Opt-in directory of members (each with a metal banner in their card finish), plus an outfit feed you can switch between **Everyone** (most-liked first) and **Following** (people you follow, newest first). Following requires a claimed account on both sides, so follower counts stay earned. |
@@ -87,9 +87,11 @@ app-web/
   src/app/            # Next.js App Router pages + /api route handlers
   src/components/     # UI: MetalCard, BadgeMedallion, BadgeInspect, OutfitMannequin, …
   src/lib/            # Domain logic (all unit-tested where it matters)
-    fitEngine.ts      #   the transparent scoring engine
+    fitEngine.ts      #   the transparent multi-dimensional scoring engine
     extractor.ts      #   URL → product (brand/garment/gender/size ladder)
-    extractorLLM.ts   #   optional Claude upgrade, falls back cleanly
+    pageParse.ts      #   deterministic real-page parsing (JSON-LD, tables, 号型, chart images)
+    extractorLLM.ts   #   fetch + parse the real page; optional Claude text/vision, cached, block-aware
+    populationPrior.ts#   region cold-start body prior (survey-grounded, governance-safe)
     badges.ts         #   badge ladder + metals (single source of truth)
     auth.ts / authEdge.ts  # HMAC sessions (Node + Edge, byte-compatible)
   prisma/schema.prisma     # data model (SQLite locally, Postgres in prod)
@@ -107,8 +109,14 @@ Vitest · Framer Motion + Lenis (motion) · three.js (lazy, badge inspect only).
 
 Key design decisions worth knowing before contributing:
 
-- **The engine is not an LLM.** Rules and weights, so it can be tested and
-  explained. An LLM only ever *extracts* product data, never decides a size.
+- **The engine is not an LLM.** Rules and weights across chest/waist/shoulder, so it
+  can be tested and explained. An LLM only ever *extracts* product data (page text or
+  a chart image), never decides a size.
+- **Honest provenance.** The size chart is tagged `page` (read from the product page)
+  vs `estimated` (synthesized from the brand); the UI says which, and confidence is
+  capped when estimating. Same for the regional body prior — a cold-start guess is
+  labelled and never overrides the user's own data. All grounded in
+  [docs/design/fit-algorithm-research.md](docs/design/fit-algorithm-research.md).
 - **`KnownGoodItem.category` is the engine's garment type** and is not renamable.
   `Collection` is the user-facing folder — that's the one users rename.
 - **`authEdge.ts` must stay byte-compatible with `auth.ts`.** Middleware runs on

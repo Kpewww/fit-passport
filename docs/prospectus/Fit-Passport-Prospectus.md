@@ -157,7 +157,7 @@ Fit Passport is a working application, not a mockup. As of this writing:
 | Badge system — 20 medals, dimensional, turn-to-inspect, WebGL | **Built** |
 | Anonymous session → claim → shareable account code | **Built** |
 | Moderation: report, block list, admin review queue, rate limits | **Built** |
-| Coverage: automated tests across engine, badges, extractor, converters | **115 passing** |
+| Coverage: automated tests across engine, badges, extractor, converters | **172 passing** |
 
 **Architecture.** Next.js (App Router) · React · TypeScript · Tailwind · Prisma ·
 Zod · Vitest, with Framer Motion + Lenis for motion and a lazily-loaded three.js for
