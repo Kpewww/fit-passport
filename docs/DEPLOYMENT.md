@@ -22,11 +22,17 @@ hand-maintain two schemas (which always drift), we keep **one source of truth**
 and derive the other:
 
 ```
-prisma/schema.prisma            # source of truth (sqlite) — EDIT THIS ONE
-scripts/gen-postgres-schema.mjs # swaps the provider
-prisma/schema.postgres.prisma   # GENERATED (gitignored), built on deploy
-prisma/migrations/0_init/       # committed Postgres migration
+prisma/schema.prisma               # source of truth (sqlite) — EDIT THIS ONE
+scripts/gen-postgres-schema.mjs    # swaps the provider, adds directUrl
+prisma/schema.postgres.prisma      # GENERATED (gitignored), built on deploy
+prisma/migrations/migration_lock.toml  # records provider = postgresql — REQUIRED
+prisma/migrations/0_init/          # committed Postgres migration
 ```
+
+`migration_lock.toml` is not decoration: without it `prisma migrate deploy` cannot
+determine the connector for the migrations directory and fails the build outright.
+It is normally written by `prisma migrate dev`, which we never ran (the initial
+migration was diffed offline `--from-empty`), so it had to be added by hand.
 
 Every model uses only portable scalars (`String`, `Int`, `Float`, `Boolean`,
 `DateTime`), so swapping the provider is sufficient. The generator refuses to run
@@ -69,10 +75,18 @@ diffed `--from-empty`.)
 ## 2. Create the database (Neon)
 
 1. Sign up at **neon.tech** (free tier is enough for the course demo).
-2. Create a project → note the **pooled** connection string. It looks like:
-   `postgresql://user:pass@ep-xxx-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require`
-   Use the **pooled** (`-pooler`) host — serverless functions open many short
-   connections, and the pooler is what keeps that from exhausting Postgres.
+2. Create a project → note **both** connection strings. Neon shows them under
+   *Connection Details*; the only difference is the `-pooler` suffix on the host:
+   - **pooled** → `postgresql://user:pass@ep-xxx-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require`
+   - **direct** → `postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require`
+
+   The running app uses the **pooled** host (`DATABASE_URL`) — serverless functions
+   open many short connections, and the pooler is what keeps that from exhausting
+   Postgres. **Migrations must use the direct host** (`DIRECT_URL`): the pooler is
+   PgBouncer in *transaction* mode, and `prisma migrate deploy` takes *session*-level
+   advisory locks, which transaction pooling cannot hold — a lock acquired on one
+   backend gets released on another, so the migration hangs or errors. The generated
+   Postgres schema declares both (`scripts/gen-postgres-schema.mjs`).
 3. Optionally create a second **branch** (e.g. `shadow`) for future migrations.
 
 ---
@@ -91,7 +105,8 @@ diffed `--from-empty`.)
 
 | Variable | Value | Why |
 |---|---|---|
-| `DATABASE_URL` | Neon **pooled** connection string | the database |
+| `DATABASE_URL` | Neon **pooled** (`-pooler`) connection string | the running app |
+| `DIRECT_URL` | the same string **without** `-pooler` | `prisma migrate deploy` at build time — see §2 |
 | `SESSION_SECRET` | 32 random bytes | signs session cookies |
 | `APP_URL` | `https://your-app.vercel.app` | absolute links in reset emails |
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL | shared rate-limit counters |
