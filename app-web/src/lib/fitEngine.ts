@@ -32,6 +32,7 @@ import {
 import { domainForCategory } from "./sizeSystems";
 import { biasForBrand, type BrandBias } from "./brandBias";
 import { directionToLadderShift, describeDirection, isDirectional } from "./fitDirection";
+import { reportConsistency } from "./closetConsistency";
 
 // ------------ Input contracts ------------
 
@@ -586,12 +587,24 @@ export function recommend(input: EngineInput): EngineOutput {
   // ---- Per-user brand bias from outcomes (see brandBias.ts) -------------------
   const brand = product.brand ?? null;
   const brandBias: BrandBias = brand
-    ? biasForBrand(brand, outcomes.map((o) => ({
-        productBrand: o.productBrand ?? null,
-        decision: o.decision,
-        overallFit: o.overallFit ?? null,
-        areaIssues: o.areaIssues ?? null,
-      })))
+    ? biasForBrand(
+        brand,
+        outcomes.map((o) => ({
+          productBrand: o.productBrand ?? null,
+          decision: o.decision,
+          overallFit: o.overallFit ?? null,
+          areaIssues: o.areaIssues ?? null,
+        })),
+        // Closet reports vote too — available on day one, where outcomes need a
+        // purchase to have happened. Same-category items are excluded inside
+        // biasForBrand because scoreKnownGood already moved the anchor by them.
+        knownGood.map((k) => ({
+          brand: k.brand,
+          category: k.category,
+          fitDirection: k.fitDirection ?? null,
+        })),
+        product.category ?? null,
+      )
     : { direction: "neutral", evidence: 0, shift: 0, reason: null };
   const refIdx = brandBias.shift !== 0
     ? referenceSizeIdx(product, sizes, knownGood)
@@ -623,6 +636,16 @@ export function recommend(input: EngineInput): EngineOutput {
   // On cross-domain, known-good similarity is meaningless — don't feed it.
   const usableKnownGood = domainRelevance === "cross" ? [] : knownGood;
 
+  // ---- How much the wearer's own reports agree with each other ---------------
+  // Scattered reports mean we know this person less well, whichever way the
+  // scatter runs. This moves ONLY the confidence, never the size, so it cannot
+  // double-count with the anchor correction or brand bias (both of which move the
+  // size). See closetConsistency.ts.
+  const consistency = reportConsistency(
+    usableKnownGood.map((k) => ({ category: k.category, fitDirection: k.fitDirection ?? null })),
+    (c) => productDomain == null || domainForCategory(c) === productDomain,
+  );
+
   const ranked: SizeScore[] = sizes.map((size) => {
     const reasons: Reason[] = [];
     const fit = scoreMeasurementFit(size, profile, profile.preferredFit, product.category, W);
@@ -638,6 +661,8 @@ export function recommend(input: EngineInput): EngineOutput {
     let confidence = computeConfidence(size, usableKnownGood.length > 0, profile.chestCm != null);
     // Cross-domain closet evidence should not lend confidence: cap it hard.
     if (domainRelevance === "cross") confidence = Math.min(confidence, 0.35);
+    // Scattered self-reports reduce it further — the reason is surfaced below.
+    confidence *= consistency.factor;
     return {
       label: size.label,
       normalized: normalizeToAlpha(size.label),
@@ -697,6 +722,10 @@ export function recommend(input: EngineInput): EngineOutput {
         `and check the chart.`,
     );
   }
+  // A lowered confidence must always say why — a smaller number with no reason is
+  // just a worse number, which would break the explainability invariant.
+  if (consistency.note) conflictParts.push(consistency.note);
+
   const conflictNote = conflictParts.length > 0 ? conflictParts.join(" ") : null;
 
   // A regional-average body is a prior, not a fact — cap confidence so the number

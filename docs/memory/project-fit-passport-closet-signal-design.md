@@ -36,16 +36,17 @@ signal at the point of entry.
 a five-way bipolar tap costs the user *less* than the current dropdown and gives
 the engine *more*.
 
-## Three things that are FREE (derived, zero new user input)
+## Three things that were meant to be FREE — two are, one is NOT
 
-1. **Directional brand bias without a purchase.** `brandBias.ts` needs outcomes
+1. **Directional brand bias without a purchase. ✅ BUILT.** `brandBias.ts` needs outcomes
    today, which most users never record. A signed closet rating is the same ±1
    shift as Zalando's η return-shift term, available on day one. Cold-start fix.
-2. **Personal ease target.** For closet items where we know body chest and
-   garment chest, `ease = garment − body` measures the ease a user actually
-   likes, per category — **revealed preference instead of the self-reported
-   slim/regular/relaxed label**.
-3. **Confidence from preference *consistency*.** Tight spread of preferred ease →
+2. **Personal ease target — ❌ NOT DERIVABLE, the design was wrong here.**
+   `KnownGoodItem` stores **no garment measurements**, so `ease = garment − body`
+   has no garment side for nearly every item. It needs the size chart captured at
+   add-by-URL time (the extractor has the numbers and discards them). A real
+   feature with a real cost — **blocked, not free**.
+3. **Confidence from report *consistency*. ✅ BUILT.** Tight spread of preferred ease →
    we can predict this person → higher confidence. Scattered → lower, *with the
    reason surfaced* (same principle as the existing `signalDisagreement()`, new
    axis: within-user variance rather than between-signal). This is the
@@ -171,3 +172,24 @@ the five-option wording directly; five people can falsify it in an afternoon.
 
 See [[project-fit-passport-build-state]] for the invariants this must respect
 (especially explainability: a lowered confidence must always say why).
+
+
+## Session 47 additions (both SHIPPED, 265 tests)
+
+- **Brand bias learns from the closet** (`brandBias.ts`). Verified live with zero
+  purchase history. **Double-counting is closed by construction:** a same-brand
+  *same-category* item already moves the anchor in `scoreKnownGood`, so
+  `biasForBrand` takes the product category and EXCLUDES those items. Anchor
+  handles same-category; brand bias generalises across categories.
+- **Report consistency → confidence** (`closetConsistency.ts`). Deliberately
+  **asymmetric**: scatter lowers confidence (floor 0.85) with the reason surfaced;
+  agreement does NOT raise it (that would double-count an assumption we already
+  make). **Consistently off-centre is NOT penalised** — scatter means we know
+  less, offset just means they buy up.
+
+**Testing lesson worth keeping:** an engine-level test asserting "scattered closet
+⇒ lower confidence number" FAILED, because scatter also spreads the anchor across
+sizes and changes the signal-agreement penalty. The scenarios differ in several
+ways at once. It was **rewritten to assert the user-visible note**, with the
+factor's monotonicity pinned at unit level — not tuned until green. A threshold
+tuned until it passes tests the tuner.

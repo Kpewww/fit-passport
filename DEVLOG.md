@@ -28,6 +28,88 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang. Instructor: Sher
 
 ---
 
+## 2026-08-25 · Session 47 — The two derivable closet signals, and a design claim that turned out to be wrong
+
+Both remaining "free" signals from Session 45's design. **241 → 265 tests.** One of
+the three turned out not to be free at all, which is the most useful thing this
+session produced.
+
+### Brand bias now learns from the closet — the actual cold-start fix
+
+`biasForBrand()` accepts closet reports alongside purchase outcomes. Verified live
+with **zero purchase history**: two Uniqlo items in other categories reported *too
+tight* produced *"You've reported 2 Uniqlo items running small — sized up one."*
+
+This matters more than it sounds. Brand bias has existed since Session 12 and has
+been **dead weight for almost every user**, because it required recorded purchase
+outcomes and virtually nobody records a return. A signed closet report is the same
+observation, available the moment someone adds their first few clothes.
+
+**The double-counting trap.** A same-brand *same-category* item already moves the
+anchor inside `scoreKnownGood`. Letting it also vote for brand bias would push one
+observation through two channels and quietly overweight it. `biasForBrand` now
+takes the product's category and excludes closet items of that type, so the two
+paths are disjoint **by construction** rather than by tuning: the anchor handles
+same-category, brand bias generalises across categories ("your Uniqlo shirts and
+jackets both run small, so expect the same of this tee"). Pinned by an engine-level
+test, not just a unit one.
+
+### Confidence from report consistency, and why it is deliberately asymmetric
+
+Scatter lowers confidence (floor 0.85) with the reason surfaced in `conflictNote`;
+agreement does **not** raise it. Rewarding agreement would double-count an
+assumption already made by using the closet at all.
+
+Being *consistently* off-centre is also not penalised. Someone whose every garment
+runs roomy is a person we understand perfectly well — they just buy up. **It is
+scatter, not offset, that means we know less.** Verified live: a closet mixing
+tight and loose reports returned **0.85** with *"Your closet reports disagree with
+each other — some of these run tight for you and some run loose."*
+
+### The claim that was wrong
+
+Session 45's design listed a **personal ease target in centimetres** —
+`ease = garment − body` per category — as costing the user nothing. Building it
+showed why that is false: **`KnownGoodItem` stores no garment measurements at
+all.** For nearly every closet item the garment side of that subtraction does not
+exist. Joining to `Product`/`SizeOption` by brand+category+size would cover only
+items the user happened to paste as a URL, and fuzzily.
+
+What it would actually take is capturing the size chart alongside the item at
+add-by-URL time — the extractor has the numbers in hand at that moment and throws
+them away. That is a real feature with a real cost, not a derivation. The design
+doc's §1.2 is corrected in place rather than quietly dropped, and the FIC table now
+shows it as **blocked, not free**.
+
+What shipped instead is the same intuition at coarser resolution: agreement
+measured in reported *direction* rather than centimetres. It needs nothing new from
+the user and it works today.
+
+### A test that was rewritten rather than tuned
+
+The first engine-level consistency test asserted that a scattered closet yields
+lower confidence than a tidy one. **It failed — the scattered case scored higher.**
+
+The reason is real and worth recording: scattered reports do not only trigger the
+consistency factor, they also genuinely spread the anchor across different sizes,
+which moves the recommended size and the signal-agreement penalty with it. The two
+scenarios differ in several ways at once, so the comparison never isolated the
+thing it claimed to measure.
+
+Rather than adjust the threshold until it passed, the engine-level test now asserts
+the user-visible contract (the note appears), and the factor's monotonicity and its
+0.85 floor are pinned in `closetConsistency.test.ts` where they can be measured
+without the rest of the engine in the way. **A threshold tuned until it goes green
+tests the tuner, not the code.**
+
+One existing assertion was also changed, deliberately: the brand-bias reason used
+to read "running too big". That wording is no longer accurate now the same string
+covers a closet report of *a bit roomy* (+5), which is not "too big". It now reads
+"running big", and the test asserts the reason names the direction rather than
+pinning the old exact phrasing.
+
+---
+
 ## 2026-08-25 · Session 46 — Production outage from a missing migration, and the guard that would have caught it
 
 **I broke production, and the fix is less interesting than why nothing caught it.**

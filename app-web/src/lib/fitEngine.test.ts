@@ -615,3 +615,103 @@ describe("signed fit direction on a closet anchor", () => {
     }
   });
 });
+
+describe("closet direction feeding brand bias and confidence", () => {
+  it("learns a brand runs small from OTHER categories, with no purchase history", () => {
+    // The cold-start fix: brand bias used to need recorded outcomes, which most
+    // users never produce. Two Uniqlo items in other categories, both reported
+    // tight, should push this Uniqlo tee up.
+    const out = recommend(
+      baseInput({
+        profile: { chestCm: 96, preferredFit: "regular" } as EngineInput["profile"],
+        knownGood: [
+          { brand: "Uniqlo", category: "shirt", size: "M", fitRating: 3, fitDirection: -10 },
+          { brand: "Uniqlo", category: "jacket", size: "M", fitRating: 3, fitDirection: -10 },
+        ],
+      }),
+    );
+    expect(out.best.reasons.some((r) => r.signal === "brand-bias")).toBe(true);
+  });
+
+  it("does NOT count a same-category anchor twice", () => {
+    // A same-brand, same-category item already moves the anchor in
+    // scoreKnownGood. If it ALSO voted for brand bias, one observation would
+    // move the recommendation through two channels.
+    const out = recommend(
+      baseInput({
+        profile: { chestCm: 96, preferredFit: "regular" } as EngineInput["profile"],
+        knownGood: [
+          { brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 3, fitDirection: -10 },
+          { brand: "Uniqlo", category: "tshirt", size: "S", fitRating: 3, fitDirection: -10 },
+        ],
+      }),
+    );
+    expect(out.best.reasons.some((r) => r.signal === "brand-bias")).toBe(false);
+  });
+
+  it("tells the user when their own reports scatter", () => {
+    const scatter = recommend(
+      baseInput({
+        profile: { chestCm: 96, preferredFit: "regular" } as EngineInput["profile"],
+        knownGood: [
+          { brand: "A", category: "tshirt", size: "M", fitRating: 5, fitDirection: -10 },
+          { brand: "B", category: "shirt", size: "M", fitRating: 5, fitDirection: 10 },
+          { brand: "C", category: "polo", size: "M", fitRating: 5, fitDirection: -10 },
+        ],
+      }),
+    );
+    expect(scatter.conflictNote).toBeTruthy();
+    expect(scatter.conflictNote!).toContain("closet reports disagree");
+
+    // NOT asserted here: that this scenario's confidence NUMBER is lower than a
+    // tidy closet's. Scattered reports do not only trigger the consistency
+    // factor — they also genuinely spread the anchor across different sizes,
+    // which moves the recommended size and the signal-agreement penalty with it.
+    // The two scenarios therefore differ in several ways at once, and a
+    // comparison between them would not isolate the factor. The factor's own
+    // monotonicity and its 0.85 floor are pinned in closetConsistency.test.ts,
+    // where they can be measured without the rest of the engine in the way.
+  });
+
+  it("does not lower confidence for someone consistently off-centre", () => {
+    // Everything runs roomy on them — that is a person we understand, not noise.
+    const consistent = recommend(
+      baseInput({
+        profile: { chestCm: 96, preferredFit: "regular" } as EngineInput["profile"],
+        knownGood: [
+          { brand: "A", category: "tshirt", size: "M", fitRating: 4, fitDirection: 5 },
+          { brand: "B", category: "shirt", size: "M", fitRating: 4, fitDirection: 5 },
+          { brand: "C", category: "polo", size: "M", fitRating: 4, fitDirection: 5 },
+        ],
+      }),
+    );
+    const centred = recommend(
+      baseInput({
+        profile: { chestCm: 96, preferredFit: "regular" } as EngineInput["profile"],
+        knownGood: [
+          { brand: "A", category: "tshirt", size: "M", fitRating: 4, fitDirection: 0 },
+          { brand: "B", category: "shirt", size: "M", fitRating: 4, fitDirection: 0 },
+          { brand: "C", category: "polo", size: "M", fitRating: 4, fitDirection: 0 },
+        ],
+      }),
+    );
+    expect(consistent.best.confidence).toBeCloseTo(centred.best.confidence, 10);
+  });
+
+  it("leaves a closet with no reported directions completely unchanged", () => {
+    const legacy = recommend(
+      baseInput({
+        profile: { chestCm: 96, preferredFit: "regular" } as EngineInput["profile"],
+        knownGood: [
+          { brand: "A", category: "tshirt", size: "M", fitRating: 4 },
+          { brand: "B", category: "shirt", size: "M", fitRating: 4 },
+          { brand: "C", category: "polo", size: "M", fitRating: 4 },
+        ],
+      }),
+    );
+    expect(legacy.best.confidence).toBeGreaterThan(0);
+    // The generic signal-disagreement note may legitimately fire here; what must
+    // NOT appear is the closet-consistency one, since nothing was reported.
+    expect(legacy.conflictNote ?? "").not.toContain("closet reports disagree");
+  });
+});

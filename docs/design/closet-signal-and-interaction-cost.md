@@ -77,18 +77,27 @@ at: Zalando's hierarchical Bayesian model uses a **return-shift term η** where
 `η_small ~ N(−1,1)` and `η_big ~ N(+1,1)` — literally "returns move the target
 size by ±1". A signed closet rating is the same ±1 shift, sourced earlier.
 
-### 1.2 A personal ease target — *high value, zero extra input*
+### 1.2 A personal ease target — *CORRECTED 2026-08-25: not derivable today*
 
-The engine has a global `preferenceShift(pref)` and a per-category
-`easeAdjustForCategory`, both hand-tuned constants. But we can *measure* a user's
-real preferred ease: for every closet item where we know both the wearer's chest
-and the garment's chest, `ease = garment − body`. Their own rated-good garments
-describe the ease they actually like, in centimetres, per category.
+The idea: measure a user's real preferred ease as `ease = garment − body` for
+every closet item, per category, instead of trusting a self-reported
+slim/regular/relaxed label. Revealed preference beats stated preference.
 
-This is the sharpest expression of "每个人喜欢的可能不一样" — instead of asking a
-user to self-describe as slim/regular/relaxed and trusting that label, we read
-their preference off the clothes they already own and rated. **Revealed
-preference beats stated preference**, and it costs the user nothing.
+**This section was wrong to call it free, and building it exposed why.**
+`KnownGoodItem` stores brand, category, size and now direction — **it stores no
+garment measurements at all**. For nearly every closet item the garment side of
+that subtraction does not exist, so there is nothing to measure. Joining to
+`Product`/`SizeOption` by brand+category+size would cover only items the user
+happened to check as a URL, and fuzzily.
+
+**What it would take:** capture the size chart alongside the item when it is added
+by URL (the extractor already has the numbers in hand at that moment and throws
+them away). That is a real feature with a real cost, not a derivation — it belongs
+in the backlog, not in the "free" tier.
+
+**What was built instead**, which the current data does support: agreement measured
+in *reported direction* rather than centimetres (§1.3). It is the same intuition at
+coarser resolution, and it needs nothing new from the user.
 
 ### 1.3 Confidence modulation from preference *consistency* — *the founder's ask*
 
@@ -288,8 +297,8 @@ argument by default.
 | Feature | Cost | Value | Verdict |
 |---|---|---|---|
 | Bipolar fit tap replacing the 1–5 dropdown | 3 (was 5: >5 options + judgement) | 10 | **Build. Cheaper *and* more valuable than what it replaces.** |
-| Personal ease target (§1.2) | **0** — derived from existing data | 10 | **Build first.** Free. |
-| Preference-consistency confidence (§1.3) | **0** — derived | 6 | **Build.** Free. |
+| Personal ease target (§1.2) | ~~0~~ — **not derivable; needs garment measurements captured at add-time** | 10 | **Blocked**, not free. See §1.2. |
+| Preference-consistency confidence (§1.3) | **0** — derived | 6 | **Built.** Free. |
 | Numeric mode switch (1–20 scale) | 5, and only for users who opt in | 6 | **Build, opt-in, never the default.** |
 | Per-area bipolar ratings (§1.4) | 3 × 4 areas = 12, +5 judgement | 6 | **Defer.** Fails the bar. Revisit as an optional deepening on items the user has already flagged as problematic. |
 | Free-text "how does it feel" | 10, +5 judgement | 3 | **No.** |
@@ -564,6 +573,8 @@ Built and verified end-to-end on a clean production build. **237 tests** (was 20
 | The dual-mode control, mode carried by context and persisted per user | `src/components/FitDirectionInput.tsx` |
 | The schematic body-vs-garment figure | `src/components/FitFigure.tsx`, rendered on `/check` |
 | Closet add/edit, and the Fit Refresh card stack, both reporting direction | `src/app/closet/page.tsx`, `src/app/refresh/page.tsx`, `src/app/api/closet/**` |
+| Closet reports feeding brand bias — the cold-start fix (§1.1) | `src/lib/brandBias.ts` (+ 11 tests) |
+| Report-consistency confidence with a surfaced reason (§1.3) | `src/lib/closetConsistency.ts` (+ 9 tests) |
 
 **Decisions taken while building, worth knowing:**
 
@@ -599,3 +610,47 @@ the anchor argues S and the engine flags the disagreement and drops confidence t
 0.46 with a stated reason, *just right* → M). Out-of-range direction is rejected
 400. The refresh path writes rating 2 / direction −10 together and the next check
 immediately says *"Your Uniqlo M runs too tight."*
+
+
+---
+
+## 7. Second pass, 2026-08-25 — the two derivable signals
+
+**265 tests** (was 241).
+
+**§1.1 directional brand bias — built, and it is genuinely a cold-start fix.**
+`biasForBrand()` now accepts closet reports alongside purchase outcomes. Verified
+live with **zero purchase history**: two Uniqlo items in other categories reported
+*too tight* produced *"You've reported 2 Uniqlo items running small — sized up
+one."* Before this, brand bias was dead weight for anyone who had not recorded a
+return, which is almost everyone.
+
+**The double-counting trap, and how it is closed.** A same-brand *same-category*
+item already moves the anchor inside `scoreKnownGood`. Letting it also vote for
+brand bias would apply one observation to the recommendation through two channels.
+So `biasForBrand` takes the product's category and **excludes closet items of that
+type**. The two paths are now disjoint *by construction* rather than by tuning:
+the anchor handles same-category, brand bias generalises across categories. Pinned
+by a test at the engine level, not just the unit level.
+
+**§1.3 report consistency — built, and deliberately asymmetric.** Scatter lowers
+confidence (floor 0.85) with the reason surfaced in `conflictNote`; agreement does
+**not** raise it. Rewarding agreement would double-count an assumption we already
+make by using the closet at all. Being *consistently* off-centre is also not
+penalised — someone whose every garment runs roomy is a person we understand
+perfectly well, they just buy up. It is scatter, not offset, that means we know
+less. Verified live: a closet mixing tight and loose reports returned confidence
+**0.85** with *"Your closet reports disagree with each other…"*.
+
+**A test that was written, failed, and was rewritten rather than tuned.** The
+first engine-level test asserted that a scattered closet yields lower confidence
+than a tidy one. It failed — the scattered case scored *higher*. The reason is
+real and worth keeping: scattered reports do not only trigger the consistency
+factor, they also genuinely spread the anchor across different sizes, which moves
+the recommended size and the signal-agreement penalty with it. **The two scenarios
+differ in several ways at once, so the comparison never isolated the factor.**
+Rather than adjust the threshold until it passed, the engine-level test now asserts
+the user-visible contract (the note appears), and the factor's monotonicity and
+floor are pinned in `closetConsistency.test.ts` where they can be measured without
+the rest of the engine in the way. A threshold tuned until it goes green tests the
+tuner, not the code.
