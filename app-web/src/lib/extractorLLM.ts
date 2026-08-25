@@ -56,7 +56,7 @@ const PAGE_FETCH_DISABLED = process.env.FIT_DISABLE_PAGE_FETCH === "1";
 // Bounded + TTL'd so it can't grow without limit in a long-lived server process.
 const HTML_CACHE_TTL_MS = 10 * 60 * 1000;
 const HTML_CACHE_MAX = 200;
-type CacheEntry = { html: string | null; at: number };
+type CacheEntry = { html: string | null; at: number; blocked?: boolean };
 const htmlCache = new Map<string, CacheEntry>();
 
 function cacheGet(url: string): CacheEntry | undefined {
@@ -69,13 +69,13 @@ function cacheGet(url: string): CacheEntry | undefined {
   return e;
 }
 
-function cacheSet(url: string, html: string | null): void {
+function cacheSet(url: string, html: string | null, blocked = false): void {
   if (htmlCache.size >= HTML_CACHE_MAX) {
     // Drop the oldest inserted key (Map preserves insertion order).
     const oldest = htmlCache.keys().next().value;
     if (oldest !== undefined) htmlCache.delete(oldest);
   }
-  htmlCache.set(url, { html, at: Date.now() });
+  htmlCache.set(url, { html, at: Date.now(), blocked });
 }
 
 /** Exposed for tests only — clears the module-level HTML cache. */
@@ -185,8 +185,13 @@ async function callLLM(url: string, pageText: string): Promise<LLMExtract | null
   }
 }
 
-/** One fetch attempt. Returns {html} on success, or null on any failure/block. */
-async function fetchOnce(url: string): Promise<string | null> {
+// Outcome of a fetch attempt. `blocked` is kept SEPARATE from a plain failure
+// because the two demand different remedies: a block needs a different transport
+// (see docs/design/fetch-strategy.md), a miss just needs a retry.
+type FetchOutcome = { html: string | null; blocked: boolean };
+
+/** One fetch attempt. Returns the HTML, plus whether we were actively blocked. */
+async function fetchOnce(url: string): Promise<FetchOutcome> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), PAGE_FETCH_TIMEOUT_MS);
   try {
@@ -201,15 +206,20 @@ async function fetchOnce(url: string): Promise<string | null> {
       },
     });
     const ct = r.headers.get("content-type") ?? "";
-    if (ct && !ct.includes("html") && !ct.includes("xml")) return null;
+    if (ct && !ct.includes("html") && !ct.includes("xml")) {
+      return { html: null, blocked: false };
+    }
     const raw = await r.text();
     const html = raw.length > MAX_HTML_BYTES ? raw.slice(0, MAX_HTML_BYTES) : raw;
     // A bot-block / CAPTCHA page isn't the product — treat it as unreachable so we
-    // fall back to an honest estimate rather than parsing a challenge page.
-    if (!r.ok || looksBlocked(r.status, html)) return null;
-    return html;
+    // fall back to an honest estimate rather than parsing a challenge page. We do
+    // record that it was a BLOCK, though: that distinction is the whole point of
+    // the instrumentation.
+    if (looksBlocked(r.status, html)) return { html: null, blocked: true };
+    if (!r.ok) return { html: null, blocked: false };
+    return { html, blocked: false };
   } catch {
-    return null;
+    return { html: null, blocked: false };
   } finally {
     clearTimeout(t);
   }
@@ -219,17 +229,19 @@ async function fetchOnce(url: string): Promise<string | null> {
  * Fetch the raw product-page HTML: cached (per URL, TTL'd), one retry on a
  * transient miss, block-aware. null on any failure (caller falls back honestly).
  */
-async function fetchPageHtml(url: string): Promise<string | null> {
+async function fetchPageHtml(url: string): Promise<FetchOutcome> {
   const cached = cacheGet(url);
-  if (cached) return cached.html;
+  if (cached) return { html: cached.html, blocked: cached.blocked ?? false };
 
-  let html = await fetchOnce(url);
+  let res = await fetchOnce(url);
   // One retry — transient network/CDN hiccups are common; a second try is cheap
-  // and we cache the result either way so we never hammer.
-  if (html === null) html = await fetchOnce(url);
+  // and we cache the result either way so we never hammer. A BLOCK is not
+  // transient, so don't spend a second request antagonising a CDN that already
+  // said no.
+  if (res.html === null && !res.blocked) res = await fetchOnce(url);
 
-  cacheSet(url, html);
-  return html;
+  cacheSet(url, res.html, res.blocked);
+  return res;
 }
 
 /** Turn raw HTML into LLM-friendly text that PRESERVES table structure. A size
@@ -384,11 +396,25 @@ export async function extractSmart(url: string): Promise<ExtractedProduct> {
   const deterministic = extractFromUrl(url);
 
   // 1. Fixture hit → hand-verified, don't touch the network.
-  if (!deterministic.source.derived) return deterministic;
-  if (PAGE_FETCH_DISABLED) return deterministic;
+  if (!deterministic.source.derived) {
+    deterministic.source.fetch = "skipped";
+    return deterministic;
+  }
+  if (PAGE_FETCH_DISABLED) {
+    deterministic.source.fetch = "skipped";
+    return deterministic;
+  }
 
-  const html = await fetchPageHtml(url);
-  if (!html || html.length < 200) return deterministic; // page unreachable → estimate
+  const { html, blocked } = await fetchPageHtml(url);
+  if (!html || html.length < 200) {
+    // Two very different failures, recorded as such — see the `fetch` field's
+    // comment in extractor.ts and docs/design/fetch-strategy.md §6.
+    deterministic.source.fetch = blocked ? "blocked" : "unreachable";
+    return deterministic; // page unreachable → estimate
+  }
+  // We DID get the page. Anything that still lands on "estimated" from here is an
+  // extraction-quality problem, not a transport one.
+  deterministic.source.fetch = "ok";
 
   // 2. Deterministic parse — free, no key.
   const parsed = parsePage(html);

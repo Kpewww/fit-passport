@@ -53,6 +53,17 @@ export type ExtractedProduct = {
     //   "page"      — read off the real product page (JSON-LD/table or LLM)
     //   "estimated" — synthesized from the brand + category (no real chart found)
     sizesFrom?: "fixture" | "page" | "estimated";
+    // WHY we ended up with the provenance above. `sizesFrom: "estimated"` has two
+    // very different causes and they need very different fixes:
+    //   "blocked"     — the retailer refused us (403/CAPTCHA/challenge). No model
+    //                   can fix this; it needs a different transport entirely.
+    //   "unreachable" — network error, non-HTML, or an empty body.
+    //   "ok"          — we DID get the page, we just couldn't find a chart in it.
+    //                   This is the case an LLM/vision read can fix.
+    //   "skipped"     — fixture hit, or fetching disabled.
+    // Recording the split is what tells us whether to spend on extraction quality
+    // or on transport. See docs/design/fetch-strategy.md §6.
+    fetch?: "ok" | "blocked" | "unreachable" | "skipped";
   };
 };
 

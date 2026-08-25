@@ -134,3 +134,56 @@ describe("extractSmart — deterministic pipeline (network stubbed, no key)", ()
     expect(out.source.sizesFrom).toBe("estimated");
   });
 });
+
+// `sizesFrom: "estimated"` has two causes that need OPPOSITE remedies: a page we
+// were refused (needs different transport) vs. a page we read but couldn't parse
+// (needs a better reader). Until we record which, we're guessing about where to
+// spend. See docs/design/fetch-strategy.md §6.
+describe("fetch-outcome instrumentation", () => {
+  it("records a 403 as 'blocked', not merely unreachable", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => resp("<html>Access Denied</html>", { status: 403 })));
+    const out = await extractSmart("https://shop.test/p/mens-shirt-b1");
+    expect(out.source.sizesFrom).toBe("estimated");
+    expect(out.source.fetch).toBe("blocked");
+  });
+
+  it("records a 200 CAPTCHA challenge as 'blocked' too", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => resp("<html><body>请完成安全验证</body></html>")));
+    const out = await extractSmart("https://shop.test/p/mens-shirt-b2");
+    expect(out.source.fetch).toBe("blocked");
+  });
+
+  it("does NOT retry a block — the CDN already said no, twice is just rude", async () => {
+    const f = vi.fn(async () => resp("<html>Access Denied</html>", { status: 403 }));
+    vi.stubGlobal("fetch", f);
+    await extractSmart("https://shop.test/p/mens-shirt-b3");
+    expect(f.mock.calls.length).toBe(1);
+  });
+
+  it("still retries a TRANSIENT failure (a block is not transient, a throw is)", async () => {
+    const f = vi.fn(async () => {
+      throw new Error("ECONNRESET");
+    });
+    vi.stubGlobal("fetch", f);
+    const out = await extractSmart("https://shop.test/p/mens-shirt-b4");
+    expect(f.mock.calls.length).toBe(2);
+    expect(out.source.fetch).toBe("unreachable");
+  });
+
+  it("records 'ok' when the page WAS read but held no chart — the fixable case", async () => {
+    const html = `<html><head><title>Plain Tee</title></head><body>
+      <h1>Plain Tee</h1><p>${"A soft everyday tee. ".repeat(30)}</p>
+      </body></html>`;
+    vi.stubGlobal("fetch", vi.fn(async () => resp(html)));
+    const out = await extractSmart("https://shop.test/p/mens-plain-tee-b5");
+    expect(out.source.sizesFrom).toBe("estimated"); // no chart found
+    expect(out.source.fetch).toBe("ok"); // but the page itself was fine
+  });
+
+  it("records 'skipped' for a fixture — no network was involved at all", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => resp(TABLE_HTML)));
+    const out = await extractSmart("https://www.uniqlo.com/us/en/products/airism-cotton-t-shirt");
+    expect(out.source.sizesFrom).toBe("fixture");
+    expect(out.source.fetch).toBe("skipped");
+  });
+});
