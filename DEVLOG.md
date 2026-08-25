@@ -301,6 +301,52 @@ Also recorded two optimisations **not** to chase: prompt caching needs a stable
 ≥1024-token prefix we don't have (every page differs), and the Batch API's 50%
 discount is asynchronous while `/api/check` has a user waiting.
 
+### Performance — the jank had a location, and the location explained it
+
+Founder reported scroll jank specifically between *"Everything you know about your
+fit."* and *"You keep the profile."*, plus "the server is sometimes slow". Two
+different problems; both measured rather than guessed.
+
+**The jank.** Those two headings are `ConvergingStack` and `ParallaxStatement` —
+adjacent sections, each painting a decorative word at `text-[22vw]` and
+`text-[38vw]` (≈317px and ≈547px of type on a 1440px viewport). One is
+scroll-*scaled*, the other scroll-*translated*, and **neither was on its own
+compositor layer**. Un-promoted, a transform re-rasterises the painted area every
+frame, and that area is enormous. At the boundary **both** giant layers are on
+screen repainting together — which is precisely why the jank had a location instead
+of being uniform.
+
+Fixed by adding `will-change: transform` to the elements that are actually
+scroll-driven: both giant words, the parallax statement, the hero block, and the
+three deck cards (those because they carry `shadow-lift`, and animating opacity on
+a shadowed box repaints the shadow every frame unless it owns its layer).
+
+Two deliberate restraints: **`will-change` alone, no `translateZ(0)`** — these are
+framer-motion elements that compose `transform` themselves from x/y/rotate/scale,
+so a raw transform string would fight framer for the same property; and **only
+scroll-driven elements are promoted**, since promoting everything wastes GPU memory
+and can end up slower than not promoting at all. Verified live: `will-change` is
+present in the served page.
+
+**The server.** Measured properly instead of assuming. Warm production latency is
+fine — `/` 76–248ms, `/api/status` ~310ms median, `/api/community` ~196ms. Then a
+deliberate 6-minute idle to let Neon's free-tier compute autosuspend:
+
+```
+COLD (after 6min idle) : 1,103 ms
+WARM (next 3)          :   313, 251, 375 ms
+PENALTY                :   852 ms
+```
+
+So the database cold start is **real and ~850ms**, and it lands on the homepage
+because `/` fetches `/api/status` on mount. **But 1.1s is not "very slow"** — this
+explains a noticeable first-hit delay, not a severe one, and it would be dishonest
+to file it as the whole cause. Most of the perceived slowness was likely the scroll
+jank above. Worth re-checking with the founder now that the promotion has shipped.
+
+Practical note: keeping Neon warm 24/7 would exceed the free plan's 100 CU-hours,
+so the cheap answer before a live demo is simply to hit the site a few times first.
+
 ### Still open
 
 - **GitHub auto-deploy is NOT connected.** Both `vercel git connect` and a direct API
