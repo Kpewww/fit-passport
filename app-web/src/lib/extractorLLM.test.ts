@@ -7,7 +7,7 @@
 // deterministic path that runs for every user by default.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { extractSmart, __clearPageCache } from "./extractorLLM";
+import { extractSmart, htmlToLlmText, __clearPageCache } from "./extractorLLM";
 
 // Build a fetch Response-like object for the stub.
 function resp(
@@ -185,5 +185,43 @@ describe("fetch-outcome instrumentation", () => {
     const out = await extractSmart("https://www.uniqlo.com/us/en/products/airism-cotton-t-shirt");
     expect(out.source.sizesFrom).toBe("fixture");
     expect(out.source.fetch).toBe("skipped");
+  });
+});
+
+// The LLM input cap is a COST control: at $1/1M input tokens the old 600KB cap
+// allowed ~$0.15 of spend on a single heavy page, ~20x the documented estimate.
+// Cutting it is only safe because tables are emitted BEFORE prose — so this
+// tests the property the cost fix actually depends on, rather than trusting it.
+describe("LLM input cap (cost control)", () => {
+  const CHART = `<table>
+    <tr><th>Size</th><th>Chest</th></tr>
+    <tr><td>S</td><td>96</td></tr>
+    <tr><td>M</td><td>100</td></tr>
+    <tr><td>L</td><td>104</td></tr>
+  </table>`;
+
+  it("keeps the size chart even when the page is enormous", () => {
+    // 2MB of marketing copy AFTER the chart — far past any sane cap.
+    const bloat = `<p>${"Crafted from premium cotton. ".repeat(70_000)}</p>`;
+    const text = htmlToLlmText(`<html><body>${CHART}${bloat}</body></html>`);
+    expect(text).toContain("SIZE TABLES");
+    expect(text).toContain("S | 96");
+    expect(text).toContain("M | 100");
+    expect(text).toContain("L | 104");
+  });
+
+  it("keeps the chart even when the bloat comes BEFORE it in the HTML", () => {
+    // Ordering in the OUTPUT is what matters, not ordering in the source.
+    const bloat = `<p>${"Free shipping and returns. ".repeat(70_000)}</p>`;
+    const text = htmlToLlmText(`<html><body>${bloat}${CHART}</body></html>`);
+    expect(text).toContain("S | 96");
+    expect(text).toContain("L | 104");
+  });
+
+  it("actually truncates, so a huge page cannot run up an unbounded bill", () => {
+    const bloat = `<p>${"Crafted from premium cotton. ".repeat(70_000)}</p>`;
+    const text = htmlToLlmText(`<html><body>${CHART}${bloat}</body></html>`);
+    // ~80KB ≈ 20K tokens ≈ $0.02 worst case at Haiku 4.5 input pricing.
+    expect(text.length).toBeLessThanOrEqual(80_000);
   });
 });

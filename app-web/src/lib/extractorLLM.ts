@@ -37,7 +37,17 @@ const TOP_CATEGORIES = new Set([
 const LLM_MODEL = "claude-haiku-4-5-20251001"; // cheapest capable model
 const LLM_ENDPOINT = "https://api.anthropic.com/v1/messages";
 const PAGE_FETCH_TIMEOUT_MS = 8000;
-const MAX_PAGE_BYTES = 600_000; // ~600KB cap after stripping tags
+// Cap on the text handed to the LLM. This is a COST control, not a safety one.
+//
+// At Haiku 4.5's $1/1M input tokens, and ~4 chars per token, the old 600KB cap
+// allowed a single extraction to spend ~150K input tokens ≈ $0.15 — roughly 20x
+// the ~$0.007/check figure quoted in .env.example. One heavy PDP (long reviews,
+// a bloated DOM) could therefore cost more than twenty ordinary ones.
+//
+// 80KB ≈ 20K tokens ≈ $0.02 worst case. Safe to cut here because htmlToLlmText
+// emits "SIZE TABLES" FIRST and prose second, so truncation eats the marketing
+// copy — never the size chart, which is the only thing we're paying to read.
+const MAX_PAGE_BYTES = 80_000;
 const MAX_HTML_BYTES = 2_000_000; // raw HTML cap before any parsing
 // A real browser UA. The old self-identifying "FitPassportBot" UA invited 403s;
 // we still fetch politely (one request, cached, timed out, size-capped) but many
@@ -247,7 +257,7 @@ async function fetchPageHtml(url: string): Promise<FetchOutcome> {
 /** Turn raw HTML into LLM-friendly text that PRESERVES table structure. A size
  *  chart is almost always a <table>; flattening it to prose destroys it, so we
  *  keep rows as `cell | cell | cell` lines and drop script/style noise. */
-function htmlToLlmText(html: string): string {
+export function htmlToLlmText(html: string): string {
   const tablesAsText = (html.match(/<table[\s\S]*?<\/table>/gi) ?? [])
     .map((tbl) =>
       (tbl.match(/<tr[\s\S]*?<\/tr>/gi) ?? [])
