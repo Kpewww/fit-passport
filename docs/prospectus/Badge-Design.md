@@ -43,7 +43,7 @@ across a table. Titanium replaced it precisely because it is *unmistakable.*
 raised rim, a beveled edge, a contact shadow, and physical thickness you can see
 when you turn them. The medallion is dimensional at rest and rotates under the
 cursor; clicking lifts it onto an inspect stage that extrudes its *actual
-silhouette* in WebGL. There is deliberately **no flat variant** anywhere in the
+silhouette* in WebGL. **UPDATE 2026-08-25:** list views now render a FLAT medallion by default — the dimensional build cost ~140 composited layers on the trophy case and was too heavy on lower-powered machines — so the dimensional treatment lives in the inspect stage. The original intent, and the reasoning below, are unchanged and restoring it is one prop (`BadgeCoin dimensional`). Previously there was deliberately no flat variant anywhere in the
 product.
 
 **III. Ornament escalates; taste does not.** Every badge carries a `finish` value

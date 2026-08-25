@@ -160,7 +160,7 @@ Fit Passport is a working application, not a mockup. As of this writing:
 | Coverage: automated tests across engine, badges, extractor, converters | **172 passing** |
 
 **Architecture.** Next.js (App Router) · React · TypeScript · Tailwind · Prisma ·
-Zod · Vitest, with Framer Motion + Lenis for motion and a lazily-loaded three.js for
+Zod · Vitest, with Framer Motion for motion and a lazily-loaded three.js for
 the badge inspect view only. Local development runs on SQLite with **no API keys and
 no cloud services**; production runs on Vercel + Neon Postgres, with the Postgres
 schema *derived* from the same source so the two can't drift. Sessions are

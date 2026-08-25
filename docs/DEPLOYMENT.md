@@ -38,9 +38,16 @@ Every model uses only portable scalars (`String`, `Int`, `Float`, `Boolean`,
 `DateTime`), so swapping the provider is sufficient. The generator refuses to run
 if the source schema is no longer SQLite, so this can't silently break.
 
-**While no database has been deployed yet** (still true as of Session 33), the
-simplest correct move after a schema change is to *regenerate* `0_init` from empty
-— no shadow database needed, and there's no applied history to conflict with:
+> ⚠️ **NO LONGER APPLICABLE — read this before following the block below.**
+> A production database **has** been deployed (Neon, 2026-08-24) and it **has
+> applied `0_init`**. Rewriting an applied migration makes Prisma refuse to
+> deploy, so the "regenerate from empty" recipe below is now the *wrong* move and
+> is kept only to explain how `0_init` came to exist. **Use the additive-migration
+> recipe in the next block instead.**
+
+**Historical — while no database had been deployed** (true up to Session 33), the
+simplest correct move after a schema change was to *regenerate* `0_init` from empty
+— no shadow database needed, and no applied history to conflict with:
 
 ```bash
 cd app-web
@@ -51,9 +58,9 @@ npx prisma migrate diff --from-empty \
   --script > prisma/migrations/0_init/migration.sql
 ```
 
-**Once a real database has applied `0_init`, stop doing that** — rewriting an
-applied migration makes Prisma refuse to deploy. From then on add an *additive*
-migration instead:
+**THIS IS THE CURRENT PROCEDURE.** A real database has applied `0_init`
+(2026-08-24), so every schema change from now on is an *additive* migration —
+rewriting an applied one makes Prisma refuse to deploy:
 
 ```bash
 cd app-web
@@ -116,7 +123,7 @@ diffed `--from-empty`.)
 counted per serverless instance, so the effective limit is `limit × instances` —
 i.e. no limit. Create a free Redis at **upstash.com**, copy the REST URL and REST
 token from its dashboard. The app talks to it over the REST API with plain
-`fetch` (no SDK, so nothing drags the pinned Node 18 toolchain forward), and falls
+`fetch` (no SDK, so nothing drags the toolchain forward), and falls
 back to in-process counters if Redis is unreachable rather than locking everyone
 out — check the logs for `[rateLimit] Redis unavailable` if limits behave oddly.
 
@@ -136,7 +143,7 @@ Everything below degrades gracefully when unset — the app stays fully usable.
 
 | Variable | Unlocks | Notes |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | real product-page extraction (Claude Haiku) | ~$0.007/check; only page text is sent, never measurements |
+| `ANTHROPIC_API_KEY` | LLM text extract + vision size-chart OCR (Claude Haiku 4.5) | **SET in production since 2026-08-25.** ~$0.012/check, capped ~$0.026. Only page text is sent, never measurements. NOTE: it cannot fix a 403 — it only helps pages we actually fetched. |
 | `REPLICATE_API_TOKEN` | photoreal try-on (FLUX schnell) | ~$0.003/image; coarse body descriptor only |
 | `RESEND_API_KEY` + `EMAIL_FROM` | password-reset emails | without it, `/recover` shows the link on screen |
 | `TRYON_API_URL` / `TRYON_API_KEY` | generic image provider | alternative to Replicate |
@@ -150,18 +157,28 @@ See `app-web/.env.example` for the full annotated list.
 These are honest gaps, not oversights — they're fine for a course demo and must
 be addressed before a public launch.
 
-1. **Moderation has no review queue.** Reports auto-hide content at 3 distinct
-   reporters (`src/lib/reports.ts`), which three coordinated accounts could abuse.
-   `hidden` is reversible and `node scripts/moderate.mjs` is the authoritative
-   takedown/restore path, but a real queue is needed before scale.
-2. **Images are base64 data URLs** in Postgres (portraits, item photos). Simple
-   and private, but it bloats rows. Move to object storage (Vercel Blob / S3) if
-   the closet grows.
-3. **No backups configured.** Neon has point-in-time restore on paid tiers; at
+1. **Images are base64 data URLs** in Postgres (portraits, item photos). This is
+   **the first hard wall in the design**, not a nice-to-have: Neon's free tier is
+   0.5 GB ≈ **340 users with ten photos each**, after which writes fail for
+   *everyone*, not just heavy users. It arrives long before model spend matters.
+   Move to object storage (Vercel Blob / S3 / R2) before inviting a cohort — a
+   code change plus a free tier, not a bill. See `docs/design/cost-model.md` §5.
+2. **No backups configured.** Neon has point-in-time restore on paid tiers; at
    minimum, export periodically.
-4. **`prisma migrate deploy` runs during build.** Fine for one environment; with
-   preview deployments pointing at the same database, a schema change from a
-   branch could hit production. Give previews their own Neon branch.
+3. **Auto-hide is still gameable at the margin.** Reports auto-hide content at 3
+   distinct reporters (`src/lib/reports.ts`), which three coordinated accounts
+   could trigger. A human review queue exists at `/admin` (Session 37) and can
+   override either way, and `node scripts/moderate.mjs` is the CLI equivalent —
+   but the threshold itself is still crude, and **appeals do not exist**: a hidden
+   author can see they were hidden but cannot reply.
+4. **Preview deployments have no database of their own.** `prisma migrate deploy`
+   runs during build, so a preview inheriting `DATABASE_URL` would migrate
+   *production* from a feature branch. Mitigated for now by scoping every env var
+   to the `production` target only — which means preview builds fail outright.
+   Give previews their own Neon branch before enabling them.
+5. **Vercel Hobby forbids commercial use.** A licence term, not a resource limit:
+   the moment this charges anyone, Pro ($20/member/month) is required. Hobby's
+   100 GB bandwidth cap also has **no overage option** — it simply stops.
 
 ---
 

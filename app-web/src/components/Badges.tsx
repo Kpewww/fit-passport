@@ -5,7 +5,9 @@
 //
 // Every badge on every screen is the same object: a dimensional struck coin that
 // TURNS when you hover it and lifts into the inspect stage when you click it.
-// There is deliberately no flat variant — see BadgeCoin.
+// Flat by default since 2026-08-25 (BadgeCoin `dimensional`, default false) — the
+// dimensional build cost ~140 composited layers on the trophy case. Dimensional
+// survives in BadgeInspect, where one badge is looked at closely.
 
 import { lazy, Suspense, useState } from "react";
 import { badgeById, METAL_STYLE, type EarnedBadge, type Metal } from "@/lib/badges";

@@ -4,7 +4,7 @@
 > constraints, what already exists, and the current top priority so work resumes
 > instantly. Keep it updated at the end of a session (it mirrors the memory files).
 >
-> **Last updated: Session 41 · 2026-08-24 (new machine + Next security patch + deploy blockers fixed).**
+> **Last updated: Session 42 · 2026-08-25 — LIVE at https://fit-passport.vercel.app, 209 tests, GitHub auto-deploy on.**
 >
 > ⚠️ **The project changed COMPUTERS (2026-08-24).** It now lives at
 > **`D:\Start-Up-Project\fit-passport`** on **Windows 11** — a fresh `git clone`.
@@ -21,22 +21,27 @@
 
 **【沟通约定】全程中文聊天;git commit message 用英文;DEVLOG.md 用英文。**
 
-**技术栈:** **Node 24.19.0 LTS**(旧笔记里"锁 Node 18.20"是**上一台 Mac 的限制**,不是项目要求,换机时已解除)+ **Next.js 14.2.35**(安全补丁,见 Session 41)App Router + React 18 + TS + Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效 Framer Motion + Lenis;three.js 仅徽章 inspect 懒加载。命令:`npm run dev`、`npm run typecheck`、`npm test`(**172 个**)、`npm run build`、改 schema 后 `npm run db:push`、生成文档 PDF `npm run docs:pdf`。**每轮结束务必:tsc + test + build + live smoke 全过 → commit & push → 更新 DEVLOG + memory。**
+**技术栈:** **Node 24.19.0 LTS**(旧笔记里"锁 Node 18.20"是**上一台 Mac 的限制**,不是项目要求,换机时已解除)+ **Next.js 14.2.35**(安全补丁,见 Session 41)App Router + React 18 + TS + Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效 Framer Motion(**Lenis 已移除**,见 memory 的 performance 条);three.js 仅徽章 inspect 懒加载。命令:`npm run dev`、`npm run typecheck`、`npm test`(**209 个**)、`npm run build`、改 schema 后 `npm run db:push`、生成文档 PDF `npm run docs:pdf`。**每轮结束务必:tsc + test + build + live smoke 全过 → commit & push → 更新 DEVLOG + memory。**
 
-**动手前必读**:memory 里的 `project-fit-passport-build-state`(架构/坑,读它)、`project-fit-passport-roadmap`(顶部有第一优先级)、`project-fit-passport-design-system`、`project-fit-passport-deployment`、`project-fit-passport-community-ecosystem`;仓库里 `README.md`、`DEVLOG.md`(到 Session 39)、`docs/DEPLOYMENT.md`、`docs/design/community-ecosystem.md`、`docs/prospectus/`(招股书 + 徽章设计文档,各 md+pdf)。
+**动手前必读**:memory 里的 `project-fit-passport-build-state`(架构 + 14 条铁律,**必读**)、`project-fit-passport-performance`(性能陷阱,别重新引入)、`project-fit-passport-deployment`、`project-fit-passport-design-system`、`project-fit-passport-next-steps`;仓库里 `README.zh-CN.md`、`DEVLOG.md`(到 Session 42)、`docs/DEPLOYMENT.md`、`docs/design/fetch-strategy.md`、`docs/design/cost-model.md`、`docs/prospectus/Founder-Brief.html`。
 
-**上次(Session 39)做了什么:** ① 写了两份文档放 `docs/prospectus/`——投资招股书式项目介绍 + 徽章设计文档,各 `.md`+`.pdf`,由自写的 `app-web/scripts/md-to-pdf.mjs`(无外部依赖,自托管字体 + headless Chrome 渲染)生成。② 跑了一次**核心逻辑端到端体检**,结论见下。
+---
 
-**体检结论(重要):**
-- **核心引擎 work 且透明**:`/api/recommend` 女款 chest 99 → 推荐 S(+2cm 含宽松量),带 `reasons:[{signal,weight,message}]`。8 页全 200(`/ask`→307 到 `/community` 正常),115 测试绿。
-- **最大软肋 = 尺码是"推断"不是"真读页面"**:`/api/check` 返回里 `rawJson.source.derived===true`——没配 `ANTHROPIC_API_KEY` 时,尺码表是从 URL slug + 品牌规律 + fixtures 拼的,**没真去 fetch 那个商品页**。这动摇了"paste any product link"的核心承诺。
-- **两个美术小项**:徽章缩略图 motif 在 ~64px 下几乎看不清;`/check` 粘链接前下半屏偏空。
+## 现状(Session 42 · 2026-08-25)
 
-**Session 40 (2026-08-20) 做了:真实商品页抓取的第一阶段。** 新增 `src/lib/pageParse.ts`(纯函数,无 key、无网络即可测):解析 JSON-LD(schema.org Product)+ OpenGraph/meta + **HTML `<table>` 里的真实尺码表**(支持行/列两种朝向、英寸→厘米、范围取中值、中文 胸围/腰围/肩宽)。`extractorLLM.extractSmart` 重写为分层:命中 fixture→信任;否则 fetch 真页→确定性解析(免费拿到真尺码表→`sizesFrom:"page"`);解析不到表且有 key→LLM 读"保留表格结构"的文本;都不行→URL 估算→`sizesFrom:"estimated"`。`ExtractedProduct.source` 加了 `sizesFrom:"fixture"|"page"|"estimated"`;`/check` 据此显示 **"✓ sizes read from the page"** 或 **"⚠ sizes estimated — confirm the chart"**;估算时置信度封顶 0.5。修了 `/api/check` **漏存 waistCm** 的老 bug。新增 12 个解析器测试(共 **127** 绿)。可用 `FIT_DISABLE_PAGE_FETCH=1` 关闭真实抓取。**同时派了研究 agent 扒现有合身/试衣产品与论文**,产出会写到 `docs/design/fit-algorithm-research.md`(若还没落盘就是子agent还在跑)。关键结论:主流图像试衣只做外观迁移、不预测真合身(Google TryOnDiffusion 官方"we don't promise fit"),印证我们**基于测量的透明引擎才是差异化**。
->
-> **Session 40 续(全部已做并推送):** 引擎升级为**多维(胸+腰+肩)** + 号型/body-range + 品类 ease + 有序 verdict + 置信度按 margin 缩放;抓取加固(真实 Chrome UA、反爬识别 `looksBlocked`、按 URL 的 TTL 缓存、真实在售标签、失败重试);**图片尺码表视觉 OCR**(key-gated,只读数字不存图);**人群体型先验** `populationPrior.ts`(普查均值、按 region+sex、只作低置信先验、绝不推断人种);研究文件 `docs/design/fit-algorithm-research.md` + `docs/design/china-sizing-research.md`。测试 **115→172**。
+**已上线:https://fit-passport.vercel.app** — Vercel + Neon Postgres + Upstash Redis,**209 测试**,GitHub 自动部署已接通(push 到 `main` 即上线)。生产管理员 `AK`(密码在 Session 41 播种时生成,不是本地那个 12345678)。
 
-**下一步候选:** ① 依据 `docs/design/fit-algorithm-research.md` 升级**打分算法/置信度校准/尺码系统归一化**(研究里最高优先级项);② 真实抓取的健壮性(更多站点、反爬、缓存);③ 部署上线 Vercel+Neon 拿真实用户;④ 手动办一场 $100 搭配赛。**用户还没拍板下一个,先看研究文件再定。**
+**Session 41–42 做完的事:**
+- **部署上线**,并修了两个本地永远暴露不出来的坑:缺 `migration_lock.toml`、migration 走了连接池(改为 `directUrl` 走直连主机)
+- **Next 14.2.15 → 14.2.35** 安全补丁(CVE-2025-29927 middleware 授权绕过,而我们的会话正是走 middleware)
+- **置信度校准**:信号互相矛盾时降置信度并**说明原因**(`conflictNote`)。生产实测 1.0 → 0.6
+- **抓取策略决策** `docs/design/fetch-strategy.md`:**不买穿透**(隐身代理 ≈ $16/1000 次,且击穿 403 落在判例的坏那一侧)。答案是**浏览器插件**,但要等客户访谈证据
+- **抓取结果埋点** `source.fetch` = `blocked|unreachable|ok|skipped`。生产实测:H&M=blocked、Patagonia=unreachable、Allbirds=ok
+- **成本模型** `docs/design/cost-model.md`,并修掉一个 **20 倍的成本 bug**(`MAX_PAGE_BYTES` 600KB→80KB)
+- **性能**:移除 Lenis、修复两处"每次鼠标移动 setState"、修复 **WebGL 上下文泄漏**(`forceContextLoss` 从来没调过)、**徽章默认扁平**(卡片不动)
+- **安全**:SSRF 守卫 `lib/urlSafety.ts`(重定向逐跳重检)、非服装页 422 拒绝、中文品类关键词
+
+**下一步(第一优先级):客户访谈。** 东西在公网跑着、安全加固过、性能改过了,没有技术借口挡着;课程分值最高;而且"要不要做浏览器插件"这个决定**唯一的依据**就是访谈结果。
 
 **重要约束(不可违反):**
 1. fit 引擎是**透明打分不是 LLM**(LLM 只抽商品数据,永不决定尺码)。
@@ -52,6 +57,6 @@
 12. `npm run db:pg:generate` 会把本地生成的 Prisma Client **覆盖成 Postgres 版**,跑完记得 `npx prisma generate` 切回 SQLite,否则本地 `npm run dev` 挂。
 9. 改 schema 后**重启 dev server**(否则旧 Prisma Client 500)。
 
-**已有的关键系统(别重造):** 徽章阶梯 铜→银→金→**钛(titanium,已替换 platinum)**→钻石→黑曜石 + 特殊色(紫水晶/玉/琥珀),源 `src/lib/badges.ts`;金属护照卡跟随最高徽章、可选已拥有金属、PNG 导出、社区横幅(`MetalCard.tsx`);徽章全站立体、悬停转动、点击进 CS2 式 inspect(`BadgeCoin.tsx`/`BadgeInspect.tsx`,无 flat 变体);**管理员账号 AK / 密码 12345678**(`node scripts/seed-admin.mjs`,`role=ADMIN`+`grantAllBadges`+会员 No.1,只有此脚本能授权,`/admin` 审核队列);会员编号 `No. 00000001`;拉黑 `Block` 模型双向生效;举报 + `REPORT_HIDE_THRESHOLD=3` 自动隐藏;限流器已支持 Upstash Redis(设 env 才启用,否则内存);字体自托管 `src/app/fonts/`。生态已建:关注+关注流、Ask&Answer(带真实衣橱证据)、每日 Top+Top 穿搭师榜。
+**已有的关键系统(别重造):** 徽章阶梯 铜→银→金→**钛(titanium,已替换 platinum)**→钻石→黑曜石 + 特殊色(紫水晶/玉/琥珀),源 `src/lib/badges.ts`;金属护照卡跟随最高徽章、可选已拥有金属、PNG 导出、社区横幅(`MetalCard.tsx`);徽章**默认扁平**(`BadgeCoin` 的 `dimensional` 默认 false,2026-08-25 的性能决定),立体版只保留在 CS2 式 inspect 舞台(`BadgeInspect.tsx`);**金属卡片不受影响,保持炫酷**;**本地管理员 AK / 12345678**(生产是另一个随机密码,Session 41 播种)(`node scripts/seed-admin.mjs`,`role=ADMIN`+`grantAllBadges`+会员 No.1,只有此脚本能授权,`/admin` 审核队列);会员编号 `No. 00000001`;拉黑 `Block` 模型双向生效;举报 + `REPORT_HIDE_THRESHOLD=3` 自动隐藏;限流器已支持 Upstash Redis(设 env 才启用,否则内存);字体自托管 `src/app/fonts/`。生态已建:关注+关注流、Ask&Answer(带真实衣橱证据)、每日 Top+Top 穿搭师榜。
 
-**待办池:** 真实商品页抓取(顶置)、部署上线(Neon 用 `-pooler`、Vercel Root=`app-web`、Build=`npm run vercel-build`、填 `DATABASE_URL`/`SESSION_SECRET`/`APP_URL`)、手动 $100 比赛、集合拖拽排序、比赛系统、体型匹配筛选;课程交付物(客户访谈、期中 Product Opportunity 展示、BMC/VPC)。
+**待办池:** ①**客户访谈**(第一优先级)②浏览器插件(答 403 + 淘宝,等访谈证据)③把 item 照片挪出 Postgres(Neon 免费档 0.5GB ≈ 340 用户,demo 阶段不急)④徽章重设计(你提供参考图,格式:24×24 纯描边 SVG)⑤手动办一场 $100 比赛 ⑥集合拖拽排序、比赛系统、体型匹配筛选;课程交付物(期中 Product Opportunity 展示、BMC/VPC)。
