@@ -118,6 +118,11 @@ export type EngineOutput = {
   // UI can warn the recommendation is weak. Null when evidence is on-domain.
   domainNote: string | null;
   domainRelevance: DomainRelevance;
+  // Set when the independent signals point at different sizes, or when the pick
+  // is a size our own measurement model calls plainly wrong. The confidence
+  // number already reflects this; the note explains WHY, which is the point of a
+  // transparent engine — a lowered number with no reason is just a worse number.
+  conflictNote: string | null;
 };
 
 // ------------ Engine ------------
@@ -428,6 +433,74 @@ function computeConfidence(size: SizeOptionInput, hasKnownGood: boolean, hasChes
   return Math.min(1, c);
 }
 
+/** Plain-language name for a signal, for the conflict note. */
+function humanSignal(signal: string): string {
+  switch (signal) {
+    case "measurement-fit": return "your measurements";
+    case "known-good": return "a garment you already own";
+    case "outcome": return "what you kept or returned before";
+    case "brand-bias": return "how this brand has run for you";
+    default: return signal;
+  }
+}
+
+type Disagreement = { distance: number; signal: string; pickedLabel: string };
+
+/**
+ * How far apart do the independent signals land?
+ *
+ * The top-two margin rule catches ONE kind of uncertainty: two sizes scoring
+ * nearly the same. It misses a sharper one — the signals actively DISAGREEING.
+ * A same-brand anchor can carry a size to a decisive win (big margin ⇒ full
+ * confidence) while the measurement model says that very size is "too small".
+ *
+ * Two independent estimates of the same quantity pointing different ways is the
+ * textbook case for widening the interval rather than reporting certainty. It
+ * also follows directly from the literature's "recommend the size most likely to
+ * be KEPT" framing (see docs/design/fit-algorithm-research.md §3): a size one
+ * signal predicts will be RETURNED cannot simultaneously be a near-certain keep.
+ *
+ * Disagreement is measured as ladder distance: for each signal, which size would
+ * that signal pick on its own? The furthest such pick from the ensemble's winner
+ * is the disagreement. A signal that only appears on one size expresses no
+ * preference between sizes, so it is ignored.
+ */
+function signalDisagreement(
+  ranked: SizeScore[],
+  ladder: Map<string, number>,
+): Disagreement | null {
+  const winner = ranked[0];
+  const winnerIdx = ladder.get(winner.label);
+  if (winnerIdx == null) return null;
+
+  const signals = new Set<string>();
+  for (const r of ranked) for (const reason of r.reasons) signals.add(reason.signal);
+
+  let worst: Disagreement | null = null;
+  for (const signal of signals) {
+    let pickedLabel: string | null = null;
+    let bestWeight = -Infinity;
+    let seen = 0;
+    for (const r of ranked) {
+      const reason = r.reasons.find((x) => x.signal === signal);
+      if (!reason) continue;
+      seen++;
+      if (reason.weight > bestWeight) {
+        bestWeight = reason.weight;
+        pickedLabel = r.label;
+      }
+    }
+    if (seen < 2 || pickedLabel == null) continue;
+    const idx = ladder.get(pickedLabel);
+    if (idx == null) continue;
+    const distance = Math.abs(idx - winnerIdx);
+    if (distance > 0 && (worst == null || distance > worst.distance)) {
+      worst = { distance, signal, pickedLabel };
+    }
+  }
+  return worst;
+}
+
 /**
  * Reference size to anchor a brand-bias shift around. Prefers a same-brand
  * known-good anchor; falls back to the middle of the offered size ladder.
@@ -552,6 +625,44 @@ export function recommend(input: EngineInput): EngineOutput {
     for (const r of ranked) r.confidence = Math.round(r.confidence * marginFactor * 100) / 100;
   }
 
+  // ---- Signal agreement ------------------------------------------------------
+  // See signalDisagreement(). A decisive margin is NOT the same as a confident
+  // answer: the margin can be decisive precisely because one strong signal
+  // overrode the others.
+  const ladder = new Map(sizes.map((s, i) => [s.label, i] as const));
+  const disagreement = signalDisagreement(ranked, ladder);
+  const conflictParts: string[] = [];
+  if (disagreement) {
+    // One ladder step apart is ordinary tension; two or more means the signals
+    // are telling genuinely different stories.
+    const agreement = disagreement.distance >= 2 ? 0.65 : 0.8;
+    for (const r of ranked) r.confidence = Math.round(r.confidence * agreement * 100) / 100;
+    // Phrased without a verb agreeing with the signal name, so every signal
+    // reads correctly ("your measurements" is plural, "a garment you own" isn't).
+    conflictParts.push(
+      `Your signals disagree — by ${humanSignal(disagreement.signal)}, ` +
+        `${disagreement.pickedLabel}; by the strongest overall evidence, ` +
+        `${ranked[0].label}.`,
+    );
+  }
+
+  // A size our own measurement model calls plainly wrong cannot be a confident
+  // pick, however hard the other signals carry it. Applied per size, since each
+  // size carries its own verdict.
+  for (const r of ranked) {
+    if (r.verdict === "too small" || r.verdict === "too big") {
+      r.confidence = Math.min(r.confidence, 0.6);
+    }
+  }
+  if (ranked[0].verdict === "too small" || ranked[0].verdict === "too big") {
+    conflictParts.push(
+      `On your measurements alone ${ranked[0].label} reads "${ranked[0].verdict}" — ` +
+        `we're recommending it on other evidence, so treat this as a starting point ` +
+        `and check the chart.`,
+    );
+  }
+  const conflictNote = conflictParts.length > 0 ? conflictParts.join(" ") : null;
+
   // A regional-average body is a prior, not a fact — cap confidence so the number
   // can never imply we know the user's measurements.
   if (profile.chestIsEstimated) {
@@ -612,7 +723,7 @@ export function recommend(input: EngineInput): EngineOutput {
       `measurements and preference. Add a ${humanDomain(productDomain)} you own for a real recommendation.`;
   }
 
-  return { ranked, best, explanation, domainNote, domainRelevance };
+  return { ranked, best, explanation, domainNote, domainRelevance, conflictNote };
 }
 
 /** Human name for a size domain, for disclaimers. */

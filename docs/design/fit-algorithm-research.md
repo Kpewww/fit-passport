@@ -120,6 +120,31 @@ Prioritised impact-vs-effort for a solo build. Each stays transparent and testab
 5. **Confidence reflects the margin.** Drop confidence when the top two sizes are
    near-tied (genuine ambiguity), not just when data is missing. *(Recommend-most-
    likely-kept ⇒ confidence should track how decisive that pick is.)*
+6. **Confidence reflects signal AGREEMENT, not only margin.** *(Added 2026-08-24
+   after the live deployment surfaced a concrete counter-example.)* Rule 5 is
+   necessary but not sufficient: a margin can be decisive **precisely because one
+   signal overrode the others**. Observed in production — a shopper owning a
+   Uniqlo M rated 5/5 got M recommended at **confidence 1.0** while the engine's
+   own measurement model called that same M *"too small"*. Both facts were
+   correct; reporting near-certainty was not.
+
+   Grounding: (a) the **most-likely-kept** framing this section already adopts —
+   a size one signal predicts will be *returned* cannot simultaneously be a
+   near-certain keep; (b) the standard ensemble result that **disagreement among
+   independent estimators is itself an uncertainty estimate**, which is why
+   ensemble variance is used as a confidence proxy across ML.
+
+   Implemented in `fitEngine.ts` as `signalDisagreement()`: for each independent
+   signal, find the size that signal alone would pick; the largest ladder distance
+   from the ensemble's winner scales confidence (1 step ×0.8, ≥2 steps ×0.65), and
+   any size whose own ordinal verdict reads *too small* / *too big* is capped at
+   0.6. The reason is surfaced as `conflictNote` rather than silently lowering the
+   number — a smaller number with no explanation is just a worse number, which
+   would violate the explainability invariant.
+
+   Measured effect on the production case: **1.0 → 0.59**, with signals in
+   agreement scoring 0.90 and a one-step disagreement 0.72 — monotone in the
+   direction the theory predicts.
 
 Deliberately **NOT** doing: a learned latent-factor model (kills explainability, needs
 scale we don't have), or an image/VTO fit model (the whole field says image ≠ fit).

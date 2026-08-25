@@ -369,6 +369,84 @@ describe("confidence tracks decisiveness", () => {
   });
 });
 
+describe("confidence tracks signal AGREEMENT [prod finding 2026-08-24]", () => {
+  // Reproduces exactly what the live deployment returned: a chest-99 shopper who
+  // owns a Uniqlo tee in M rated 5/5, checking another Uniqlo tee. The anchor
+  // carries M to a decisive win, so the top-two margin is wide — and the engine
+  // used to report confidence 1.0 even though the measurement model calls that
+  // same M "too small" (target garment chest 109 vs M's 100).
+  //
+  // A decisive margin is not the same as a confident answer: the margin here is
+  // decisive BECAUSE one signal overrode the other. Two independent estimates
+  // pointing different ways must widen the interval, not report certainty.
+  const conflicted = () =>
+    recommend(
+      baseInput({
+        profile: { chestCm: 99, preferredFit: "regular" } as EngineInput["profile"],
+        product: { brand: "Uniqlo", category: "tshirt" },
+        sizes: UNIQLO_TEE_SIZES,
+        knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5 }],
+      }),
+    );
+
+  it("still recommends the anchor's size (the [F1] fix is not undone)", () => {
+    expect(conflicted().best.label).toBe("M");
+  });
+
+  it("no longer reports near-certainty when the signals conflict", () => {
+    const out = conflicted();
+    // Was 1.0 in production before this change.
+    expect(out.best.confidence).toBeLessThan(0.8);
+  });
+
+  it("caps confidence on ANY size its own measurements call plainly wrong", () => {
+    const out = conflicted();
+    for (const r of out.ranked) {
+      if (r.verdict === "too small" || r.verdict === "too big") {
+        expect(r.confidence).toBeLessThanOrEqual(0.6);
+      }
+    }
+  });
+
+  it("explains the conflict instead of just quietly lowering the number", () => {
+    const note = conflicted().conflictNote;
+    expect(note).toBeTruthy();
+    // Must name the disagreeing evidence in plain language, and say what the
+    // measurements alone would have said — a lower number with no reason is
+    // just a worse number.
+    expect(note).toMatch(/disagree|measurements/i);
+    expect(note).toContain("M");
+  });
+
+  it("stays silent and confident when the signals AGREE", () => {
+    // Same shopper, but the owned size is the one the measurements also pick.
+    const agreed = recommend(
+      baseInput({
+        profile: { chestCm: 99, preferredFit: "regular" } as EngineInput["profile"],
+        product: { brand: "Uniqlo", category: "tshirt" },
+        sizes: UNIQLO_TEE_SIZES,
+        knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "XL", fitRating: 5 }],
+      }),
+    );
+    expect(agreed.best.label).toBe("XL");
+    expect(agreed.conflictNote).toBeNull();
+    expect(agreed.best.confidence).toBeGreaterThan(conflicted().best.confidence);
+  });
+
+  it("penalises a two-step disagreement harder than a one-step one", () => {
+    const near = recommend(
+      baseInput({
+        profile: { chestCm: 99, preferredFit: "regular" } as EngineInput["profile"],
+        product: { brand: "Uniqlo", category: "tshirt" },
+        sizes: UNIQLO_TEE_SIZES,
+        knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "L", fitRating: 5 }],
+      }),
+    );
+    const far = conflicted(); // anchor M vs measurement XL = two steps
+    expect(far.best.confidence).toBeLessThan(near.best.confidence);
+  });
+});
+
 describe("regional-average body prior (chestIsEstimated)", () => {
   it("still ranks sizes, but caps confidence and flags the estimate", () => {
     const out = recommend(baseInput({

@@ -72,6 +72,7 @@ type CheckResponse = {
     explanation: string;
     domainNote: string | null;
     domainRelevance: "match" | "cross" | "empty";
+    conflictNote: string | null;
   };
   effectiveFit: FitPref;
   recommendationId: string;
@@ -498,6 +499,20 @@ function Result({
           <div className="text-amber-900">
             <p className="font-semibold">Low-confidence recommendation</p>
             <p className="mt-0.5 text-amber-800">{result.domainNote}</p>
+          </div>
+        </div>
+      )}
+
+      {/* SIGNAL CONFLICT — the evidence points at different sizes. The confidence
+          number already reflects this; this says WHY, which is the whole point of
+          a transparent engine. Kept visually quieter than the cross-domain
+          warning: a conflict lowers certainty, it doesn't invalidate the answer. */}
+      {result.conflictNote && (
+        <div className="flex items-start gap-3 rounded-xl border border-line bg-paper-soft px-4 py-3 text-sm">
+          <span className="mt-0.5 text-lg text-ink-faint">⚖️</span>
+          <div className="text-ink-soft">
+            <p className="font-semibold text-ink">Why confidence is lower here</p>
+            <p className="mt-0.5">{result.conflictNote}</p>
           </div>
         </div>
       )}
