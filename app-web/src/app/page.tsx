@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Lenis from "lenis";
 import { motion, useScroll, useTransform, useReducedMotion, type MotionValue } from "framer-motion";
 import { Card, LinkButton, AccuracyBadge, Skeleton } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
@@ -71,21 +70,20 @@ export default function Home() {
       .catch(() => setStatus(null));
   }, []);
 
-  // Smooth inertia scroll — homepage only, and never when reduced motion is asked.
-  useEffect(() => {
-    if (reduce) return;
-    const lenis = new Lenis({ lerp: 0.1, smoothWheel: true });
-    let raf = 0;
-    const loop = (t: number) => {
-      lenis.raf(t);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => {
-      cancelAnimationFrame(raf);
-      lenis.destroy();
-    };
-  }, [reduce]);
+  // Lenis smooth-scroll was REMOVED here (2026-08-25) because it was the amplifier
+  // for every other scroll cost on this page, not a cost of its own.
+  //
+  // Native scrolling is handled on the compositor thread. Lenis replaces it with a
+  // main-thread rAF loop that runs every frame, and each synthetic scroll position
+  // fires a scroll event that makes all four `useScroll` sections re-measure their
+  // element positions — roughly sixteen scroll-linked transforms recomputed and
+  // written per frame. With `lerp: 0.1` the scroll also keeps settling for ~20 more
+  // frames after the wheel stops, so that work continued after the input ended.
+  //
+  // Removing it puts scrolling back on the compositor. The parallax and reveal
+  // effects are untouched; only the inertia easing is gone. (Precedent: Session 27
+  // removed pinned scroll-jacking from this page for feeling heavy — same family of
+  // complaint, same answer.)
 
   function goCheck(e: React.FormEvent) {
     e.preventDefault();
@@ -447,8 +445,10 @@ function HorizontalShowcase({ reduce }: { reduce: boolean }) {
         onPointerMove={onPointerMove}
         onPointerUp={endDrag}
         onPointerCancel={endDrag}
-        data-lenis-prevent
-        className="no-scrollbar mt-8 flex cursor-grab snap-x gap-6 overflow-x-auto scroll-px-6 px-6 pb-4 active:cursor-grabbing"
+        // `overscroll-x-contain`: reaching either end of this row must not chain
+        // into the page — on a trackpad that chaining also triggers the browser's
+        // back-navigation gesture, which is worse than a scroll hitch.
+        className="no-scrollbar mt-8 flex cursor-grab snap-x gap-6 overflow-x-auto overscroll-x-contain scroll-px-6 px-6 pb-4 active:cursor-grabbing"
       >
         {SHOW_CARDS.map((c) => (
           <div

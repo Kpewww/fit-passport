@@ -201,6 +201,12 @@ export function BadgeWebGL({
       cancelAnimationFrame(raf);
       renderer.domElement.remove();
       renderer.dispose();
+      // dispose() frees three.js's own GPU objects but NOT the WebGL context
+      // itself. Without this, every badge inspected in True 3D leaks a live
+      // context; Chrome caps concurrent contexts (~16) and starts evicting the
+      // oldest, and until then each one holds GPU memory. That shows up as the
+      // whole tab getting heavier the longer you browse — not as an error.
+      renderer.forceContextLoss();
       pmrem.dispose();
       env.dispose();
       keyGeo.dispose();

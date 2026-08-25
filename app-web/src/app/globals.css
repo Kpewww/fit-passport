@@ -39,20 +39,6 @@ body {
   letter-spacing: 0.24em;
 }
 
-/* Lenis smooth-scroll (homepage only; class is added/removed by the Lenis instance). */
-html.lenis,
-html.lenis body {
-  height: auto;
-}
-.lenis.lenis-smooth {
-  scroll-behavior: auto !important;
-}
-.lenis.lenis-smooth [data-lenis-prevent] {
-  overscroll-behavior: contain;
-}
-.lenis.lenis-stopped {
-  overflow: clip;
-}
 
 /* Dark "credential" glass panel — a translucent frosted interior on dark bands. */
 .glass-panel {
@@ -68,4 +54,30 @@ html.lenis body {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Metal card tilt — driven by CSS custom properties that the pointer handler
+   writes directly to the DOM (see components/MetalCard.tsx). Keeping the state
+   transitions here rather than in React means moving the pointer costs a
+   compositor update, not a re-render of the whole card. */
+.metal-card {
+  transition: transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.metal-card[data-tilting] {
+  transition: transform 200ms ease-out;
+  /* Promoted only WHILE tilting, so an idle passport holds no extra GPU memory. */
+  will-change: transform;
+}
+.metal-card-sheen {
+  opacity: 0;
+  transition: opacity 500ms ease;
+}
+.metal-card[data-tilting] .metal-card-sheen {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .metal-card,
+  .metal-card-sheen {
+    transition: none;
+  }
 }

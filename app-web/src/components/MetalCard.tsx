@@ -11,7 +11,7 @@
 // sheen · a quick, infrequent glint sweep · agate striations on the top metals.
 // On pointer it tilts slightly in 3D (limited, so text stays readable).
 
-import { useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 export type CardTheme = {
   key: string;
@@ -97,43 +97,97 @@ export function MetalCard({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [t, setT] = useState({ rx: 0, ry: 0, active: false });
+  // The tilt is driven through CSS custom properties written straight to the DOM —
+  // deliberately NOT React state.
+  //
+  // It used to be `setState` per pointermove, which re-rendered this entire subtree
+  // (the SVG grain, the agate veins, every CardField, the badge seal) 60–120 times a
+  // second, and called getBoundingClientRect on each move as well — a read-layout /
+  // write-state / re-render / read-layout thrash loop. That was the passport feeling
+  // heavier than it should.
+  //
+  // Now: measure once on enter, write two custom properties at most once per frame,
+  // and let the compositor do the rest. React renders zero times while you move.
+  const rect = useRef<DOMRect | null>(null);
+  const pending = useRef<{ rx: number; ry: number } | null>(null);
+  const raf = useRef(0);
 
-  function onMove(e: React.PointerEvent) {
+  const flush = useCallback(() => {
+    raf.current = 0;
+    const el = ref.current;
+    const p = pending.current;
+    if (!el || !p) return;
+    el.style.setProperty("--tilt-rx", `${p.rx}deg`);
+    el.style.setProperty("--tilt-ry", `${p.ry}deg`);
+    el.style.setProperty("--tilt-x", `${50 + p.ry * 3}%`);
+    el.style.setProperty("--tilt-y", `${50 - p.rx * 3}%`);
+  }, []);
+
+  function onEnter() {
     if (!tiltable) return;
     const el = ref.current;
     if (!el) return;
-    const r = el.getBoundingClientRect();
+    // One measurement per hover, not one per move.
+    rect.current = el.getBoundingClientRect();
+    el.dataset.tilting = "true";
+  }
+
+  function onMove(e: React.PointerEvent) {
+    if (!tiltable) return;
+    const r = rect.current;
+    if (!r) return;
     const px = (e.clientX - r.left) / r.width - 0.5;
     const py = (e.clientY - r.top) / r.height - 0.5;
     // Limited range — a card, not a spinning coin.
-    setT({ rx: -py * 7, ry: px * 9, active: true });
+    pending.current = { rx: -py * 7, ry: px * 9 };
+    // Coalesce to one write per frame; pointermove can fire far faster than that.
+    if (!raf.current) raf.current = requestAnimationFrame(flush);
   }
+
+  function onLeave() {
+    const el = ref.current;
+    if (!el) return;
+    rect.current = null;
+    pending.current = null;
+    if (raf.current) {
+      cancelAnimationFrame(raf.current);
+      raf.current = 0;
+    }
+    delete el.dataset.tilting;
+    el.style.setProperty("--tilt-rx", "0deg");
+    el.style.setProperty("--tilt-ry", "0deg");
+  }
+
+  useEffect(() => () => {
+    if (raf.current) cancelAnimationFrame(raf.current);
+  }, []);
 
   return (
     <div style={{ perspective: 1200 }} className={className}>
       <div
         ref={ref}
+        onPointerEnter={onEnter}
         onPointerMove={onMove}
-        onPointerLeave={() => setT({ rx: 0, ry: 0, active: false })}
-        className="relative overflow-hidden rounded-[22px] p-7 shadow-lift sm:p-9"
+        onPointerLeave={onLeave}
+        className="metal-card relative overflow-hidden rounded-[22px] p-7 shadow-lift sm:p-9"
         style={{
           background: `linear-gradient(140deg, ${theme.from} 0%, ${theme.via} 52%, ${theme.to} 100%)`,
           color: theme.text,
-          transform: `rotateX(${t.rx}deg) rotateY(${t.ry}deg)`,
+          // Reads the custom properties the pointer handler writes. The snap-back
+          // easing is the default; `[data-tilting]` swaps in the responsive one, so
+          // the transition change costs a CSS rule rather than a React render.
+          transform: "rotateX(var(--tilt-rx, 0deg)) rotateY(var(--tilt-ry, 0deg))",
           transformStyle: "preserve-3d",
-          transition: t.active ? "transform 200ms ease-out" : "transform 700ms cubic-bezier(0.16,1,0.3,1)",
         }}
       >
         <MetalSurface theme={theme} />
         {/* pointer-tracked soft highlight, so the tilt reads as light on metal */}
         {tiltable && (
           <div
-            className="pointer-events-none absolute inset-0"
+            className="metal-card-sheen pointer-events-none absolute inset-0"
             style={{
-              background: `radial-gradient(60% 60% at ${50 + t.ry * 3}% ${50 - t.rx * 3}%, rgba(255,255,255,0.30), transparent 70%)`,
-              opacity: t.active ? 1 : 0,
-              transition: "opacity 500ms ease",
+              background:
+                "radial-gradient(60% 60% at var(--tilt-x, 50%) var(--tilt-y, 50%), rgba(255,255,255,0.30), transparent 70%)",
               mixBlendMode: "soft-light",
             }}
           />
