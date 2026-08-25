@@ -81,3 +81,23 @@ body {
     transition: none;
   }
 }
+
+/* Skip rendering work for content that is scrolled off screen.
+ *
+ * This matters here far more than on an ordinary page. Every badge is a
+ * DIMENSIONAL struck medal by design (BadgeCoin.tsx): a stack of up to twelve
+ * rim slices inside `transform-style: preserve-3d`, so each slice becomes its own
+ * composited layer, over a face SVG carrying eighteen gradients and two filters —
+ * one of them a feDropShadow, i.e. an offscreen blur buffer. The trophy case puts
+ * twenty of those on one page, which is roughly 140 layers and 40 filter passes
+ * held in GPU memory whether or not you can see them.
+ *
+ * `content-visibility: auto` lets the browser skip layout, paint and compositing
+ * for a subtree that is off screen, and `contain-intrinsic-size` keeps the
+ * scrollbar honest while it is skipped. The design is untouched — what is on
+ * screen renders exactly as before.
+ */
+.defer-offscreen {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}

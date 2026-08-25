@@ -174,10 +174,16 @@ export function BadgeCoin({
                 // Two layers: the milled flutes of a coin's edge over the metal
                 // itself, darkening toward the back of the stack.
                 backgroundImage: [
+                  // Darkening toward the back of the stack used to be
+                  // `filter: brightness(...)`. A CSS filter forces the element into
+                  // its own layer AND an offscreen buffer — times up to twelve
+                  // slices, times twenty badges on the trophy case. A flat black
+                  // overlay multiplies the same way over these metal gradients and
+                  // costs nothing beyond one more paint server.
+                  `linear-gradient(rgba(0,0,0,${(1 - (0.42 + t * 0.5)).toFixed(3)}), rgba(0,0,0,${(1 - (0.42 + t * 0.5)).toFixed(3)}))`,
                   `repeating-linear-gradient(90deg, ${p.rim}00 0px, ${p.rim}55 ${Math.max(1, size * 0.018)}px, ${p.light}33 ${Math.max(2, size * 0.03)}px, ${p.rim}00 ${Math.max(3, size * 0.045)}px)`,
                   `linear-gradient(118deg, ${p.light} 0%, ${p.mid} 30%, ${p.dark} 64%, ${p.rim} 100%)`,
                 ].join(","),
-                filter: `brightness(${0.42 + t * 0.5})`,
                 opacity: locked ? 0.45 : 1,
               }}
             />

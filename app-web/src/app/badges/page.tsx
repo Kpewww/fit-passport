@@ -93,7 +93,10 @@ export default function BadgesPage() {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="mt-8">
+    // `defer-offscreen`: each track holds several dimensional coins, and a coin is
+    // an expensive object (see the comment on .defer-offscreen in globals.css).
+    // Off-screen tracks should not sit in GPU memory.
+    <div className="defer-offscreen mt-8">
       <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-ink-soft">{title}</h2>
       {children}
     </div>
