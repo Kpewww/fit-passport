@@ -29,7 +29,7 @@
 
 ## 现状(Session 42 · 2026-08-25)
 
-**已上线:https://fit-passport.vercel.app** — Vercel + Neon Postgres + Upstash Redis,**209 测试**,GitHub 自动部署已接通(push 到 `main` 即上线)。生产管理员 `AK`(密码在 Session 41 播种时生成,不是本地那个 12345678)。
+**已上线:https://fit-passport.vercel.app** — Vercel + Neon Postgres + Upstash Redis,**209 测试**,GitHub 自动部署已接通(push 到 `main` 即上线)。生产管理员 `AK`,密码在 Session 41 播种时随机生成(与本地播种脚本的默认值不同)。
 
 **Session 41–42 做完的事:**
 - **部署上线**,并修了两个本地永远暴露不出来的坑:缺 `migration_lock.toml`、migration 走了连接池(改为 `directUrl` 走直连主机)
@@ -57,6 +57,6 @@
 12. `npm run db:pg:generate` 会把本地生成的 Prisma Client **覆盖成 Postgres 版**,跑完记得 `npx prisma generate` 切回 SQLite,否则本地 `npm run dev` 挂。
 9. 改 schema 后**重启 dev server**(否则旧 Prisma Client 500)。
 
-**已有的关键系统(别重造):** 徽章阶梯 铜→银→金→**钛(titanium,已替换 platinum)**→钻石→黑曜石 + 特殊色(紫水晶/玉/琥珀),源 `src/lib/badges.ts`;金属护照卡跟随最高徽章、可选已拥有金属、PNG 导出、社区横幅(`MetalCard.tsx`);徽章**默认扁平**(`BadgeCoin` 的 `dimensional` 默认 false,2026-08-25 的性能决定),立体版只保留在 CS2 式 inspect 舞台(`BadgeInspect.tsx`);**金属卡片不受影响,保持炫酷**;**本地管理员 AK / 12345678**(生产是另一个随机密码,Session 41 播种)(`node scripts/seed-admin.mjs`,`role=ADMIN`+`grantAllBadges`+会员 No.1,只有此脚本能授权,`/admin` 审核队列);会员编号 `No. 00000001`;拉黑 `Block` 模型双向生效;举报 + `REPORT_HIDE_THRESHOLD=3` 自动隐藏;限流器已支持 Upstash Redis(设 env 才启用,否则内存);字体自托管 `src/app/fonts/`。生态已建:关注+关注流、Ask&Answer(带真实衣橱证据)、每日 Top+Top 穿搭师榜。
+**已有的关键系统(别重造):** 徽章阶梯 铜→银→金→**钛(titanium,已替换 platinum)**→钻石→黑曜石 + 特殊色(紫水晶/玉/琥珀),源 `src/lib/badges.ts`;金属护照卡跟随最高徽章、可选已拥有金属、PNG 导出、社区横幅(`MetalCard.tsx`);徽章**默认扁平**(`BadgeCoin` 的 `dimensional` 默认 false,2026-08-25 的性能决定),立体版只保留在 CS2 式 inspect 舞台(`BadgeInspect.tsx`);**金属卡片不受影响,保持炫酷**;**本地管理员账号**由 `node scripts/seed-admin.mjs` 播种并把凭据打印出来(生产是另一个随机密码,Session 41 播种)(`node scripts/seed-admin.mjs`,`role=ADMIN`+`grantAllBadges`+会员 No.1,只有此脚本能授权,`/admin` 审核队列);会员编号 `No. 00000001`;拉黑 `Block` 模型双向生效;举报 + `REPORT_HIDE_THRESHOLD=3` 自动隐藏;限流器已支持 Upstash Redis(设 env 才启用,否则内存);字体自托管 `src/app/fonts/`。生态已建:关注+关注流、Ask&Answer(带真实衣橱证据)、每日 Top+Top 穿搭师榜。
 
 **待办池:** ①**客户访谈**(第一优先级)②浏览器插件(答 403 + 淘宝,等访谈证据)③把 item 照片挪出 Postgres(Neon 免费档 0.5GB ≈ 340 用户,demo 阶段不急)④徽章重设计(你提供参考图,格式:24×24 纯描边 SVG)⑤手动办一场 $100 比赛 ⑥集合拖拽排序、比赛系统、体型匹配筛选;课程交付物(期中 Product Opportunity 展示、BMC/VPC)。
