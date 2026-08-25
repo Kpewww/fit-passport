@@ -10,7 +10,7 @@ metadata:
 
 **Fit Passport** — "One body. One fit identity. Any store." A consumer-owned fit layer: user keeps one portable profile (body info, preferred fit, known-good garments, keep/return/exchange outcomes). Paste a product URL → system extracts sizing data → recommends a size with confidence + explanation. Learns from outcomes.
 
-**Team:** Xiangchen Kong ([[user-xiangchen-kong]]) + Alyssa Qi. For course [[project-course-49800]].
+**Team:** Xiangchen Kong, Alyssa Qi, Jenny Cao, Nicolas Wang. For course [[project-course-49800]].
 
 **Semester MVP scope (narrow):** responsive web app, human apparel only (tops/shirts/jackets). Create profile → add 3-5 known-good items → paste product URL → get ranked size + confidence + explanation → record keep/return/exchange. Stretch: small dog/cat pet-profile prototype, regional sizing, VTO proof-of-concept. Out of scope: footwear/jewelry production, custom body-scan model, native apps, retailer integrations.
 

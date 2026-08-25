@@ -19,11 +19,12 @@ rediscover the hard way.
 | [`project-fit-passport-deployment.md`](project-fit-passport-deployment.md) | Anything involving production, migrations, or env vars |
 | [`project-fit-passport-design-system.md`](project-fit-passport-design-system.md) | Any visual change — palette, type, motion, card, badges |
 | [`project-fit-passport-next-steps.md`](project-fit-passport-next-steps.md) | You're deciding what to work on |
+| [`project-fit-passport-closet-signal-design.md`](project-fit-passport-closet-signal-design.md) | Before touching the closet fit rating, `brandBias`, or confidence — the current 1–5 scale is the wrong shape |
 
 Also here: the identity/sharing threat model, the community-ecosystem plan, and the
 course requirements.
 
-## The two standing principles
+## The three standing principles
 
 - [`principle-no-brand-imagery.md`](principle-no-brand-imagery.md) — brands appear as
   **text only**; images are **user-uploaded only**. A trademark and copyright
@@ -31,10 +32,13 @@ course requirements.
 - [`principle-research-grounded.md`](principle-research-grounded.md) — every feature
   rests on cited research and commercial precedent. This is also what the course
   grades on.
+- [`principle-evidence-and-logging.md`](principle-evidence-and-logging.md) — every
+  *claim* needs a checkable source and unverified ones are labelled; every push
+  owes a DEVLOG entry; memory changes are published here, curated.
 
 ## What is deliberately NOT in this folder
 
-Notes about the founder personally, about how he prefers to work with an AI
+Notes about a team member personally, about how anyone prefers to work with an AI
 assistant, and about the setup of one particular development machine stay out of
 the repository. None of it is project knowledge. (The Windows-specific commands
 that *are* useful live in [`README.zh-CN.md`](../../README.zh-CN.md) instead.)

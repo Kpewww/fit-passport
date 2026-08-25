@@ -5,7 +5,7 @@
 > **One body. One fit identity. Any store.**
 > A consumer-owned fit layer for apparel — Fall 2026, CMU 49-800 *Start Up Creation in Practice*.
 
-Team: Xiangchen Kong · Alyssa Qi  Instructor: Prof. Sheryl Root
+Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang  Instructor: Prof. Sheryl Root
 
 Sizes never agree across brands. Fit Passport keeps **one portable profile** you
 own — your measurements, your preferred fit, and the clothes that already fit you

@@ -76,7 +76,7 @@ export function Footer() {
               A student project for 49-800 Start Up Creation in Practice · Carnegie Mellon University
             </span>
           </p>
-          <p>Xiangchen Kong &amp; Alyssa Qi · © 2026</p>
+          <p>Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang · © 2026</p>
         </div>
       </div>
     </footer>

@@ -68,3 +68,37 @@ Done since the last update: **`ANTHROPIC_API_KEY` set in prod** (Tier 1 item 2 �
 3. **Browser extension** — the answer to blocked retailers AND to Taobao (login-walled, so the wrong side of the case law; the extension sidesteps it by being the user's own browser). Evidence-gated on (1).
 4. **Move item photos out of Postgres** before inviting a cohort (Neon free 0.5GB ≈ 340 users × 10 photos, then writes fail for everyone). Not urgent for a demo — the founder explicitly deprioritised it, correctly.
 5. **Badge redesign** — the founder wants to supply reference art later; format is a 24×24 stroke-only SVG motif (see [[project-fit-passport-design-system]]).
+
+---
+
+## UPDATE — Session 44 (2026-08-25)
+
+Machine moved **Windows → macOS** (`/Users/kpew/fit-passport`), rebuilt from a bare
+clone and verified green (209 tests, clean build, privacy + SSRF invariants
+re-checked live). Team grew: **Jenny Cao** and **Nicolas Wang** joined.
+
+**New, and it jumps the queue for engine work:**
+[[project-fit-passport-closet-signal-design]] — the closet's `fitRating` is a
+**unipolar 1–5 that loses the direction of misfit**, while every size-rec system we
+cite uses a bipolar ordinal. Full argument in
+`docs/design/closet-signal-and-interaction-cost.md`. Three derived signals cost the
+user **nothing** and are the natural first build; replacing the dropdown is a net
+*reduction* in user effort. Cross-user aggregation is **blocked** on retrieving
+SizeFlags' thresholds and building the anti-abuse defences.
+
+**Priority now:**
+1. **Customer interviews** — still first, and they now have a second job: test the
+   five-option fit wording ("too tight … too loose"). Five people can falsify it in
+   an afternoon, and step 2 is cheaper if the vocabulary is right.
+2. **The free derived signals** (personal ease target, preference-consistency
+   confidence) — zero UI change, zero user cost, testable in isolation.
+3. **Replace the 1–5 dropdown** with the bipolar control.
+4. **Next.js security triage** — `npm audit` shows ~21 advisories against 14.2.35
+   whose only offered fix is `next@16` (breaking major). Not acted on; needs a real
+   per-advisory triage rather than a version bump or a shrug.
+5. Browser extension (evidence-gated), item photos out of Postgres, badge redesign
+   — unchanged from Session 42.
+
+**Decision owed by the founder:** the numeric fit mode. A 1–20 *comfort* scale is
+unipolar and reproduces the defect above; a signed −10…+10 range does not. See
+[[project-fit-passport-closet-signal-design]].

@@ -11,8 +11,14 @@ decision rules.
 |---|---|---|
 | Xiangchen Kong | Engineering lead (Next.js, engine, data model) · PM for weekly review | Customer interviews (technical/international shoppers) |
 | Alyssa Qi | Customer discovery lead · Design/prototype in Figma · BMC/VPC owner | Beta recruiting · Explanation-copy tuning |
+| Jenny Cao | *To be assigned* | *To be assigned* |
+| Nicolas Wang | *To be assigned* | *To be assigned* |
 
-Both jointly own: the final pitch, the mid-project review, the Reflection Essay.
+All four jointly own: the final pitch, the mid-project review, the Reflection Essay.
+
+> Jenny and Nicolas joined the team on 2026-08-25. Their rows are deliberately
+> left unassigned rather than guessed — roles get filled in from an actual team
+> conversation, not from an assumption about who does what.
 
 ## 2. Cadences
 

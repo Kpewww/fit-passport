@@ -4,7 +4,7 @@
 
 *A consumer-owned fit layer for apparel. Project prospectus — 2026.*
 
-> Xiangchen Kong · Alyssa Qi Instructor: Prof. Sheryl Root
+> Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang Instructor: Prof. Sheryl Root
 > Carnegie Mellon University · 49-800 *Start Up Creation in Practice* · Fall 2026
 
 > **This document is a student-project prospectus, not an offer of securities.** It
@@ -218,7 +218,7 @@ matter how useful it would be.
 
 ## 8. Team & context
 
-Built by **Xiangchen Kong** and **Alyssa Qi** for Carnegie Mellon's *49-800 Start Up
+Built by **Xiangchen Kong**, **Alyssa Qi**, **Jenny Cao** and **Nicolas Wang** for Carnegie Mellon's *49-800 Start Up
 Creation in Practice* (Fall 2026), advised by **Prof. Sheryl Root**. The project is a
 functioning MVP and a live demo, developed under a detailed engineering log, with a
 Business Model Canvas, Value Proposition Canvas, customer-interview guide, and a

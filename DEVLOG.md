@@ -5,7 +5,7 @@ This log doubles as the course-required **Weekly Journal** (20% of final grade,
 didn't, and what's next. Concrete decisions and file references so the log maps
 straight into the Reflection Essay at the end of the semester.
 
-Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
+Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
@@ -25,6 +25,125 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
   exactly the "which signals actually matter" evidence the proposal calls for
   (§10.2) — we can now show the same product yields different recommendations
   depending on whether the user owns a same-brand anchor.
+
+---
+
+## 2026-08-25 · Session 44 — Machine rebuild (Windows → Mac), two new teammates, and the closet-signal design
+
+### The machine moved again, and the app was rebuilt from a bare clone
+
+The project is now on **macOS at `/Users/kpew/fit-passport`** — a fresh clone with
+no `node_modules`, `.env`, `prisma/dev.db` or `.next`. `docs/RESUME.md` and every
+memory file still described the Windows machine; they are one machine behind and
+`docs/memory/` now says so.
+
+Rebuilt and verified rather than assumed: **typecheck clean · 209/209 tests ·
+production build · 14/14 pages 200** (`/ask` 307s into Community by design) ·
+middleware mints the session cookie · **the privacy invariant holds**
+(`/api/view/[code]` returns 9,570 bytes containing zero chest/waist/hip/shoulder/
+height/weight fields) · **SSRF payloads refused** · a real Allbirds fetch returns
+`fetch: "ok"`. The smoke ran against a clean production build *before* any `npm
+run dev`, per the stale-`.next` rule.
+
+On the SSRF check specifically: rather than trust the 422, traced the code —
+`gate(url)` in `extractorLLM.ts` runs **before** `fetch`, so no packet leaves the
+machine. The `fetch: "unreachable"` in the provenance field is how a refusal
+surfaces, not evidence a request was made.
+
+**Two traps found, both new and both worth recording:**
+
+1. **`npm install` on macOS rewrites `package-lock.json`**, stripping the Linux
+   `libc` (glibc/musl) entries for optional platform packages that can't install
+   here. **Committing that would break the Vercel build**, which runs on Linux and
+   needs those entries to resolve `@next/swc-linux-*`. Reverted.
+2. **`npm audit` reports ~21 Next.js advisories against 14.2.35.** The only
+   offered fix is `next@16`, a breaking major, so this was **not** acted on — a
+   deliberate deferral, recorded rather than silently skipped. Most advisories
+   target features this app doesn't use (Image Optimizer `remotePatterns`,
+   Pages-Router i18n, custom servers), but a real triage pass is owed before
+   anyone claims the app is patched.
+
+### Team
+
+**Jenny Cao** and **Nicolas Wang** joined. Added to both READMEs, `DEVLOG.md`,
+the prospectus, the Founder Brief, the message architecture, the site footer and
+`docs/course/project-plan.md`. Their role rows in the project plan are left
+**explicitly unassigned** — inventing a division of labour would be exactly the
+kind of unsourced claim the standing rule below now forbids.
+
+### Standing rules, restated as `principle-evidence-and-logging.md`
+
+Three rules that were implicit or scattered are now one memory file: **every piece
+of data and information needs checkable evidence** (extending the
+research-grounded principle from *features* to *every factual statement*, with
+unverifiable ones labelled inline rather than quietly asserted); **a DEVLOG entry
+is owed per push**; **memory changes get published to `docs/memory/`, curated —
+never anything about a person, a machine, or a credential.**
+
+### The real work — closet data as an engine signal
+
+New: **`docs/design/closet-signal-and-interaction-cost.md`**. Design only, nothing
+built. The question was whether user closet data can improve the fit algorithm,
+how to stay honest when people enter garbage, and how to ask for subjective fit
+language without the app feeling like paperwork. Researching it produced one
+finding that reframes all three:
+
+**`KnownGoodItem.fitRating` is the wrong shape of data, and has been since Session
+01.** It is a unipolar 1–5 "how good is the fit", rendered as a `1/5…5/5`
+dropdown. It cannot express *which way* a bad fit is bad — a 2/5 is either
+strangling the wearer or hanging off them, and **those imply opposite
+recommendations.** Meanwhile every size-rec system this project already cites
+models fit as a **bipolar ordinal** ({Small, Fit, Large}; or too tight → too
+loose). The closet is the project's biggest structural asset and it discards the
+field's standard signal at the point of entry.
+
+The fix is cheaper than what it replaces: a five-way bipolar tap costs the user
+*less* than the dropdown and gives the engine *more*. Three further wins are
+**free** — derived from data already in the closet, zero new input: directional
+brand bias without needing a purchase (the cold-start fix for `brandBias.ts`), a
+**measured** personal ease target in centimetres (revealed preference, replacing
+the self-reported slim/regular/relaxed label), and confidence modulated by how
+*consistent* a user's ease preference is — the defensible version of the founder's
+"subjective weights should tune the confidence".
+
+**Bad data turned out to be two problems, not one**, and conflating them would
+have meant over-engineering the cheap case while under-defending the dangerous
+one. Data about a user's own closet only degrades that user's own
+recommendations — there is no incentive to lie and the feedback loop is
+immediate — so the response is *consistency questions, never blocking or silent
+discarding* (a contradicting item may be the most informative one they own). Only
+**cross-user** aggregation, where one person's data moves a stranger's
+recommendation, needs real defences: robust aggregation, minimum-evidence
+thresholds, reputation weighting, per-account influence caps. That work is now
+explicitly **blocked** — the SizeFlags paper's actual thresholds could not be
+extracted from its PDF, and precedent that an approach works is not a
+specification to copy.
+
+**The interaction-cost budget (FIC)** answers "任何需要操作的都需要扣大分" with a
+scoring rubric: cost points per input type (0 derived → 2 tap → 10 free text → 12
+photo, with multipliers for memory load, judgement and required-ness) against
+value points for what the engine actually gains, and a `value ≥ cost/2` bar.
+Grounded in NN/g's interaction-cost definition and Baymard's finding that field
+count matters more than step count. **The point weights are invented and the
+document says so** — a forced-ranking device, not measured constants; the widely
+quoted vendor form-field statistics are labelled as marketing studies and used
+ordinally only. Applying the metric kills free-text fit notes and prompted photos,
+defers per-area ratings, and shows the **existing dropdown has the worst
+cost/value ratio in the closet flow**.
+
+One design decision is deliberately **left open for the founder**: the requested
+1–20 numeric comfort scale is *unipolar again* and would reproduce the exact
+defect the whole document identifies. The likely resolution is a signed range
+(−10…+10, tight→loose, 0 = perfect), but that is a decision, not an assumption,
+so it is flagged rather than silently "fixed".
+
+Also grounded a UX choice in a modelling fact: **"Just right" is pre-selected**
+because ~75% of fit feedback in both public datasets is "fit" (ModCloth 52,222 of
+76,059; RentTheRunway 142,042 of 192,523). Defaulting to the modal answer makes
+the common case cost zero taps and charges only the rare, *informative* answers —
+the label-imbalance problem turned into a UX decision.
+
+209 tests, unchanged — no code was touched this session beyond the team credit.
 
 ---
 
