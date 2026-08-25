@@ -31,6 +31,7 @@ import {
 } from "./sizing";
 import { domainForCategory } from "./sizeSystems";
 import { biasForBrand, type BrandBias } from "./brandBias";
+import { directionToLadderShift, describeDirection, isDirectional } from "./fitDirection";
 
 // ------------ Input contracts ------------
 
@@ -50,6 +51,12 @@ export type KnownGoodInput = {
   category: string;
   size: string;
   fitRating: number; // 1-5
+  /**
+   * SIGNED fit direction, -10 (too tight) .. 0 (just right) .. +10 (too loose).
+   * Null/undefined = never reported, and the anchor behaves exactly as it did
+   * before this field existed. See lib/fitDirection.ts.
+   */
+  fitDirection?: number | null;
   region?: string | null;
 };
 
@@ -148,6 +155,12 @@ const DEFAULT_W: Weights = {
 // Brand-bias signal weight. Deliberately smaller than chest/anchor — it's one
 // more piece of evidence, not a dominator, and capped at ±1 step upstream.
 const BRAND_BIAS_W = 0.15;
+
+// Trust given to an anchor whose fit DIRECTION the wearer reported. Below 1.0
+// because mapping a subjective word onto a fraction of a ladder step is itself
+// uncertain, but above what a matching star rating would give, because the
+// correction has already been applied.
+const DIRECTED_ANCHOR_TRUST = 0.9;
 
 // Anchor-led weights: used when the closet contains a same-brand + same-category
 // item the user rated well. In that case "size X fits me in THIS brand+category"
@@ -328,24 +341,47 @@ function scoreKnownGood(
       product.category &&
       kg.category.toLowerCase() === product.category.toLowerCase();
 
-    // The anchor size is the user's TRUE FIT in this reference. The size they
-    // actually want depends on their fit preference: a same-brand+same-category
-    // anchor is a reliable baseline that the preference shifts up or down. For
-    // weaker (cross-brand) anchors we don't apply the preference shift, since
-    // the ladder alignment across brands is already approximate.
+    // The anchor size is the user's TRUE FIT in this reference. Two corrections
+    // apply, and they are independent:
+    //
+    //   1. DIRECTION — what the wearer reported about THIS garment. If they own a
+    //      Uniqlo M and say it runs snug, their real Uniqlo size is bigger than M,
+    //      so the anchor itself moves. This is an observation about the garment,
+    //      not a taste, so it applies to weak (cross-brand) anchors too.
+    //   2. PREFERENCE — how they want the NEXT garment to sit. Only applied to a
+    //      same-brand+same-category anchor, since cross-brand ladder alignment is
+    //      already approximate and stacking a taste shift on top would compound
+    //      two guesses.
     const strong = !!(sameBrand && sameCat);
-    const targetIdx = strong ? kgIdx + preferenceShift(pref) : kgIdx;
+    const dirShift = directionToLadderShift(kg.fitDirection);
+    const targetIdx = (strong ? kgIdx + preferenceShift(pref) : kgIdx) + dirShift;
     const dist = Math.abs(sizeIdx - targetIdx);
 
     // Base falloff by ladder distance.
     const proximity = Math.max(0, 1 - dist * 0.5);
-    const trust = kg.fitRating / 5;
+    // A reported DIRECTION is strictly more information than a star rating: we
+    // know both the size and which way it misses, and we have already corrected
+    // for the miss above. So a directed anchor is trusted on the quality of the
+    // REPORT rather than the quality of the fit — otherwise "too tight" would be
+    // penalised twice, once by the correction and again by the low star rating it
+    // usually comes with, when in fact it is one of the most informative items in
+    // the closet.
+    const trust = kg.fitDirection != null ? DIRECTED_ANCHOR_TRUST : kg.fitRating / 5;
     const mult = strong ? 1.0 : sameCat ? 0.75 : 0.55;
     const s = proximity * trust * mult;
     if (s > best) {
       best = s;
       const label = `${kg.brand} ${kg.size}`;
-      if (strong && preferenceShift(pref) !== 0) {
+      const dirWord = isDirectional(kg.fitDirection) ? describeDirection(kg.fitDirection) : null;
+      // Prefer the direction in the explanation when there is one — "runs snug"
+      // is a fact the reader recognises, where "1 step from your Uniqlo M" is a
+      // conclusion they have to take on trust.
+      if (dirWord) {
+        bestMsg =
+          dist === 0
+            ? `Your ${label} runs ${dirWord}, so this is the size that should sit right`
+            : `${dist.toFixed(dist % 1 === 0 ? 0 : 1)} step${dist > 1 ? "s" : ""} from your ${label}, which runs ${dirWord}`;
+      } else if (strong && preferenceShift(pref) !== 0) {
         // Explain that we shifted from the true-fit anchor for the preference.
         bestMsg =
           dist === 0

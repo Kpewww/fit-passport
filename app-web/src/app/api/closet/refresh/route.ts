@@ -5,14 +5,22 @@
 //          rating (the slider's starting position) + a little context.
 //
 //   POST /api/closet/refresh
-//        { itemId, rating, note?, reason? }   → record a new comfort rating:
-//          updates KnownGoodItem.fitRating AND appends a ComfortCheck row.
+//        { itemId, direction, note?, reason? } → record how it sits NOW:
+//          updates KnownGoodItem.fitDirection (+ the derived fitRating) AND
+//          appends a ComfortCheck row carrying both.
 //        { itemId, skip: true }                → no change (no row written).
+//
+//   The refresh pass reports DIRECTION, not a 1-5 grade, for the same reason the
+//   closet does: "it got tighter" and "it got looser" are opposite facts about a
+//   body that changed, and a single quality score cannot tell them apart. Writing
+//   only the grade here would also leave a stale fitDirection contradicting a
+//   fresh fitRating on the same row.
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { DIRECTION_MIN, DIRECTION_MAX, ratingFromDirection } from "@/lib/fitDirection";
 
 export async function GET(req: Request) {
   const user = await getCurrentUser();
@@ -37,6 +45,7 @@ export async function GET(req: Request) {
       size: true,
       color: true,
       fitRating: true,
+      fitDirection: true,
       collectionId: true,
       collection: { select: { name: true } },
     },
@@ -51,6 +60,7 @@ export async function GET(req: Request) {
       size: it.size,
       color: it.color,
       currentRating: it.fitRating,
+      currentDirection: it.fitDirection,
       collectionName: it.collection?.name ?? "Uncategorized",
     })),
   });
@@ -59,7 +69,7 @@ export async function GET(req: Request) {
 const PostBody = z.union([
   z.object({
     itemId: z.string().min(1),
-    rating: z.coerce.number().int().min(1).max(5),
+    direction: z.coerce.number().int().min(DIRECTION_MIN).max(DIRECTION_MAX),
     note: z.string().max(500).optional().nullable(),
     reason: z.enum(["refresh", "measurement-change", "add"]).optional(),
   }),
@@ -85,23 +95,27 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true, skipped: true });
   }
 
-  const { itemId, rating, note, reason } = parsed.data;
-  // Update the item's current rating AND append a history row atomically.
+  const { itemId, direction, note, reason } = parsed.data;
+  // fitRating is DERIVED, never asked for twice — see lib/fitDirection.ts.
+  const rating = ratingFromDirection(direction);
+  // Update the item's current state AND append a history row atomically, so the
+  // two can never disagree about what was reported when.
   await prisma.$transaction([
     prisma.knownGoodItem.update({
       where: { id: itemId },
-      data: { fitRating: rating },
+      data: { fitRating: rating, fitDirection: direction },
     }),
     prisma.comfortCheck.create({
       data: {
         itemId,
         userId: user.id,
         rating,
+        direction,
         note: note ?? null,
         reason: reason ?? "refresh",
       },
     }),
   ]);
 
-  return NextResponse.json({ ok: true, rating });
+  return NextResponse.json({ ok: true, rating, direction });
 }

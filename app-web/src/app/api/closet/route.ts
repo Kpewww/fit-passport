@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { collectionForGarment } from "@/lib/collections";
 import { isValidSize } from "@/lib/sizeSystems";
+import { DIRECTION_MIN, DIRECTION_MAX } from "@/lib/fitDirection";
 
 const ItemSchema = z
   .object({
@@ -14,6 +15,9 @@ const ItemSchema = z
     size: z.string().min(1).max(20),
     region: z.string().max(10).optional().nullable(),
     fitRating: z.coerce.number().int().min(1).max(5).default(4),
+    // Signed fit direction, -10 (too tight) .. 0 .. +10 (too loose). Optional so
+    // an item added without a report stays null and the engine ignores it.
+    fitDirection: z.coerce.number().int().min(DIRECTION_MIN).max(DIRECTION_MAX).optional().nullable(),
     areaNotesJson: z.string().max(2000).optional().nullable(),
     productUrl: z.string().url().optional().nullable(),
     imageDataUrl: z.string().max(400_000).regex(/^data:image\/(png|jpeg|webp);base64,/, "must be a small image").optional().nullable(),
@@ -79,6 +83,7 @@ const UpdateSchema = z
     size: z.string().min(1).max(20).optional(),
     region: z.string().max(10).optional().nullable(),
     fitRating: z.coerce.number().int().min(1).max(5).optional(),
+    fitDirection: z.coerce.number().int().min(DIRECTION_MIN).max(DIRECTION_MAX).optional().nullable(),
     areaNotesJson: z.string().max(2000).optional().nullable(),
     productUrl: z.string().url().optional().nullable(),
     imageDataUrl: z.string().max(400_000).regex(/^data:image\/(png|jpeg|webp);base64,/, "must be a small image").optional().nullable(),
@@ -101,6 +106,7 @@ const UpdateSchema = z
 // excluded — they aren't edits to the garment itself.
 const HISTORY_KEYS = [
   "brand", "displayName", "category", "gender", "size", "region", "fitRating",
+  "fitDirection",
   "areaNotesJson", "productUrl", "imageDataUrl", "color", "groupId", "groupName",
   "onlineAvailable",
 ] as const;

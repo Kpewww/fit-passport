@@ -28,6 +28,98 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang. Instructor: Sher
 
 ---
 
+## 2026-08-25 · Session 45 — The signed fit scale ships, and the ease figure on /check
+
+Both items the founder approved, built together. **209 → 237 tests**, clean build,
+verified end-to-end on a production build before any `npm run dev`.
+
+### The closet now records WHICH WAY a garment misses
+
+`lib/fitDirection.ts` is the new single scale: a signed integer, −10 too tight →
+0 just right → +10 too loose. Both input modes write that one scalar, so the
+engine has one input and one set of tests; a second mode meaning something
+slightly different would have doubled the surface area for nothing.
+
+The engine reads it in `scoreKnownGood`. A garment reported tight means the
+wearer's true size in that brand is *larger* than the one they own, so the anchor
+itself moves — the full range maps to one ladder step, which is not an arbitrary
+choice: it matches the return-shift term in the literature the project already
+cites (Guigourès et al., RecSys 2018: `η_small ~ N(−1,1)`, `η_big ~ N(+1,1)`). A
+closet report is that same observation, sourced *before* a purchase instead of
+after a return. Direction applies to cross-brand anchors too, because it is an
+observation about a garment rather than a taste; the preference shift stays
+same-brand-only, so two guesses never compound.
+
+**Two decisions inside that are worth the ink:**
+
+*`fitRating` is now derived, not asked.* It still drives the stars, the badge
+stats, and anchor trust for legacy rows, so it could not be deleted — but asking
+for both is asking the same question twice. `ratingFromDirection()` maps
+|direction| onto 5/4/3/2 (never 1: an item still in the closet is evidence of
+something). A test pins that a centred report clears the `>= 4` threshold
+`hasStrongAnchor()` needs — miss that and the [F1] anchor fix stops firing
+silently, which is the kind of regression that would not show up until a
+recommendation was quietly wrong.
+
+*A directed anchor is trusted at a flat 0.9 rather than `fitRating/5`.* Otherwise
+"too tight" gets penalised twice — once by the correction just applied, and again
+by the low star rating it naturally attracts — when it is one of the most
+informative items in the closet. Trust now tracks the quality of the *report*,
+not the quality of the fit.
+
+### Fit Refresh had to move too, and that was not optional
+
+Left alone, the refresh pass would have overwritten `fitRating` while leaving a
+stale `fitDirection` on the same row — the two contradicting each other on a
+record the engine reads. Caught before shipping rather than after. It now reports
+direction, derives the rating, and writes both to the item and the `ComfortCheck`
+history in one transaction. Its `<input type="range">` also went: it is a drag
+control, which is exactly what the previous session's research argues against, and
+the flow was always a five-way choice anyway. Number keys 1–5 now pick tight →
+loose.
+
+### The ease figure on /check
+
+`FitFigure.tsx` draws the wearer's silhouette with the garment's outline around
+it, per size, with the centimetre number beside it. It is a picture of arithmetic
+the engine was already doing and only ever printed as text.
+
+It is deliberately **schematic, drawn to true proportion, with no exaggerated
+gap** — the research file's first conclusion is that image-based try-on transfers
+*appearance, not fit*, and a realistic figure would quietly make the promise
+nobody can keep. The caption says so in as many words: *"Not a preview of how it
+will look."* Legibility comes from a tight viewBox, not from inflating the
+difference.
+
+No pointer tracking anywhere in either new component — switching size is a
+discrete tap and the morph is a CSS transition. That is a direct application of
+the performance file: this codebase has twice shipped a pointer-driven visual that
+re-rendered React 60–120×/second.
+
+### Verified, not assumed
+
+The same anchor, same stars, only the sign flipped, on a live production build:
+M reported *too tight* → **L** ("Your Uniqlo M runs too tight, so this is the size
+that should sit right"); *too loose* → the anchor argues **S**, the engine flags
+the disagreement against the measurement signal and drops confidence to **0.46**
+with a stated reason; *just right* → **M**. Out-of-range input rejected 400. The
+refresh path writes rating 2 / direction −10 together, and the next check
+immediately reflects it. 14/14 pages 200.
+
+**Privacy re-checked because this touched response shapes.** `body` was added to
+`/api/check` and `/api/recommend` so the figure can draw without a second round
+trip — that is the user's own session. `/api/view/[code]`, where a third party
+holds only an account code, still returns no measurement field of any kind, and
+`fitDirection` is excluded there by the endpoint's allow-list `select`.
+
+**One thing deliberately NOT decided:** whether `fitDirection` should be visible
+to someone holding an account code. It is closet information like `fitRating`
+(which is already public) and arguably more useful — but widening what a bearer
+code reveals is a governance decision, not a side effect of a feature. Left closed,
+flagged for the founder.
+
+---
+
 ## 2026-08-25 · Session 44 — Machine rebuild (Windows → Mac), two new teammates, and the closet-signal design
 
 ### The machine moved again, and the app was rebuilt from a bare clone

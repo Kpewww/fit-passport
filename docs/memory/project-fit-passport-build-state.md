@@ -48,3 +48,55 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 ⑭ **Confidence falls when signals disagree** (`signalDisagreement` in `fitEngine.ts`) and the reason is surfaced as `conflictNote` on `/check`. A lower number with no explanation would break the explainability invariant.
 
 **Extraction reality, measured in production:** `source.fetch` now records `blocked | unreachable | ok | skipped`. Real result: **H&M = blocked, Patagonia = unreachable, Allbirds = ok.** `ANTHROPIC_API_KEY` is set in prod, but it **cannot fix a 403** — it only helps pages we actually fetched. See `docs/design/fetch-strategy.md` (decision: no stealth proxies, browser extension later) and `docs/design/cost-model.md`.
+
+
+---
+
+**SESSION 45 UPDATE (2026-08-25) — the SIGNED FIT SCALE shipped. 209 → 237 tests.**
+
+**New single source of truth: `lib/fitDirection.ts`.** A signed integer −10 (too
+tight) … 0 (just right) … +10 (too loose). New columns:
+`KnownGoodItem.fitDirection Int?`, `ComfortCheck.direction Int?`,
+`User.fitScaleMode String @default("descriptive")`.
+
+**Engine:** `KnownGoodInput.fitDirection` feeds `scoreKnownGood` —
+`directionToLadderShift()` moves the anchor (full range = one ladder step, matching
+the ±1 return-shift term in Guigourès et al.). Applies to cross-brand anchors too;
+the *preference* shift stays same-brand-only.
+
+**NEW INVARIANTS — do not break:**
+⑮ **`fitRating` is DERIVED from `fitDirection`, never asked for separately**
+(`ratingFromDirection()`). It still drives stars, badge stats and legacy anchor
+trust, so it cannot be deleted. **A centred report MUST map to `>= 4`** or
+`hasStrongAnchor()` stops firing and the [F1] anchor fix silently dies — pinned by
+a test.
+⑯ **A directed anchor is trusted at `DIRECTED_ANCHOR_TRUST` (0.9), not
+`fitRating/5`** — otherwise "too tight" is penalised twice, once by the correction
+and again by the low stars it attracts.
+⑰ **Anything that writes `fitRating` must write `fitDirection` too.** Fit Refresh
+was the first case: writing only the grade left a stale direction contradicting a
+fresh rating on the same row.
+⑱ **The fit input is NEVER a drag slider.** Descriptive mode is radio semantics;
+numeric mode is a tap-on-the-line VAS. Measured break-off: sliders 37% on
+phones/tablets vs 2.3% for radio buttons (Funke 2016). Also: a resting handle makes
+non-response indistinguishable from a real answer.
+⑲ **`FitFigure` is a DIAGRAM, not a try-on.** Schematic, true proportion, no
+exaggerated gap, centimetre number printed beside it, caption says "Not a preview
+of how it will look" — because the research file's first conclusion is that
+image-based try-on transfers appearance, not fit.
+⑳ **`fitDirection` is NOT exposed by `/api/view/[code]`** (allow-list `select`).
+Widening what a bearer code reveals is a governance decision — founder's call, not
+a feature side effect.
+
+**`body` (chest/waist/shoulder + `estimated`) is now returned by `/api/check` and
+`/api/recommend`** so `FitFigure` can draw without a second round trip. That is the
+user's OWN session — the privacy invariant governs `/api/view/[code]`, re-verified
+as returning no measurement field of any kind.
+
+**Mode plumbing:** `FitScaleProvider` / `useFitScale` (context, in
+`FitDirectionInput.tsx`) carries the per-user mode; mounted on `/closet` and
+`/refresh`, read from `/api/status`, persisted via `/api/profile/prefs`. Sticky per
+user, **never per item**.
+
+Design + sources: `docs/design/closet-signal-and-interaction-cost.md`;
+summary in [[project-fit-passport-closet-signal-design]].

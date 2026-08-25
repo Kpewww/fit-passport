@@ -69,6 +69,11 @@ model User {
   // Null = automatic (their highest earned metal, else the default lapis).
   cardMetal String?
 
+  /// Which fit-input mode this person sees: "descriptive" (five words) or
+  /// "numeric" (the signed -10..+10 scale). Sticky PER USER, never per item —
+  /// switching mid-closet would make their own data incomparable with itself.
+  fitScaleMode String @default("descriptive")
+
   /// Sequential membership number, shown on the passport as "No. 00000042".
   /// Assigned when an account is CLAIMED — it's a membership number, so an
   /// anonymous session hasn't got one yet. Not autoincrement: SQLite only allows
@@ -423,6 +428,12 @@ model KnownGoodItem {
   size          String // as-labeled: "M", "L", "EU 48", "US 32"
   region        String? // if the label uses a specific region
   fitRating     Int     @default(4) // 1-5 how well it fits
+  /// SIGNED fit direction: -10 (too tight) .. 0 (just right) .. +10 (too loose).
+  /// `fitRating` says how GOOD the fit is; this says WHICH WAY it is wrong, which
+  /// is the signal the size-recommendation literature actually models and the one
+  /// the engine can act on. Null = never reported (legacy items), and the engine
+  /// then behaves exactly as it did before. See lib/fitDirection.ts.
+  fitDirection  Int?
   // Optional area-specific notes (JSON string)
   // shape: {"shoulders":"comfortable","chest":"slightly tight","sleeve":"long"}
   areaNotesJson String?
@@ -471,6 +482,10 @@ model ComfortCheck {
   userId String
 
   rating Int // 1-5 comfort at this point in time
+  /// Signed fit direction at this point in time (-10 tight .. +10 loose), so the
+  /// history records which way a garment drifted, not just that it got worse.
+  /// Null for checks recorded before the signed scale existed.
+  direction Int?
   // Optional reason the user gives when it changed, e.g. "tighter after winter".
   note   String?
   // Why this check happened: "refresh" (manual pass) | "measurement-change" | "add".

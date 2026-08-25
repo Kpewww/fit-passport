@@ -5,8 +5,8 @@
 // Flow:
 //   1. PICK  — choose which collection(s) / All to refresh (pre-selected from the
 //              ?collections= link, but always adjustable).
-//   2. CARDS — one card per garment; a comfort slider (1–5) starts at the item's
-//              current rating. Swipe/fling RIGHT (or Save) records the new rating;
+//   2. CARDS — one card per garment; the five-way fit DIRECTION control starts at
+//              the item's last report. Swipe/fling RIGHT (or Save) records it;
 //              LEFT (or Skip) leaves it unchanged. Keyboard: ←/→, digits 1–5.
 //   3. DONE  — summary.
 //
@@ -19,6 +19,8 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, EmptyState, LinkButton } from "@/components/ui";
 import { garmentGlyph, garmentLabel } from "@/lib/garments";
+import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionInput";
+import { DIRECTION_DEFAULT, DIRECTION_OPTIONS, nearestOption } from "@/lib/fitDirection";
 
 type Item = {
   id: string;
@@ -28,18 +30,11 @@ type Item = {
   size: string;
   color: string | null;
   currentRating: number;
+  currentDirection: number | null;
   collectionName: string;
 };
 
 type Collection = { id: string; name: string; itemCount: number };
-
-const COMFORT_LABELS: Record<number, string> = {
-  1: "Doesn't fit",
-  2: "Poor",
-  3: "Okay",
-  4: "Good",
-  5: "Perfect",
-};
 
 // Spring-like ease for snap-back and card exits (easeOutQuint-ish).
 const SPRING = "cubic-bezier(0.22, 1, 0.36, 1)";
@@ -69,7 +64,7 @@ function RefreshInner() {
   // ----- cards -----
   const [items, setItems] = useState<Item[] | null>(null);
   const [idx, setIdx] = useState(0);
-  const [rating, setRating] = useState(4);
+  const [direction, setDirection] = useState<number>(DIRECTION_DEFAULT);
   const [saved, setSaved] = useState(0);
   const [skipped, setSkipped] = useState(0);
 
@@ -94,7 +89,7 @@ function RefreshInner() {
 
   const current = items?.[idx];
   useEffect(() => {
-    if (current) setRating(current.currentRating);
+    if (current) setDirection(current.currentDirection ?? DIRECTION_DEFAULT);
   }, [current]);
 
   const advance = useCallback(() => {
@@ -109,7 +104,7 @@ function RefreshInner() {
       setLeaving(mode);
       const body =
         mode === "save"
-          ? { itemId: current.id, rating, reason: "refresh" }
+          ? { itemId: current.id, direction, reason: "refresh" }
           : { itemId: current.id, skip: true };
       fetch("/api/closet/refresh", {
         method: "POST",
@@ -120,7 +115,7 @@ function RefreshInner() {
       else setSkipped((n) => n + 1);
       setTimeout(advance, 300);
     },
-    [current, rating, advance, leaving],
+    [current, direction, advance, leaving],
   );
 
   // Keyboard shortcuts (cards phase only)
@@ -130,7 +125,7 @@ function RefreshInner() {
       if (!current || leaving) return;
       if (e.key === "ArrowRight") commit("save");
       else if (e.key === "ArrowLeft") commit("skip");
-      else if (e.key >= "1" && e.key <= "5") setRating(Number(e.key));
+      else if (e.key >= "1" && e.key <= "5") setDirection(DIRECTION_OPTIONS[Number(e.key) - 1].value);
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -271,6 +266,7 @@ function RefreshInner() {
   const progress = Math.min(1, Math.abs(dragX) / COMMIT_DIST);
 
   return (
+    <FitScaleProvider>
     <main className="flex-1 bg-paper">
       <div className="mx-auto max-w-md px-6 py-8">
         {/* Progress */}
@@ -349,23 +345,15 @@ function RefreshInner() {
                   </div>
                 </div>
 
-                <div className="mt-8">
-                  <div className="flex items-baseline justify-between">
-                    <p className="text-sm font-medium text-ink">How does it feel now?</p>
-                    <span className="text-sm font-semibold text-brand">{COMFORT_LABELS[rating]}</span>
+                <div className="mt-8" onPointerDown={(e) => e.stopPropagation()}>
+                  <p className="text-sm font-medium text-ink">How does it sit now?</p>
+                  <div className="mt-3">
+                    <FitDirectionInput value={direction} onChange={setDirection} />
                   </div>
-                  <input
-                    type="range" min={1} max={5} step={1} value={rating}
-                    onChange={(e) => setRating(Number(e.target.value))}
-                    onPointerDown={(e) => e.stopPropagation()}
-                    className="mt-3 w-full accent-brand"
-                  />
-                  <div className="mt-1 flex justify-between text-[10px] text-ink-faint">
-                    {[1, 2, 3, 4, 5].map((n) => <span key={n}>{n}</span>)}
-                  </div>
-                  {rating !== current!.currentRating && (
+                  {current!.currentDirection != null && direction !== current!.currentDirection && (
                     <p className="mt-2 text-xs text-brand">
-                      Changed from {current!.currentRating} → {rating}
+                      Changed from {nearestOption(current!.currentDirection).label.toLowerCase()} →{" "}
+                      {nearestOption(direction).label.toLowerCase()}
                     </p>
                   )}
                 </div>
@@ -378,12 +366,13 @@ function RefreshInner() {
               <Button onClick={() => commit("save")}>Save →</Button>
             </div>
             <p className="mt-3 text-center text-xs text-ink-faint">
-              Swipe or flick the card, use the buttons, or press ← / → · number keys set comfort
+              Swipe or flick the card, use the buttons, or press ← / → · number keys 1-5 pick tight → loose
             </p>
           </>
         )}
       </div>
     </main>
+    </FitScaleProvider>
   );
 }
 

@@ -32,11 +32,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "product not found" }, { status: 404 });
   }
 
-  const { result, effectiveFit } = await computeRecommendation(
+  const { result, effectiveFit, body } = await computeRecommendation(
     user.id,
     product,
     preferredFit,
   );
 
-  return NextResponse.json({ result, effectiveFit });
+  return NextResponse.json({ result, effectiveFit, body });
 }

@@ -1,7 +1,11 @@
 # Closet data as an engine signal · subjective fit vocabulary · the interaction-cost budget
 
-> **Status: DESIGN, NOT BUILT.** Nothing in this document is implemented yet. It
-> exists so the build is argued before it is coded.
+> **Status: PARTLY BUILT (2026-08-25).** Shipped: the signed scale
+> (`lib/fitDirection.ts`), the dual-mode input, the engine's directional anchor
+> correction, and the `/check` comparison figure (§4bis placement 1). Still
+> design-only: the derived personal ease target (§1.2), preference-consistency
+> confidence (§1.3), consistency feedback (§2.1), per-area ratings (§1.4) and all
+> cross-user aggregation (§1.5, §2.2). See §6 for exactly what landed.
 >
 > **Purpose.** Three questions asked together on 2026-08-25, which turn out to be
 > one question: (1) can the user's own closet data make the fit engine better,
@@ -544,3 +548,54 @@ falsify it in an afternoon.
   (visuo-motor learning, diagramming/comprehension, and feedback effects on
   response bias and confidence calibration —
   https://pmc.ncbi.nlm.nih.gov/articles/PMC9096460/).
+
+
+---
+
+## 6. What shipped, 2026-08-25
+
+Built and verified end-to-end on a clean production build. **237 tests** (was 209).
+
+| Piece | Where |
+|---|---|
+| The signed scale, its five descriptive options, the ladder-shift mapping, and the derived star rating | `src/lib/fitDirection.ts` (+ 20 tests) |
+| `KnownGoodItem.fitDirection`, `ComfortCheck.direction`, `User.fitScaleMode` | `prisma/schema.prisma` |
+| Directional anchor correction and the explanation that names the report | `src/lib/fitEngine.ts` (+ 8 tests) |
+| The dual-mode control, mode carried by context and persisted per user | `src/components/FitDirectionInput.tsx` |
+| The schematic body-vs-garment figure | `src/components/FitFigure.tsx`, rendered on `/check` |
+| Closet add/edit, and the Fit Refresh card stack, both reporting direction | `src/app/closet/page.tsx`, `src/app/refresh/page.tsx`, `src/app/api/closet/**` |
+
+**Decisions taken while building, worth knowing:**
+
+- **The numeric scale is signed −10…+10**, settling §4.2's open question. A 1–20
+  comfort scale was rejected for being unipolar again.
+- **`fitRating` is now DERIVED, not asked.** It still drives stars, badge stats
+  and legacy anchor trust, so it could not be deleted — but asking for both was
+  asking the same question twice. `ratingFromDirection()` maps |direction| to
+  5/4/3/2, never 1, and a test pins that a centred report clears the `>= 4`
+  threshold `hasStrongAnchor()` needs, or the [F1] anchor fix would have silently
+  stopped firing.
+- **A directed anchor is trusted at a flat 0.9, not `fitRating/5`.** Otherwise
+  "too tight" is penalised twice — once by the correction we just applied, and
+  again by the low star rating it naturally attracts — when it is in fact one of
+  the most informative items in the closet.
+- **Fit Refresh had to move too.** Left alone it would overwrite `fitRating`
+  while leaving a stale `fitDirection` on the same row, so the two would
+  contradict each other. Its native `<input type="range">` is also a drag control,
+  which §4bis argues against; it is now the same five-way choice, with number keys
+  1–5 mapping tight → loose.
+- **`fitDirection` is NOT exposed by `/api/view/[code]`.** The endpoint uses an
+  allow-list `select`, so it was excluded by default and left that way. Widening
+  what an account code reveals is a governance decision, not a side effect of a
+  feature — **flagged for the founder rather than decided here.**
+- **`body` was added to the `/check` and `/recommend` responses** so the figure
+  can draw without a second round trip. That is the user's own session; the
+  privacy invariant governs `/api/view/[code]`, which was re-verified as returning
+  no measurement field of any kind.
+
+**Verified live, not assumed:** the same anchor with the same stars and only the
+sign flipped produces different sizes (M reported *too tight* → L, *too loose* →
+the anchor argues S and the engine flags the disagreement and drops confidence to
+0.46 with a stated reason, *just right* → M). Out-of-range direction is rejected
+400. The refresh path writes rating 2 / direction −10 together and the next check
+immediately says *"Your Uniqlo M runs too tight."*

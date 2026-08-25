@@ -31,7 +31,17 @@ export async function computeRecommendation(
   userId: string,
   product: ProductWithSizes,
   overrideFit?: FitPreference,
-): Promise<{ result: EngineOutput; effectiveFit: FitPreference }> {
+): Promise<{
+  result: EngineOutput;
+  effectiveFit: FitPreference;
+  /**
+   * The body measurements the engine actually scored against, so the result page
+   * can draw the body-vs-garment gap without a second round trip. This is the
+   * user's OWN session — the privacy invariant governs `/api/view/[code]`, where
+   * a third party holds only an account code, and is untouched by this.
+   */
+  body: { chestCm: number | null; waistCm: number | null; shoulderCm: number | null; estimated: boolean };
+}> {
   const [profile, knownGood, priorOutcomes] = await Promise.all([
     prisma.fitProfile.findUnique({ where: { userId } }),
     prisma.knownGoodItem.findMany({ where: { userId } }),
@@ -77,6 +87,7 @@ export async function computeRecommendation(
       category: k.category,
       size: k.size,
       fitRating: k.fitRating,
+      fitDirection: k.fitDirection,
       region: k.region,
     })),
     outcomes: priorOutcomes.map<OutcomeInput>((o) => ({
@@ -89,5 +100,14 @@ export async function computeRecommendation(
     })),
   };
 
-  return { result: recommend(engineInput), effectiveFit };
+  return {
+    result: recommend(engineInput),
+    effectiveFit,
+    body: {
+      chestCm: engineInput.profile.chestCm ?? null,
+      waistCm: engineInput.profile.waistCm ?? null,
+      shoulderCm: engineInput.profile.shoulderCm ?? null,
+      estimated: !!engineInput.profile.chestIsEstimated,
+    },
+  };
 }

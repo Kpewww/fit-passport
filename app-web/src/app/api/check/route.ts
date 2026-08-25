@@ -87,7 +87,7 @@ export async function POST(req: Request) {
     include: { sizeOptions: true },
   });
 
-  const { result, effectiveFit } = await computeRecommendation(user.id, product);
+  const { result, effectiveFit, body } = await computeRecommendation(user.id, product);
 
   // Honesty gate: if the size chart was ESTIMATED from the brand (no real chart
   // on the page), we cannot be highly confident — cap it so the number matches
@@ -115,6 +115,7 @@ export async function POST(req: Request) {
     source: extracted.source,
     result,
     effectiveFit,
+    body,
     recommendationId: rec.id,
   });
 }

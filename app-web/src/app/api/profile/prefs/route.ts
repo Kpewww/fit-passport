@@ -18,6 +18,7 @@ const Body = z.object({
   bodyType: z.string().max(20).nullable().optional(),
   signatureOutfitId: z.string().nullable().optional(),
   cardMetal: z.string().max(20).nullable().optional(),
+  fitScaleMode: z.enum(["descriptive", "numeric"]).optional(),
 });
 
 export async function POST(req: Request) {
@@ -37,7 +38,15 @@ export async function POST(req: Request) {
     bodyType?: string | null;
     signatureOutfitId?: string | null;
     cardMetal?: string | null;
+    fitScaleMode?: string;
   } = {};
+
+  // Which fit-input mode this person sees. Sticky per user on purpose — see
+  // lib/fitDirection.ts; switching per item would make their own closet
+  // incomparable with itself.
+  if (parsed.data.fitScaleMode !== undefined) {
+    data.fitScaleMode = parsed.data.fitScaleMode;
+  }
 
   if (parsed.data.cardMetal !== undefined) {
     const want = parsed.data.cardMetal;

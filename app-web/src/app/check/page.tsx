@@ -12,6 +12,7 @@ import {
 } from "@/components/ui";
 import { convert, detectScale, scalesForDomain } from "@/lib/sizeConvert";
 import type { SizeDomain } from "@/lib/sizeSystems";
+import { FitFigure } from "@/components/FitFigure";
 
 type SizeScore = {
   label: string;
@@ -63,9 +64,17 @@ type Source = {
   sizesFrom?: "fixture" | "page" | "estimated";
 };
 
+type Body = {
+  chestCm: number | null;
+  waistCm: number | null;
+  shoulderCm: number | null;
+  estimated: boolean;
+};
+
 type CheckResponse = {
   product: Product;
   source: Source;
+  body?: Body;
   result: {
     ranked: SizeScore[];
     best: SizeScore;
@@ -447,7 +456,7 @@ function Result({
   onFit: (f: FitPref) => void;
   reranking: boolean;
 }) {
-  const { product, source, result } = data;
+  const { product, source, result, body } = data;
   return (
     <section className="mt-8 space-y-5 animate-fade-in-up">
       {/* PROVENANCE — prove we read THIS page */}
@@ -572,6 +581,27 @@ function Result({
           </span>
         </div>
       </Card>
+
+      {/* SEE THE GAP — the ease arithmetic the engine already does, drawn. Only
+          renders when we have a body chest AND a garment chest to compare; there
+          is nothing honest to draw otherwise. */}
+      {body && (
+        <Card>
+          <h3 className="font-semibold text-ink">What the numbers look like</h3>
+          <p className="mb-3 mt-0.5 text-xs text-ink-faint">
+            The room each size leaves you through the chest.
+          </p>
+          <FitFigure
+            body={body}
+            bestLabel={result.best.label}
+            sizes={product.sizeOptions.map((o) => ({
+              label: o.label,
+              chestCm: o.chestCm,
+              shoulderCm: o.shoulderCm,
+            }))}
+          />
+        </Card>
+      )}
 
       {/* Ranked sizes — now interactive */}
       <Card>

@@ -1,20 +1,30 @@
 ---
 name: project-fit-passport-closet-signal-design
-description: "Fit Passport — the closet fit scale is the WRONG SHAPE (unipolar 1-5, loses direction); the design that fixes it, plus the FIC interaction-cost budget. DESIGN, NOT BUILT."
+description: "Fit Passport — the signed fit scale (SHIPPED 2026-08-25), what it changed in the engine, and the parts of the design still unbuilt"
 metadata:
   node_type: memory
   type: project
 ---
 
-Direction set **2026-08-25** for using closet data as an engine signal. Full
-argument with sources: **`docs/design/closet-signal-and-interaction-cost.md`** —
-read that before building any of it. **Nothing here is implemented.**
+Direction set **2026-08-25** for using closet data as an engine signal, and the
+first half **SHIPPED the same day**. Full argument with sources:
+**`docs/design/closet-signal-and-interaction-cost.md`** (§6 lists exactly what
+landed) — read it before touching any of this.
+
+**SHIPPED:** the signed scale `lib/fitDirection.ts`, `KnownGoodItem.fitDirection`
+/ `ComfortCheck.direction` / `User.fitScaleMode`, the engine's directional anchor
+correction, the dual-mode input (`FitDirectionInput`), the `/check` ease figure
+(`FitFigure`), and Fit Refresh converted to the same scale. 209 → **237 tests**.
+
+**STILL DESIGN ONLY:** derived personal ease target, preference-consistency
+confidence, consistency feedback on contradictions, per-area ratings, and all
+cross-user aggregation.
 
 ## The finding worth remembering
 
-**`KnownGoodItem.fitRating` is the wrong shape of data, and has been since
-Session 01.** It is a unipolar `Int 1–5` ("how good is the fit") rendered as a
-`1/5…5/5` dropdown. It cannot express *which way* a bad fit is bad — a 2/5 is
+**`KnownGoodItem.fitRating` was the wrong shape of data from Session 01 until
+2026-08-25.** It is a unipolar `Int 1–5` ("how good is the fit") that was rendered
+as a `1/5…5/5` dropdown. It cannot express *which way* a bad fit is bad — a 2/5 is
 either strangling or falling off, and those imply **opposite** recommendations.
 
 Every size-rec system this project cites models fit as a **bipolar ordinal**
@@ -118,15 +128,36 @@ from a real choice** — which would silently corrupt the whole signal.
 *negative* half is directly measured. So justify the animation as an
 **explanation** feature, not as a data-quality intervention.
 
-## Two open questions — decide before building
+## Decisions taken while building — do not relitigate casually
 
-1. **The numeric mode's SCALE is still unresolved** (its *control* is now settled
-   above: a tap-on-the-line VAS). A 1–20 *comfort* scale is unipolar again — it
-   reproduces the exact defect at the top of this file. Likely answer is a
-   **signed** range (−10…+10, tight→loose, 0 = perfect). **Needs the founder's
-   decision.** Whatever it becomes, it must map to the same internal scalar as the
-   descriptive mode, and the mode switch is sticky **per user, never per item**
-   (mid-closet switching makes the data incomparable with itself).
+- **Numeric scale = signed −10…+10** (founder's call, 2026-08-25). A 1–20
+  *comfort* scale was rejected for being unipolar again. Mode is sticky **per
+  user, never per item** — mid-closet switching makes the data incomparable with
+  itself.
+- **`fitRating` is DERIVED, never asked.** `ratingFromDirection()` maps
+  |direction| to 5/4/3/2, never 1. **A test pins that a centred report clears the
+  `>= 4` threshold `hasStrongAnchor()` needs** — miss that and the [F1] anchor fix
+  stops firing silently.
+- **A directed anchor is trusted at a flat 0.9**, not `fitRating/5`, or "too
+  tight" gets penalised twice: once by the correction, again by the low stars it
+  attracts. Trust tracks the quality of the REPORT, not of the fit.
+- **Direction applies to cross-brand anchors too** (it is an observation about a
+  garment); the *preference* shift stays same-brand-only so two guesses never
+  compound.
+- **Fit Refresh had to move to the same scale.** Left alone it overwrote
+  `fitRating` while leaving a stale `fitDirection` on the same row — the two
+  contradicting each other on a record the engine reads.
+- **`body` is returned by `/api/check` and `/api/recommend`** so the figure can
+  draw. That is the user's own session; `/api/view/[code]` was re-verified as
+  leaking no measurement field.
+
+## Still open
+
+1. **Should `fitDirection` be visible to an account-code holder?** Currently NO —
+   the view endpoint's allow-list `select` excluded it and it was left that way.
+   It is closet information like `fitRating` (already public) and arguably more
+   useful, but widening what a bearer code reveals is a **governance decision, not
+   a feature side effect**. Founder's call.
 2. **SizeFlags' actual thresholds were not retrievable** (PDF method section
    unreadable). Cross-user aggregation is **blocked** on getting them — we have
    precedent that the approach works, not a specification to copy.

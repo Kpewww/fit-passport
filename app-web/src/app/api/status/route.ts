@@ -92,6 +92,7 @@ export async function GET() {
     role: user.role,
     avatarDataUrl: profile?.avatarDataUrl ?? null,
     listedInCommunity: user.listedInCommunity,
+    fitScaleMode: user.fitScaleMode,
     badges: allBadges,
     earnedBadgeIds: earned,
     pinnedBadges: pinned,

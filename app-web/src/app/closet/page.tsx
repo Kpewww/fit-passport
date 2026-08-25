@@ -9,6 +9,8 @@ import { CategoryPicker } from "@/components/CategoryPicker";
 import { isValidSize } from "@/lib/sizeSystems";
 import { garmentLabel, garmentGlyph } from "@/lib/garments";
 import { resizeImageToDataUrl } from "@/lib/imageResize";
+import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionInput";
+import { DIRECTION_DEFAULT, ratingFromDirection } from "@/lib/fitDirection";
 
 type Item = {
   id: string;
@@ -19,6 +21,7 @@ type Item = {
   size: string;
   region: string | null;
   fitRating: number;
+  fitDirection?: number | null;
   areaNotesJson: string | null;
   color: string | null;
   imageDataUrl: string | null;
@@ -73,7 +76,7 @@ const GENDERS = [
   { v: "unisex", label: "Unisex" },
 ];
 
-const BLANK = { brand: "", displayName: "", category: "tshirt", gender: "", size: "", fitRating: 5, areaNotes: "", color: "", onlineAvailable: true, imageDataUrl: "" };
+const BLANK = { brand: "", displayName: "", category: "tshirt", gender: "", size: "", fitRating: 5, fitDirection: DIRECTION_DEFAULT, areaNotes: "", color: "", onlineAvailable: true, imageDataUrl: "" };
 
 export default function ClosetPage() {
   const [items, setItems] = useState<Item[]>([]);
@@ -191,7 +194,7 @@ export default function ClosetPage() {
       body: JSON.stringify({
         brand: form.brand, displayName: form.displayName || null,
         category: form.category, gender: form.gender || null, size: form.size,
-        fitRating: form.fitRating, color: form.color || null, onlineAvailable: form.onlineAvailable,
+        fitRating: form.fitRating, fitDirection: form.fitDirection, color: form.color || null, onlineAvailable: form.onlineAvailable,
         imageDataUrl: form.imageDataUrl || null,
         areaNotesJson: form.areaNotes ? JSON.stringify({ notes: form.areaNotes }) : null,
       }),
@@ -280,6 +283,7 @@ export default function ClosetPage() {
   const uncategorized = items.filter((it) => !it.collectionId);
 
   return (
+    <FitScaleProvider>
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-6 py-10">
         <div className="flex items-start justify-between gap-4">
@@ -388,12 +392,12 @@ export default function ClosetPage() {
                 </select>
               </Field>
             </div>
-            <div className="sm:col-span-2">
-              <Field label="Fit">
-                <select className={inputClass} value={form.fitRating}
-                  onChange={(e) => setForm({ ...form, fitRating: Number(e.target.value) })}>
-                  {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}/5</option>)}
-                </select>
+            <div className="sm:col-span-6">
+              <Field label="How does it sit on you?">
+                <FitDirectionInput
+                  value={form.fitDirection}
+                  onChange={(n) => setForm({ ...form, fitDirection: n, fitRating: ratingFromDirection(n) })}
+                />
               </Field>
             </div>
             <div className="sm:col-span-6">
@@ -568,6 +572,7 @@ export default function ClosetPage() {
       {/* The comparison bucket — items set aside to look at together */}
       <BucketPanel items={compareItems} onRemove={toggleBucket} onClear={() => setCompareItems([])} onOpen={(it) => setDetailGroup({ key: it.id, label: it.displayName || it.brand, items: [it], isVariant: false })} />
     </main>
+    </FitScaleProvider>
   );
 }
 
@@ -972,7 +977,7 @@ function EditRow({
   const [f, setF] = useState({
     brand: item.brand, displayName: item.displayName ?? "",
     category: item.category, gender: item.gender ?? "", size: item.size,
-    fitRating: item.fitRating, color: item.color ?? "",
+    fitRating: item.fitRating, fitDirection: item.fitDirection ?? DIRECTION_DEFAULT, color: item.color ?? "",
     collectionId: item.collectionId ?? "",
     areaNotes: safeNotes(item.areaNotesJson) ?? "",
     imageDataUrl: item.imageDataUrl ?? "",
@@ -988,7 +993,7 @@ function EditRow({
       body: JSON.stringify({
         id: item.id, brand: f.brand, displayName: f.displayName || null,
         category: f.category, gender: f.gender || null, size: f.size,
-        fitRating: f.fitRating, color: f.color || null,
+        fitRating: f.fitRating, fitDirection: f.fitDirection, color: f.color || null,
         collectionId: f.collectionId || null,
         imageDataUrl: f.imageDataUrl || null,
         areaNotesJson: f.areaNotes ? JSON.stringify({ notes: f.areaNotes }) : null,
@@ -1044,11 +1049,12 @@ function EditRow({
             </select>
           </Field>
         </div>
-        <div className="sm:col-span-1">
-          <Field label="Fit">
-            <select className={inputClass} value={f.fitRating} onChange={(e) => setF({ ...f, fitRating: Number(e.target.value) })}>
-              {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}/5</option>)}
-            </select>
+        <div className="sm:col-span-6">
+          <Field label="How does it sit on you?">
+            <FitDirectionInput
+              value={f.fitDirection}
+              onChange={(n) => setF({ ...f, fitDirection: n, fitRating: ratingFromDirection(n) })}
+            />
           </Field>
         </div>
         <div className="sm:col-span-6">

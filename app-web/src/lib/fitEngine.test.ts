@@ -504,3 +504,114 @@ describe("measurement-fit edge cases", () => {
     expect(out.best).toBeDefined();
   });
 });
+
+describe("signed fit direction on a closet anchor", () => {
+  // The whole point of the signed scale: a 2/5 star rating cannot say whether the
+  // garment strangles or hangs, and those imply OPPOSITE recommendations. These
+  // tests pin that the sign actually moves the answer in opposite directions.
+
+  it("sizes UP when the owned anchor is reported too tight", () => {
+    const out = recommend(
+      baseInput({
+        knownGood: [
+          { brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 3, fitDirection: -10 },
+        ],
+      }),
+    );
+    expect(out.best.label).toBe("L");
+  });
+
+  it("sizes DOWN when the owned anchor is reported too loose", () => {
+    const out = recommend(
+      baseInput({
+        knownGood: [
+          { brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 3, fitDirection: 10 },
+        ],
+      }),
+    );
+    expect(out.best.label).toBe("S");
+  });
+
+  it("keeps the owned size when the anchor is reported just right", () => {
+    const out = recommend(
+      baseInput({
+        knownGood: [
+          { brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5, fitDirection: 0 },
+        ],
+      }),
+    );
+    expect(out.best.label).toBe("M");
+  });
+
+  it("is the SAME anchor and the SAME stars — only the sign differs", () => {
+    // This is the regression that matters: identical inputs apart from the sign
+    // must not produce the same answer, or the field is doing nothing.
+    const tight = recommend(
+      baseInput({
+        knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 3, fitDirection: -10 }],
+      }),
+    );
+    const loose = recommend(
+      baseInput({
+        knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 3, fitDirection: 10 }],
+      }),
+    );
+    expect(tight.best.label).not.toBe(loose.best.label);
+  });
+
+  it("leaves legacy items (no direction reported) behaving exactly as before", () => {
+    const withField = recommend(
+      baseInput({
+        knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5, fitDirection: null }],
+      }),
+    );
+    const without = recommend(
+      baseInput({
+        knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5 }],
+      }),
+    );
+    expect(withField.best.label).toBe(without.best.label);
+    expect(withField.best.score).toBeCloseTo(without.best.score, 10);
+  });
+
+  it("explains itself using the reported direction, not just a step count", () => {
+    const out = recommend(
+      baseInput({
+        knownGood: [
+          { brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 3, fitDirection: -10 },
+        ],
+      }),
+    );
+    const kg = out.best.reasons.find((r) => r.signal === "known-good");
+    expect(kg).toBeDefined();
+    // The reader should see the FACT they reported, not only our conclusion.
+    expect(kg!.message.toLowerCase()).toContain("too tight");
+  });
+
+  it("does not double-penalise a directed anchor that carries low stars", () => {
+    // A "too tight" item usually gets few stars. We have already corrected for
+    // the misfit, so the corrected anchor must stay influential rather than being
+    // discounted a second time by the rating it naturally attracts.
+    const directedLowStars = recommend(
+      baseInput({
+        knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 2, fitDirection: -10 }],
+      }),
+    );
+    const kg = directedLowStars.best.reasons.find((r) => r.signal === "known-good");
+    expect(kg).toBeDefined();
+    expect(directedLowStars.best.label).toBe("L");
+  });
+
+  it("never shifts more than one ladder step, even at the extremes", () => {
+    for (const dir of [-10, -5, 0, 5, 10]) {
+      const out = recommend(
+        baseInput({
+          knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 4, fitDirection: dir }],
+        }),
+      );
+      const idx = UNIQLO_TEE_SIZES.findIndex((s) => s.label === out.best.label);
+      const mIdx = UNIQLO_TEE_SIZES.findIndex((s) => s.label === "M");
+      expect(Math.abs(idx - mIdx)).toBeLessThanOrEqual(1);
+    }
+  });
+});
