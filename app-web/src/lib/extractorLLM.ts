@@ -17,6 +17,7 @@
 
 import { z } from "zod";
 import { extractFromUrl, type ExtractedProduct, type ExtractedSize } from "./extractor";
+import { checkUrlSafety, resolvesToPrivateAddress } from "./urlSafety";
 import {
   parsePage,
   parseSizeLabels,
@@ -200,39 +201,80 @@ async function callLLM(url: string, pageText: string): Promise<LLMExtract | null
 // (see docs/design/fetch-strategy.md), a miss just needs a retry.
 type FetchOutcome = { html: string | null; blocked: boolean };
 
-/** One fetch attempt. Returns the HTML, plus whether we were actively blocked. */
+/** How many redirect hops we'll follow. Real product links rarely need many. */
+const MAX_REDIRECTS = 4;
+
+/**
+ * SSRF gate: static checks + a DNS check, applied to EVERY hop.
+ * Returns the safe URL, or null if this hop must not be fetched.
+ */
+async function gate(raw: string): Promise<URL | null> {
+  const verdict = checkUrlSafety(raw);
+  if (!verdict.ok) return null;
+  if (await resolvesToPrivateAddress(verdict.url.hostname)) return null;
+  return verdict.url;
+}
+
+/**
+ * One fetch attempt. Returns the HTML, plus whether we were actively blocked.
+ *
+ * Redirects are followed MANUALLY (`redirect: "manual"`) so each hop goes back
+ * through the SSRF gate. With `redirect: "follow"` a perfectly innocent-looking
+ * public URL can 302 straight to the cloud metadata endpoint and every check we
+ * did on the original URL is worthless — the redirect is the standard bypass.
+ */
 async function fetchOnce(url: string): Promise<FetchOutcome> {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), PAGE_FETCH_TIMEOUT_MS);
   try {
-    const r = await fetch(url, {
-      signal: controller.signal,
-      redirect: "follow",
-      headers: {
-        // Browser-like headers — many retail CDNs 403 anything that isn't.
-        "user-agent": UA,
-        accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
-      },
-    });
-    const ct = r.headers.get("content-type") ?? "";
-    if (ct && !ct.includes("html") && !ct.includes("xml")) {
-      return { html: null, blocked: false };
+    let current = await gate(url);
+    if (!current) return { html: null, blocked: false };
+
+    let r: Response | null = null;
+    for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
+      r = await fetch(current, {
+        signal: controller.signal,
+        redirect: "manual",
+        headers: {
+          "user-agent": UA,
+          accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
+        },
+      });
+      if (r.status < 300 || r.status > 399) break;
+      const location = r.headers.get("location");
+      if (!location) break;
+      // Resolve relative redirects against the hop we're on, then re-gate.
+      const next = await gate(new URL(location, current).toString());
+      if (!next) return { html: null, blocked: false };
+      current = next;
+      r = null;
     }
-    const raw = await r.text();
-    const html = raw.length > MAX_HTML_BYTES ? raw.slice(0, MAX_HTML_BYTES) : raw;
-    // A bot-block / CAPTCHA page isn't the product — treat it as unreachable so we
-    // fall back to an honest estimate rather than parsing a challenge page. We do
-    // record that it was a BLOCK, though: that distinction is the whole point of
-    // the instrumentation.
-    if (looksBlocked(r.status, html)) return { html: null, blocked: true };
-    if (!r.ok) return { html: null, blocked: false };
-    return { html, blocked: false };
+    if (!r) return { html: null, blocked: false }; // ran out of hops
+
+    return await readBody(r);
   } catch {
     return { html: null, blocked: false };
   } finally {
     clearTimeout(t);
   }
+}
+
+/** Read and classify a response body: HTML, a bot-block page, or unusable. */
+async function readBody(r: Response): Promise<FetchOutcome> {
+  const ct = r.headers.get("content-type") ?? "";
+  if (ct && !ct.includes("html") && !ct.includes("xml")) {
+    return { html: null, blocked: false };
+  }
+  const raw = await r.text();
+  const html = raw.length > MAX_HTML_BYTES ? raw.slice(0, MAX_HTML_BYTES) : raw;
+  // A bot-block / CAPTCHA page isn't the product — treat it as unreachable so we
+  // fall back to an honest estimate rather than parsing a challenge page. We do
+  // record that it was a BLOCK, though: that distinction is the whole point of
+  // the instrumentation.
+  if (looksBlocked(r.status, html)) return { html: null, blocked: true };
+  if (!r.ok) return { html: null, blocked: false };
+  return { html, blocked: false };
 }
 
 /**
@@ -291,7 +333,16 @@ async function fetchImageBase64(url: string): Promise<{ data: string; mediaType:
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), PAGE_FETCH_TIMEOUT_MS);
   try {
-    const r = await fetch(url, { signal: controller.signal, headers: { "user-agent": UA } });
+    // Chart-image URLs are read out of the page, so they are just as
+    // attacker-influenceable as the page URL itself — an `<img src>` pointing at
+    // an internal address is the same SSRF with an extra step. Same gate.
+    const safe = await gate(url);
+    if (!safe) return null;
+    const r = await fetch(safe, {
+      signal: controller.signal,
+      redirect: "manual",
+      headers: { "user-agent": UA },
+    });
     if (!r.ok) return null;
     const mediaType = (r.headers.get("content-type") ?? "").split(";")[0].trim();
     if (!/^image\/(png|jpe?g|webp|gif)$/i.test(mediaType)) return null;

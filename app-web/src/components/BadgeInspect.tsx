@@ -141,12 +141,13 @@ export function BadgeInspect({
               rot={rot}
               interactive={false}
               showBackPlate
+              dimensional
             />
           </div>
         ) : face ? (
           <SafeBoundary
             fallback={
-              <BadgeCoin id={badge.id} metal={badge.metal} size={size} title={badge.title} showBackPlate />
+              <BadgeCoin id={badge.id} metal={badge.metal} size={size} title={badge.title} showBackPlate dimensional />
             }
           >
             <Suspense

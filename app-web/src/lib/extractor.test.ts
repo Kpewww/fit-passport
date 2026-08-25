@@ -61,3 +61,51 @@ describe("extractFromUrl — full-path parsing", () => {
     expect(r.gender).toBe("mens");
   });
 });
+
+// A pasted link is untrusted input. Before this, an unrecognised page silently
+// became a "tshirt" and got a confident size — the worst failure mode for a tool
+// whose whole proposition is that its answer can be trusted.
+describe("non-apparel links are recognised as such", () => {
+  const guessed = (url: string) => extractFromUrl(url).source.categoryGuessed;
+
+  it("flags a game top-up page (代充) as not-apparel", () => {
+    expect(guessed("https://shop.example.com/product/steam-wallet-top-up-100")).toBe(true);
+    expect(guessed("https://example.com/代充/王者荣耀点券")).toBe(true);
+  });
+
+  it("flags articles, logins and downloads as not-apparel", () => {
+    expect(guessed("https://news.example.com/2026/08/markets-roundup")).toBe(true);
+    expect(guessed("https://example.com/account/login")).toBe(true);
+    expect(guessed("https://cdn.example.com/files/setup.exe")).toBe(true);
+  });
+
+  it("does NOT flag real garment links", () => {
+    expect(guessed("https://www.uniqlo.com/us/en/products/mens-linen-shirt")).toBe(false);
+    expect(guessed("https://shop.example.com/p/womens-wool-coat-navy")).toBe(false);
+    expect(guessed("https://example.cn/p/男士牛仔裤")).toBe(false);
+  });
+});
+
+// Chinese storefronts are a stated target market, so a Chinese product URL must
+// not be turned away by the not-apparel refusal.
+describe("Chinese garment terms are recognised", () => {
+  const cat = (url: string) => extractFromUrl(url).category;
+  const guessed = (url: string) => extractFromUrl(url).source.categoryGuessed;
+
+  it("classifies common Chinese garment words", () => {
+    expect(cat("https://example.cn/p/男士牛仔裤")).toBe("jeans");
+    expect(cat("https://example.cn/p/女士连衣裙")).toBe("dress");
+    expect(cat("https://example.cn/p/纯棉衬衫")).toBe("shirt");
+    expect(cat("https://example.cn/p/加厚羽绒服")).toBe("jacket");
+    expect(cat("https://example.cn/p/宽松卫衣")).toBe("hoodie");
+    expect(cat("https://example.cn/p/圆领短袖")).toBe("tshirt");
+  });
+
+  it("puts bottoms before tops, so 牛仔裤 is not read as an 外套", () => {
+    expect(cat("https://example.cn/p/牛仔裤外套")).toBe("jeans");
+  });
+
+  it("still refuses a Chinese page that is not clothing", () => {
+    expect(guessed("https://example.cn/p/游戏点券代充")).toBe(true);
+  });
+});

@@ -64,6 +64,13 @@ export type ExtractedProduct = {
     // Recording the split is what tells us whether to spend on extraction quality
     // or on transport. See docs/design/fetch-strategy.md §6.
     fetch?: "ok" | "blocked" | "unreachable" | "skipped";
+    /**
+     * True when NOTHING on the page or in the URL identified a garment — the
+     * category below is a fallback, not a reading. Combined with
+     * `sizesFrom: "estimated"` this means we recognised no apparel at all, and
+     * the honest response is to say so rather than size an unknown object.
+     */
+    categoryGuessed?: boolean;
   };
 };
 
@@ -186,6 +193,33 @@ const CATEGORY_KEYWORDS: Array<{ cat: string; re: RegExp }> = [
   { cat: "jacket", re: /\b(jacket|coat|trucker|blazer|outerwear|vest)\b/i },
   { cat: "shirt", re: /\b(shirt|oxford|flannel|button-?down|button-?up)\b/i },
   { cat: "tshirt", re: /\b(t-?shirt|tee|crew-?neck)\b/i },
+
+  // Chinese garment terms. Needed now that an unrecognised page is REFUSED rather
+  // than defaulted to "tshirt" — without these, a Chinese product link would be
+  // turned away as "not clothing", which is precisely the market
+  // docs/design/china-sizing-research.md says matters most.
+  //
+  // No \b anchors: word boundaries are defined by ASCII word characters, so they
+  // never match at a CJK boundary and would silently disable every rule here.
+  // Ordered bottoms-before-tops for the same reason as above (裤 before 衣).
+  { cat: "jeans", re: /(牛仔裤|丹宁)/ },
+  { cat: "shorts", re: /(短裤|沙滩裤)/ },
+  { cat: "skirt", re: /(半身裙|短裙|长裙|A字裙)/ },
+  { cat: "pants", re: /(裤子|长裤|西裤|休闲裤|运动裤|工装裤|打底裤|阔腿裤)/ },
+  { cat: "sneakers", re: /(运动鞋|跑鞋|板鞋|球鞋)/ },
+  { cat: "boots", re: /(靴子|马丁靴|雪地靴)/ },
+  { cat: "shoes", re: /(鞋子|皮鞋|凉鞋|乐福鞋|高跟鞋)/ },
+  { cat: "socks", re: /(袜子|长袜|船袜)/ },
+  { cat: "hat", re: /(帽子|棒球帽|针织帽|渔夫帽)/ },
+  { cat: "belt", re: /(腰带|皮带)/ },
+  { cat: "scarf", re: /(围巾|丝巾)/ },
+  { cat: "jacket", re: /(羽绒服|棉服|冲锋衣|风衣|夹克|外套|大衣|西装|马甲|背心)/ },
+  { cat: "polo", re: /(POLO衫|polo衫)/ },
+  { cat: "hoodie", re: /(卫衣|连帽衫|帽衫)/ },
+  { cat: "sweater", re: /(毛衣|针织衫|开衫|羊毛衫|抓绒|高领衫)/ },
+  { cat: "shirt", re: /(衬衫|衬衣)/ },
+  { cat: "dress", re: /(连衣裙|连身裙)/ },
+  { cat: "tshirt", re: /(T恤|t恤|短袖|打底衫)/ },
 ];
 
 // Gender / department detection from the URL path. "women" first — note
@@ -263,11 +297,25 @@ function guessBrand(host: string): BrandProfile | null {
   return null;
 }
 
-function detectCategory(text: string): string {
+/**
+ * Recognise a garment category, or return null when nothing in the text says
+ * "clothing" at all.
+ *
+ * The null case matters more than it looks. This used to default to "tshirt",
+ * which meant ANY pasted link — a game top-up page, a news article, a phishing
+ * page, a random file — was silently treated as a t-shirt and handed a confident
+ * size recommendation. Wrong answers delivered confidently are worse than no
+ * answer, and this is the app's whole trust proposition.
+ */
+export function detectCategoryStrict(text: string): string | null {
   for (const { cat, re } of CATEGORY_KEYWORDS) {
     if (re.test(text)) return cat;
   }
-  return "tshirt"; // safest default for tops
+  return null;
+}
+
+function detectCategory(text: string): string {
+  return detectCategoryStrict(text) ?? "tshirt"; // caller records that this was a guess
 }
 
 /** Build a size ladder for a brand profile + category. */
@@ -325,7 +373,8 @@ export function extractFromUrl(url: string): ExtractedProduct {
   // Layer 2: URL-derived. Detect over the WHOLE path (all segments), not just
   // the last one — the descriptive slug is often not the final segment.
   const pathText = `${host} ${parts.join(" ")}`.replace(/[-_]/g, " ");
-  const category = detectCategory(pathText);
+  const detected = detectCategoryStrict(pathText);
+  const category = detected ?? "tshirt";
   const gender = detectGender(pathText);
   const brandProfile = guessBrand(host);
 
@@ -348,7 +397,7 @@ export function extractFromUrl(url: string): ExtractedProduct {
       material: "See product page",
       fitNotes: brandProfile.fitNotes,
       sizes: buildSizes(brandProfile, category),
-      source: { url, host, derived: true, slug, sizesFrom: "estimated" },
+      source: { url, host, derived: true, slug, sizesFrom: "estimated", categoryGuessed: detected == null },
     };
   }
 
@@ -370,7 +419,7 @@ export function extractFromUrl(url: string): ExtractedProduct {
     material: "Unknown",
     fitNotes: genericProfile.fitNotes,
     sizes: buildSizes(genericProfile, category),
-    source: { url, host, derived: true, slug, sizesFrom: "estimated" },
+    source: { url, host, derived: true, slug, sizesFrom: "estimated", categoryGuessed: detected == null },
   };
 }
 

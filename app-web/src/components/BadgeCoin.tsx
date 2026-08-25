@@ -73,6 +73,23 @@ export function BadgeCoin({
   interactive = true,
   /** Bigger coins get an engraved back plate; small ones a plain metal back. */
   showBackPlate,
+  /**
+   * Render the full dimensional coin — rim slices, back face, CSS 3D, pointer turn.
+   *
+   * DEFAULT FALSE as of 2026-08-25, a deliberate reversal of the earlier
+   * "no flat variant anywhere" rule. That rule had a measured price: a dimensional
+   * coin is a stack of up to twelve rim slices inside `preserve-3d` (each its own
+   * composited layer) over a face SVG with eighteen gradients and two filters, and
+   * the trophy case renders twenty at once. On a Windows/integrated-GPU machine
+   * that was enough to make the whole tab heavy — the same build was fine on the
+   * Mac it was designed on, which is exactly why it went unnoticed.
+   *
+   * The dimensional treatment is not deleted, only moved to where it earns its
+   * cost: the inspect stage, which shows ONE badge at a time and is the moment the
+   * craft is actually being looked at. Flip this back on per call site (or change
+   * the default) when the badges get their own redesign.
+   */
+  dimensional = false,
 }: {
   id: string;
   metal: Metal;
@@ -82,10 +99,19 @@ export function BadgeCoin({
   rot?: { x: number; y: number };
   interactive?: boolean;
   showBackPlate?: boolean;
+  dimensional?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const rest = restTilt(size);
   const [hover, setHover] = useState({ x: rest.x, y: rest.y, active: false });
+
+  // FLAT PATH — the default. One SVG, no 3D context, no rim stack, no back face,
+  // no pointer state. A list of twenty of these costs about what one dimensional
+  // coin used to. The medallion art itself is unchanged, so a badge still reads as
+  // a struck medal; it just no longer stands at an angle.
+  if (!dimensional) {
+    return <BadgeMedallion id={id} metal={metal} size={size} locked={locked} title={title} />;
+  }
 
   const controlled = !!rot;
   const rx = controlled ? rot!.x : hover.x;

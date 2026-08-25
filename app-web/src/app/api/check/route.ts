@@ -36,6 +36,27 @@ export async function POST(req: Request) {
 
   const extracted = await extractSmart(url);
 
+  // REFUSE what isn't clothing.
+  //
+  // Nothing in the URL or the page identified a garment, AND we never found a real
+  // size chart — so we are looking at something that is not an apparel product: a
+  // game top-up page, an article, a login wall, a random file. The extractor used
+  // to quietly default such pages to "tshirt" and hand back a confident size,
+  // which is the worst possible failure for a tool whose entire proposition is
+  // that you can trust its answer. Say we don't recognise it instead, and don't
+  // write a bogus Product row.
+  if (extracted.source.categoryGuessed && extracted.source.sizesFrom === "estimated") {
+    return NextResponse.json(
+      {
+        error: "not-apparel",
+        message:
+          "We couldn't find a clothing item on that page. Paste a link to a specific garment — a product page for a shirt, jacket, trousers and so on.",
+        source: extracted.source,
+      },
+      { status: 422 },
+    );
+  }
+
   // Persist product + sizes.
   const product = await prisma.product.create({
     data: {
