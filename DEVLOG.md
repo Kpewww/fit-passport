@@ -28,6 +28,94 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-25 · Session 43 — Documentation truth-pass, memory published to the repo, and the message architecture
+
+**Standing rule tightened this session:** a DEVLOG entry is owed for **every code
+change and every push**, not once per session. Three pushes in this session
+(`37add52`, `b02e6df`, `6d13f45`) went out without one — this entry is the
+correction, and the rule now lives in memory so it doesn't drift again.
+
+### Documentation that no longer matched reality
+
+Audited every doc against facts known to have changed — test counts, Node version,
+Lenis, badge dimensionality, deployment state.
+
+**One was not stale prose, it was a trap.** `docs/DEPLOYMENT.md` §1 still said
+*"while no database has been deployed yet (still true as of Session 33)"* and gave
+the regenerate-`0_init`-from-empty recipe. A production database now exists **and
+has applied `0_init`**, so following that block would rewrite an applied migration
+and make Prisma refuse to deploy. Marked NO LONGER APPLICABLE, kept as history, and
+the additive-migration block is now labelled the current procedure.
+
+Also there: the known-limitations list claimed *"moderation has no review queue"* —
+that shipped in Session 37. Replaced with what is genuinely still missing (appeals;
+a crude auto-hide threshold), reordered so the **base64-images-in-Postgres wall**
+leads, and added the Vercel Hobby commercial-use term and the
+preview-deploys-have-no-database constraint.
+
+Both READMEs and `Badge-Design.md` still claimed there is no flat badge variant,
+untrue since the day before. `docs/RESUME.md` was a Session 39/40 artefact —
+rewritten around current state. `app-web/README.md` was still untouched
+`create-next-app` boilerplate.
+
+### Memory published to the repo — curated, not copied
+
+The founder asked for the assistant's project memory to live in the repo so the
+teammate can read it. Published as **`docs/memory/`** with a README, on three lines:
+
+- **Project knowledge goes in.** Architecture and invariants, performance traps,
+  deployment, design system, threat model, ecosystem plan, backlog.
+- **Notes about a person stay out.** Personal identifiers, working-style
+  preferences, and one developer's machine setup are not project knowledge.
+- **Two "feedback" notes were actually PRODUCT constraints** — no scraped brand
+  imagery, and research-grounded features — republished as `principle-*.md` with
+  the personal framing removed.
+
+**A pre-commit credential sweep found something on its first pass:** a personal
+email address sitting in the build-state notes. Also removed the Neon endpoint host
+and Vercel org/project ids (harmless alone; useful to anyone who also has a
+credential) and the seeded admin password — which was additionally sitting in
+`docs/RESUME.md`, a shared repo. **Scrubbed from the private originals too, not just
+the published copies**, because it should never have been written down in either.
+The sweep is worth keeping as a habit: grep the staged copy for credential patterns
+before every commit.
+
+Also repointed twelve `[[links]]` in the published copies that referenced files
+which stay private, so a reader never hits a dead reference.
+
+**Two directories deleted** after verifying they were fully migrated:
+`Self_project_memory` (byte-identical to the live memory dir) and an old Mac copy of
+the repo (**605 MB**, last commit `07d135d` already contained in the live repo, no
+processes using it, not a worktree, no config referencing it).
+
+### Message architecture → sharper product copy
+
+Filling in the course's Message Architecture template produced two sentences better
+than anything on the site, so they went into the product rather than staying in a
+deck:
+
+- The homepage parallax statement repeated the privacy point the section above
+  already made. Replaced with the **point of view**: the industry keeps making the
+  *picture* better — scans, avatars, models wearing your face — but **fit was never a
+  picture problem; it is a memory problem, and the memory is already in your
+  closet.** That reframes the category in two sentences.
+- The hero now ends on **"When we aren't sure, we say so."** That clause is the
+  actual differentiator and it was missing from the first thing anyone reads. Also
+  "clothes you already own" rather than "already love" — *own* is the defensible
+  claim.
+
+`docs/course/message-architecture.html` is the filled template, laid out the way the
+workbook lays it out (North Star / Strategy / Expression, each field beside its own
+definition) so it reads as a completed worksheet rather than a pitch. Sourced claims
+footnote to the research files. The DNA assessment came out **overwhelmingly
+customer-centric with one challenger streak**, which is recorded as the reason Core
+DNA is *"honest by construction"* rather than anything technology-led — the
+defensible asset is being trusted, not being clever.
+
+209 tests, clean build throughout.
+
+---
+
 ## 2026-08-24 · Session 41 — New machine (Mac → Windows), toolchain rebuild, security patch, and two deploy blockers
 
 **Context:** the founder changed computers. The project is now a fresh `git clone`

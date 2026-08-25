@@ -10,7 +10,7 @@ metadata:
 
 **Fit Passport** — "One body. One fit identity. Any store." A consumer-owned fit layer: user keeps one portable profile (body info, preferred fit, known-good garments, keep/return/exchange outcomes). Paste a product URL → system extracts sizing data → recommends a size with confidence + explanation. Learns from outcomes.
 
-**Team:** Xiangchen Kong + Alyssa Qi. For course [[project-course-49800]].
+**Team:** Xiangchen Kong ([[user-xiangchen-kong]]) + Alyssa Qi. For course [[project-course-49800]].
 
 **Semester MVP scope (narrow):** responsive web app, human apparel only (tops/shirts/jackets). Create profile → add 3-5 known-good items → paste product URL → get ranked size + confidence + explanation → record keep/return/exchange. Stretch: small dog/cat pet-profile prototype, regional sizing, VTO proof-of-concept. Out of scope: footwear/jewelry production, custom body-scan model, native apps, retailer integrations.
 
@@ -41,4 +41,4 @@ metadata:
 
 Features shipped through **Session 22 (2026-08-12)**: guided dashboard, VIEW/EDIT `/passport` (autosave, unit toggles, portrait, multi-fit, **earned-badge row with hover-meaning tooltips**), closet (collections/color/gender/reorder/merge/**add-by-URL**/**item photos**/**filing-cabinet folder view: colored folders holding stacked file cards + detail-sheet pull-out + comparison bucket**), URL-aware size checker (**whole-path extraction: brand/name/category/gender**, fit-pref toggle, explainable ranks, **cross-domain disclaimer**), multi-garment domains + **size converter** (EU/US/UK/cm), **per-user brand-bias learning**, **body-type derivation + figure**, code-based identity + sharing + **community directory** + **outfits & likes**, **badge system** (3 tracks×3 tiers + 3 capstones, glossy SVG medallions), **Fit Refresh** card-stack, and security: rate-limiting, real **email password reset** (Resend), **export-by-code**, **change-password/deactivate**, **image-gen try-on** (Replicate FLUX schnell). All key-gated integrations degrade gracefully without keys. Persistence race fixed via middleware.
 
-See [[project-fit-passport-build-state]] for the full current architecture (read before coding), the repo's `DEVLOG.md` for the ongoing log, [[project-identity-sharing-idea]] for the auth/sharing design, [[project-fit-passport-next-steps]] for backlog, `principle-no-brand-imagery.md` and the language convention for constraints.
+See [[project-fit-passport-build-state]] for the full current architecture (read before coding), [[feedback-detailed-devlog]] for the ongoing log, [[project-identity-sharing-idea]] for the auth/sharing design, [[project-fit-passport-next-steps]] for backlog, [[feedback-brand-logo-legal]] and [[feedback-language-chinese-chat-english-commits]] for constraints.

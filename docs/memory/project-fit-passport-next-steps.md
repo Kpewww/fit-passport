@@ -8,7 +8,7 @@ metadata:
   modified: 2026-08-20T22:33:47.428Z
 ---
 
-Prioritized next-steps for [[project-fit-passport]] as of **Session 40 (2026-08-20)**. Current state: real-page fetching (JSON-LD/tables/vision-OCR/号型), multi-dimensional transparent engine (chest+waist+shoulder, body-range, garment ease, ordinal verdict, margin-scaled confidence), region body prior, 172 tests, all committed & pushed. Everything must stay research-grounded (`principle-research-grounded.md`) and hold the privacy/legal/transparency invariants. **The founder has NOT locked the next item** — this is the menu; ask which to start.
+Prioritized next-steps for [[project-fit-passport]] as of **Session 40 (2026-08-20)**. Current state: real-page fetching (JSON-LD/tables/vision-OCR/号型), multi-dimensional transparent engine (chest+waist+shoulder, body-range, garment ease, ordinal verdict, margin-scaled confidence), region body prior, 172 tests, all committed & pushed. Everything must stay research-grounded ([[feedback-research-grounded]]) and hold the privacy/legal/transparency invariants. **The founder has NOT locked the next item** — this is the menu; ask which to start.
 
 ## Tier 1 — Ship to real users (highest leverage)
 1. **Deploy to Vercel + Neon.** Code is ready (see [[project-fit-passport-deployment]]). Founder's own account steps: Neon (`-pooler` conn str), Vercel (Root `app-web`, Build `npm run vercel-build`), env `DATABASE_URL`/`SESSION_SECRET`/`APP_URL`.
