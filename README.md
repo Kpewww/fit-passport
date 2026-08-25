@@ -1,5 +1,7 @@
 # Fit Passport
 
+*[English](README.md) · [简体中文](README.zh-CN.md)*
+
 > **One body. One fit identity. Any store.**
 > A consumer-owned fit layer for apparel — Fall 2026, CMU 49-800 *Start Up Creation in Practice*.
 
@@ -41,8 +43,8 @@ Local dev needs **no API keys and no cloud services** — SQLite plus sensible
 fallbacks everywhere. Optional keys unlock extras (see
 [`app-web/.env.example`](app-web/.env.example)).
 
-**Requires Node 18.20.** Dependencies are pinned to it — don't upgrade Next/Prisma
-without upgrading Node first.
+**Runs on Node 24 LTS.** (Older notes say "pinned to Node 18.20" — that was a
+previous machine's constraint, not a project requirement; it is lifted.)
 
 ---
 
@@ -105,7 +107,7 @@ DEVLOG.md             # per-session development log (also the Weekly Journal)
 ```
 
 **Stack:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
-Vitest · Framer Motion + Lenis (motion) · three.js (lazy, badge inspect only).
+Vitest · Framer Motion (motion) · three.js (lazy, badge inspect only).
 
 Key design decisions worth knowing before contributing:
 
