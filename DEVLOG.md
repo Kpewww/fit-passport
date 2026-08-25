@@ -347,6 +347,120 @@ jank above. Worth re-checking with the founder now that the promotion has shippe
 Practical note: keeping Neon warm 24/7 would exceed the free plan's 100 CU-hours,
 so the cheap answer before a live demo is simply to hit the site a few times first.
 
+### Round 2 on performance — three real causes, and one wrong first diagnosis
+
+The founder reported the jank was unchanged, the tab was at ~800MB, and asked
+whether this was a design problem or a server problem. Worth recording plainly:
+**the first diagnosis was half wrong.** The `will-change` fix addressed
+rasterisation cost, which was real but was not the bottleneck. Three separate
+causes were.
+
+**1. React state on every pointermove.** `MetalCard` called `setState` in
+`onPointerMove`, re-rendering the whole subtree — SVG grain, agate veins, every
+`CardField`, the badge seal — 60–120 times a second, and calling
+`getBoundingClientRect` on each move as well: read layout → write state →
+re-render → read layout. Now the tilt writes CSS custom properties straight to
+the DOM, coalesced to one write per frame, measuring the rect once per hover.
+**React renders zero times while the pointer moves.** The same bug existed a
+second time in `BadgeCoin`, multiplied by however many badges were on screen.
+
+**2. A leaked WebGL context.** `BadgeWebGL` disposed geometries, materials and the
+renderer but never called `forceContextLoss()`. `dispose()` frees three.js's own
+GPU objects, **not the context**. So every badge inspected in True 3D leaked a
+live context; Chrome caps concurrent contexts (~16) and evicts the oldest, and
+until then each holds GPU memory. That is exactly the "everything gets laggy
+after navigating around" symptom — **and it never surfaces as an error.**
+
+**3. Lenis.** Removed. It was the *amplifier* for every other scroll cost rather
+than a cost of its own: native scrolling runs on the compositor, while Lenis
+replaces it with a main-thread rAF loop whose synthetic scroll events make all
+four `useScroll` sections re-measure — ~16 transforms recomputed and written per
+frame — and with `lerp: 0.1` that continued ~20 frames after the wheel stopped.
+`will-change` does nothing for layout thrash, which is why round one missed it.
+
+It also explains the reported hitch when the pointer entered the "Why it works"
+row: `data-lenis-prevent` existed *precisely because* Lenis fought that nested
+scroller for control. Removing Lenis removed the conflict by construction.
+Homepage 53 → 47.9 kB.
+
+### Badges go flat — a design decision, made on measured evidence
+
+Even after the above, the tab stayed heavy on the founder's Windows machine. The
+arithmetic is the answer, and it is a **design** cost, not a defect: by the
+Session 29–30 rule ("every badge is a dimensional struck medal, there is no flat
+variant"), each badge is a stack of up to twelve rim slices inside
+`preserve-3d` — every slice its own composited layer — over a face SVG carrying
+**eighteen gradients and two filters**, one a `feDropShadow` (an offscreen blur
+buffer). The trophy case renders **twenty at once**: roughly 140 layers and 40
+filter passes, held in GPU memory whether visible or not, and textures are 4× the
+CSS area at devicePixelRatio 2.
+
+**Mac vs Windows is a real difference, not a excuse.** The same build was fine on
+the Mac this was designed on; macOS's compositor and unified memory absorb heavy
+layer counts that a Windows integrated-GPU path does not. That is why this went
+unnoticed until the machine change — and it is a genuine confound in "it used to
+be smooth locally", since that "locally" was a different computer.
+
+Two no-visual-change optimisations first: rim-slice darkening moved from
+`filter: brightness()` (a layer **and** an offscreen buffer, ×12 ×20) to a flat
+black overlay gradient, and `content-visibility: auto` on badge tracks so
+off-screen ones cost nothing. Then, on the founder's call, **`BadgeCoin` gained
+`dimensional`, defaulting FALSE.** The flat path is one medallion SVG: no 3D
+context, no rim stack, no back face, no pointer state.
+
+The dimensional treatment is **not deleted** — it moved to the inspect stage,
+which shows one badge at a time and is the moment the craft is actually being
+looked at. The metal card is untouched and stays as designed. Restoring it later
+is one default, or one prop per call site.
+
+### Security — SSRF, and a confident-wrong-answer bug
+
+Both prompted by the founder asking what happens if someone pastes a game top-up
+link or something malicious. Both turned out to be real.
+
+**SSRF: there was no guard at all.** `/api/check` fetches whatever URL is pasted,
+and the only checks were "protocol is http(s)" and "hostname contains a dot" —
+which **`169.254.169.254` satisfies**. On this platform that endpoint can return
+live credentials to an unauthenticated GET. New `lib/urlSafety.ts` blocks private
+and reserved IPv4/IPv6 (including the `::ffff:` mapped form used to smuggle a v4
+address through v6), localhost and internal-by-convention suffixes, embedded
+credentials (`https://shop.com@169.254.169.254/` reads as shop.com to a human),
+and non-web ports used to probe internal services — plus a DNS check, failing
+closed, for a public hostname pointing into private space.
+
+**Redirects were the actual hole.** With `redirect: "follow"`, every check on the
+original URL is worthless: an innocent public link can 302 straight to the
+metadata endpoint. Now followed manually, four hops max, **every hop re-gated**.
+Chart images for vision OCR go through the same gate — an `<img src>` at an
+internal address is the same attack with one more step.
+
+**Non-apparel links.** `detectCategory` defaulted to `"tshirt"` when nothing
+matched, so a top-up page, an article or a download became a t-shirt and received
+a confident size. For a tool whose whole proposition is that its answer can be
+trusted, a confident wrong answer is the worst available failure. Unrecognised
+pages now carry `source.categoryGuessed`, and `/api/check` returns **422** with a
+plain explanation instead of writing a bogus product row.
+
+That refusal immediately exposed a gap the tests caught: **the keyword table was
+English-only**, so a Chinese product link would have been turned away as "not
+clothing" — precisely the market `china-sizing-research.md` says matters most.
+Added Chinese garment terms, and note the trap: **no `\b` anchors**, because word
+boundaries are ASCII-defined and never match at a CJK boundary, so adding them
+would have silently disabled every rule in the group.
+
+Verified on production: three SSRF payloads → **422 refused**; a top-up link →
+**422 refused**; a real garment link → **200**. 187 → **209 tests**.
+
+### On Taobao (asked, answered, not built)
+
+Taobao requires login for most product detail, which puts it on the **wrong side
+of the line the case law draws** — `Meta v. Bright Data` let the contract claims
+proceed specifically for data scraped *while logged in*. So it is not a harder
+version of the H&M problem, it is a different category. The browser extension in
+`fetch-strategy.md` is the answer here too, and Taobao only strengthens that
+argument: the user is already logged in, in their own browser, as themselves —
+there is no access control being circumvented.
+
 ### Still open
 
 - **GitHub auto-deploy is NOT connected.** Both `vercel git connect` and a direct API
