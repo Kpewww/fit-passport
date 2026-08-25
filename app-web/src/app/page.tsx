@@ -233,7 +233,8 @@ function Hero({
         </h1>
         <p className="mx-auto mt-8 max-w-lg text-base leading-relaxed text-paper/65 animate-rise sm:text-lg" style={{ animationDelay: "120ms" }}>
           Paste any product link. We read its sizing, weigh it against the clothes
-          you already love, and tell you the size — and&nbsp;why.
+          you already own, and tell you the size — and&nbsp;why. When we&nbsp;aren&rsquo;t
+          sure, we say&nbsp;so.
         </p>
 
         <form
@@ -632,9 +633,10 @@ function ParallaxStatement({ reduce }: { reduce: boolean }) {
           <br />
           It works at every store.
         </h2>
-        <p className="mx-auto mt-5 max-w-md text-paper/60">
-          Precise measurements stay private — never shared by code. Your taste is
-          yours to carry.
+        <p className="mx-auto mt-5 max-w-lg text-paper/60">
+          The industry keeps trying to make the picture better — scans, avatars,
+          models wearing your face. But fit was never a picture problem. It&rsquo;s a
+          memory problem, and the memory is already hanging in your closet.
         </p>
       </motion.div>
     </section>

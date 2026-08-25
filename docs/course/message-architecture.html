@@ -1,0 +1,310 @@
+<title>Fit Passport Message Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap">
+
+<style>
+  /* The product's own tokens, used deliberately: a document describing the brand
+     should be legible evidence of it. Light is the base palette. */
+  :root {
+    --ink: #17181c;
+    --ink-soft: #4c4e57;
+    --ink-faint: #8a8d97;
+    --paper: #f3f3f1;
+    --paper-soft: #fbfbfa;
+    --line: #e2e3e7;
+    --line-strong: #c9cbd2;
+    --brand: #2438d6;
+    --brand-tint: #f2f3fc;
+    --band-bg: #17181c;
+    --band-fg: #f3f3f1;
+    --band-soft: rgba(243, 243, 241, 0.6);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e9e9e6; --ink-soft: #a8aab2; --ink-faint: #7c7f89;
+      --paper: #101115; --paper-soft: #171920;
+      --line: #2a2c34; --line-strong: #3b3e48;
+      --brand: #8496ff; --brand-tint: #1a1d2e;
+      --band-bg: #050507; --band-fg: #e9e9e6; --band-soft: rgba(233,233,230,0.58);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e9e9e6; --ink-soft: #a8aab2; --ink-faint: #7c7f89;
+    --paper: #101115; --paper-soft: #171920;
+    --line: #2a2c34; --line-strong: #3b3e48;
+    --brand: #8496ff; --brand-tint: #1a1d2e;
+    --band-bg: #050507; --band-fg: #e9e9e6; --band-soft: rgba(233,233,230,0.58);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper); color: var(--ink);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16px; line-height: 1.6; margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 26px; }
+
+  h1, h2 { font-family: Fraunces, Georgia, serif; margin: 0; text-wrap: balance; }
+  h1 { font-size: clamp(2.2rem, 5vw, 3.2rem); font-weight: 600; line-height: 1.04; letter-spacing: -0.015em; }
+  h2 { font-size: 1.5rem; font-weight: 600; }
+  p { margin: 0; }
+  em.i { font-style: italic; font-weight: 400; }
+
+  .eyebrow {
+    font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.24em;
+    font-weight: 500; color: var(--ink-faint);
+  }
+
+  header.masthead { background: var(--band-bg); color: var(--band-fg); padding: 56px 0 48px; }
+  header.masthead .eyebrow { color: var(--band-soft); }
+  header.masthead h1 { color: var(--band-fg); margin-top: 14px; }
+  header.masthead .sub { color: var(--band-soft); margin-top: 16px; max-width: 56ch; }
+  .meta { margin-top: 26px; display: flex; flex-wrap: wrap; gap: 10px 26px; font-size: 0.84rem; color: var(--band-soft); }
+
+  /* Three worksheet blocks, mirroring the workbook's own grouping. */
+  .block { padding: 52px 0 8px; }
+  .block-head { display: flex; align-items: baseline; gap: 16px; padding-bottom: 14px; border-bottom: 2px solid var(--ink); }
+  .block-head .n { font-family: Fraunces, serif; font-size: 1.1rem; font-weight: 600; color: var(--brand); font-variant-numeric: tabular-nums; }
+  .block-note { margin-top: 14px; font-size: 0.9rem; color: var(--ink-faint); max-width: 62ch; }
+
+  /* One worksheet row = label + definition on the left, the filled answer on the right. */
+  .row { display: grid; grid-template-columns: 190px 1fr; gap: 28px; padding: 26px 0; border-bottom: 1px solid var(--line); }
+  .row:last-child { border-bottom: none; }
+  .label { display: flex; flex-direction: column; gap: 7px; }
+  .label .name { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.13em; color: var(--ink); }
+  .label .def { font-size: 0.78rem; line-height: 1.45; color: var(--ink-faint); }
+  .answer { display: flex; flex-direction: column; gap: 12px; }
+  .answer .primary { font-family: Fraunces, Georgia, serif; font-size: 1.22rem; line-height: 1.35; font-weight: 600; }
+  .answer .primary em { font-style: italic; font-weight: 400; }
+  .answer .support { font-size: 0.95rem; color: var(--ink-soft); }
+  .answer ul { margin: 0; padding-left: 19px; display: flex; flex-direction: column; gap: 7px; font-size: 0.95rem; color: var(--ink-soft); }
+  .answer ol { margin: 0; padding-left: 19px; display: flex; flex-direction: column; gap: 7px; font-size: 0.95rem; color: var(--ink-soft); }
+
+  .why { border-left: 2px solid var(--brand); background: var(--brand-tint); padding: 11px 15px; font-size: 0.86rem; line-height: 1.5; color: var(--ink-soft); border-radius: 0 3px 3px 0; }
+  .why b { color: var(--ink); font-weight: 600; }
+
+  .quote { font-family: Fraunces, serif; font-size: 1.05rem; font-style: italic; color: var(--ink); }
+
+  .narrative { background: var(--band-bg); color: var(--band-fg); padding: 56px 0; margin-top: 56px; }
+  .narrative .eyebrow { color: var(--band-soft); }
+  .narrative h2 { color: var(--band-fg); margin-top: 12px; }
+  .narrative .story { margin-top: 26px; display: flex; flex-direction: column; gap: 17px; max-width: 60ch; font-size: 1.06rem; line-height: 1.62; color: var(--band-soft); }
+  .narrative .story .hit { color: var(--band-fg); font-family: Fraunces, serif; font-size: 1.3rem; line-height: 1.35; }
+  .narrative .story .close { color: var(--band-fg); font-family: Fraunces, serif; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.01em; }
+
+  footer { padding: 42px 0 66px; border-top: 1px solid var(--line); margin-top: 8px; }
+  .srcs { margin-top: 12px; font-size: 0.84rem; color: var(--ink-faint); display: flex; flex-direction: column; gap: 6px; }
+
+  a { color: var(--brand); }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+
+  @media (max-width: 680px) {
+    .row { grid-template-columns: 1fr; gap: 12px; }
+    .label { border-left: 2px solid var(--brand); padding-left: 12px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <p class="eyebrow">Streamlined Message Architecture</p>
+    <h1>Fit Passport</h1>
+    <p class="sub">
+      The expression of our business identity, and a blueprint for market success.
+      Every field below is filled from what the product actually does today — nothing
+      here is aspirational unless it is labelled as a goal.
+    </p>
+    <div class="meta">
+      <span>Xiangchen Kong · Alyssa Qi</span>
+      <span>49-800 Start Up Creation in Practice</span>
+      <span>Fall 2026 · Prof. Sheryl Root</span>
+      <span>fit-passport.vercel.app</span>
+    </div>
+  </div>
+</header>
+
+<section class="block">
+  <div class="wrap">
+    <div class="block-head"><span class="n">01</span><h2>North Star</h2></div>
+    <p class="block-note">Who we are and where we are going. These change rarely — everything downstream has to serve them.</p>
+
+    <div class="row">
+      <div class="label"><span class="name">Core DNA</span><span class="def">The core of the company's behaviour, around which everything else should be aligned and in service to.</span></div>
+      <div class="answer">
+        <p class="primary">Honest by construction.</p>
+        <p class="support">We only claim what we can show our work for — and we say so out loud when we can't.</p>
+        <p class="why"><b>Why this and not something else:</b> our DNA assessment came out overwhelmingly customer-centric, with one challenger streak. That means our defensible asset is <b>being trusted</b>, not being clever. The engine shows every signal behind a recommendation, marks a size chart as “estimated” when it couldn't read one, and lowers its own confidence when its signals disagree.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">Purpose</span><span class="def">Why you exist.</span></div>
+      <div class="answer">
+        <p class="primary">Because the size on the label is a guess dressed up as a fact — and the shopper pays for that guess.</p>
+        <p class="support">We exist so that what you know about your own body belongs to you, and travels with you.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">Mission</span><span class="def">What you do every day in service to your purpose.</span></div>
+      <div class="answer">
+        <p class="primary">Every day we turn one more closet into a portable fit profile — and translate it to whatever product page someone pastes in.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">Product Vision</span><span class="def">Your ultimate vision for the product. What are you building?</span></div>
+      <div class="answer">
+        <p class="primary">A fit identity layer for commerce.</p>
+        <p class="support">One profile the shopper owns, that works at any store, in any sizing system, and gets more accurate every time they keep or return something.</p>
+        <p class="why"><b>The ceiling:</b> the architecture is domain-agnostic. What works for a shirt works for shoes, for rings, and for a dog's coat — the engine scores measurements, not garment categories.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">BHAG</span><span class="def">Your big hairy audacious business goal.</span></div>
+      <div class="answer">
+        <p class="primary">Make <em>“what size am I?”</em> a question nobody has to ask again.</p>
+        <p class="support">Measurable form: <strong>cut fit-related returns in half for 10 million shoppers.</strong></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="block-head"><span class="n">02</span><h2>Strategy</h2></div>
+    <p class="block-note">Who we serve, what we fix for them, and why it has to be us, now.</p>
+
+    <div class="row">
+      <div class="label"><span class="name">Target Market</span><span class="def">Your ideal customers.</span></div>
+      <div class="answer">
+        <p class="primary">Cross-brand online apparel shoppers, 20–35, who buy from many brands and have been burned by sizing.</p>
+        <p class="support">They already keep mental notes about which brands run small. We turn that into a real profile.</p>
+        <p class="why"><b>Sharpest wedge:</b> shoppers buying <b>across sizing systems</b> — US / EU / UK / JP / CN — where the guesswork is worst and no existing tool helps. We score in centimetres from day one, so this is exactly where our design pays off.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">Problem Statement</span><span class="def">The main customer pain point you address with your product.</span></div>
+      <div class="answer">
+        <p class="primary">Sizes don't agree, and never have.</p>
+        <p class="support">A medium in one brand is a large in another, so every new brand is a gamble — and roughly <strong>a quarter of online apparel comes back, with “wrong size” the single largest reason</strong>.</p>
+        <p class="support">The information needed to fix it already exists, in the clothes that already fit you. It is thrown away at every purchase.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">Value Proposition</span><span class="def">The key benefit you promise to your most important customers.</span></div>
+      <div class="answer">
+        <p class="primary">Paste any product link. Get a size that shows its reasoning — based on your body and the clothes you already own — and tells you honestly when it isn't sure.</p>
+        <p class="why">Three promises, in order: <b>any link</b> (no retailer integration) · <b>explainable</b> (never a black box) · <b>honest</b> (the differentiating half — do not drop it).</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">Urgency</span><span class="def">Why you? Why now?</span></div>
+      <div class="answer">
+        <p class="primary">Three things converged.</p>
+        <ol>
+          <li><strong>The pain is getting worse, not better.</strong> Chinese brand-store returns went 24% → 35% in three years; livestream sales run ~80%.</li>
+          <li><strong>The cost is moving onto the shopper.</strong> Retailers are ending free returns, so a wrong guess now costs real money.</li>
+          <li><strong>The incumbents aren't solving it.</strong> The entire AI try-on wave transfers <em>appearance</em>, not fit — Google's own model states verbatim <em>“we don't promise fit.”</em></li>
+        </ol>
+        <p class="why">Point 3 is the strongest card we hold, because it is <b>the competition saying it themselves</b>. The fit problem is wide open while everyone's attention is on the picture.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">Differentiator</span><span class="def">The single most palpable quality that makes you stand out.</span></div>
+      <div class="answer">
+        <p class="primary">The profile belongs to the shopper, not the store.</p>
+        <p class="support">True Fit and Sizebay live inside one retailer's checkout, and the profile dies there. Ours travels.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">Tagline</span><span class="def">Short, memorable description that becomes identified with your company.</span></div>
+      <div class="answer">
+        <p class="primary">One body. One fit identity. Any&nbsp;store.</p>
+        <p class="why">Three beats, and the third one carries the differentiator. Alternates held in reserve: <em>“Your size, everywhere.”</em> · <em>“Stop guessing your size.”</em></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="block">
+  <div class="wrap">
+    <div class="block-head"><span class="n">03</span><h2>Expression</h2></div>
+    <p class="block-note">How the strategy sounds and feels when a customer meets it.</p>
+
+    <div class="row">
+      <div class="label"><span class="name">Personality</span><span class="def">The personified traits and characteristics of your brand.</span></div>
+      <div class="answer">
+        <p class="primary">Precise. Candid. Quietly premium.</p>
+        <p class="support">Like a good tailor: measures before it speaks, tells you the truth about what suits you, and never flatters.</p>
+        <p class="why">This is also the design brief. It is why the product is black, porcelain and one rare cobalt accent in a serif face — and not a bright, exclamation-marked shopping app.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">Brand Driver</span><span class="def">The core principle of your brand.</span></div>
+      <div class="answer">
+        <p class="primary">Show your work.</p>
+        <p class="why">Usable as a test on any proposed feature: <b>can it explain itself?</b> If not, it doesn't ship.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">Emotional Levers</span><span class="def">Emotional levers used to engage and influence customers.</span></div>
+      <div class="answer">
+        <ol>
+          <li><strong>Relief</strong> — the gamble is over.</li>
+          <li><strong>Self-knowledge</strong> — you finally have your own numbers, not a brand's opinion of you.</li>
+          <li><strong>Ownership</strong> — your body data is yours; we never expose your measurements, even to people you share your closet with.</li>
+          <li><strong>Belonging</strong> — see what fits people actually built like you.</li>
+          <li><strong>Earned pride</strong> — status here comes from real data and cannot be bought.</li>
+        </ol>
+        <p class="why">The first three sell the product. The last two are why anyone comes <b>back</b> — a size engine gets people in the door, but once you know your size in a brand, you're done.</p>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="name">Ownable Brand Concept</span><span class="def">A differentiated brand perspective to cut above the noise — not necessarily tied directly to product or fact.</span></div>
+      <div class="answer">
+        <p class="primary">The passport.</p>
+        <p class="support">A document you own, that proves who you are, and is honoured everywhere you go — without anyone at the border reading your diary.</p>
+        <p class="why">The metaphor carries all four things we need at once: <b>personally owned</b>, <b>works across borders</b>, <b>universally recognised</b>, and <b>verifies you without exposing you</b> — which is literally our privacy rule in the product.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="narrative">
+  <div class="wrap">
+    <p class="eyebrow">Narrative</p>
+    <h2>The story that converts</h2>
+    <div class="story">
+      <p class="hit">You have a shirt you love. It fits perfectly. You've had it for years.</p>
+      <p class="hit">And it is completely useless to you the next time you buy a shirt.</p>
+      <p>That's the strange thing about clothes. You have already done the research. You know that this brand runs small, that this cut swims at the chest, that you are a medium here and a large there. That knowledge is real, and it was expensive — you paid for it in returns, in shipping labels, in things worn twice and forgotten.</p>
+      <p>And every time you open a new store, it's gone. You're back to guessing.</p>
+      <p>The industry's answer has been to make the picture better. Body scans. Avatars. Models wearing your face. But fit was never a picture problem — it's a memory problem. And the memory is already hanging in your closet.</p>
+      <p><strong style="color:var(--band-fg)">Fit Passport gives it back to you.</strong> One profile you own. It works at any store. It shows you why it chose a size. And when it isn't sure, it says so.</p>
+      <p class="close">One body. One fit identity. Any store.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="eyebrow">Sourced claims</p>
+    <div class="srcs">
+      <span>Chinese brand-store apparel returns 24% (2021) → 35% (H1 2024); livestream ~80% — Sina Finance, The Paper, Huxiu. Compiled in <code>docs/design/china-sizing-research.md</code>.</span>
+      <span>“We don't promise fit” — Google TryOnDiffusion. Compiled in <code>docs/design/fit-algorithm-research.md</code>.</span>
+      <span>Everything in the Expression section is implemented and demonstrable at <a href="https://fit-passport.vercel.app">fit-passport.vercel.app</a>.</span>
+    </div>
+  </div>
+</footer>
