@@ -218,6 +218,89 @@ So extraction robustness splits into two genuinely different problems:
 This is now the sharpest open question against the "paste any product link" promise, and it
 is backed by a measurement rather than a guess.
 
+### Confidence calibration — fixed, with the production case as the test
+
+The 1.0-confidence finding above turned out to expose a gap in the model, not a
+tuning error. The existing rule (§4.5 of the research doc) lowers confidence when
+the top two sizes are near-tied. It cannot catch this case, because **the margin
+was wide** — decisive *precisely because* the anchor overrode the measurement
+signal. A decisive margin is not the same as a confident answer.
+
+Added `signalDisagreement()`: for each independent signal, find the size that
+signal alone would pick; take the largest ladder distance from the ensemble's
+winner. One step ×0.8, two or more ×0.65. Separately, any size whose own ordinal
+verdict reads *too small* / *too big* is capped at 0.6.
+
+Grounded in the framing the engine already uses (research doc now §4.6): under
+"recommend the size most likely to be **kept**", a size one signal predicts will be
+**returned** cannot also be a near-certain keep; and disagreement among independent
+estimators is a standard uncertainty estimate in its own right.
+
+Crucially the reason is **surfaced**, not just subtracted — `conflictNote` renders
+on `/check` ("by your measurements, XL; by the strongest overall evidence, M").
+A smaller number with no explanation is just a worse number, which would undercut
+the explainability invariant.
+
+Measured: **1.0 → 0.59** locally, **1.0 → 0.6** verified on production. Agreement
+scores 0.90, one-step disagreement 0.72 — monotone as the theory predicts. The
+[F1] anchor fix is intact: the anchor still wins the *size*, it just no longer wins
+the *certainty* too. 172 → 178 tests.
+
+### Fetch strategy — decided, and the deciding ratio instrumented
+
+Wrote `docs/design/fetch-strategy.md` rather than leave "real-fetch robustness" as
+a vague backlog line, because the 403 finding is an architecture question.
+
+Priced the paid options honestly: ScrapingBee is $49/mo, but JS rendering costs 5
+credits/request and **stealth proxies cost 75** — that $49 buys ~3,300 stealth
+requests. Zyte and Bright Data both reach **~$16 per 1,000** on hard targets. The
+bill scales with exactly the sites we fail on.
+
+The stronger objection is legal. **hiQ v. LinkedIn** and **Meta v. Bright Data**
+(N.D. Cal. 2024) both went the scraper's way on CFAA for *logged-out public* data —
+but the low-risk profile both describe requires **respecting technical access
+controls**, and a Cloudflare 403 is one. A stealth proxy's whole product is
+defeating it. We would be spending a governance story that is currently an asset
+(Prof. Root's third concern) to win a few size charts. Bad trade.
+
+**Decision:** key + a paste-the-chart fallback now; a **browser extension** later,
+gated on evidence of real usage — it reads the page in the user's own browser as
+themselves, so the block *disappears* rather than being defeated, it costs nothing
+per request, and it handles JS-rendered size modals the server parser cannot reach.
+Affiliate feeds noted as opportunistic. Stealth proxies rejected.
+
+That decision turns on a ratio nobody had measured, so `source.fetch` now records
+**`blocked` / `unreachable` / `ok` / `skipped`** beside `sizesFrom`. `looksBlocked`
+already knew the difference; it just wasn't recorded. A block is also no longer
+retried — the CDN said no once. Verified live: `www2.hm.com → blocked`,
+`patagonia.com → unreachable`. 178 → 184 tests.
+
+### Cost model — and a 20x cost bug found while writing it
+
+`docs/design/cost-model.md`. Running cost today is genuinely **$0**. Per check with
+a key: **~$0.012** (Haiku 4.5 at $1/1M in, $5/1M out). Demo scale ≈ **$4/month**.
+
+Writing it surfaced a real bug: `MAX_PAGE_BYTES` was **600,000 chars ≈ 150K tokens
+≈ $0.15 per extraction** — about **20x** the "~$0.007/check" advertised in
+`.env.example`. Cut to **80KB (~$0.02 worst case)**, which is only safe because
+`htmlToLlmText` emits `SIZE TABLES` before prose; the function is now exported and
+three tests pin that property (including bloat-before-chart), because a comment
+asserting it wasn't enough to justify a 7x cut. 184 → 187 tests.
+
+**Two findings that matter more than the arithmetic:**
+1. **The first thing that breaks is storage, not the LLM bill.** Item photos are
+   base64 data URLs *inside Postgres*; Neon free is 0.5 GB ≈ **340 users with ten
+   photos each**, after which writes fail for everyone. That arrives long before
+   LLM spend gets interesting.
+2. **Vercel Hobby forbids commercial use.** Pro ($20/member/mo) is a *licence*
+   requirement the moment this charges anyone — not a resource limit that staying
+   small avoids. Hobby's 100 GB bandwidth cap also has **no overage option**; it
+   just stops.
+
+Also recorded two optimisations **not** to chase: prompt caching needs a stable
+≥1024-token prefix we don't have (every page differs), and the Batch API's 50%
+discount is asynchronous while `/api/check` has a user waiting.
+
 ### Still open
 
 - **GitHub auto-deploy is NOT connected.** Both `vercel git connect` and a direct API
