@@ -66,7 +66,7 @@ export default function AdminPage() {
   if (denied) {
     return (
       <main className="flex-1">
-        <div className="mx-auto max-w-2xl px-6 py-14">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-14">
           <EmptyState
             title="No such page"
             body="Nothing to see here."
@@ -78,12 +78,12 @@ export default function AdminPage() {
   }
 
   if (!data) {
-    return <main className="flex-1"><div className="mx-auto max-w-3xl px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-3xl px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
   }
 
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-3xl px-6 py-12">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
         <h1 className="font-serif text-4xl text-ink">Review queue</h1>
         <p className="mt-2 text-ink-soft">
           Signed in as <strong className="text-ink">{data.admin.username}</strong>. Content

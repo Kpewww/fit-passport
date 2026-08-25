@@ -96,14 +96,14 @@ export default function AccountPage() {
   }
 
   if (!me) {
-    return <main className="flex-1"><div className="mx-auto max-w-2xl px-6 py-10 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-10 text-ink-faint">Loading…</div></main>;
   }
 
   // Just claimed — show the account code.
   if (claimResult) {
     return (
       <main className="flex-1">
-        <div className="mx-auto max-w-2xl px-6 py-10">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
           <h1 className="font-serif text-4xl text-ink">Your account is ready 🎉</h1>
           <p className="mt-2 text-ink-soft">
             You can log in later with your <strong>username</strong> or your
@@ -165,7 +165,7 @@ export default function AccountPage() {
   if (me.claimed) {
     return (
       <main className="flex-1">
-        <div className="mx-auto max-w-2xl px-6 py-10">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
           <h1 className="font-serif text-4xl text-ink">Account</h1>
           <Card className="mt-6 space-y-3">
             <Row label="Username" value={me.username ?? "—"} />
@@ -197,7 +197,7 @@ export default function AccountPage() {
   // Unclaimed — show claim form.
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-2xl px-6 py-10">
+      <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
         {/* Back links so users aren't trapped — they can go fix their passport
             or closet before locking in an account. Nothing here is committed
             until "Claim my account code" is pressed. */}

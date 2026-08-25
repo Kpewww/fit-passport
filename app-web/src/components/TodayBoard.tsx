@@ -65,7 +65,7 @@ export function TodayBoard() {
               key={t.key}
               onClick={() => setW(t.key)}
               aria-pressed={w === t.key}
-              className={`rounded-full px-3 py-1 transition-colors ${
+              className={`flex min-h-[40px] items-center rounded-full px-3.5 transition-colors sm:min-h-0 sm:px-3 sm:py-1 ${
                 w === t.key ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
               }`}
             >

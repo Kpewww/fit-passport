@@ -178,7 +178,7 @@ function CheckInner() {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-3xl px-6 py-10">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         {/* Centered hero — mirrors the homepage composition. */}
         <div className="text-center">
           <p className="eyebrow text-ink-faint">Size check</p>
@@ -200,12 +200,13 @@ function CheckInner() {
               placeholder="Paste a product URL…"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
-              className="flex-1 bg-transparent px-4 py-2.5 text-sm text-ink placeholder:text-ink-faint focus:outline-none"
+              /* min-w-0 — see the note on the homepage form; same trap. */
+              className="min-w-0 flex-1 bg-transparent px-4 py-3 text-base text-ink placeholder:text-ink-faint focus:outline-none sm:py-2.5 sm:text-sm"
             />
             <button
               type="submit"
               disabled={loading}
-              className="flex-shrink-0 rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-paper transition-transform hover:scale-[0.98] active:scale-95 disabled:opacity-50"
+              className="flex min-h-[44px] flex-shrink-0 items-center rounded-full bg-ink px-4 text-sm font-medium text-paper transition-transform hover:scale-[0.98] active:scale-95 disabled:opacity-50 sm:min-h-0 sm:px-5 sm:py-2.5"
             >
               {loading ? "Reading…" : "Get my size →"}
             </button>
@@ -221,7 +222,7 @@ function CheckInner() {
                   setUrl(d.url);
                   runCheck(d.url);
                 }}
-                className="rounded-full border border-line px-3 py-1 text-ink-soft transition-colors hover:border-ink hover:text-ink"
+                className="flex min-h-[40px] items-center rounded-full border border-line px-3.5 text-ink-soft transition-colors hover:border-ink hover:text-ink sm:min-h-0 sm:px-3 sm:py-1"
               >
                 {d.label}
               </button>
@@ -433,7 +434,7 @@ function LoadingResult() {
         <Skeleton className="h-6 w-2/3" />
         <Skeleton className="h-4 w-1/2" />
       </Card>
-      <Card className="flex items-center justify-between">
+      <Card className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
         <div className="space-y-3">
           <Skeleton className="h-3 w-20" />
           <Skeleton className="h-10 w-24" />
@@ -769,7 +770,7 @@ function ScoreBar({ score }: { score: number }) {
 
 export default function CheckPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-3xl px-6 py-10">Loading…</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">Loading…</div>}>
       <CheckInner />
     </Suspense>
   );

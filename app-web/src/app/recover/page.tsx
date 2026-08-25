@@ -39,7 +39,7 @@ export default function RecoverPage() {
   if (sent) {
     return (
       <main className="flex-1">
-        <div className="mx-auto max-w-md px-6 py-14">
+        <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
           <h1 className="font-serif text-4xl text-ink">Check your email 📬</h1>
           <p className="mt-2 text-ink-soft">
             If an account matches that, we&apos;ve sent a password-reset link to the
@@ -64,7 +64,7 @@ export default function RecoverPage() {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-md px-6 py-14">
+      <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
         <h1 className="font-serif text-4xl text-ink">Reset your password</h1>
         <p className="mt-2 text-ink-soft">
           Enter your username, email, or account code. We&apos;ll email a reset

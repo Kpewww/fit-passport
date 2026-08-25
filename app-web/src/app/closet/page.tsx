@@ -285,8 +285,8 @@ export default function ClosetPage() {
   return (
     <FitScaleProvider>
     <main className="flex-1">
-      <div className="mx-auto max-w-3xl px-6 py-10">
-        <div className="flex items-start justify-between gap-4">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <h1 className="font-serif text-4xl text-ink">Your closet</h1>
             <p className="mt-2 max-w-lg text-ink-soft">
@@ -546,7 +546,7 @@ export default function ClosetPage() {
         </Card>
 
         {goalMet && !editingId && (
-          <Card className="mt-6 flex items-center justify-between bg-green-50 ring-green-200">
+          <Card className="mt-6 flex flex-col items-start gap-3 bg-green-50 ring-green-200 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
             <p className="text-sm text-green-900">
               Nice — your closet is strong enough for accurate sizing.
             </p>

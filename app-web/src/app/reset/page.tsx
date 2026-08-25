@@ -40,7 +40,7 @@ function ResetInner() {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-md px-6 py-14">
+      <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
         <h1 className="font-serif text-4xl text-ink">Set a new password</h1>
         {invalidLink ? (
           <p className="mt-2 text-sm text-red-700">
@@ -72,7 +72,7 @@ function ResetInner() {
 
 export default function ResetPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-md px-6 py-14">Loading…</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-md px-4 sm:px-6 py-14">Loading…</div>}>
       <ResetInner />
     </Suspense>
   );

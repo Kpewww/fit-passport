@@ -28,6 +28,80 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang. Instructor: Sher
 
 ---
 
+## 2026-08-25 · Session 48 — Mobile: the app had no navigation on a phone
+
+Reported: the phone experience is bad. Audited it by **measuring a real browser at
+a real phone viewport** rather than reading class names, which is how the biggest
+problem was found — it was invisible in the source.
+
+### The app had no navigation on a phone
+
+`Nav` renders every link with `hidden … sm:block`, and **nothing takes their place
+below 640px.** The header on a phone was a wordmark and an account chip. Check,
+Closet, Passport, Outfits, Community and Help were unreachable from anywhere
+except an in-page link on the homepage. That is not a styling problem; the app was
+navigationally broken on the device most people would open it on.
+
+Added a menu button and a panel inside the sticky header: the same links (plus
+Review for admins), 48px rows, active state marked, closes on navigation and on
+Escape.
+
+### Clipped content that could never show up as a scrollbar
+
+`body` carries `overflow-x-clip` — deliberately, so the oversized display type on
+the homepage can't make the page scroll sideways. The side effect is that **an
+overflow bug is silently clipped rather than scrollable**, so the usual "does the
+page scroll horizontally" check reports clean while content sits off-screen and
+unreachable.
+
+Measured: the community outfit card was **402px wide inside a 390px viewport**,
+with its Report button at x=410. Untappable. Two more at 360px: the passport
+button row (+25px) and the hero's "Get my size" button (+14px).
+
+**All three were the same CSS trap, in two forms.** A flex item defaults to
+`min-width: auto` and refuses to shrink below its content, so `truncate` alone
+does nothing — the title pushed the card wide. And a **grid** item has the same
+default, which is why fixing the insides was not enough: the card itself still
+sized to its min-content and overflowed its own 342px track. `min-w-0` on both
+levels is the fix, and it is worth remembering as one rule rather than two
+incidents.
+
+Also: my first pass at the Report button's tap target used `-m-2 p-2`, which grew
+it horizontally in a row already fighting for space and made the overflow *worse*.
+Changed to vertical-only.
+
+**Result: 26 page × viewport combinations, plus 12 logged-in ones with real data,
+all clear.** Before: 5 combinations overflowing.
+
+### Everything else was density
+
+- Text sat beside a button in five places, squeezing copy into a three-word
+  column. Stacked below `sm`.
+- Page gutters were `px-6` — 48px of a 360px screen, 13% of the width — now `px-4`
+  on phones, `px-6` from `sm`. One sweep, 45 containers, so it is consistent
+  rather than page-by-page.
+- Tap targets: the Today/This week toggle was **24px** tall, demo pills 26px, the
+  Report button 17px, the account chip 28px. Raised toward 44px with padding, so
+  labels keep their size and the desktop layout is untouched.
+- The back-to-top button floated over body copy on a phone; tucked into the corner
+  with a translucent backdrop.
+
+### The audit script is now in the repo
+
+`app-web/scripts/mobile-audit.mjs`. It measures element rectangles, not document
+scroll width — precisely because `overflow-x-clip` hides the symptom. Playwright
+is **not** added as a dependency (~100MB on every install for an occasional tool);
+the header says to `npx playwright install chromium`.
+
+Deliberately **not** changed: the metal card's 8–9px micro-lettering. It reads as
+embossing on a charge card, it renders well on a phone (checked visually), and
+the design system is explicit that the card stays as designed. Blanket-raising
+font sizes would have damaged the one object the founder asked to leave alone.
+
+265 tests, unchanged — this was layout only.
+
+---
+
 ## 2026-08-25 · Session 47 — The two derivable closet signals, and a design claim that turned out to be wrong
 
 Both remaining "free" signals from Session 45's design. **241 → 265 tests.** One of

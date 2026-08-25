@@ -35,7 +35,7 @@ const COLUMNS: Array<{ title: string; links: Array<{ label: string; href: string
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-line bg-paper">
-      <div className="mx-auto max-w-6xl px-6 py-16">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
         <div className="grid gap-10 sm:grid-cols-[1.4fr,1fr,1fr,1fr]">
           {/* wordmark + statement */}
           <div>

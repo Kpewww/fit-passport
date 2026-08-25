@@ -83,7 +83,7 @@ export default function OnboardingPage() {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-2xl px-6 py-10">
+      <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
         <h1 className="font-serif text-4xl text-ink">Your Fit Passport</h1>
         <p className="mt-2 text-ink-soft">
           Two things matter most: your <strong>preferred fit</strong> and your{" "}

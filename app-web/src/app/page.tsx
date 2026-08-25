@@ -104,7 +104,7 @@ export default function Home() {
 
       {/* Value-first content preserved: returning users get their dashboard,
           new users get the guided start. */}
-      <section className="mx-auto max-w-3xl px-6 pb-24 pt-16">
+      <section className="mx-auto max-w-3xl px-4 sm:px-6 pb-24 pt-16">
         {status === null ? (
           <Card className="space-y-3">
             <Skeleton className="h-5 w-40" />
@@ -159,7 +159,7 @@ const COMMUNITY_VALUE = [
 function CommunityValue() {
   return (
     <section className="border-y border-line bg-paper-soft py-24">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="max-w-2xl">
           <p className="eyebrow text-ink-faint">More than a size calculator</p>
           <h2 className="mt-4 font-serif text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
@@ -223,7 +223,7 @@ function Hero({
     <section ref={ref} className="bg-ink text-paper">
       <motion.div
         style={{ y, opacity, ...GPU_LAYER }}
-        className="mx-auto max-w-5xl px-6 pt-20 pb-16 text-center sm:pt-28 sm:pb-24"
+        className="mx-auto max-w-5xl px-4 sm:px-6 pt-20 pb-16 text-center sm:pt-28 sm:pb-24"
       >
         <p className="eyebrow text-paper/45 animate-rise">One body · one fit identity · any store</p>
         <h1 className="mx-auto mt-7 max-w-4xl font-serif text-6xl font-semibold leading-[0.95] tracking-tight animate-rise sm:text-8xl" style={{ animationDelay: "60ms" }}>
@@ -249,11 +249,14 @@ function Hero({
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Paste a product URL…"
-            className="flex-1 bg-transparent px-4 py-2.5 text-sm text-paper placeholder:text-paper/40 focus:outline-none"
+            /* min-w-0: without it the input refuses to shrink below its
+               placeholder's intrinsic width and pushes the button off a 360px
+               screen, where overflow-x-clip then hides it entirely. */
+            className="min-w-0 flex-1 bg-transparent px-4 py-3 text-base text-paper placeholder:text-paper/40 focus:outline-none sm:py-2.5 sm:text-sm"
           />
           <button
             type="submit"
-            className="flex-shrink-0 rounded-full bg-brand px-5 py-2.5 text-sm font-medium text-white transition-transform hover:scale-[0.98] active:scale-95"
+            className="flex min-h-[44px] flex-shrink-0 items-center rounded-full bg-brand px-4 text-sm font-medium text-white transition-transform hover:scale-[0.98] active:scale-95 sm:min-h-0 sm:px-5 sm:py-2.5"
           >
             Get my size →
           </button>
@@ -306,7 +309,7 @@ const HOW_STEPS = [
 
 function StickyHowItWorks() {
   return (
-    <section className="mx-auto max-w-6xl px-6 py-24">
+    <section className="mx-auto max-w-6xl px-4 sm:px-6 py-24">
       <div className="grid gap-10 md:grid-cols-[0.9fr,1.1fr]">
         {/* pinned side */}
         <div className="md:sticky md:top-28 md:h-fit">
@@ -426,7 +429,7 @@ function HorizontalShowcase({ reduce }: { reduce: boolean }) {
 
   return (
     <section className="bg-paper py-20">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="flex items-end justify-between gap-4">
           <div>
             <p className="eyebrow text-ink-faint">Why it works</p>
@@ -526,7 +529,7 @@ function ConvergingStack({ reduce }: { reduce: boolean }) {
         ONE FIT
       </motion.p>
 
-      <div className="relative mx-auto max-w-5xl px-6">
+      <div className="relative mx-auto max-w-5xl px-4 sm:px-6">
         <div className="text-center">
           <p className="eyebrow text-ink-faint">Three signals, one answer</p>
           {/* Deliberate two-line break so the sense isn't chopped mid-phrase. */}
@@ -626,7 +629,7 @@ function ParallaxStatement({ reduce }: { reduce: boolean }) {
         FIT
       </motion.span>
       {/* faster foreground statement */}
-      <motion.div style={{ y: fgY, ...GPU_LAYER }} className="relative mx-auto max-w-3xl px-6 text-center">
+      <motion.div style={{ y: fgY, ...GPU_LAYER }} className="relative mx-auto max-w-3xl px-4 sm:px-6 text-center">
         <p className="eyebrow text-brand">Consumer-owned</p>
         <h2 className="mt-4 font-serif text-4xl leading-tight sm:text-6xl">
           You keep the profile.
@@ -646,7 +649,7 @@ function ParallaxStatement({ reduce }: { reduce: boolean }) {
 // ---------------- Closing CTA ----------------
 function ClosingCTA() {
   return (
-    <section className="mx-auto max-w-4xl px-6 pb-40 pt-24 text-center">
+    <section className="mx-auto max-w-4xl px-4 sm:px-6 pb-40 pt-24 text-center">
       <h2 className="font-serif text-6xl font-semibold leading-[0.95] tracking-tight text-ink sm:text-[8rem]">
         Start your
         <br />
@@ -710,7 +713,7 @@ function ReturningUserDashboard({ status }: { status: Status }) {
   return (
     <div className="space-y-5">
       {/* Identity strip */}
-      <Card className="flex items-center justify-between gap-4">
+      <Card className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <Link href="/passport" className="group flex items-center gap-3">
           <Avatar src={status.avatarDataUrl} initials={initials} size={48} />
           <div>
@@ -771,7 +774,7 @@ function ReturningUserDashboard({ status }: { status: Status }) {
       </Card>
 
       {status.lastRecommendation && (
-        <Card className="flex items-center justify-between">
+        <Card className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
           <div>
             <p className="eyebrow text-ink-faint">Last recommendation</p>
             <p className="mt-1 text-ink">

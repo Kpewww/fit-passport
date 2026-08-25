@@ -59,7 +59,10 @@ export function ReportButton({
           e.stopPropagation();
           setOpen((v) => !v);
         }}
-        className="text-[11px] text-ink-faint underline-offset-2 hover:text-red-600 hover:underline"
+        /* A 17px-tall tap target next to other controls is a mis-tap waiting to
+           happen. Grow the box VERTICALLY only — horizontal padding here widened
+           a row that was already fighting for space on a phone. */
+        className="-my-2 py-2 text-[11px] text-ink-faint underline-offset-2 hover:text-red-600 hover:underline"
       >
         {open ? "Cancel" : "Report"}
       </button>

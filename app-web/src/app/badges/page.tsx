@@ -44,7 +44,7 @@ export default function BadgesPage() {
   }
 
   if (!data) {
-    return <main className="flex-1"><div className="mx-auto max-w-3xl px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-3xl px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
   }
 
   const earnedCount = data.badges.filter((b) => b.earnedNow).length;
@@ -56,7 +56,7 @@ export default function BadgesPage() {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-3xl px-6 py-10">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-serif text-4xl text-ink">Badges</h1>

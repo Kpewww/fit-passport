@@ -90,7 +90,7 @@ export default function ViewByCodePage({
   if (notFound) {
     return (
       <main className="flex-1">
-        <div className="mx-auto max-w-2xl px-6 py-14">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-14">
           <EmptyState
             title="No closet found for that code"
             body="Double-check the account code. Codes look like FP-XXXX-XXXX-XXXXX."
@@ -102,12 +102,12 @@ export default function ViewByCodePage({
   }
 
   if (!data) {
-    return <main className="flex-1"><div className="mx-auto max-w-2xl px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
   }
 
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-3xl px-6 py-10">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <div className="flex items-center gap-2 text-xs">
           <span className="rounded-full bg-brand-tint px-2.5 py-0.5 font-medium text-brand">
             Viewing {data.username}&apos;s closet
@@ -238,7 +238,7 @@ export default function ViewByCodePage({
           </div>
         )}
 
-        <Card className="mt-6 flex items-center justify-between bg-neutral-50">
+        <Card className="mt-6 flex flex-col items-start gap-3 bg-neutral-50 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
           <p className="text-sm text-ink-soft">
             Like this closet? Build your own fit profile and get size
             recommendations based on what fits {data.username}.

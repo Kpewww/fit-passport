@@ -95,7 +95,7 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
   if (gone) {
     return (
       <main className="flex-1">
-        <div className="mx-auto max-w-2xl px-6 py-14">
+        <div className="mx-auto max-w-2xl px-4 sm:px-6 py-14">
           <EmptyState
             title="That question is gone"
             body="It may have been deleted, or its author deactivated their account."
@@ -107,14 +107,14 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
   }
 
   if (!data) {
-    return <main className="flex-1"><div className="mx-auto max-w-2xl px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
   }
 
   const { post, answers } = data;
 
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-3xl px-6 py-10">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <p className="text-xs text-ink-faint">
           <Link href="/community#questions" className="hover:underline">← All questions</Link>
         </p>

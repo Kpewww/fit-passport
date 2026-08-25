@@ -161,7 +161,7 @@ export default function PassportPage() {
   }
 
   if (!profile || !me) {
-    return <main className="flex-1"><div className="mx-auto max-w-2xl px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
   }
 
   const initials = (me.username ?? "you").slice(0, 2).toUpperCase();
@@ -202,7 +202,7 @@ export default function PassportPage() {
   // ---------- EDIT MODE — the existing inline-editable book ----------
   return (
     <main className="flex-1 bg-paper py-10">
-      <div className="mx-auto max-w-2xl px-6">
+      <div className="mx-auto max-w-2xl px-4 sm:px-6">
         <div className="mb-3 flex items-center justify-between">
           <button onClick={() => setMode("view")} className="text-sm text-ink-faint hover:text-brand">
             ← Back to my passport
@@ -420,12 +420,15 @@ export default function PassportPage() {
               </p>
             </div>
           </div>
-          <div className="flex flex-shrink-0 gap-2">
-            <Link href="/closet" className="rounded-lg border border-neutral-300 px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-neutral-400">
+          {/* `flex-shrink-0` on a two-button row overflows a 360px phone by 25px,
+              and the body's overflow-x-clip then hides the second button rather
+              than letting it scroll into reach. Wrap instead of refusing to. */}
+          <div className="flex flex-wrap gap-2 sm:flex-shrink-0 sm:flex-nowrap">
+            <Link href="/closet" className="flex min-h-[44px] items-center rounded-lg border border-neutral-300 px-3 text-xs font-medium text-ink-soft hover:border-neutral-400 sm:min-h-0 sm:py-1.5">
               Closet →
             </Link>
             {!me.claimed && (
-              <Link href="/account" className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark">
+              <Link href="/account" className="flex min-h-[44px] items-center rounded-lg bg-brand px-3 text-xs font-semibold text-white hover:bg-brand-dark sm:min-h-0 sm:py-1.5">
                 Save — claim account →
               </Link>
             )}
@@ -499,7 +502,7 @@ function ViewBook({
 
   return (
     <main className="flex-1 bg-paper py-12">
-      <div className="mx-auto max-w-2xl px-6">
+      <div className="mx-auto max-w-2xl px-4 sm:px-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           {/* Card finish — only metals you've actually earned. */}
           <CardMetalPicker

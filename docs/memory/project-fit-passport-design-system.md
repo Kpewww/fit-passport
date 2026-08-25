@@ -56,3 +56,38 @@ Visual/aesthetic system for the [[project-fit-passport]] web app. The founder ch
 **Rollout still TODO (per-page):** closet, check, passport card, outfits, community, badges — carry black/porcelain/cobalt + serif headings + magazine spacing; small `bg-neutral-50/100` insets remain as subtle accents (fine). Optional next: Framer Motion + Lenis for tasteful fast motion; real product-photography treatment. **Keep cobalt rare; lean on black + porcelain + serif + whitespace.**
 
 **REVERSAL (Session 42, 2026-08-25) — badges are FLAT by default; the CARD stays lavish.** The "every badge is a dimensional struck medal, no flat variant" rule had a measured cost (~140 composited layers + 40 filter passes on `/badges` alone) that made the tab heavy on the founder's Windows machine — see [[project-fit-passport-performance]] for the arithmetic. `BadgeCoin` now takes `dimensional`, **default false**; the dimensional treatment survives in `BadgeInspect` only. Founder's exact framing: **"暂时都做成 flat,除了卡片,卡片还是要炫酷,不变的"** — `MetalCard` is deliberately untouched. This is temporary pending a dedicated badge redesign; restoring it is one default flip.
+
+---
+
+**MOBILE (added Session 48, 2026-08-25).** The app was audited at real phone
+viewports (390 and 360) with `app-web/scripts/mobile-audit.mjs`, which measures
+element rectangles rather than document scroll width.
+
+**Why the script measures rectangles:** `body` carries `overflow-x-clip` — on
+purpose, so the oversized display type can't scroll the page sideways. The side
+effect is that **an overflow bug is CLIPPED, not scrollable**, so "does the page
+scroll horizontally?" reports clean while content sits off-screen and untappable.
+A card 402px wide in a 390px viewport had a Report button nobody could reach.
+
+**Rules that came out of it:**
+
+- **`min-w-0` belongs on BOTH levels.** A flex item AND a grid item both default
+  to `min-width: auto` and refuse to shrink below their content, so `truncate`
+  alone does nothing. Fixing the insides is not enough — the card itself was a
+  grid item sizing to min-content and overflowing its own track.
+- **Mobile navigation exists and must keep existing.** Every nav link is
+  `hidden … sm:block`; below `sm` the menu button + panel in `Nav.tsx` IS the
+  navigation. Before Session 48 nothing took their place and the app was
+  unreachable past the homepage on a phone.
+- **Gutters:** `px-4` on phones, `px-6` from `sm`. 24px each side is 13% of a
+  360px screen.
+- **Text beside a button stacks below `sm`** (`flex-col … sm:flex-row`), or the
+  copy becomes a three-word column.
+- **Tap targets grow by PADDING, not font size** — `min-h-[44px]` with
+  `sm:min-h-0`, so labels keep their size and desktop density is untouched. Grow
+  vertically only in tight rows: horizontal padding once made an overflow worse.
+- **The metal card's 8–9px micro-lettering is DELIBERATE and stays.** It reads as
+  embossing, it renders well on a phone, and the card is the one object that stays
+  as designed. Do not sweep font sizes across it.
+
+Verified: 26 page × viewport combinations plus 12 logged-in ones, zero overflow.

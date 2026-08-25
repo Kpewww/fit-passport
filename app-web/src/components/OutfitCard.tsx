@@ -66,15 +66,23 @@ export function OutfitCard({
   const layers: OutfitLayer[] = outfit.items.map((it) => ({ category: it.category, color: it.color }));
   const offlinePieces = outfit.items.filter((it) => !it.onlineAvailable);
 
+  // min-w-0 on the CARD matters as much as inside it: the card is a grid item,
+  // and a grid item's default `min-width: auto` sizes it to its min-content —
+  // which the nowrap title pushes past the 342px track on a phone, so the card
+  // overflowed its own cell. min-w-0 removes that floor and lets the (already
+  // shrinkable) contents do their job.
   return (
-    <Card className="!p-4">
+    <Card className="!p-4 min-w-0">
       <div className="flex gap-3">
-        <div className="flex-shrink-0 rounded-lg bg-neutral-50 p-1">
+        <div className="flex-shrink-0 rounded-lg bg-neutral-50 p-1 [&>svg]:h-auto [&>svg]:w-[68px] sm:[&>svg]:w-[92px]">
           <OutfitMannequin layers={layers} volume={figure.volume as never} shape={figure.shape as never} size={92} />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-2">
-            <p className="truncate font-semibold text-ink">{outfit.title}</p>
+            {/* min-w-0 is load-bearing: a flex item defaults to min-width:auto,
+                so `truncate` alone cannot shrink and the title pushes the card
+                60px past a 390px viewport. Measured, not theoretical. */}
+            <p className="min-w-0 truncate font-semibold text-ink">{outfit.title}</p>
             {outfit.mine && onDelete && (
               <button onClick={onDelete} className="text-xs text-ink-faint hover:text-red-600">Delete</button>
             )}
@@ -108,12 +116,12 @@ export function OutfitCard({
                 {outfit.author.accountCode ? (
                   <Link
                     href={`/u/${encodeURIComponent(outfit.author.accountCode)}`}
-                    className="truncate hover:text-ink hover:underline"
+                    className="min-w-0 truncate hover:text-ink hover:underline"
                   >
                     {outfit.author.username}
                   </Link>
                 ) : (
-                  <span className="truncate">{outfit.author.username}</span>
+                  <span className="min-w-0 truncate">{outfit.author.username}</span>
                 )}
                 {authorAction}
               </div>

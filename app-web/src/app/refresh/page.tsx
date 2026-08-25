@@ -174,7 +174,7 @@ function RefreshInner() {
 
     return (
       <main className="flex-1 bg-paper">
-        <div className="mx-auto max-w-md px-6 py-10">
+        <div className="mx-auto max-w-md px-4 sm:px-6 py-10">
           <div className="mb-4 flex items-center justify-between text-sm">
             <Link href="/closet" className="text-ink-faint hover:text-brand">← Closet</Link>
           </div>
@@ -244,13 +244,13 @@ function RefreshInner() {
 
   // ---------- CARDS phase ----------
   if (!items) {
-    return <main className="flex-1"><div className="mx-auto max-w-md px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-md px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
   }
 
   if (items.length === 0) {
     return (
       <main className="flex-1">
-        <div className="mx-auto max-w-md px-6 py-14">
+        <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
           <EmptyState
             title="Nothing to refresh"
             body="No clothes in the selection you picked. Add some to your closet, or choose another collection."
@@ -268,7 +268,7 @@ function RefreshInner() {
   return (
     <FitScaleProvider>
     <main className="flex-1 bg-paper">
-      <div className="mx-auto max-w-md px-6 py-8">
+      <div className="mx-auto max-w-md px-4 sm:px-6 py-8">
         {/* Progress */}
         <div className="mb-4 flex items-center justify-between text-sm">
           <button onClick={() => setPhase("pick")} className="text-ink-faint hover:text-brand">← Change selection</button>
@@ -407,7 +407,7 @@ function colorHex(c: string | null): string | null {
 
 export default function RefreshPage() {
   return (
-    <Suspense fallback={<div className="mx-auto max-w-md px-6 py-14">Loading…</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-md px-4 sm:px-6 py-14">Loading…</div>}>
       <RefreshInner />
     </Suspense>
   );

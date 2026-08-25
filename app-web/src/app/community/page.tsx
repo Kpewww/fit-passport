@@ -103,7 +103,7 @@ export default function CommunityPage() {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-3xl px-6 py-12">
+      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
         <h1 className="font-serif text-4xl text-ink">Community</h1>
         <p className="mt-2 text-ink-soft">
           Fit is easier to trust when it comes from someone built like you. Browse
@@ -128,7 +128,9 @@ export default function CommunityPage() {
         <TodayBoard />
 
         {/* Post yourself to community */}
-        <Card className="mt-6 flex items-center justify-between gap-4 bg-brand-tint/40">
+        {/* Stack on a phone: side-by-side squeezes the copy into a 3-word column
+            while the button holds its width. */}
+        <Card className="mt-6 flex flex-col items-start gap-3 bg-brand-tint/40 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div>
             <p className="font-semibold text-ink">Post yourself to the community</p>
             <p className="mt-0.5 text-sm text-ink-soft">
