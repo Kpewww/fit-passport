@@ -189,8 +189,12 @@ After the first deploy, walk the critical path:
 
 ```
 /                → loads, hero renders
-/check           → paste "patagonia.com/product/womens-fitz-roy-down-hoody/85506.html"
-                   (bare domain must work) → returns Patagonia / jacket / a size
+/check           → paste "uniqlo.com/us/en/products/airism-cotton-t-shirt"
+                   (bare domain must work) → returns Uniqlo / tshirt / a size
+                   NOTE: expect `sizesFrom: "estimated"` on most real retailers —
+                   many (H&M, and anything behind Cloudflare/Akamai) return 403 to
+                   server-side fetches, so the app honestly degrades instead of
+                   inventing a chart. Verify the WARNING renders, not just a size.
 /passport        → edit, reload, values persisted (proves Postgres writes)
 /account         → claim an account → note the account code
 /u/<code>        → public view works, shows closet, NO measurements

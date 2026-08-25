@@ -182,6 +182,42 @@ engine still reports 1.0. Confidence should fall when signals conflict, not sit 
 maximum. This belongs to the already-queued "confidence-calibration sanity pass" and is
 now a concrete, reproducible case for it rather than a vague to-do.
 
+### Real-retailer fetch, measured on production (important, and it corrects an assumption)
+
+Ran the §5 walk against two live retailer URLs. Both returned a sensible brand, category
+and size — but both came back `sizesFrom: "estimated"` with confidence capped at 0.5,
+i.e. no real size chart was read. Probed the two hosts directly to find out why:
+
+| host | HTTP | bot-block markers | `<table>` count |
+|---|---|---|---|
+| patagonia.com | **404** | no | 0 |
+| www2.hm.com | **403** | **yes** | 0 |
+
+- Patagonia: the product URL written into `docs/DEPLOYMENT.md` §5 is simply **dead** — that
+  item was retired since the runbook was written. Fixed the runbook to a stable example.
+- H&M: **actively blocks server-side fetches.** This is `looksBlocked` doing precisely its
+  job: it recognised the challenge page, refused to parse it as a product, and degraded to
+  an honest estimate with the "⚠ sizes estimated — confirm the chart" wording and a capped
+  confidence. The honesty machinery is verified working on a real hostile site.
+
+**The assumption this corrects:** the queued Tier-1 item "set `ANTHROPIC_API_KEY` in prod so
+extraction works on real sites" is only half true. The key unlocks the text LLM and the
+vision size-chart OCR — but both operate on HTML we already hold. **A key cannot fix a 403.**
+Where a retailer blocks the fetch, no model helps, because there is nothing to read.
+
+So extraction robustness splits into two genuinely different problems:
+1. **Pages we can fetch, whose charts are images or unstructured** → `ANTHROPIC_API_KEY`
+   solves this, and the China research says image charts are the common case. Still worth
+   doing first; it is cheap and unblocks a real segment.
+2. **Pages we cannot fetch at all** (Cloudflare/Akamai/PerimeterX class) → needs a different
+   mechanism entirely: a residential/proxy fetch layer, a headless browser service, an
+   official retailer feed, or a user-side path (paste the chart, screenshot it, browser
+   extension). None of these are in the tree today, and the choice has cost and legal
+   dimensions worth deciding deliberately rather than drifting into.
+
+This is now the sharpest open question against the "paste any product link" promise, and it
+is backed by a measurement rather than a guess.
+
 ### Still open
 
 - **GitHub auto-deploy is NOT connected.** Both `vercel git connect` and a direct API
