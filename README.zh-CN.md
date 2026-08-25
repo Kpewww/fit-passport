@@ -5,7 +5,7 @@
 > **One body. One fit identity. Any store.**
 > 一个消费者自有的服装合身档案层 —— CMU 49-800 *Start Up Creation in Practice*,2026 秋。
 
-团队:孔祥晨(Xiangchen Kong)· Alyssa Qi  指导教师:Sheryl Root 教授
+团队:Xiangchen Kong· Alyssa Qi  指导教师:Sheryl Root 教授
 
 **线上地址:https://fit-passport.vercel.app**
 
