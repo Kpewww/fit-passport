@@ -77,6 +77,42 @@ npx prisma migrate diff \
 Neon branch. For the initial migration no shadow DB was needed because it was
 diffed `--from-empty`.)
 
+**No shadow database to hand? For a purely ADDITIVE change you don't need one.**
+Diff the two schema *datamodels* directly — the before and after — which is an
+offline operation:
+
+```bash
+cd app-web
+git show <commit-before-your-change>:app-web/prisma/schema.prisma > /tmp/old.prisma
+# generate the Postgres variant of BOTH, using scripts/gen-postgres-schema.mjs
+# (swap prisma/schema.prisma temporarily, and PUT IT BACK), then:
+npx prisma migrate diff \
+  --from-schema-datamodel /tmp/old.pg.prisma \
+  --to-schema-datamodel   prisma/schema.postgres.prisma \
+  --script > prisma/migrations/$(date +%Y%m%d%H%M%S)_change/migration.sql
+```
+
+Before trusting it, **verify the chain**: regenerate `0_init` from the OLD schema
+with `--from-empty` and confirm it reproduces the committed file byte for byte. If
+it does, the new migration stacks onto it cleanly. If it does not, the migration
+history has already drifted and this shortcut is unsafe — get a shadow database.
+
+> ### ⚠️ `npm run db:push` IS NOT A MIGRATION
+>
+> `db:push` writes to the **local SQLite file only**. Production applies
+> **committed migrations** via `prisma migrate deploy`. Change the schema, run only
+> `db:push`, and everything local stays green — typecheck, tests, production build,
+> local smoke — while production gets a Prisma Client querying columns its database
+> does not have. **Every endpoint touching those tables returns 500.**
+>
+> This happened on 2026-08-25 (three columns for the signed fit scale). The
+> symptom was `/passport` stuck on its loading state: the page rendered fine, and
+> `/api/status` was 500 behind it.
+>
+> `src/lib/schemaMigrations.test.ts` now fails when a column in `schema.prisma`
+> has no migration. It needs no database — it compares the schema text against the
+> migration SQL — and it is the alarm for exactly this mistake.
+
 ---
 
 ## 2. Create the database (Neon)

@@ -28,6 +28,65 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang. Instructor: Sher
 
 ---
 
+## 2026-08-25 · Session 46 — Production outage from a missing migration, and the guard that would have caught it
+
+**I broke production, and the fix is less interesting than why nothing caught it.**
+
+Session 45 added three columns to `schema.prisma` and ran only `npm run db:push`.
+That writes to the **local SQLite file**. Production applies **committed
+migrations** via `prisma migrate deploy`, and there was no new one — so Neon never
+got `fitDirection`, `direction` or `fitScaleMode` while the generated Prisma Client
+queried them. `/api/status`, `/api/closet` and `/api/collections` returned **500**
+in production for roughly twenty minutes.
+
+**The symptom did not look like a database problem.** The founder reported
+`/passport` stuck on its loading state. The page itself was 200 — it renders, then
+waits on `/api/status`, which never resolved. Worth writing down as a rule: *a page
+stuck on "Loading…" right after a schema change means check the API, not the
+component.* Chasing the React would have wasted the whole session.
+
+**Why every gate stayed green.** Typecheck passed. 237/237 tests passed. The
+production build succeeded. The local smoke test was green across 14 pages —
+because **local SQLite had the columns**. The defect lived entirely in the gap
+between the two databases, and nothing in the project looked at that gap. This is
+the failure mode the two-database design has always risked, and it finally
+happened.
+
+### The fix
+
+The documented recipe (`docs/DEPLOYMENT.md` §1) diffs `--from-migrations`, which
+needs a shadow database. There wasn't one to hand, so: diff the two schema
+*datamodels* — before and after — which is fully offline and correct for a purely
+additive change.
+
+**Verified the chain before trusting it**: regenerated `0_init` from the OLD schema
+with `--from-empty` and confirmed it reproduces the committed file byte for byte.
+It did, so the new migration stacks onto it cleanly. All three columns are nullable
+or defaulted — no rewrite, no backfill, nothing at risk. Deploy applied it and
+production came back on the next probe.
+
+### The guard, which matters more than the fix
+
+`src/lib/schemaMigrations.test.ts` fails when a column in `schema.prisma` appears
+in no migration. It needs **no database of any kind** — it parses the schema and
+the migration SQL as text and compares the columns they describe, honouring
+`CREATE TABLE`, `ADD COLUMN` and `DROP COLUMN`.
+
+**It was verified to go red before being kept.** Moving the new migration aside
+made it fail naming exactly the three columns — `User.fitScaleMode`,
+`KnownGoodItem.fitDirection`, `ComfortCheck.direction`. A guard that cannot
+reproduce the bug it was written for proves nothing, and there is a companion test
+asserting the parsers extract something, so a regex that quietly matches nothing
+can't make the whole file vacuously pass.
+
+`docs/DEPLOYMENT.md` now carries the no-shadow-database recipe and a boxed warning
+that **`db:push` is not a migration**, and the deployment memory records the
+incident.
+
+241 tests (237 + 4).
+
+---
+
 ## 2026-08-25 · Session 45 — The signed fit scale ships, and the ease figure on /check
 
 Both items the founder approved, built together. **209 → 237 tests**, clean build,

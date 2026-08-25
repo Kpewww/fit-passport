@@ -45,3 +45,42 @@ How [[project-fit-passport]] is set up to deploy (prepared Session 31, 2026-08-1
 - **Production admin exists**: username `AK`, member No.1, password generated at seed time (NOT the local default). Seeding prod = `db:pg:generate` → run `scripts/seed-admin.mjs` with prod env → `npx prisma generate` to restore the SQLite client.
 - Verified live: 12/12 pages 200, Postgres read/write, core `/api/check` loop, Upstash actually receiving `rl:*` counters, and the **privacy invariant** (`/api/view/[code]` returns no cm/kg field of any kind).
 - Not yet set in prod: `ANTHROPIC_API_KEY` (so LLM + vision OCR extraction are inert), `RESEND_API_KEY`, `REPLICATE_API_TOKEN`.
+
+
+---
+
+**SESSION 45 INCIDENT (2026-08-25) — `db:push` is not a migration, and it took
+production down.**
+
+Three columns were added to `schema.prisma` for the signed fit scale, and only
+`npm run db:push` was run. That writes to the **local SQLite file**. Production
+applies **committed migrations** through `prisma migrate deploy`, so Postgres never
+got the columns while the generated client queried them. `/api/status`,
+`/api/closet` and `/api/collections` all returned **500** in production.
+
+**The symptom did not look like a database problem:** `/passport` sat forever on
+its loading state. The page itself was 200 — it renders, then waits on
+`/api/status`, which never succeeds. **A page stuck on "Loading…" right after a
+schema change means check the API, not the component.**
+
+**Why nothing caught it:** typecheck passed, 237/237 tests passed, the production
+build succeeded, and the local smoke test was green — because **local SQLite had
+the columns**. The defect existed only in the gap between the two databases, which
+no other check looks at.
+
+**The fix, when there is no shadow database:** for a purely additive change, diff
+the two schema *datamodels* offline (`--from-schema-datamodel old --to-schema-
+datamodel new --script`) instead of `--from-migrations`, which needs one. **Verify
+the chain first** — regenerate `0_init` from the OLD schema with `--from-empty` and
+confirm it reproduces the committed file byte for byte; if it does, the new
+migration stacks cleanly. Recipe now in `docs/DEPLOYMENT.md` §1.
+
+**The guard:** `src/lib/schemaMigrations.test.ts` fails when a column in
+`schema.prisma` appears in no migration. No database needed — it parses the schema
+and the migration SQL as text. It was verified to FAIL on this exact bug (naming
+all three columns) before being kept, because a guard that cannot go red proves
+nothing.
+
+**Also note:** `npm run db:pg:schema` only writes the schema file and is safe.
+`npm run db:pg:generate` is the one that overwrites the local Prisma Client with
+the Postgres build — run `npx prisma generate` afterwards.
