@@ -1,0 +1,447 @@
+<title>Fit Passport Founder Brief</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Inter:wght@400;500;600&display=swap">
+
+<style>
+  /* Palette is the product's own system (tailwind.config.ts): cool near-black
+     "ink", porcelain "paper", one rare cobalt accent. Light is the base. */
+  :root {
+    --ink: #17181c;
+    --ink-soft: #4c4e57;
+    --ink-faint: #8a8d97;
+    --paper: #f3f3f1;
+    --paper-soft: #fbfbfa;
+    --line: #e2e3e7;
+    --brand: #2438d6;
+    --brand-tint: #f2f3fc;
+    --band-bg: #17181c;
+    --band-fg: #f3f3f1;
+    --band-soft: rgba(243, 243, 241, 0.62);
+    --good: #2f6d46;
+    --warn: #9a6212;
+    --crit: #a12b2b;
+  }
+  :root:not([data-theme="light"]) { }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e9e9e6;
+      --ink-soft: #a8aab2;
+      --ink-faint: #7c7f89;
+      --paper: #101115;
+      --paper-soft: #171920;
+      --line: #2a2c34;
+      --brand: #8496ff;
+      --brand-tint: #1a1d2e;
+      --band-bg: #050507;
+      --band-fg: #e9e9e6;
+      --band-soft: rgba(233, 233, 230, 0.6);
+      --good: #6fc08d;
+      --warn: #e0a94a;
+      --crit: #e57373;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e9e9e6;
+    --ink-soft: #a8aab2;
+    --ink-faint: #7c7f89;
+    --paper: #101115;
+    --paper-soft: #171920;
+    --line: #2a2c34;
+    --brand: #8496ff;
+    --brand-tint: #1a1d2e;
+    --band-bg: #050507;
+    --band-fg: #e9e9e6;
+    --band-soft: rgba(233, 233, 230, 0.6);
+    --good: #6fc08d;
+    --warn: #e0a94a;
+    --crit: #e57373;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 16.5px;
+    line-height: 1.62;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; padding: 0 24px; }
+
+  h1, h2, h3 { font-family: Fraunces, Georgia, "Times New Roman", serif; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(2.6rem, 6vw, 4.1rem); font-weight: 600; line-height: 1.02; letter-spacing: -0.015em; }
+  h2 { font-size: clamp(1.7rem, 3.4vw, 2.3rem); font-weight: 600; line-height: 1.12; letter-spacing: -0.01em; }
+  h3 { font-size: 1.14rem; font-weight: 600; line-height: 1.3; }
+  em.i { font-style: italic; font-weight: 400; }
+
+  .eyebrow {
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.24em;
+    font-weight: 500; color: var(--ink-faint); font-family: Inter, sans-serif;
+  }
+  p { margin: 0; }
+  a { color: var(--brand); }
+  strong { font-weight: 600; }
+
+  /* Sections lay out with gap, never per-element margins. */
+  section { padding: 60px 0; border-top: 1px solid var(--line); }
+  section > .wrap { display: flex; flex-direction: column; gap: 22px; }
+  section:first-of-type { border-top: none; }
+
+  /* Ink bands = the statement moments. Porcelain = where you read and work.
+     That dual-surface rule is the product's own. */
+  .band { background: var(--band-bg); color: var(--band-fg); border-top: none; }
+  .band .eyebrow { color: var(--band-soft); }
+  .band p { color: var(--band-soft); }
+  .band h2, .band h1 { color: var(--band-fg); }
+  .band .lead { color: var(--band-fg); }
+
+  .lead { font-size: 1.18rem; line-height: 1.55; color: var(--ink-soft); }
+  .note { font-size: 0.9rem; color: var(--ink-faint); line-height: 1.5; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.92rem; font-variant-numeric: tabular-nums; }
+  .scroller { overflow-x: auto; }
+  th { text-align: left; font-weight: 600; font-size: 0.7rem; text-transform: uppercase;
+       letter-spacing: 0.1em; color: var(--ink-faint); padding: 0 12px 8px 0;
+       border-bottom: 1px solid var(--ink); white-space: nowrap; }
+  td { padding: 10px 12px 10px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:last-child, th:last-child { padding-right: 0; }
+
+  .pill { display: inline-block; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.06em;
+          text-transform: uppercase; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+  .pill-live { background: var(--good); color: var(--paper-soft); }
+  .pill-next { background: var(--brand-tint); color: var(--brand); border: 1px solid var(--brand); }
+  .pill-hold { background: transparent; color: var(--ink-faint); border: 1px solid var(--line); }
+
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; }
+  .card { background: var(--paper-soft); border: 1px solid var(--line); border-radius: 4px;
+          padding: 18px; display: flex; flex-direction: column; gap: 7px; }
+  .stat { font-family: Fraunces, serif; font-size: 2.1rem; font-weight: 600; line-height: 1;
+          font-variant-numeric: tabular-nums; }
+
+  figure { margin: 0; display: flex; flex-direction: column; gap: 10px; }
+  figcaption { font-size: 0.84rem; color: var(--ink-faint); line-height: 1.5; }
+  svg { display: block; width: 100%; height: auto; }
+  .svg-label { font-family: Inter, sans-serif; font-size: 11px; fill: var(--ink-soft); }
+  .svg-value { font-family: Inter, sans-serif; font-size: 11px; font-weight: 600; fill: var(--ink); font-variant-numeric: tabular-nums; }
+  .svg-axis { stroke: var(--line); stroke-width: 1; }
+
+  ol.seq { margin: 0; padding: 0; list-style: none; counter-reset: s;
+           display: flex; flex-direction: column; gap: 16px; }
+  ol.seq li { counter-increment: s; display: grid; grid-template-columns: 30px 1fr; gap: 14px; }
+  ol.seq li::before {
+    content: counter(s); font-family: Fraunces, serif; font-size: 1.05rem; font-weight: 600;
+    color: var(--brand); line-height: 1.5; font-variant-numeric: tabular-nums;
+  }
+  ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 9px; }
+
+  .rule { height: 1px; background: var(--line); border: none; margin: 0; }
+  .kicker { border-left: 2px solid var(--brand); padding-left: 16px;
+            display: flex; flex-direction: column; gap: 8px; }
+  footer { padding: 44px 0 64px; border-top: 1px solid var(--line); }
+  :focus-visible { outline: 2px solid var(--brand); outline-offset: 3px; }
+  @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+</style>
+
+<section class="band" style="padding-top:84px;padding-bottom:72px;">
+  <div class="wrap">
+    <p class="eyebrow">Founder brief · 24 August 2026</p>
+    <h1>One body.<br><em class="i">One fit identity.</em><br>Any store.</h1>
+    <p class="lead" style="max-width:46ch;">
+      A consumer-owned fit layer for apparel. Your closet is already a dataset about
+      your body — brand by brand, in centimetres. We turn it into a profile you own
+      and can carry to any product page.
+    </p>
+    <p class="note" style="color:var(--band-soft);">
+      Xiangchen Kong · Alyssa Qi — Carnegie Mellon University,
+      49-800 <em>Start Up Creation in Practice</em>, Fall 2026.
+      A student-project brief, not an offer of securities.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Where it stands</p>
+    <h2>It is built, deployed, and answering real requests.</h2>
+    <p class="lead">
+      Not a deck describing a plan. A working web app at
+      <a href="https://fit-passport.vercel.app">fit-passport.vercel.app</a>, with
+      187 passing tests, running on Vercel and Neon Postgres.
+    </p>
+    <div class="grid2">
+      <div class="card"><p class="eyebrow">Live since</p><p class="stat">Aug 24</p><p class="note">First production deploy, verified end to end.</p></div>
+      <div class="card"><p class="eyebrow">Tests</p><p class="stat">187</p><p class="note">The fit engine is the most covered part.</p></div>
+      <div class="card"><p class="eyebrow">Running cost</p><p class="stat">$0</p><p class="note">Every paid integration degrades gracefully.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">The problem</p>
+    <h2>The label is a guess dressed up as a fact.</h2>
+    <p>
+      A medium in one brand is a large in another. A 32 waist measures anywhere from
+      31 to 34 inches of actual cloth. A jacket that fits your shoulders swims at the
+      chest. Roughly a quarter of everything sold online comes back, and
+      <strong>wrong size is the single largest reason</strong>.
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 620 210" role="img" aria-label="Apparel return rates by channel: US online around 25 percent, Chinese brand stores 35 percent, Chinese womenswear 50 to 60 percent, livestream sales around 80 percent.">
+        <line class="svg-axis" x1="150" y1="12" x2="150" y2="186"></line>
+        <g>
+          <text class="svg-label" x="142" y="30" text-anchor="end">US online apparel</text>
+          <rect x="150" y="18" width="106" height="18" fill="var(--brand)" opacity="0.42"></rect>
+          <text class="svg-value" x="264" y="31">~25%</text>
+        </g>
+        <g>
+          <text class="svg-label" x="142" y="72" text-anchor="end">CN brand stores 2024</text>
+          <rect x="150" y="60" width="148" height="18" fill="var(--brand)" opacity="0.58"></rect>
+          <text class="svg-value" x="306" y="73">35%</text>
+        </g>
+        <g>
+          <text class="svg-label" x="142" y="114" text-anchor="end">CN womenswear</text>
+          <rect x="150" y="102" width="233" height="18" fill="var(--brand)" opacity="0.78"></rect>
+          <text class="svg-value" x="391" y="115">50–60%</text>
+        </g>
+        <g>
+          <text class="svg-label" x="142" y="156" text-anchor="end">CN livestream</text>
+          <rect x="150" y="144" width="339" height="18" fill="var(--brand)"></rect>
+          <text class="svg-value" x="497" y="157">~80%</text>
+        </g>
+        <text class="svg-label" x="150" y="182">0%</text>
+        <text class="svg-label" x="489" y="182" text-anchor="end">80%</text>
+      </svg>
+      <figcaption>
+        Sources compiled in <code>docs/design/china-sizing-research.md</code>. Chinese
+        brand-store returns rose from 24% (2021) to 35% (H1 2024); “尺码不合适”
+        (unsuitable size) is named among the leading drivers. The pain is validated,
+        not assumed — and it is worst in exactly the channels growing fastest.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <p class="eyebrow">The wedge</p>
+    <h2>We are not competing on body scanning, dataset size, or visual realism.</h2>
+    <p class="lead">
+      Every mainstream image try-on transfers <em>appearance</em>, not fit — Google's
+      own TryOnDiffusion states it plainly: <em>“we don't promise fit.”</em> That is
+      not a gap in their engineering. It is a different problem.
+    </p>
+    <p>
+      Our wedge is <strong>ownership and portability</strong>. True Fit and Sizebay
+      live inside one retailer's checkout and the profile dies there. Ours belongs to
+      the shopper, works from a pasted URL with no retailer integration, and learns
+      from what they actually kept or returned.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">How it works</p>
+    <h2>A transparent engine, not a black box.</h2>
+    <p>
+      The recommendation is a rule-and-score model scoring chest, waist and shoulder
+      in centimetres — auditable, testable, and able to explain itself.
+      <strong>An LLM only ever extracts data from a product page; it never picks a
+      size.</strong> That is an architectural commitment, not a current limitation.
+    </p>
+    <div class="kicker">
+      <p class="eyebrow">Why that matters commercially</p>
+      <p>
+        Sizing in labels breaks across brands — an M is not an M. Scoring in
+        centimetres sidesteps the problem that the published deep-learning size
+        systems spend their complexity on. It is also the only version a shopper can
+        be asked to trust with their body measurements.
+      </p>
+    </div>
+
+    <h3 style="margin-top:12px;">Honesty is enforced in code</h3>
+    <p>
+      When we cannot read a real size chart, the app says so and caps its own
+      confidence. A recent example, measured in production: a shopper owning a
+      Uniqlo M rated 5/5 was recommended M at <strong>confidence 1.0</strong> — while
+      the engine's own measurement model called that same size “too small.” Both
+      facts were true. Reporting near-certainty was not.
+    </p>
+
+    <figure>
+      <svg viewBox="0 0 620 150" role="img" aria-label="Confidence when signals agree is 0.90; one-step disagreement 0.72; two-step disagreement with a wrong verdict 0.60, down from 1.0 before the fix.">
+        <line class="svg-axis" x1="196" y1="12" x2="196" y2="128"></line>
+        <g>
+          <text class="svg-label" x="188" y="30" text-anchor="end">Signals agree</text>
+          <rect x="196" y="18" width="342" height="16" fill="var(--good)" opacity="0.75"></rect>
+          <text class="svg-value" x="546" y="31">0.90</text>
+        </g>
+        <g>
+          <text class="svg-label" x="188" y="66" text-anchor="end">Disagree by one size</text>
+          <rect x="196" y="54" width="274" height="16" fill="var(--warn)" opacity="0.8"></rect>
+          <text class="svg-value" x="478" y="67">0.72</text>
+        </g>
+        <g>
+          <text class="svg-label" x="188" y="102" text-anchor="end">Disagree by two</text>
+          <rect x="196" y="90" width="228" height="16" fill="var(--crit)" opacity="0.8"></rect>
+          <text class="svg-value" x="432" y="103">0.60</text>
+          <text class="svg-label" x="470" y="103" fill="var(--ink-faint)">was 1.00</text>
+        </g>
+        <text class="svg-label" x="196" y="124">0</text>
+        <text class="svg-label" x="576" y="124" text-anchor="end">1.0</text>
+      </svg>
+      <figcaption>
+        Fixed by scoring how far the independent signals disagree, and saying which
+        ones. The user sees “by your measurements, XL; by the strongest overall
+        evidence, M.” A lower number with no explanation would just be a worse number.
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Unit economics</p>
+    <h2>At demo scale this costs about one coffee a month.</h2>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Scenario</th><th>Checks / mo</th><th>Model spend</th><th>Infra</th><th>Total</th></tr></thead>
+        <tbody>
+          <tr><td>Course demo — 30 testers</td><td>~300</td><td>~$4</td><td>$0</td><td><strong>~$4</strong></td></tr>
+          <tr><td>Small beta — 500 users</td><td>~3,000</td><td>~$36</td><td>~$5–15</td><td><strong>~$45</strong></td></tr>
+          <tr><td>Traction — 5,000 users</td><td>~30,000</td><td>~$360</td><td>~$50–100</td><td><strong>~$450</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">
+      Extraction runs on Claude Haiku 4.5 at $1 / $5 per million input / output
+      tokens — about <strong>$0.012 per product check</strong>, hard-capped at
+      ~$0.026. Full derivation in <code>docs/design/cost-model.md</code>.
+    </p>
+
+    <h3 style="margin-top:12px;">The first thing that breaks is not the model bill</h3>
+    <p>
+      Item photos are stored as base64 inside Postgres, and the free database tier is
+      0.5 GB. That runs out at roughly <strong>340 users with ten photos each</strong> —
+      and when it does, writes fail for everyone, not just heavy users.
+    </p>
+    <figure>
+      <svg viewBox="0 0 620 96" role="img" aria-label="Storage capacity is exhausted at about 340 users, far earlier than model cost becomes significant.">
+        <rect x="10" y="26" width="600" height="22" fill="var(--line)"></rect>
+        <rect x="10" y="26" width="176" height="22" fill="var(--crit)" opacity="0.8"></rect>
+        <line class="svg-axis" x1="186" y1="16" x2="186" y2="58" stroke="var(--crit)" stroke-width="2"></line>
+        <text class="svg-value" x="186" y="12" text-anchor="middle" fill="var(--crit)">storage wall ≈ 340 users</text>
+        <text class="svg-label" x="196" y="42">model spend still ≈ $4 / month out here</text>
+        <text class="svg-label" x="10" y="76">0 users</text>
+        <text class="svg-label" x="610" y="76" text-anchor="end">~5,000 users</text>
+      </svg>
+      <figcaption>
+        Fixable with a code change plus a free object-storage tier — it is engineering
+        time, not a bill. Not urgent for a demo; required before inviting a cohort.
+      </figcaption>
+    </figure>
+    <p class="note">
+      One non-obvious constraint: Vercel's free plan <strong>forbids commercial
+      use</strong>. The moment this charges anyone, Pro at $20/member/month becomes a
+      licence requirement — not a resource limit that staying small avoids.
+    </p>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <p class="eyebrow">A decision already taken</p>
+    <h2>We will not buy our way past bot blocking.</h2>
+    <p>
+      Measured on production: H&amp;M returns 403 to server-side fetches. The
+      commercial answer is a stealth-proxy scraping API — priced honestly, that is
+      about <strong>$16 per 1,000 requests</strong> on hard targets, a bill that grows
+      with precisely the sites we fail on.
+    </p>
+    <p>
+      The stronger objection is not cost. <em>hiQ v. LinkedIn</em> and
+      <em>Meta v. Bright Data</em> both protect scraping of logged-out public data —
+      but the low-risk profile they describe requires <strong>respecting technical
+      access controls</strong>, and a 403 is one. A product whose differentiator is
+      trustworthiness with body data should not spend that to win size charts.
+    </p>
+    <p class="lead">
+      The better answer is a browser extension: it reads the page in the shopper's own
+      browser, as themselves. The block does not get defeated — it never happens.
+      Zero cost per request, and it reaches the JavaScript size-guide modals a server
+      never can.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Sequence</p>
+    <h2>What happens next, in order.</h2>
+    <ol class="seq">
+      <li><div>
+        <h3>Turn on real extraction <span class="pill pill-next">next</span></h3>
+        <p class="note">An API key unlocks page reading and image size-chart OCR — the common case in Chinese storefronts. ~$4/month at demo scale.</p>
+      </div></li>
+      <li><div>
+        <h3>Customer interviews <span class="pill pill-next">next</span></h3>
+        <p class="note">The app is live, so the blocker is gone. Highest-value non-code work, and everything after it depends on what they say.</p>
+      </div></li>
+      <li><div>
+        <h3>Move photos out of the database <span class="pill pill-hold">before a cohort</span></h3>
+        <p class="note">The only hard wall in the current design. Code change plus a free storage tier.</p>
+      </div></li>
+      <li><div>
+        <h3>Browser extension <span class="pill pill-hold">evidence-gated</span></h3>
+        <p class="note">The real answer to blocked pages — deliberately not built until interviews show people want the core loop.</p>
+      </div></li>
+      <li><div>
+        <h3>Run one styling contest by hand <span class="pill pill-hold">no code</span></h3>
+        <p class="note">Validate that the community loop has demand before building tooling for it.</p>
+      </div></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <p class="eyebrow">Where the moat would come from</p>
+    <h2>A size engine gets people in the door. It is not why they return.</h2>
+    <p>
+      Once you know your size in a brand, you are done. Retention has to come from
+      something else, and the honest answer is that we have one asset nobody else in
+      fashion social has: <strong>every member's closet is verified fit context</strong> —
+      real brands, real sizes, honest fit ratings.
+    </p>
+    <p>
+      That turns “this looks good” into “this fits a body like mine, in this size,
+      from this brand.” Crowd fit-knowledge — <em>runs small on broad shoulders</em> —
+      then feeds back into the engine. That loop is the defensible part, and it is
+      also the part that is still a plan rather than a result.
+    </p>
+    <div class="grid2">
+      <div class="card"><p class="eyebrow">Shipped</p><p>Portable passport · closet · URL size check · outcome learning · brand-bias learning · follow feed · Q&amp;A with closet evidence · daily boards · earned badge ladder · moderation and block list</p></div>
+      <div class="card"><p class="eyebrow">Honest gaps</p><p>No paying users. No interviews yet. Extraction still degrades to estimates on protected sites. Community loops are built but unproven at any real density.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap" style="display:flex;flex-direction:column;gap:10px;">
+    <p class="eyebrow">Fit Passport</p>
+    <p class="note">
+      Live at <a href="https://fit-passport.vercel.app">fit-passport.vercel.app</a>.
+      Full working detail in the repository: <code>DEVLOG.md</code>,
+      <code>docs/design/cost-model.md</code>, <code>docs/design/fetch-strategy.md</code>,
+      <code>docs/design/fit-algorithm-research.md</code>.
+    </p>
+    <p class="note">
+      Figures describing usage are targets and illustrations, not reported results.
+      Prices verified 24 August 2026 and worth re-checking before quoting.
+    </p>
+  </div>
+</footer>
