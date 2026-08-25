@@ -77,22 +77,65 @@ Applying it kills free-text fit notes and prompted photos, defers per-area
 ratings, and shows the **current dropdown has the worst cost/value ratio in the
 closet flow**.
 
+## The animated figure — right idea, wrong mechanism
+
+Proposed 2026-08-25: a figure wearing the garment; sliding tightens/loosens it.
+**Good instinct, but it must NOT be a drag slider.** Funke (2016) measured
+break-off: radio buttons 1.5%, slider scales 4.2%, and **sliders on
+smartphones/tablets 37% vs 2.3% for radio buttons** — worst for less-educated
+respondents (11% vs 2.2%), which points at cognitive load. The mechanical
+difference is point-and-click (2 actions) vs drag-and-drop (4). Recommendation in
+the literature is explicit: radio buttons for discrete, VAS for continuous,
+**avoid slider scales**. Two further defects: a handle at rest **anchors** the
+answer, and if it starts at a valid value, **non-response is indistinguishable
+from a real choice** — which would silently corrupt the whole signal.
+
+*(The FIC table predicted this independently — slider 5 vs pick-from-2-5 3.)*
+
+**Where it should live instead, ranked:**
+1. **On `/check` as explanation — build first.** Collects nothing, so zero
+   break-off risk; makes the engine's existing per-size ease arithmetic visible.
+2. **In the closet as feedback on a tap** — keep the five discrete options; the
+   figure animates *as a consequence* of the answer, never as the means of giving
+   it.
+3. **As the numeric mode**, and this **resolves the open question below**: a VAS
+   (**tap a point on the line**, no handle drawn at rest), not a drag handle.
+
+**Two non-optional constraints:**
+- **Schematic, never photoreal.** `fit-algorithm-research.md` §1 concludes that
+  image-based try-on transfers *appearance, not fit*, and that size recommendation
+  must stay separate from any try-on visual. A realistic figure would make exactly
+  the promise the research says nobody can keep. Show ease as a gap, **print the
+  centimetre number next to the picture**, keep it a diagram of the computation.
+  `OutfitMannequin.tsx` is the right asset because it is already abstract.
+- **No `setState` per pointer move.** A garment morphing under a moving pointer is
+  precisely the bug fixed twice already (`MetalCard`, `BadgeCoin`) — see
+  [[project-fit-passport-performance]]. CSS custom properties via ref,
+  rAF-coalesced. Placements 1 and 2 avoid continuous pointer tracking entirely.
+
+⚠ The *positive* half — that seeing it helps people answer more accurately — is
+**not directly evidenced** for this task; supporting work is adjacent only. The
+*negative* half is directly measured. So justify the animation as an
+**explanation** feature, not as a data-quality intervention.
+
 ## Two open questions — decide before building
 
-1. **The numeric mode is unresolved.** A 1–20 *comfort* scale is unipolar again —
-   it reproduces the exact defect above. Likely answer is a **signed** range
-   (−10…+10, tight→loose, 0 = perfect). **Needs the founder's decision.** Whatever
-   it becomes, it must map to the same internal scalar as the descriptive mode,
-   and the mode switch is sticky **per user, never per item** (mid-closet
-   switching makes the data incomparable with itself).
+1. **The numeric mode's SCALE is still unresolved** (its *control* is now settled
+   above: a tap-on-the-line VAS). A 1–20 *comfort* scale is unipolar again — it
+   reproduces the exact defect at the top of this file. Likely answer is a
+   **signed** range (−10…+10, tight→loose, 0 = perfect). **Needs the founder's
+   decision.** Whatever it becomes, it must map to the same internal scalar as the
+   descriptive mode, and the mode switch is sticky **per user, never per item**
+   (mid-closet switching makes the data incomparable with itself).
 2. **SizeFlags' actual thresholds were not retrievable** (PDF method section
    unreadable). Cross-user aggregation is **blocked** on getting them — we have
    precedent that the approach works, not a specification to copy.
 
 ## Sequencing
 
-Free derived signals → replace the dropdown → consistency feedback → numeric mode
-→ (maybe) per-area → cross-user, last and gated. Customer interviews should test
+`/check` size-comparison figure (independent, build any time) → free derived
+signals → replace the dropdown → consistency feedback → numeric mode → (maybe)
+per-area → cross-user, last and gated. Customer interviews should test
 the five-option wording directly; five people can falsify it in an afternoon.
 
 See [[project-fit-passport-build-state]] for the invariants this must respect

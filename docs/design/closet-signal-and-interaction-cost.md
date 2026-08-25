@@ -356,11 +356,125 @@ which the codebase already has precedent for:
 
 ---
 
+## 4bis. The animated figure — a good idea that must not be a drag slider
+
+Proposed 2026-08-25: a small figure wearing the garment, where sliding makes the
+clothing tighten or loosen, so the user *sees* what they're reporting.
+
+**The instinct is right and the mechanism is wrong**, and the evidence against the
+mechanism is unusually decisive — decisive enough that it changes the design
+rather than merely qualifying it.
+
+### The evidence against drag sliders as an input
+
+Funke (*Social Science Computer Review*, 2016) ran a web experiment comparing
+three formats that look nearly identical on screen but differ mechanically:
+
+- **VAS** — point and click: **two** actions (move pointer, click).
+- **Slider scale** — drag and drop: **four** actions (move pointer, click and
+  hold, move handle, release).
+
+Measured break-off (people abandoning rather than answering):
+
+| Format | Break-off |
+|---|---|
+| Radio buttons | 1.5% |
+| Slider scale | 4.2% |
+| **Slider, on smartphones/tablets** | **37%** |
+| Radio buttons, on smartphones/tablets | 2.3% |
+| Slider, respondents with a low final school grade | 11% (vs 2.2%; OR 5.6) |
+
+The author's recommendation is explicit: **use radio buttons for discrete
+variables, VAS for continuous ones, and avoid slider scales entirely.** The wider
+literature is consistent — a separate finding puts slider break-off at OR 6.9 with
+"overall, it is recommended to avoid slider scales", and notes the problem is
+worst for less-educated respondents, which points at cognitive load rather than
+dexterity.
+
+Two further defects specific to a handle-at-rest slider matter for us: an initial
+handle position **anchors** the answer toward wherever it starts, and if it starts
+at a valid value, **non-response is indistinguishable from a deliberate choice** —
+we would not be able to tell "this garment feels just right" from "this person
+never touched the control". That silently corrupts exactly the signal §1 is built
+on.
+
+**Note that §3.2's FIC table predicted this independently**: "pick from 2–5 visible
+options" scores 3, "a scroll/slider to a value" scores 5. The invented weights
+happened to reproduce the ordering the measurement literature reports — mild
+evidence the rubric is calibrated somewhere near reality, and it is recorded here
+because it would be equally worth recording had it come out backwards.
+
+### Where the animation *should* live
+
+The comprehension benefit is real; it just has to be decoupled from the act of
+answering. Three placements, ranked:
+
+**1. On `/check`, as explanation — build this first.** Show the recommended size
+on the figure, and let the user step through the *other* sizes to see why M and
+not L. **This collects nothing**, so there is no break-off risk at all, and it
+serves the project's actual wedge: the engine already computes per-size ease in
+centimetres and an ordinal verdict, and this makes that arithmetic visible instead
+of textual. Highest value, lowest risk, and it does not touch the closet flow.
+
+**2. In the closet, as feedback on a tap — not as the input.** Keep the five
+discrete options from §4.1 (radio-button semantics, which is what the research
+recommends for a discrete variable). Tapping "a bit snug" **animates the figure to
+that state**. The user gets the visual confirmation; we keep radio-button response
+quality. Crucially the animation is a *consequence* of the answer, never the
+means of giving it.
+
+**3. As the numeric mode — and this resolves §4.2's open question.** If the signed
+scale is built, it should be a **VAS: tap a point on the line**, with the figure
+responding — *not* a drag handle, and **with no handle drawn at rest** so that
+"not answered" stays distinguishable from "answered zero". A drag affordance may
+be offered as an *enhancement* for users who want it, but the tap target must be
+the primary and sufficient interaction.
+
+### Two constraints that are not optional
+
+**It must be schematic, not photoreal — this is an invariant, not taste.**
+[`fit-algorithm-research.md`](fit-algorithm-research.md) §1 opens with the finding
+that *every* mainstream image-based try-on transfers **appearance, not fit**, and
+concludes: keep size recommendation separate from any try-on visual. A figure that
+looks like a person wearing clothes is a try-on visual, and would quietly make the
+exact promise the research says nobody can keep. So: an abstract body, visible
+ease shown as a gap, **the centimetre number displayed alongside the picture**, and
+a look that reads as a *diagram of the engine's computation* rather than a preview
+of the wearer. `OutfitMannequin.tsx` (156 lines, `viewBox="0 0 100 120"`, already
+morphs by body type) is the right starting asset precisely because it is already
+schematic.
+
+**It must not re-introduce the performance bug this project has already fixed
+twice.** A garment morphing under a moving pointer is *exactly* the pattern that
+made `MetalCard` and then `BadgeCoin` re-render 60–120×/second — see
+[`project-fit-passport-performance.md`](../memory/project-fit-passport-performance.md).
+Non-negotiable: **write CSS custom properties to the DOM via ref, rAF-coalesced,
+measuring any rect once on enter. Never `setState` per pointer move.** Placement 1
+(discrete steps between sizes) and placement 2 (a transition between five fixed
+states) both avoid continuous pointer tracking entirely, which is a further reason
+to prefer them over a free-drag control.
+
+⚠ **Honest gap:** the *positive* half of this argument — that seeing the effect
+helps someone answer more accurately — is **not directly evidenced** for this task.
+The supporting literature found is adjacent (visuo-motor skill learning, text
+comprehension, and a perceptual-decision study where feedback reduced response
+bias and improved confidence calibration), plus NN/g's memory-load principle. The
+*negative* half — that drag sliders cost responses — is directly measured and
+should be treated as much stronger. Design accordingly: the animation is justified
+as an **explanation** feature, where its benefit is self-evident, rather than as a
+data-quality intervention it has not been shown to be.
+
+---
+
 ## 5. Sequencing
 
 Ordered so that every step is either free or self-justifying, and nothing
 governance-sensitive ships before its defences.
 
+0. **The size-comparison figure on `/check`** (§4bis, placement 1). Collects
+   nothing, risks nothing, and makes the engine's existing per-size ease
+   arithmetic visible. Independent of everything below — it can be built first or
+   in parallel.
 1. **Schema + engine, zero UI change.** Add a signed `fitDirection` field
    alongside `fitRating`; back-fill nothing. Derive the personal ease target
    (§1.2) and preference-consistency confidence (§1.3) from data already in the
@@ -414,3 +528,19 @@ falsify it in an afternoon.
 [`fit-algorithm-research.md`](fit-algorithm-research.md) §3 (the ordinal-fit and
 η return-shift lineage), [`community-ecosystem.md`](community-ecosystem.md)
 (cross-user knowledge as the moat).
+
+**Added 2026-08-25 (§4bis sources):**
+- Funke, *A Web Experiment Showing Negative Effects of Slider Scales Compared to
+  Visual Analogue Scales and Radio Button Scales*, Social Science Computer Review
+  2016 — https://journals.sagepub.com/doi/10.1177/0894439315575477 (break-off
+  figures and the point-and-click vs drag-and-drop distinction quoted directly)
+- Toepoel & Funke, *Sliders, visual analogue scales, or buttons: Influence of
+  formats and scales in mobile and desktop surveys* —
+  https://www.tandfonline.com/doi/full/10.1080/08898480.2018.1439245 (the OR 6.9
+  break-off figure and the "avoid slider scales" recommendation; ⚠ retrieved via
+  search summary, not fetched in full)
+- ⚠ The positive claim that visual feedback aids self-report accuracy is
+  **unevidenced for this task**; supporting literature is adjacent only
+  (visuo-motor learning, diagramming/comprehension, and feedback effects on
+  response bias and confidence calibration —
+  https://pmc.ncbi.nlm.nih.gov/articles/PMC9096460/).

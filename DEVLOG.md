@@ -143,6 +143,59 @@ because ~75% of fit feedback in both public datasets is "fit" (ModCloth 52,222 o
 the common case cost zero taps and charges only the rare, *informative* answers —
 the label-imbalance problem turned into a UX decision.
 
+### The animated figure — asked, researched, and the mechanism changed
+
+Follow-up question: could this be an animation — a small figure wearing the
+garment, where sliding tightens or loosens it, so the effect is visible?
+
+**The instinct is right; the mechanism is contradicted by measurement research,
+decisively enough to change the design rather than merely qualify it.** Funke
+(*Social Science Computer Review*, 2016) compared formats that look nearly
+identical but differ mechanically — VAS is point-and-click (two actions), a slider
+is drag-and-drop (four). Break-off: radio buttons **1.5%**, slider scales
+**4.2%**, and on smartphones and tablets **37% for sliders versus 2.3% for radio
+buttons**. It is worst for respondents with a low final school grade (11% vs
+2.2%), which points at cognitive load rather than dexterity. The recommendation in
+the literature is explicit: radio buttons for discrete variables, VAS for
+continuous, **avoid slider scales**.
+
+Two further defects would have hit us specifically: a handle sitting at rest
+**anchors** the answer toward wherever it starts, and if it starts at a valid
+value we **cannot tell a real answer from an untouched control** — which would
+silently corrupt the exact signal the rest of this design is built on.
+
+Worth recording: **the FIC table predicted this ordering independently** (slider
+5, pick-from-2-5 3) before the literature was consulted. Mild evidence the rubric
+sits somewhere near reality — noted here because it would have been equally worth
+recording had it come out backwards.
+
+So the animation was moved off the input path rather than dropped. Ranked:
+**(1) on `/check` as pure explanation** — collects nothing, so no break-off risk
+at all, and it makes the per-size ease arithmetic the engine already computes
+*visible*; **(2) in the closet as feedback on a tap**, where the figure animates as
+a *consequence* of the five-way choice rather than the means of making it;
+**(3) as the numeric mode**, which settles half of last section's open
+question — tap a point on the line, no handle drawn at rest, never a drag handle.
+
+**Two constraints that are not negotiable.** It must be **schematic, not
+photoreal**: `fit-algorithm-research.md` §1 opens with the finding that every
+mainstream image-based try-on transfers *appearance, not fit*, and concludes that
+size recommendation must stay separate from any try-on visual — a realistic figure
+would quietly make the promise the whole research file says nobody can keep. So:
+ease drawn as a gap, the centimetre number printed beside the picture, and a look
+that reads as a diagram of the computation. `OutfitMannequin.tsx` is the right
+starting asset precisely because it is already abstract. And it must **not
+re-introduce the pointer-driven re-render** fixed twice already in `MetalCard` and
+`BadgeCoin` — CSS custom properties via ref, rAF-coalesced, never `setState` per
+move. Placements 1 and 2 avoid continuous pointer tracking altogether, which is a
+further reason to prefer them.
+
+⚠ Recorded honestly: the *positive* half of the argument — that seeing the effect
+helps someone answer more accurately — is **not directly evidenced for this task**.
+The supporting literature is adjacent only. The *negative* half is directly
+measured. The animation is therefore justified as an **explanation** feature, not
+as the data-quality intervention it has not been shown to be.
+
 209 tests, unchanged — no code was touched this session beyond the team credit.
 
 ---
