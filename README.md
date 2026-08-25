@@ -53,9 +53,9 @@ previous machine's constraint, not a project requirement; it is lifted.)
 | Area | What's there |
 |---|---|
 | **Passport** | A metal charge-card identity page — portrait, holder, region, preferred fit, verification line. Its finish is themed by your highest earned badge (and you can pick any metal you've earned). Exports as a PNG. |
-| **Closet** | Collections with custom folder colours, item photos, add-by-URL, variant merging, a filing-cabinet folder view (drag files out onto a "desk", set items aside in a comparison bucket), and edit history. |
+| **Closet** | Collections with custom folder colours, item photos, add-by-URL, variant merging, a filing-cabinet folder view (drag files out onto a "desk", set items aside in a comparison bucket), and edit history. Each garment records **which way it misses** on a signed scale (*too tight … just right … too loose*), in words or as a number — that direction is what the engine can actually act on, and the old 1–5 star rating is now derived from it rather than asked for separately. |
 | **Size check** | Paste any product link (bare domains fine) → the extractor reads the **real page** (schema.org JSON-LD, OpenGraph, and on-page size-chart tables; optional vision OCR for image-only charts; Chinese `号型` codes) → a transparent engine ranks every size across **chest + waist + shoulder** with per-signal reasons and an ordinal verdict (*too small … true to size … too big*). It says honestly whether the sizes were **read from the page** or **estimated**, and caps confidence when estimating. Plus a live multi-region size converter. |
-| **Fit refresh** | Re-rate how garments feel over time; bodies change, so the profile tracks drift. |
+| **Fit refresh** | Re-rate how garments feel over time; bodies change, so the profile tracks drift. Reports **direction**, not a grade — see below. |
 | **Outfits** | Compose looks on a body-typed SVG mannequin, post them, collect likes. Optional photoreal try-on when an image key is set. |
 | **Community** | Opt-in directory of members (each with a metal banner in their card finish), plus an outfit feed you can switch between **Everyone** (most-liked first) and **Following** (people you follow, newest first). Following requires a claimed account on both sides, so follower counts stay earned. |
 | **The board** | Daily **Top looks** and **Top stylists**, counted inside a UTC-day (or rolling-week) window so it resets and a newcomer can win today. Stylist standing is `likes + 3 × helpful answers` — never follower count. |
@@ -95,6 +95,8 @@ app-web/
     extractorLLM.ts   #   fetch + parse the real page; optional Claude text/vision, cached, block-aware
     populationPrior.ts#   region cold-start body prior (survey-grounded, governance-safe)
     badges.ts         #   badge ladder + metals (single source of truth)
+    fitDirection.ts   #   the signed fit scale (-10 too tight … +10 too loose)
+    closetConsistency.ts # confidence from how much a wearer's own reports agree
     auth.ts / authEdge.ts  # HMAC sessions (Node + Edge, byte-compatible)
   prisma/schema.prisma     # data model (SQLite locally, Postgres in prod)
   middleware.ts       # mints the session cookie before any API call
@@ -107,7 +109,7 @@ DEVLOG.md             # per-session development log (also the Weekly Journal)
 ```
 
 **Stack:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
-Vitest · Framer Motion (motion) · three.js (lazy, badge inspect only).
+Vitest (**265 tests**) · Framer Motion (motion) · three.js (lazy, badge inspect only).
 
 Key design decisions worth knowing before contributing:
 
@@ -125,6 +127,15 @@ Key design decisions worth knowing before contributing:
   the Edge runtime and signs the same cookies the Node side verifies.
 - **Everything key-gated degrades gracefully.** No key → a working fallback, never
   an error.
+- **Changing `prisma/schema.prisma` requires a migration.** `npm run db:push` only
+  writes to local SQLite; production applies committed migrations. Skipping this
+  took production down once — `src/lib/schemaMigrations.test.ts` now fails when a
+  column has no migration. Recipe in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+- **The fit input is never a drag slider**, and mobile navigation lives in
+  `Nav.tsx`'s menu panel — every nav link is `sm:block`, so without it a phone has
+  no navigation at all. Both are measured decisions; see
+  [docs/design/closet-signal-and-interaction-cost.md](docs/design/closet-signal-and-interaction-cost.md)
+  and `app-web/scripts/mobile-audit.mjs`.
 
 ---
 

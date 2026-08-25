@@ -28,6 +28,45 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang. Instructor: Sher
 
 ---
 
+## 2026-08-25 · Session 49 — Documentation currency pass, and what the last sweep missed
+
+Housekeeping, but two findings are worth the entry.
+
+**`docs/RESUME.md` still carried a personal email address.** Session 43 ran a
+credential sweep, caught one in the build-state notes, scrubbed it — and missed
+this one, which then survived five more sessions in a shared repo. The lesson is
+not "sweep harder", it is that **a sweep is a habit, not an event**: it belongs on
+every documentation pass, not once when the folder was published.
+
+**Ten `[[links]]` were dead**, pointing at memories that stay private. Session 43
+repointed twelve and left these. Repointed to their published equivalents
+(`principle-research-grounded`, `principle-no-brand-imagery`,
+`principle-evidence-and-logging`) or inlined, and the whole folder is now checked
+for dangling references rather than spot-fixed.
+
+**`RESUME.md` has been rewritten to name no machine at all.** It had been rewritten
+once already for the same reason; the project has moved computers twice and every
+hard-coded path died with the move, leaving notes that actively misled a reader
+about where things are. Setup is now a recipe that works anywhere, and the same
+line came out of `build-state.md`.
+
+Otherwise: test counts corrected across five files (172/209/237 → **265**),
+`next-steps.md` rewritten with the current list at the bottom and the old ones kept
+as history — the reasoning behind a priority change is usually the useful part —
+both READMEs updated for the signed fit scale and the migration rule, and the
+zh-CN README's Windows-only command block replaced with a platform table, since the
+project is not on that machine and a new teammate might be on either.
+
+**Customer interviews are recorded as DEFERRED at the founder's request**, with the
+cost stated plainly in the backlog rather than silently absorbed: the browser
+extension and per-area fit granularity were both explicitly gated on interview
+evidence, so both stay parked.
+
+Repo `docs/memory/` and the assistant's working memory verified byte-identical,
+file by file. 265 tests, no code changed.
+
+---
+
 ## 2026-08-25 · Session 48 — Mobile: the app had no navigation on a phone
 
 Reported: the phone experience is bad. Audited it by **measuring a real browser at

@@ -10,7 +10,7 @@ metadata:
 
 Hard-won performance findings for [[project-fit-passport]], from Session 42 (2026-08-25). These are **not** obvious from the code, and two of them were reintroduced-then-caught in the same session.
 
-**The founder's machine matters, and it is a real confound.** The app was designed on a **Mac** and felt fine there; on the **Windows 11 machine** ([[project-machine-windows-migration]]) the same production build ran heavy (~800MB tab). macOS's compositor + unified memory absorb high composited-layer counts that a Windows integrated-GPU path does not. So *"it used to be smooth locally"* compares two different computers — never accept that as evidence the server or a recent commit is at fault.
+**The founder's machine matters, and it is a real confound.** The app was designed on a **Mac** and felt fine there; on the **Windows 11 machine** () the same production build ran heavy (~800MB tab). macOS's compositor + unified memory absorb high composited-layer counts that a Windows integrated-GPU path does not. So *"it used to be smooth locally"* compares two different computers — never accept that as evidence the server or a recent commit is at fault.
 
 **It was never the server.** Measured: warm production latency `/` 76–248ms, `/api/status` ~310ms, `/api/community` ~196ms. The only server-side penalty is Neon free-tier autosuspend, **~852ms on the first request after ~6min idle** (measured). Before a live demo, just hit the site a few times to wake it; keeping Neon warm 24/7 would exceed the free plan's 100 CU-hours.
 

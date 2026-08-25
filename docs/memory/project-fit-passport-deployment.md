@@ -34,7 +34,7 @@ How [[project-fit-passport]] is set up to deploy (prepared Session 31, 2026-08-1
 
 **GOTCHA:** `npm run db:pg:generate` overwrites the generated Prisma Client with the **Postgres** one. Run `npx prisma generate` afterwards to restore the SQLite client, or local `npm run dev` breaks.
 
-**Also on this machine ([[project-machine-windows-migration]]):** PowerShell's default execution policy blocks npm's `.ps1` shims, so `vercel login` fails with "running scripts is disabled on this system" — call `vercel.cmd` instead rather than weakening the policy.
+**Also on this machine ():** PowerShell's default execution policy blocks npm's `.ps1` shims, so `vercel login` fails with "running scripts is disabled on this system" — call `vercel.cmd` instead rather than weakening the policy.
 
 **LIVE as of 2026-08-24 (Session 41): https://fit-passport.vercel.app**
 - Vercel project `fit-passport`, Node 24.x, framework nextjs. Org/project ids are in `.vercel/project.json` (gitignored) and in the Vercel dashboard — look them up, do not record them.

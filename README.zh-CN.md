@@ -43,10 +43,19 @@ node scripts/moderate.mjs unhide POST <id>     # 恢复被误隐藏的内容
 **本地开发不需要任何 API key,也不需要云服务** —— SQLite 加上处处合理的降级方案。
 可选的 key 只解锁额外能力(见 [`app-web/.env.example`](app-web/.env.example))。
 
-> **Windows 提示**:PowerShell 默认禁止运行 npm 生成的 `.ps1` 启动脚本。遇到
-> "running scripts is disabled" 时,改用 `.cmd` 后缀调用(例如 `vercel.cmd`),
-> 不必放宽整机的执行策略。清理构建产物用
-> `Remove-Item -Recurse -Force .next`,查端口占用用 `Get-NetTCPConnection -LocalPort 3000`。
+> **按平台的等价命令**(这个项目不绑定任何一个平台,两边都会用到):
+>
+> | 做什么 | macOS / Linux | Windows (PowerShell) |
+> |---|---|---|
+> | 清理构建产物 | `rm -rf .next` | `Remove-Item -Recurse -Force .next` |
+> | 查 3000 端口占用 | `lsof -nP -iTCP:3000 -sTCP:LISTEN` | `Get-NetTCPConnection -LocalPort 3000` |
+> | 调用 npm 装的 CLI | `vercel` | `vercel.cmd` |
+>
+> Windows 上 PowerShell 默认禁止运行 npm 生成的 `.ps1` 启动脚本。遇到 "running
+> scripts is disabled" 时改用 `.cmd` 后缀,不必放宽整机执行策略。
+>
+> macOS 上 `npm install` 会改写 `package-lock.json`(删掉 Linux 的 `libc` 条目),
+> **不要提交那个 diff** —— Vercel 在 Linux 上构建,靠它解析原生包。
 
 ---
 
@@ -55,9 +64,9 @@ node scripts/moderate.mjs unhide POST <id>     # 恢复被误隐藏的内容
 | 模块 | 内容 |
 |---|---|
 | **护照(Passport)** | 一张金属信用卡式的身份页 —— 头像、持有人、地区、偏好版型、验证码行。卡面材质跟随你已获得的最高等级徽章(也可以在已拥有的金属里自选),可导出 PNG。 |
-| **衣橱(Closet)** | 可自定义颜色的收藏夹、单品照片、按 URL 添加、同款合并、档案柜式文件夹视图(把文件抽到"桌面"上、把单品放进对比篮),以及编辑历史。 |
+| **衣橱(Closet)** | 可自定义颜色的收藏夹、单品照片、按 URL 添加、同款合并、档案柜式文件夹视图(把文件抽到"桌面"上、把单品放进对比篮),以及编辑历史。每件衣服还记录**它往哪边不合身**——一条带符号的刻度(*太紧 … 正好 … 太松*),可以用词也可以用数字。方向才是引擎能真正使用的信号,原来的 1–5 星现在由它**推导**出来,不再单独问。 |
 | **尺码检查(Size check)** | 粘贴任意商品链接(裸域名也可以)→ 抽取器读取**真实页面**(schema.org JSON-LD、OpenGraph、页面内的尺码表;图片尺码表可选视觉 OCR;中国 GB/T `号型` 编码)→ 透明引擎在**胸围 + 腰围 + 肩宽**三个维度上给每个尺码打分,附带逐信号理由和有序判定(*偏小 … 正合适 … 偏大*)。它会诚实地告诉你尺码是**从页面读到的**还是**估算的**,估算时会给置信度封顶。另有实时多地区尺码换算器。 |
-| **合身刷新(Fit refresh)** | 随时间重新评价衣物的穿着感受;身体会变,档案要跟着漂移。 |
+| **合身刷新(Fit refresh)** | 随时间重新评价衣物的穿着感受;身体会变,档案要跟着漂移。记录的是**方向**而不是评分。 |
 | **穿搭(Outfits)** | 在按体型生成的 SVG 假人上搭配造型、发布、收集点赞。配置图像 key 后可生成写实试穿图。 |
 | **社区(Community)** | 自愿加入的成员目录(每人一条自己卡面材质的金属横幅),外加可在 **Everyone**(按点赞排序)和 **Following**(你关注的人,按时间排序)之间切换的穿搭流。关注需要双方都已认领账号,所以关注数是挣来的。 |
 | **榜单(The board)** | 每日 **Top looks** 与 **Top stylists**,在 UTC 自然日(或滚动周)窗口内计数,所以每天重置,新人今天就有机会赢。穿搭师排名 = `点赞数 + 3 × 有帮助的回答`,**绝不看关注数**。 |
@@ -108,7 +117,7 @@ DEVLOG.md             # 逐次开发日志(同时充当课程要求的 Weekly Jo
 ```
 
 **技术栈:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
-Vitest · Framer Motion(动效)· three.js(懒加载,仅用于徽章 inspect)。
+Vitest(**265 个测试**)· Framer Motion(动效)· three.js(懒加载,仅用于徽章 inspect)。
 
 **Node 版本:** 当前在 Node 24 LTS 上开发与部署。早期文档里"锁定 Node 18.20"
 是上一台开发机的限制,不是项目要求,换机时已解除。

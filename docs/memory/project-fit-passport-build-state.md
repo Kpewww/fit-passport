@@ -8,11 +8,11 @@ metadata:
   modified: 2026-08-20T22:49:54.406Z
 ---
 
-Durable build state of the [[project-fit-passport]] web app. **Per-session history lives in the repo's `DEVLOG.md`** (through Session 40) — this file keeps only what isn't obvious from the code/DEVLOG. Repo: **github.com/Kpewww/fit-passport** (private; keychain has creds → `git push` works). Local path (since 2026-08-24, NEW MACHINE): `D:/Start-Up-Project/fit-passport` on **Windows 11** — a fresh `git clone`, so `node_modules`, `.env`, and `prisma/dev.db` are absent until set up (see [[project-machine-windows-migration]]). The in-repo **`docs/RESUME.md`** is the path-independent cold-start brief. The repo has its own local commit identity — check `git config user.email` rather than assuming the global one. **Chat 中文; commit messages + DEVLOG English** ([[feedback-language-chinese-chat-english-commits]]). Every feature must be research-grounded ([[feedback-research-grounded]]).
+Durable build state of the [[project-fit-passport]] web app. **Per-session history lives in the repo's `DEVLOG.md`** (through Session 48) — this file keeps only what isn't obvious from the code/DEVLOG. Repo: **github.com/Kpewww/fit-passport** (private; keychain has creds → `git push` works). **No machine path is recorded here on purpose** — the project has moved computers twice and every hard-coded path died with the move. A fresh clone has source only; `node_modules`, `.env` and `prisma/dev.db` are absent until set up (recipe in `docs/RESUME.md`). The in-repo **`docs/RESUME.md`** is the path-independent cold-start brief. The repo has its own local commit identity — check `git config user.email` rather than assuming the global one. **Chat 中文; commit messages + DEVLOG English** ([[principle-evidence-and-logging]]). Every feature must be research-grounded ([[principle-research-grounded]]).
 
 **Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**172 tests as of Session 40**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**265 tests as of Session 48**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -100,3 +100,49 @@ user, **never per item**.
 
 Design + sources: `docs/design/closet-signal-and-interaction-cost.md`;
 summary in [[project-fit-passport-closet-signal-design]].
+
+
+---
+
+**SESSION 46–48 UPDATE (2026-08-25). 237 → 265 tests.**
+
+**A production outage worth knowing about (Session 46).** Three columns were added
+to `schema.prisma` and only `npm run db:push` was run — that writes to **local
+SQLite**. Production applies **committed migrations**, so Postgres never got the
+columns while the client queried them: `/api/status`, `/api/closet` and
+`/api/collections` all 500'd. **The symptom was `/passport` stuck on "Loading…"** —
+the page rendered, the API behind it did not. Typecheck, 237 tests, the production
+build and a 14-page local smoke were ALL green, because local SQLite had the
+columns. Full account + the no-shadow-database fix recipe in
+[[project-fit-passport-deployment]].
+
+**NEW INVARIANTS:**
+㉑ **Changing `schema.prisma` requires a migration.** `db:push` is not one.
+`src/lib/schemaMigrations.test.ts` fails when a column has no migration — it needs
+no database, and it was verified to go red on the real bug before being kept.
+㉒ **Closet reports feed brand bias, and must NOT double-count the anchor.**
+`biasForBrand` takes the product's category and **excludes closet items of that
+type**, because `scoreKnownGood` already moved the anchor by them. Anchor handles
+same-category; brand bias generalises across categories.
+㉓ **Report-consistency confidence is ASYMMETRIC by design** (`closetConsistency.ts`).
+Scatter lowers confidence (floor 0.85) with the reason surfaced; agreement does NOT
+raise it, and being *consistently* off-centre is not penalised — scatter means we
+know less, offset just means they buy up.
+㉔ **Mobile navigation must exist.** Every nav link is `hidden … sm:block`; the menu
+panel in `Nav.tsx` IS the phone navigation. Before Session 48 nothing took their
+place and the app was unreachable past the homepage on a phone.
+㉕ **`min-w-0` belongs on flex AND grid items.** Both default to `min-width: auto`
+and refuse to shrink below content, so `truncate` alone does nothing. `body` has
+`overflow-x-clip`, so an overflow is **silently clipped, not scrollable** — it will
+never show up as a horizontal scrollbar. Measure with
+`app-web/scripts/mobile-audit.mjs`.
+
+**Not derivable, contrary to an earlier design note:** a personal ease target in
+centimetres. `KnownGoodItem` stores **no garment measurements**, so `ease = garment
+− body` has no garment side. It needs the size chart captured at add-by-URL time.
+See [[project-fit-passport-closet-signal-design]].
+
+**Open governance question for the founder:** whether `fitDirection` should be
+visible to an account-code holder. Currently **no** — the view endpoint's allow-list
+`select` excludes it, and widening what a bearer code reveals is a decision, not a
+feature side effect.

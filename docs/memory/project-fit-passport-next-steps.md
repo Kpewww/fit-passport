@@ -8,7 +8,11 @@ metadata:
   modified: 2026-08-20T22:33:47.428Z
 ---
 
-Prioritized next-steps for [[project-fit-passport]] as of **Session 40 (2026-08-20)**. Current state: real-page fetching (JSON-LD/tables/vision-OCR/号型), multi-dimensional transparent engine (chest+waist+shoulder, body-range, garment ease, ordinal verdict, margin-scaled confidence), region body prior, 172 tests, all committed & pushed. Everything must stay research-grounded ([[feedback-research-grounded]]) and hold the privacy/legal/transparency invariants. **The founder has NOT locked the next item** — this is the menu; ask which to start.
+> ⚠️ **The authoritative list is at the BOTTOM of this file (Session 48).**
+> Everything above it is kept as history — it records why priorities changed, which
+> is often the useful part, but it is not what to do next.
+
+Prioritized next-steps for [[project-fit-passport]] as of **Session 40 (2026-08-20)**. Current state: real-page fetching (JSON-LD/tables/vision-OCR/号型), multi-dimensional transparent engine (chest+waist+shoulder, body-range, garment ease, ordinal verdict, margin-scaled confidence), region body prior, 172 tests, all committed & pushed. Everything must stay research-grounded ([[principle-research-grounded]]) and hold the privacy/legal/transparency invariants. **The founder has NOT locked the next item** — this is the menu; ask which to start.
 
 ## Tier 1 — Ship to real users (highest leverage)
 1. **Deploy to Vercel + Neon.** Code is ready (see [[project-fit-passport-deployment]]). Founder's own account steps: Neon (`-pooler` conn str), Vercel (Root `app-web`, Build `npm run vercel-build`), env `DATABASE_URL`/`SESSION_SECRET`/`APP_URL`.
@@ -102,3 +106,74 @@ SizeFlags' thresholds and building the anti-abuse defences.
 **Decision owed by the founder:** the numeric fit mode. A 1–20 *comfort* scale is
 unipolar and reproduces the defect above; a signed −10…+10 range does not. See
 [[project-fit-passport-closet-signal-design]].
+
+
+---
+
+## CURRENT LIST — Session 48 (2026-08-25). This supersedes everything above.
+
+**State:** live, **265 tests**, mobile pass shipped, signed fit scale shipped,
+migration guard in place. Repo memory and `docs/RESUME.md` are current as of here.
+
+**Customer interviews are DEFERRED — the founder said so on 2026-08-25.** They were
+priority #1 for three sessions; do not put them back at the top unsolicited. Note
+what this costs, so the trade-off stays visible: the browser-extension decision was
+explicitly gated on interview evidence, and so was per-area fit granularity. Both
+stay parked until interviews happen.
+
+### Ready to build, nothing blocking
+
+1. **Capture the size chart when an item is added by URL.** This is the one change
+   that unblocks the **personal ease target in centimetres** (`ease = garment −
+   body`), which turned out not to be derivable today because `KnownGoodItem`
+   stores no garment measurements. The extractor already has the numbers in hand at
+   add-time and throws them away. Highest-value engine work available.
+2. **Finish the mobile pass.** Session 48 fixed navigation, every overflow, gutters
+   and the main tap targets. Not yet walked at phone width: `/refresh` (the card
+   stack), `/onboarding`, `/ask/[id]`, `/admin`, `/u/[code]`. Use
+   `app-web/scripts/mobile-audit.mjs`.
+3. **Next.js security triage.** `npm audit` reports ~21 advisories against 14.2.35
+   whose only offered fix is `next@16` — a breaking major. Needs a real
+   per-advisory judgement (most target features this app does not use: Image
+   Optimizer `remotePatterns`, Pages-Router i18n, custom servers), not a version
+   bump and not a shrug.
+4. **Item photos out of Postgres.** Base64 data URLs in the database; Neon free is
+   0.5 GB ≈ 340 users with ten photos each, then writes fail for **everyone**. Not
+   urgent for a demo, and deliberately deprioritised — but it is the first hard
+   wall.
+
+### Needs a decision from the founder before it can be built
+
+5. **Should `fitDirection` be visible to an account-code holder?** Currently no.
+   It is closet information like `fitRating` (already public) and arguably more
+   useful, but widening what a bearer code reveals is a **governance decision**.
+6. **Badge redesign** — waiting on reference art. Format: 24×24 stroke-only SVG
+   motif. Restoring dimensional badges is one default flip once they are redesigned.
+
+### Blocked on evidence or on research
+
+7. **Cross-user brand knowledge** ("this brand runs small on broad shoulders",
+   aggregated) — the real moat, and the **only** place adversarial data becomes a
+   security problem rather than a self-inflicted one. **Blocked twice over:**
+   SizeFlags' actual thresholds could not be extracted from its PDF, and the
+   defences in `closet-signal-and-interaction-cost.md` §2.2 (robust aggregation,
+   minimum evidence, reputation weighting, per-account caps) do not exist yet.
+8. **Browser extension** — the answer to 403-blocking retailers and to Taobao.
+   Gated on interview evidence, which is now deferred.
+9. **Per-area fit ratings** — fails the FIC cost/value bar today; revisit only if
+   interviews show people want the granularity.
+
+### Course deliverables (graded, non-code)
+
+10. Mid-project **Product Opportunity** presentation; **BMC/VPC v1** update.
+    `DEVLOG.md` doubles as the Weekly Journal and is current.
+11. Roles for **Jenny Cao** and **Nicolas Wang** are unassigned in
+    `docs/course/project-plan.md` — deliberately, pending a team conversation.
+
+### Hygiene
+
+- Extractor fixtures match by URL substring regardless of domain (harmless).
+- One throwaway `smoke…` account (member No.2) still exists in production; clean it
+  up before anyone sees the member roster.
+- Neon is `us-east-2` while Vercel functions run `iad1` — a ~10–15ms hop, not worth
+  moving.
