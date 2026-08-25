@@ -40,6 +40,24 @@ type Status = {
   pinnedBadges?: string[];
 };
 
+// Scroll-linked elements MUST be promoted to their own compositor layer.
+//
+// Without this the browser re-rasterises on every frame, and the cost scales with
+// the painted area — which is brutal here, because the decorative words are
+// `text-[22vw]` and `text-[38vw]` (≈317px and ≈547px on a 1440px viewport). Two of
+// those sections are adjacent, so at the boundary between "Everything you know
+// about your fit." and "You keep the profile." BOTH giant layers are on screen and
+// repainting together. That is exactly where the jank was reported.
+//
+// `will-change: transform` alone is enough to promote the layer in every current
+// browser, and it must be ALONE here: these are framer-motion elements, which
+// compose `transform` themselves from x/y/rotate/scale. Adding the legacy
+// `translateZ(0)` string would fight framer for the same CSS property.
+//
+// Applied only to elements that are actually scroll-driven — promoting everything
+// wastes GPU memory and can end up slower than not promoting at all.
+const GPU_LAYER = { willChange: "transform" } as const;
+
 export default function Home() {
   const router = useRouter();
   const [status, setStatus] = useState<Status | null>(null);
@@ -206,7 +224,7 @@ function Hero({
   return (
     <section ref={ref} className="bg-ink text-paper">
       <motion.div
-        style={{ y, opacity }}
+        style={{ y, opacity, ...GPU_LAYER }}
         className="mx-auto max-w-5xl px-6 pt-20 pb-16 text-center sm:pt-28 sm:pb-24"
       >
         <p className="eyebrow text-paper/45 animate-rise">One body · one fit identity · any store</p>
@@ -501,7 +519,7 @@ function ConvergingStack({ reduce }: { reduce: boolean }) {
     <section ref={ref} className="relative isolate overflow-hidden bg-paper py-28">
       {/* oversized word behind everything (clipped by the section) */}
       <motion.p
-        style={{ scale: wordScale }}
+        style={{ scale: wordScale, ...GPU_LAYER }}
         className="pointer-events-none absolute inset-x-0 top-1/2 -translate-y-1/2 select-none whitespace-nowrap text-center font-serif text-[22vw] font-semibold leading-none text-ink/[0.05]"
       >
         ONE FIT
@@ -578,7 +596,9 @@ function DeckCard({
 
   return (
     <motion.div
-      style={{ x, y, rotate, opacity, zIndex: index === 1 ? 3 : 1 }}
+      // Promoted too: these carry `shadow-lift`, and animating opacity on a
+      // shadowed box repaints the shadow every frame unless the layer is its own.
+      style={{ x, y, rotate, opacity, zIndex: index === 1 ? 3 : 1, ...GPU_LAYER }}
       className="absolute left-1/2 top-4 -ml-[10rem] w-80 rounded-2xl bg-white p-6 shadow-lift ring-1 ring-line"
     >
       <span className="font-serif text-sm italic text-brand">{signal.n}</span>
@@ -599,13 +619,13 @@ function ParallaxStatement({ reduce }: { reduce: boolean }) {
     <section ref={ref} className="relative flex h-[70vh] items-center justify-center overflow-hidden bg-ink text-paper">
       {/* slow background layer */}
       <motion.span
-        style={{ y: bgY }}
+        style={{ y: bgY, ...GPU_LAYER }}
         className="pointer-events-none absolute select-none font-serif text-[38vw] font-semibold leading-none text-paper/[0.05]"
       >
         FIT
       </motion.span>
       {/* faster foreground statement */}
-      <motion.div style={{ y: fgY }} className="relative mx-auto max-w-3xl px-6 text-center">
+      <motion.div style={{ y: fgY, ...GPU_LAYER }} className="relative mx-auto max-w-3xl px-6 text-center">
         <p className="eyebrow text-brand">Consumer-owned</p>
         <h2 className="mt-4 font-serif text-4xl leading-tight sm:text-6xl">
           You keep the profile.
