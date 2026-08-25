@@ -28,6 +28,112 @@ Team: Xiangchen Kong · Alyssa Qi. Instructor: Sheryl Root. Fall 2026.
 
 ---
 
+## 2026-08-24 · Session 41 — New machine (Mac → Windows), toolchain rebuild, security patch, and two deploy blockers
+
+**Context:** the founder changed computers. The project is now a fresh `git clone`
+at `D:\Start-Up-Project\fit-passport` on **Windows 11**, replacing the old macOS
+path. A clone carries source only, so everything gitignored — `node_modules`,
+`.env`, `prisma/dev.db` — was absent, and the machine had no Node at all. Goal for
+the session: get the app building and tested on the new machine, then deploy.
+
+### Toolchain rebuild
+
+- **Node.js 24.19.0 LTS** installed (winget). Worth stating plainly: the long-standing
+  *"pinned to Node 18.20 — do not upgrade"* note was a **property of the old Mac**, not
+  a requirement of this project. Next 14 needs ≥18.17 and Prisma 5.22 is happy on
+  current LTS, so a clean machine is the moment that pin costs nothing to drop.
+- `npm install` (475 packages) → `npm run db:push` (SQLite `dev.db` created) →
+  `node scripts/seed-admin.mjs` (AK, member No.1, 12 closet items, 4 collections,
+  2 outfits, 1 question).
+- **Everything green on the new OS, first try:** `tsc` clean · **172/172** tests ·
+  clean production build (56 routes) · live `next start` smoke — 10 pages 200, the
+  middleware mints exactly one session cookie, profile round-trips, and the core loop
+  returns **XL "true to size" @0.75** for chest 99 + regular (fixture path).
+  No Windows-specific source changes were needed to get there.
+
+### Security: Next.js 14.2.15 → 14.2.35
+
+`npm audit` rated the pinned `next@14.2.15` **critical**. The advisory that actually
+matters here is **CVE-2025-29927, authorization bypass in Next.js middleware** —
+`src/middleware.ts` is precisely where this app mints and verifies the session cookie,
+so a middleware bypass is a bypass of the entire auth model. Bumped to **14.2.35**,
+the last patch of the 14.2 line: patch-level, no API surface change.
+
+Re-verified after the bump: tsc clean, 172/172, clean build, and a fresh live smoke
+confirming the middleware still mints one cookie per first page request and
+`/api/view/[code]` still returns no `chestCm`/`waistCm`.
+
+The remaining audit entries were **scoped, not waved away**. They resolve only in
+Next 15/16 and cover features this app does not use: grepped and confirmed **no Server
+Actions, no `next/image`, no i18n, no Pages Router, no `remotePatterns`** (`next.config.mjs`
+sets only `reactStrictMode`). A major-version upgrade belongs before a real public
+launch, not before a course demo.
+
+### Two blockers that would have failed the first deploy
+
+Both are invisible locally — SQLite needs no migrations and has no connection pooler —
+so both would have surfaced only as a red Vercel build.
+
+1. **`prisma/migrations/migration_lock.toml` did not exist.** `prisma migrate deploy`
+   (which `vercel-build` runs before `next build`) reads the connector from that file
+   and aborts with *"Could not determine the connector from the migrations directory"*
+   without it. It is normally written by `prisma migrate dev` — a command this project
+   never ran, because `0_init` was diffed offline `--from-empty`. Added by hand,
+   recording `provider = "postgresql"`.
+2. **Migrations were aimed at the pooled connection.** Neon's `-pooler` host is
+   PgBouncer in *transaction* mode; `prisma migrate deploy` takes *session*-level
+   advisory locks, which transaction pooling cannot hold — the lock is acquired on one
+   backend and released on another, so migrations hang or error. `gen-postgres-schema.mjs`
+   now emits `directUrl = env("DIRECT_URL")` beside the pooled `url`, which is Prisma's
+   supported split: **app → pooler, migrations → direct host.** The generator gained a
+   matching guard so a changed datasource block fails loudly instead of quietly
+   producing a schema with no `directUrl`.
+
+Documented `DIRECT_URL` in `.env.example` and `docs/DEPLOYMENT.md` (§1 layout, §2 Neon
+steps, and the required-env table).
+
+**Verified before trusting any of it:** the generated Postgres schema passes
+`prisma validate`; the committed `0_init` still matches the schema exactly (485 lines,
+re-diffed `--from-empty` — no drift).
+
+### Production database provisioned (Neon)
+
+Neon project created (`us-east-2`). Both hosts were probed for real rather than assumed —
+the string the founder was given had no `-pooler`, so it is the **direct** one and the
+pooled variant was derived by inserting `-pooler` into the host. Both accept
+connections.
+
+Then the Vercel build was **rehearsed locally against the real database** rather than
+being discovered in CI: `npm run db:pg:generate` → `prisma migrate deploy`. `0_init`
+applied cleanly, the log confirms it went over the **direct** host (proving the
+`directUrl` fix works), a rerun reports *"No pending migrations to apply"* (so the
+Vercel build will not re-apply), and `SELECT id FROM "User"` succeeds (so the tables
+are really there).
+
+Afterwards `npx prisma generate` was re-run to restore the **SQLite** client locally —
+`db:pg:generate` overwrites the generated client with the Postgres one, which would
+otherwise break `npm run dev`. Confirmed by reading the local admin row back.
+
+### Windows notes for future sessions
+
+- `app-web/scripts/md-to-pdf.mjs:24` hard-codes the macOS Chrome path, so
+  `npm run docs:pdf` cannot work here until it resolves a browser per platform.
+  Not fixed this session — no PDF regeneration was needed.
+- PowerShell blocks npm's `.ps1` shims under the default execution policy
+  (`vercel login` → *"running scripts is disabled on this system"*). Calling
+  `vercel.cmd` instead sidesteps it without weakening the machine-wide policy.
+- Command translations for the old macOS notes: `rm -rf .next` →
+  `Remove-Item -Recurse -Force .next`; `lsof -nP -iTCP:3000` →
+  `Get-NetTCPConnection -LocalPort 3000`.
+
+### Next
+
+Vercel project creation and the first deploy, then the live verification walk in
+`docs/DEPLOYMENT.md` §5 — with the privacy invariant (`/api/view/[code]` leaking no
+centimetre fields) checked against production, not just localhost.
+
+---
+
 ## 2026-08-20 · Session 40 — Real product-page fetching, phase 1 (deterministic size-chart parsing) + fit research
 
 **Context:** the Session-39 audit named the #1 gap: sizes were *derived* from the URL
