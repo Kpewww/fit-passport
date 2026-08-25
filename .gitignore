@@ -30,3 +30,7 @@ app-web/prisma/schema.postgres.prisma
 # Logs
 *.log
 /tmp/*.log
+
+# Vercel CLI link metadata (project/org ids)
+app-web/.vercel
+.vercel

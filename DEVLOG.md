@@ -126,11 +126,77 @@ otherwise break `npm run dev`. Confirmed by reading the local admin row back.
   `Remove-Item -Recurse -Force .next`; `lsof -nP -iTCP:3000` →
   `Get-NetTCPConnection -LocalPort 3000`.
 
-### Next
+### SHIPPED — the app is live at https://fit-passport.vercel.app
 
-Vercel project creation and the first deploy, then the live verification walk in
-`docs/DEPLOYMENT.md` §5 — with the privacy invariant (`/api/view/[code]` leaking no
-centimetre fields) checked against production, not just localhost.
+First production deployment. Vercel project `fit-passport`, Node 24.x (matching local),
+build completed in 45s.
+
+Project configuration was done through the API rather than the dashboard, because
+`vercel link` leaves **Root Directory = `.`**, which is wrong for this repo — the Next
+app lives in `app-web/`, so a Git-triggered build would clone the root, find no app and
+fail. Patched to `rootDirectory: "app-web"`, `buildCommand: "npm run vercel-build"`,
+`framework: "nextjs"`.
+
+**Environment variables are set for `production` ONLY, deliberately.** `vercel-build`
+runs `prisma migrate deploy`, so a preview deployment that inherited `DATABASE_URL`
+would migrate the *production* database from a feature branch — the exact hazard
+`docs/DEPLOYMENT.md` §4.4 warns about. Preview builds will fail loudly for want of a
+database, which is the safe failure. When previews are actually wanted, they get their
+own Neon branch first. `SESSION_SECRET` was generated straight into the API call and
+never written to disk or displayed.
+
+### Production verification (docs/DEPLOYMENT.md §5)
+
+Every claim below was executed against the live URL, not localhost:
+
+- **12/12 pages return 200**, and the middleware mints exactly one session cookie.
+- **Postgres writes work:** `POST /api/profile` (chest 99 / waist 78 / US) → read back
+  identical. Three closet items added. This is the real proof the Neon wiring is live.
+- **Core loop runs:** `/api/check` on the Uniqlo fixture URL returns a ranked size with
+  reasons and provenance.
+- **PRIVACY INVARIANT HOLDS.** `/api/view/<code>` was checked field by field for
+  `chestCm, waistCm, hipCm, shoulderCm, sleeveCm, inseamCm, heightCm, weightKg` —
+  **none present**. It returns only username, code, avatar, coarse bodyType, sex,
+  shopsFor, canExport, followerCount, collections, closet, memberNo, badges. The public
+  `/u/<code>` page renders 200 with no centimetre figure anywhere in the HTML.
+- **Rate limiting is genuinely shared, not per-instance:** queried the Upstash REST API
+  directly and found the app's counters (`rl:view:<ip>:<window>`) actually written there.
+- **Admin path works:** production admin seeded with a freshly generated password (NOT
+  the local `12345678`); login 200, `/admin` 200, `/api/admin/reports` 200 — the last
+  one only answers to `role = "ADMIN"`, so the role check is confirmed end to end.
+
+Afterwards `npx prisma generate` restored the SQLite client and the local suite was
+re-run: 172/172, local admin still reads back from `dev.db`. Production work left local
+development untouched.
+
+### Engine observation worth following up (not a deploy issue)
+
+The production check returned **M "too small" at confidence 1.0** where the same input
+locally returned XL "true to size" at 0.75. The difference is correct behaviour: the
+production account had just been given a Uniqlo t-shirt rated 5/5, which triggers the
+[F1] anchor path, and the anchor dominates the measurement signal by design.
+
+What looks wrong is the **confidence**. The anchor says M while the measurement verdict
+on that same size says "too small" — a direct disagreement between two signals — and the
+engine still reports 1.0. Confidence should fall when signals conflict, not sit at
+maximum. This belongs to the already-queued "confidence-calibration sanity pass" and is
+now a concrete, reproducible case for it rather than a vague to-do.
+
+### Still open
+
+- **GitHub auto-deploy is NOT connected.** Both `vercel git connect` and a direct API
+  `POST /v9/projects/{id}/link` fail (HTTP 400 / "Failed to connect"), because the Vercel
+  GitHub App has not been installed on the `Kpewww` account with access to the private
+  repo. That is a browser authorisation only the founder can grant. Until then, releases
+  go out with `vercel deploy --prod` from the repo root.
+- Neon is in `us-east-2` while Vercel functions run from `iad1`; the Hobby plan does not
+  let functions be pinned to `cle1`, so this stays a ~10–15ms cross-region hop. Not worth
+  moving the database for.
+- The verification walk left one throwaway claimed account in production
+  (`smoke…`, member No.2). Harmless and not listed in the community directory, but it
+  should be cleaned up before any real user sees the member roster.
+- No `ANTHROPIC_API_KEY` in production yet, so live pages still fall back to the
+  deterministic path — the LLM text extract and the vision size-chart OCR are inert.
 
 ---
 
