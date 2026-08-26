@@ -4,7 +4,7 @@
 // Resets the password for the account that has BOTH the given identifier and
 // the given email on record. On success, logs the user in.
 //
-// Course-MVP caveat: we don't actually send a magic link — we verify the email
+// MVP caveat: we do not actually send a magic link — we verify the email
 // on record matches what the user typed. This is acceptable for a private
 // student-run beta; before production this MUST become a real
 // send-email-with-token flow.

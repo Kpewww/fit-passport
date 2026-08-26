@@ -86,7 +86,7 @@ Assuming ~6 checks per active user per month, with `ANTHROPIC_API_KEY` set:
 
 | Scenario | Checks/mo | LLM | Infra | **Total/mo** |
 |---|---|---|---|---|
-| **Course demo** — 30 testers | ~300 | ~$4 | $0 | **~$4** |
+| **Demo** — 30 testers | ~300 | ~$4 | $0 | **~$4** |
 | **Small beta** — 500 users | ~3,000 | ~$36 | Neon Launch ~$5–15 | **~$45** |
 | **Real traction** — 5,000 users | ~30,000 | ~$360 | Neon ~$30–80 + Vercel Pro $20 | **~$450** |
 

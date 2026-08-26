@@ -12,7 +12,7 @@ metadata:
 
 **Team:** Xiangchen Kong, Alyssa Qi, Jenny Cao, Nicolas Wang.
 
-**Semester MVP scope (narrow):** responsive web app, human apparel only (tops/shirts/jackets). Create profile → add 3-5 known-good items → paste product URL → get ranked size + confidence + explanation → record keep/return/exchange. Stretch: small dog/cat pet-profile prototype, regional sizing, VTO proof-of-concept. Out of scope: footwear/jewelry production, custom body-scan model, native apps, retailer integrations.
+**MVP scope (narrow):** responsive web app, human apparel only (tops/shirts/jackets). Create profile → add 3-5 known-good items → paste product URL → get ranked size + confidence + explanation → record keep/return/exchange. Stretch: small dog/cat pet-profile prototype, regional sizing, VTO proof-of-concept. Out of scope: footwear/jewelry production, custom body-scan model, native apps, retailer integrations.
 
 **Tech stack (proposed):** React/Next.js responsive web frontend; lightweight API (Next.js API routes or FastAPI); PostgreSQL (or equivalent) for profiles/products/sizes/recs/outcomes; LLM/VLM-assisted product-page extraction into normalized schema (user can correct); **transparent rule/score-based fit engine** (NOT a black-box ML model — must be explainable/testable); template-or-LLM explanation layer grounded in engine output; optional external VTO API only.
 

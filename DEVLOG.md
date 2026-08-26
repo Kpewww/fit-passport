@@ -69,6 +69,13 @@ One file left the repository rather than being edited: the course requirements
 memory. The obligations are real, so it is kept in the private working memory — but
 they are the team's obligations, not the project's documentation.
 
+**The first sweep reported clean and wasn't.** It was case-sensitive, so `Course
+demo` survived in three places — including a table row in the founder brief and one
+in the cost model — while `course demo` was caught everywhere. Re-running with `-i`
+found four more, plus two historical *"for the reflection essay"* asides. Noting it
+because the failure is generic: **a grep-based audit is only as good as its worst
+pattern, and a clean result from one is evidence about the pattern, not the repo.**
+
 ### The prospectus was five sessions behind
 
 It still claimed 172 tests and described a closet with "honest per-garment fit
@@ -125,9 +132,13 @@ Typecheck clean · **265/265 tests** · clean production build from a removed `.
 credential sweep on the staged diff clean. Repo `docs/memory/` and the working memory
 re-verified identical, file by file.
 
-**Not done, and stated rather than absorbed:** the two artifact pages hosted outside
-the repo still show the old course credits until they are republished from these
-files; the repo copies are now the newer ones.
+The founder brief got the same treatment as the prospectus: it still advertised 209
+tests and listed "turn on real extraction" as the next step, which shipped in Session
+42. Corrected to 265, that step marked done with the caveat that a key does not fix a
+403, and the closet description rewritten around the signed scale.
+
+**Both hosted artifact pages were republished from these files**, so the public copies
+and the repo now agree.
 
 ---
 
@@ -3094,7 +3105,7 @@ rendering.
   now would risk the "fancy but messy" outcome the founder warned about.
 - Real LLM run — needs an ANTHROPIC_API_KEY.
 
-**Governance selling point (for the reflection essay):** brand-bias is the
+**Governance selling point, worth keeping:** brand-bias is the
 first example of the app learning from outcomes without becoming a black box.
 Every shift attaches a plain-language reason; the guards (per-user, ≥2
 evidence, cancellation, ±1 cap) are all in one auditable file — exactly the
@@ -3141,7 +3152,7 @@ and picked the two concrete "fix now" items to implement this session.
 **Verify:** `tsc` clean · 21/21 tests · `next build` clean · live size-API smoke
 passed. Committed 6e1f450, pushed to origin/main.
 
-**Founder Q&A this session (for the reflection essay):** walked through the
+**Founder Q&A this session:** walked through the
 current scoring logic (transparent 5-signal engine, adaptive anchor weights),
 whether to move to "LLM as judge" (advised: no for the size decision — keep the
 explainable engine as the differentiator + governance answer; yes for

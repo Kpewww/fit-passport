@@ -146,7 +146,7 @@
 
 <section class="band" style="padding-top:84px;padding-bottom:72px;">
   <div class="wrap">
-    <p class="eyebrow">Founder brief · 24 August 2026</p>
+    <p class="eyebrow">Founder brief · 25 August 2026</p>
     <h1>One body.<br><em class="i">One fit identity.</em><br>Any store.</h1>
     <p class="lead" style="max-width:46ch;">
       A consumer-owned fit layer for apparel. Your closet is already a dataset about
@@ -167,11 +167,11 @@
     <p class="lead">
       Not a deck describing a plan. A working web app at
       <a href="https://fit-passport.vercel.app">fit-passport.vercel.app</a>, with
-      209 passing tests, running on Vercel and Neon Postgres.
+      265 passing tests, running on Vercel and Neon Postgres.
     </p>
     <div class="grid2">
       <div class="card"><p class="eyebrow">Live since</p><p class="stat">Aug 24</p><p class="note">First production deploy, verified end to end.</p></div>
-      <div class="card"><p class="eyebrow">Tests</p><p class="stat">209</p><p class="note">The fit engine is the most covered part.</p></div>
+      <div class="card"><p class="eyebrow">Tests</p><p class="stat">265</p><p class="note">The fit engine is the most covered part.</p></div>
       <div class="card"><p class="eyebrow">Running cost</p><p class="stat">$0</p><p class="note">Every paid integration degrades gracefully.</p></div>
     </div>
   </div>
@@ -322,7 +322,7 @@
       <table>
         <thead><tr><th>Scenario</th><th>Checks / mo</th><th>Model spend</th><th>Infra</th><th>Total</th></tr></thead>
         <tbody>
-          <tr><td>Course demo — 30 testers</td><td>~300</td><td>~$4</td><td>$0</td><td><strong>~$4</strong></td></tr>
+          <tr><td>Demo — 30 testers</td><td>~300</td><td>~$4</td><td>$0</td><td><strong>~$4</strong></td></tr>
           <tr><td>Small beta — 500 users</td><td>~3,000</td><td>~$36</td><td>~$5–15</td><td><strong>~$45</strong></td></tr>
           <tr><td>Traction — 5,000 users</td><td>~30,000</td><td>~$360</td><td>~$50–100</td><td><strong>~$450</strong></td></tr>
         </tbody>
@@ -395,8 +395,8 @@
     <h2>What happens next, in order.</h2>
     <ol class="seq">
       <li><div>
-        <h3>Turn on real extraction <span class="pill pill-next">next</span></h3>
-        <p class="note">An API key unlocks page reading and image size-chart OCR — the common case in Chinese storefronts. ~$4/month at demo scale.</p>
+        <h3>Turn on real extraction <span class="pill pill-live">done</span></h3>
+        <p class="note">The key is live in production, so page reading and image size-chart OCR now run — the common case in Chinese storefronts. ~$4/month at demo scale. It does not fix a 403; nothing does except reading the page elsewhere.</p>
       </div></li>
       <li><div>
         <h3>Customer interviews <span class="pill pill-next">next</span></h3>
@@ -426,7 +426,9 @@
       Once you know your size in a brand, you are done. Retention has to come from
       something else, and the honest answer is that we have one asset nobody else in
       fashion social has: <strong>every member's closet is verified fit context</strong> —
-      real brands, real sizes, honest fit ratings.
+      real brands, real sizes, and a signed report of <em>which way</em> each garment
+      misses. That last part is not a detail: a star rating cannot tell “strangling me”
+      from “hanging off me,” and those imply opposite recommendations.
     </p>
     <p>
       That turns “this looks good” into “this fits a body like mine, in this size,
@@ -435,8 +437,8 @@
       also the part that is still a plan rather than a result.
     </p>
     <div class="grid2">
-      <div class="card"><p class="eyebrow">Shipped</p><p>Portable passport · closet · URL size check · outcome learning · brand-bias learning · follow feed · Q&amp;A with closet evidence · daily boards · earned badge ladder · moderation and block list</p></div>
-      <div class="card"><p class="eyebrow">Honest gaps</p><p>No paying users. No interviews yet. Extraction still degrades to estimates on protected sites. Community loops are built but unproven at any real density.</p></div>
+      <div class="card"><p class="eyebrow">Shipped</p><p>Portable passport · closet · URL size check · signed fit scale · brand bias learned from the closet · confidence that falls when signals disagree · ease figure · outcome learning · follow feed · Q&amp;A with closet evidence · daily boards · earned badge ladder · moderation and block list · phone layout</p></div>
+      <div class="card"><p class="eyebrow">Honest gaps</p><p>No paying users. No interviews yet. Extraction still degrades to estimates on protected sites. Community loops are built but unproven at any real density. Item photos still live in Postgres, which caps a cohort at roughly 340 people.</p></div>
     </div>
   </div>
 </section>
