@@ -31,6 +31,52 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-26 · Session 52 — The proposal marked final, with both open decisions written into it
+
+Small session, one lesson worth the entry.
+
+The proposal is now marked **FINAL PROPOSAL** and states in its own header that it
+supersedes the two earlier proposal PDFs, which stay in `docs/proposals/` as history —
+§4 already records what changed between them and why, so the older documents keep
+their value as the "before" rather than being deleted.
+
+**Both parked decisions are now written into the document itself** rather than living
+only in a chat and a memory file. A decision that exists only in conversation is a
+decision that gets silently defaulted the next time someone touches the code:
+
+- **What a shared code reveals** — whether `fitDirection` should be visible to a
+  code-holder, with the actual argument on both sides recorded, including *why* it is
+  not symmetric with the already-public `fitRating`.
+- **The numeric input mode** — that a signed −10…+10 VAS shipped in place of the
+  requested 1–20 comfort scale, and that the outstanding question is whether the
+  substitution is accepted, not whether to build it.
+
+### Two process notes
+
+**I re-triggered a trap recorded in my own memory.** A `python - <<'PY'` heredoc hung
+for the full two-minute timeout — there is no Python on this machine, and that exact
+pattern is written down as a thing not to use. Checked the file was intact afterwards
+rather than assuming, then did the job with `sed` line ranges. Having the note is not
+the same as reading it.
+
+**The three-blockquote experiment failed and is worth recording as a negative
+result.** The two new decisions were first written as blockquote callouts, matching
+§6's. That made three callouts in one document, which both cost vertical space and
+diluted the one that should stand alone — *"a finished product is not a validated
+market"*. Converted back to bold-led paragraphs. It did **not** reduce the page count,
+so the layout argument was wrong; the editorial argument for making it was right
+anyway.
+
+**Length: 8 pages against a 4–6 page target**, and this is the third entry in a row
+recording that number rather than quietly absorbing it. The additions were all
+requested — pet, contests, both decisions — so content has been winning over the page
+budget by explicit choice each time. Reaching 6 now means removing something the
+founder asked for, which is his call, not a formatting exercise.
+
+265 tests, unchanged — documentation only.
+
+---
+
 ## 2026-08-26 · Session 51 — A new proposal, and two decisions the founder needed explained
 
 ### The two open decisions, restated accurately

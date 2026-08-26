@@ -2,8 +2,14 @@
 
 ### One body. One fit identity. Any store.
 
-*Proposal · August 2026 · Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang*
+**FINAL PROPOSAL** · August 2026
+*Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang*
 *Live at **https://fit-passport.vercel.app***
+
+> This is the current and final proposal for Fit Passport. It supersedes
+> `Fit-Passport-Proposal-Original.pdf` and `Fit-Passport-Detailed-Proposal.pdf` in
+> this folder, which are retained as history — §4 records what changed between them
+> and why.
 
 ---
 
@@ -233,13 +239,13 @@ tooling is written. Two open questions we would be testing: does a budget contes
 attract the fashion audience or only bargain hunters, and do prizes stay status-only
 or become real money — the latter changes the legal picture materially.
 
-**Pet fit — carried over from the original proposal, and still a stretch.** Harnesses
-and coats have the same problem in a worse form: sizing is wildly inconsistent, the
-wearer cannot report discomfort, and returns are awkward. **Status today: a
+**Pet fit — carried over from the original proposal, still a stretch.** Harnesses and
+coats have the same problem in a worse form: sizing is wildly inconsistent, **the
+wearer cannot report discomfort**, and returns are awkward. **Status today: a
 `PetProfile` table exists in the schema — species, breed, neck, chest girth, back
-length, known-good gear — and no application code reads or writes it.** It is a
-placeholder, not a feature. It stays parked until the human product is validated;
-building a second unvalidated audience would be the same mistake twice.
+length, known-good gear — and no application code reads or writes it.** A placeholder,
+not a feature. It stays parked until the human product is validated; building a second
+unvalidated audience would be the same mistake twice.
 
 **Non-apparel categories.** The engine scores measurements, not garment types, so
 nothing in the architecture is specific to shirts — shoes and rings are the same shape
@@ -301,6 +307,15 @@ or prompted photos, and deliberately **no drag slider** — measured break-off o
 sliders reaches 37% on smartphones against 2.3% for discrete options. Mitigation:
 measure drop-off directly in usability testing rather than trusting the argument.
 
+**Open decision — the numeric input mode.** A finer-grained alternative to the
+five-option tap was requested as a **1–20 comfort scale**. That form is *unipolar*,
+reproducing the exact defect the signed scale removes: 20 is comfortable, but 1
+cannot say whether the garment is strangling the wearer or hanging off them. What
+shipped instead is the **same signed −10…+10 range at finer resolution**, tapped on a
+line with no marker at rest, so "not answered" stays distinguishable from "answered
+zero". **The outstanding decision is whether that substitution is accepted**, not
+whether to build it.
+
 **Extraction fragility.** Retailer pages change, and some refuse automated requests.
 We have **declined stealth-proxy scraping** — not on price but on posture: the case
 law protecting public scraping expects technical access controls to be respected, and
@@ -313,10 +328,16 @@ welcome — deliberately unbuilt until the interviews justify it.
 reveals brands, sizes and a coarse body type; the centimetre fields are not filtered
 out of the response, they are never read from the database at all. Every field is
 optional, a deactivated account disappears everywhere, and export and deletion are
-supported. **One open decision:** whether the signed fit direction should be visible
-to a code-holder. It is closet information like the existing fit rating, but it points
-at the body in a way a star rating does not — so widening what a bearer code reveals is
-being treated as a governance decision, not a side effect.
+supported.
+
+**Open decision — what a shared code reveals.** Whether the signed fit direction
+should be visible to a code-holder. It is closet information exactly like the
+already-public fit rating, and more useful. But direction **points at the body in a
+way a star rating does not**: enough signed reports read against published size
+charts form a system of inequalities about someone's measurements, and *"precise
+centimetres never leave"* is the hardest promise this product makes. Widening what a
+bearer code reveals is a governance decision, not a side effect — so it is parked
+rather than defaulted into.
 
 **Platform terms.** The current hosting plan forbids commercial use — a licence term,
 not a resource limit, applying the moment the project charges anyone.
