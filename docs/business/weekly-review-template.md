@@ -1,12 +1,12 @@
-# Weekly Journal Entry — Template
+# Weekly Review — Template
 
-Copy this template into `docs/course/journal/YYYY-Www.md` at the end of each week.
-The composite of these entries is what we'll submit as the 20% Project Plan &
-Weekly Journal grade item.
+Copy this template into `docs/business/reviews/YYYY-Www.md` at the end of each week.
+The composite of these entries is the record of how the plan actually moved —
+written weekly, while the evidence is still fresh.
 
 ---
 
-## Week of YYYY-MM-DD  (course week Wn)
+## Week of YYYY-MM-DD  (week Wn)
 
 ### 1. What did we learn this week?
 _Concrete evidence only — interview quotes, back-test numbers, usability failures._
@@ -38,5 +38,5 @@ _Files, Figma frames, docs. Link to commits or paths in this repo._
 ### 7. Deliverable check
 - [ ] DEVLOG entry appended
 - [ ] BMC / VPC updated if hypotheses changed
-- [ ] Interview notes filed under `docs/course/interviews/`
+- [ ] Interview notes filed under `docs/business/interviews/`
 - [ ] Risks register reviewed (any new items?)

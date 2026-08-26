@@ -6,7 +6,7 @@
 //     are set. This is the one that actually works in production: serverless
 //     functions scale to many instances, and a per-process counter means the real
 //     limit is (limit × instances) — i.e. effectively no limit at all.
-//   • **In-memory** otherwise, so local dev and the course demo need no services.
+//   • **In-memory** otherwise, so local dev and the demo need no services.
 //
 // Talked to over Upstash's REST API with plain `fetch`, deliberately without the
 // @upstash/ratelimit SDK: one HTTP call is the whole protocol here, and Node 18

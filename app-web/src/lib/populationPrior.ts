@@ -6,8 +6,9 @@
 // REGION and sex — lets the measurement path produce *something* explainable
 // instead of a pure guess, while making its low confidence obvious.
 //
-// GOVERNANCE (see docs/design/fit-algorithm-research.md §4b, and Prof. Root's
-// governance concern):
+// GOVERNANCE (see docs/design/fit-algorithm-research.md §4b) — inferring anything
+// about a body from population statistics is the most sensitive thing this code
+// does, so the rules are stated here rather than left implicit:
 //   • This is a PRIOR ONLY. The moment the user has any real measurement, closet
 //     anchor, or outcome, that dominates — the prior never overrides real data and
 //     never narrows what a person is shown.

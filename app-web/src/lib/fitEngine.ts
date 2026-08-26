@@ -2,7 +2,7 @@
 //
 // Design principle (from the Fit Passport proposal, §10.2):
 //   "The first model does not need to be a proprietary machine-learning system.
-//    A transparent scoring model is preferable for the course because it can be
+//    A transparent scoring model is preferable because it can be
 //    evaluated."
 //
 // So this engine deliberately AVOIDS a black-box LLM in the recommendation step.

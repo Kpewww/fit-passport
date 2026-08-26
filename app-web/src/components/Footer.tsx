@@ -1,5 +1,6 @@
 // Site footer — treated as a designed closing moment, not a utility strip.
-// Also makes it obvious this is a course demo rather than a shipping product.
+// The DEMO badge stays: this is a working prototype, and saying so is the honest
+// version of the same transparency the engine is built on.
 
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
@@ -73,7 +74,7 @@ export function Footer() {
           <p>
             <span className="rounded-full border border-line px-2 py-0.5 font-medium">DEMO</span>
             <span className="ml-2">
-              A student project for 49-800 Start Up Creation in Practice · Carnegie Mellon University
+              A working prototype. Recommendations are explained, never guessed at silently.
             </span>
           </p>
           <p>Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang · © 2026</p>

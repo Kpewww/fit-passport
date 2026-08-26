@@ -1,7 +1,7 @@
 # Identity & Sharing — Design + Threat Model (draft)
 
-Status: proposal / under discussion (2026-08-10). Feeds the course "legal &
-governance" concern raised by Prof. Root.
+Status: proposal / under discussion (2026-08-10). Addresses the standing "legal &
+governance" concern.
 
 ## The idea (as proposed by the founder)
 

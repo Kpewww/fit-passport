@@ -174,4 +174,4 @@ Steps 1–4 are weeks, not months, and step 4 is deliberately a **manual** exper
 - Do we moderate answer quality, or let votes do it?
 - Is following people or following *brands* the stronger primitive here?
 - Contest prizes: status only, or real money/product? (Money changes the legal
-  posture — see `docs/course/risks-and-legal.md`.)
+  posture — see `docs/business/risks-and-legal.md`.)

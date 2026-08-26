@@ -1,6 +1,6 @@
 # Risks, Legal & Governance
 
-Prof. Root explicitly flagged (email 2026-08-09):
+Three concerns were raised against the proposal on 2026-08-09, and this document is the answer to the third:
 1. Customer problem clarity → addressed by [`interview-guide.md`](./interview-guide.md) and W2–W3 interviews.
 2. Product-market fit → addressed by the hypothesis-tests in the [Project Plan](./project-plan.md) and BMC.
 3. **Legal & governance** → this doc.
@@ -23,7 +23,7 @@ personal data with heightened expectations even if not strictly "biometric."
 - Each measurement is stored explicitly (typed columns), not in a blob, so
   future export/delete is straightforward.
 - No third-party ad SDKs. No analytics that would sell/share the profile.
-- Retention: for the semester MVP, data is scoped to a single demo user in
+- Retention: at MVP stage, data is scoped to a single demo user in
   `dev.db`. There is no shared database. Before we recruit a real beta (W13),
   we will add: a per-user delete endpoint, an export endpoint (JSON), and a
   short privacy notice.
@@ -34,7 +34,7 @@ personal data with heightened expectations even if not strictly "biometric."
 - If we go server-side, do we minimize by storing only *ranges* rather than
   point measurements?
 
-**Explicit non-goals for the semester:**
+**Explicit non-goals at this stage:**
 - No photo capture, no body scanning. Doing photo-based sizing pulls in
   biometric-data regulation and consent complexity that is out of scope per
   proposal §9.
@@ -84,12 +84,12 @@ gated.
 
 ---
 
-## D. Faculty consultations we should book
+## D. Expert consultations we should book
 
-Prof. Root offered to connect us with faculty on legal/governance. We should
+We have an offer of introductions to specialists on legal/governance. We should
 book meetings on:
 1. **Privacy law for consumer apps** — a walk-through of what "reasonable"
-   looks like for a student-run beta, and what we should NOT do.
+   looks like for a small independent beta, and what we should NOT do.
 2. **Terms-of-service risk on scraping** — clear rules for the extractor's
    real (post-fixture) implementation.
 3. **Recruiting for interviews / beta** — the IRB & recruiting playbook,

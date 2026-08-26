@@ -10,10 +10,10 @@ metadata:
 
 Standing principle for [[project-fit-passport]], set 2026-08-20: **every feature we build must have a firm foundation in (a) research/scientific evidence and (b) commercial/market research.** Not vibes — cite the papers and the market precedent.
 
-**Why:** it's a CMU startup-course project graded partly on rigor, and the differentiation has to be defensible rather than hand-waved.
+**Why:** the work is judged partly on rigor, and the differentiation has to be defensible rather than hand-waved.
 
 **How to apply:**
 - Before building a scoring/algorithm change, ground it in literature or real products and record the citation. The pattern to follow is [[project-fit-passport-build-state]]'s "ENGINE UPGRADE" work → written up in `docs/design/fit-algorithm-research.md` (academic size-rec papers + commercial size-rec products + VTO survey), then implemented.
 - Keep a research doc in `docs/design/` for any substantial new direction; flag what's verified vs. unverified.
 - Reuse the confirmed anchors: measurement-based transparent engine (image VTO ≠ fit — Google "we don't promise fit"); closet anchor == commercial reference-garment approach; brand-bias learning == academic return-shift η term.
-- This also serves the course deliverables (interviews, BMC/VPC) — market research feeds those directly.
+- This also serves the business deliverables (interviews, BMC/VPC) — market research feeds those directly.

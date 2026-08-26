@@ -28,7 +28,7 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 
 ---
 
-我在继续开发 **Fit Passport** —— CMU 49-800 创业课项目,"消费者自有、可跨店携带的
+我在继续开发 **Fit Passport** —— "消费者自有、可跨店携带的
 合身档案"Web 应用。app 在 `app-web/`,私有仓库 **github.com/Kpewww/fit-passport**。
 
 **【沟通约定】全程中文聊天;git commit message 用英文;DEVLOG.md 用英文。**

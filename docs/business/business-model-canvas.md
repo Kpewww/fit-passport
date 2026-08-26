@@ -22,7 +22,7 @@ rewrite this file to v1 in W4 after synthesis.
 
 ## 3. Channels
 - **W1–W15 (MVP)**: responsive web app, paste-a-URL flow.
-- **Post-semester**: browser extension on product pages, mobile PWA, share-a-passport link (household), affiliate integrations, retailer/marketplace APIs.
+- **Post-MVP**: browser extension on product pages, mobile PWA, share-a-passport link (household), affiliate integrations, retailer/marketplace APIs.
 
 ## 4. Customer Relationships
 - Self-service; opinionated onboarding (3 minutes to first useful recommendation).
@@ -56,7 +56,7 @@ rewrite this file to v1 in W4 after synthesis.
 - Engineering time (mostly student now).
 - Cloud + database: <$50/mo through W15.
 - LLM/API calls: <$50/mo through W15 with fixtures + capped calls.
-- No paid acquisition during course; growth is organic + interview referrals.
+- No paid acquisition at this stage; growth is organic + interview referrals.
 
 ## Testable statements (what we'll hold ourselves to in W4 review)
 1. ≥60% of interviewees describe a size-related return or hesitation in the last 90 days.

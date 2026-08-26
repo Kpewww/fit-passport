@@ -33,8 +33,8 @@ Prioritized next-steps for [[project-fit-passport]] as of **Session 40 (2026-08-
 10. **Run ONE $100 budget contest MANUALLY** to validate demand before building event tooling (no code).
 11. Then, if it lands: event system + commemorative special-metal badges; keep polishing Ask&Answer + Daily-Top.
 
-## Tier 5 — Course deliverables (graded, non-code)
-12. **Customer interviews** (target 5+), **midterm Product Opportunity presentation**, **BMC/VPC v1** update — feed them with the market research already in `docs/design/*research*.md`.
+## Tier 5 — Business deliverables (non-code)
+12. **Customer interviews** (target 5+), the **Product Opportunity presentation**, **BMC/VPC v1** update — feed them with the market research already in `docs/design/*research*.md`.
 
 ## Hygiene / minor
 - Fixture regexes match by URL substring regardless of domain (e.g. any `.../oxford-shirt` → COS fixture). Harmless for demo; fix to domain-scope if it ever misleads.
@@ -52,7 +52,7 @@ Tier 1 items 1 and 3 are **DONE** (deployed to Vercel+Neon; Upstash Redis verifi
 **Re-prioritised, and the reasoning changed:**
 1. **`ANTHROPIC_API_KEY` in prod** — still Tier 1, but the old framing was wrong. It fixes only pages we CAN fetch whose charts are images/unstructured. **It cannot fix a 403** — measured: H&M blocks, so no model helps there. ~$0.012/check, ~$4/mo at demo scale.
 2. **Move item photos out of Postgres** (base64 data URLs → blob storage). This is the FIRST hard wall — Neon free 0.5 GB ≈ 340 users with 10 photos each, then writes fail for everyone. Arrives long before LLM cost matters. Do this before inviting a real cohort.
-3. **Customer interviews** — the app is live, so the blocker is gone. This is now the highest-value non-code item (course-graded, and step 4 depends on it).
+3. **Customer interviews** — the app is live, so the blocker is gone. This is now the highest-value non-code item, and step 4 depends on it.
 4. **Browser extension** — the real answer to 403s (reads the page in the user's own browser, no block to defeat, $0/request, handles JS size-guide modals). **Evidence-gated**: don't build until interviews show people want the core loop.
 5. **GitHub auto-deploy** — needs the founder to install the Vercel GitHub App; until then release with `vercel.cmd deploy --prod` from the repo root.
 
@@ -67,7 +67,7 @@ Tier 1 items 1 and 3 are **DONE** (deployed to Vercel+Neon; Upstash Redis verifi
 Done since the last update: **`ANTHROPIC_API_KEY` set in prod** (Tier 1 item 2 — but see the caveat: it cannot fix a 403, only pages we can fetch); **GitHub auto-deploy connected** (every push to `main` now deploys); **performance round 2** (see [[project-fit-passport-performance]] — React-per-mousemove, leaked WebGL contexts, Lenis removed, badges flattened); **SSRF guard + non-apparel refusal + Chinese category keywords**. 172 → **209 tests**.
 
 **Current top of the list:**
-1. **Customer interviews.** The app is live and hardened. Nothing else is blocking it, it is course-graded, and step 3 below is explicitly gated on what they say.
+1. **Customer interviews.** The app is live and hardened. Nothing else is blocking it, and step 3 below is explicitly gated on what they say.
 2. **Confirm the performance work actually landed** on the founder's machine — if the tab is still heavy, the next data point needed is Chrome Task Manager's **GPU memory vs JS memory** split, which decides between "more compositing cost" and "a leak".
 3. **Browser extension** — the answer to blocked retailers AND to Taobao (login-walled, so the wrong side of the case law; the extension sidesteps it by being the user's own browser). Evidence-gated on (1).
 4. **Move item photos out of Postgres** before inviting a cohort (Neon free 0.5GB ≈ 340 users × 10 photos, then writes fail for everyone). Not urgent for a demo — the founder explicitly deprioritised it, correctly.
@@ -163,12 +163,12 @@ stay parked until interviews happen.
 9. **Per-area fit ratings** — fails the FIC cost/value bar today; revisit only if
    interviews show people want the granularity.
 
-### Course deliverables (graded, non-code)
+### Business deliverables (non-code)
 
 10. Mid-project **Product Opportunity** presentation; **BMC/VPC v1** update.
-    `DEVLOG.md` doubles as the Weekly Journal and is current.
+    `DEVLOG.md` is current.
 11. Roles for **Jenny Cao** and **Nicolas Wang** are unassigned in
-    `docs/course/project-plan.md` — deliberately, pending a team conversation.
+    `docs/business/project-plan.md` — deliberately, pending a team conversation.
 
 ### Hygiene
 

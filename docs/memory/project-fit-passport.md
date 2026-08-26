@@ -10,7 +10,7 @@ metadata:
 
 **Fit Passport** — "One body. One fit identity. Any store." A consumer-owned fit layer: user keeps one portable profile (body info, preferred fit, known-good garments, keep/return/exchange outcomes). Paste a product URL → system extracts sizing data → recommends a size with confidence + explanation. Learns from outcomes.
 
-**Team:** Xiangchen Kong, Alyssa Qi, Jenny Cao, Nicolas Wang. For course [[project-course-49800]].
+**Team:** Xiangchen Kong, Alyssa Qi, Jenny Cao, Nicolas Wang.
 
 **Semester MVP scope (narrow):** responsive web app, human apparel only (tops/shirts/jackets). Create profile → add 3-5 known-good items → paste product URL → get ranked size + confidence + explanation → record keep/return/exchange. Stretch: small dog/cat pet-profile prototype, regional sizing, VTO proof-of-concept. Out of scope: footwear/jewelry production, custom body-scan model, native apps, retailer integrations.
 
@@ -25,7 +25,7 @@ metadata:
 **5 hypotheses (H1-H5):** H1 cross-brand sizing creates friction; H2 portable profile beats generic chart; H3 known-good items + prefs improve recs; H4 outcome feedback improves later recs; H5 architecture generalizes to pets.
 
 **Repo state as of 2026-08-10 (Session 01):**
-- Layout: `docs/proposals/` (PDFs), `docs/course/` (course deliverables), `app-web/` (Next.js MVP), `DEVLOG.md`, `README.md`, `.gitignore`, `git init` done.
+- Layout: `docs/proposals/` (PDFs), `docs/business/` (business & positioning deliverables), `app-web/` (Next.js MVP), `DEVLOG.md`, `README.md`, `.gitignore`, `git init` done.
 - `app-web/` = **Next.js 14 (pinned) + React 18 + TS + Tailwind v3 + Prisma 5.22 + Vitest 1.6**. Pinned to Node 18.20 (this machine's version). Do not upgrade to Next 16 / Prisma 6 without upgrading Node first.
 - Prisma schema at `app-web/prisma/schema.prisma` with all 7 models from proposal §10.1 (SQLite dev.db).
 - Fit engine at `app-web/src/lib/fitEngine.ts` — transparent rule/score model, NOT an LLM. 8 vitest cases green (`fitEngine.test.ts`).
@@ -35,7 +35,7 @@ metadata:
 - Extractor is fixture-based (Uniqlo/COS/Levi's); real LLM extraction is W6 milestone.
 - End-to-end smoke tested via real HTTP: body chest 92cm → recommends M @75% for Uniqlo AIRism tee with grounded reasons.
 
-**Course deliverables drafted (v0.1)** in `docs/course/`: project-plan, business-model-canvas, value-proposition-canvas, interview-guide, risks-and-legal (directly addresses Prof. Root's 3 concerns), weekly-journal-template.
+**Business deliverables drafted (v0.1)** in `docs/business/`: project-plan, business-model-canvas, value-proposition-canvas, interview-guide, risks-and-legal (answers the three standing concerns), weekly-review-template.
 
 **Current build state (files, models, routes, gotchas) lives in [[project-fit-passport-build-state]]** — read that before touching the app. Repo is on GitHub (private): github.com/Kpewww/fit-passport; I can push directly (keychain has creds).
 

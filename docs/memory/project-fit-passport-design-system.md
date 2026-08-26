@@ -15,7 +15,7 @@ Visual/aesthetic system for the [[project-fit-passport]] web app. The founder ch
 **Tokens (current — Session 25 re-grounded the palette to BLACK-LED + COBALT; `tailwind.config.ts`):**
 - **Black is the primary/statement color** (evidence-backed premium cue). `ink` = cool near-black: DEFAULT `#17181c`, `soft #4c4e57`, `faint #8a8d97`.
 - `paper` = cool **porcelain** working surface: DEFAULT `#F3F3F1`, `soft #FBFBFA`, `dim #E6E7E9`. Body is `bg-paper`. **Dual-surface rule: black = statement (hero/brand), porcelain = where you read/use the tool.**
-- `brand` token = **cobalt `#2438d6`** (dark `#1a2aa8`, light `#e9ebfb`, tint `#f2f3fc`) — the single RARE accent. Named `brand` on purpose so every `text-brand`/`bg-brand` app-wide is cobalt via one edit. **CMU red is fully retired** (was `#A6192E`).
+- `brand` token = **cobalt `#2438d6`** (dark `#1a2aa8`, light `#e9ebfb`, tint `#f2f3fc`) — the single RARE accent. Named `brand` on purpose so every `text-brand`/`bg-brand` app-wide is cobalt via one edit. **The old institutional red is fully retired** (was `#A6192E`).
 - `line` = `#E2E3E7` hairline. `letterSpacing.editorial` = 0.24em; `rise` reveal animation (`animate-rise`, ~0.7s ease-out).
 - Session 24 originally used warm ivory + red-accent; Session 25 replaced it with cool porcelain + cobalt after research + founder pick. If you see warm-ivory values anywhere, they're stale.
 

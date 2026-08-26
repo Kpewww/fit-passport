@@ -21,8 +21,7 @@ rediscover the hard way.
 | [`project-fit-passport-next-steps.md`](project-fit-passport-next-steps.md) | You're deciding what to work on — **the current list is at the BOTTOM of that file** |
 | [`project-fit-passport-closet-signal-design.md`](project-fit-passport-closet-signal-design.md) | Before touching the closet fit rating, `brandBias`, or confidence |
 
-Also here: the identity/sharing threat model, the community-ecosystem plan, and the
-course requirements.
+Also here: the identity/sharing threat model and the community-ecosystem plan.
 
 ## The three standing principles
 
@@ -30,8 +29,8 @@ course requirements.
   **text only**; images are **user-uploaded only**. A trademark and copyright
   decision, not a stylistic one.
 - [`principle-research-grounded.md`](principle-research-grounded.md) — every feature
-  rests on cited research and commercial precedent. This is also what the course
-  grades on.
+  rests on cited research and commercial precedent. This is also what reviewers
+  press hardest on.
 - [`principle-evidence-and-logging.md`](principle-evidence-and-logging.md) — every
   *claim* needs a checkable source and unverified ones are labelled; every push
   owes a DEVLOG entry; memory changes are published here, curated.

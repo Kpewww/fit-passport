@@ -3,9 +3,9 @@
 *[English](README.md) · **简体中文***
 
 > **One body. One fit identity. Any store.**
-> 一个消费者自有的服装合身档案层 —— CMU 49-800 *Start Up Creation in Practice*,2026 秋。
+> 一个消费者自有的服装合身档案层。
 
-团队:Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang  指导教师:Sheryl Root 教授
+团队:Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang
 
 **线上地址:https://fit-passport.vercel.app**
 
@@ -111,9 +111,9 @@ docs/
   DEPLOYMENT.md       # Vercel + Neon 部署手册
   design/             # 设计文档(身份威胁模型、社区生态规划、抓取策略、成本模型)
   prospectus/         # 招股书式项目介绍、徽章设计文档、Founder Brief
-  course/             # 课程交付物
+  business/           # 商业模式、定位与讯息架构、风险与法律
   proposals/          # 最初的提案 PDF
-DEVLOG.md             # 逐次开发日志(同时充当课程要求的 Weekly Journal)
+DEVLOG.md             # 逐次开发日志 —— 记决定,以及决定的代价
 ```
 
 **技术栈:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
@@ -157,18 +157,21 @@ migration 需要的会话级 advisory lock。
 
 ---
 
-## 课程交付物
+## 商业与定位文档
 
-| 交付物 | 位置 |
+| 文档 | 位置 |
 |---|---|
-| Weekly Journal | [DEVLOG.md](DEVLOG.md) |
-| Project Plan | [docs/course/project-plan.md](docs/course/project-plan.md) |
-| Business Model Canvas | [docs/course/business-model-canvas.md](docs/course/business-model-canvas.md) |
-| Value Proposition Canvas | [docs/course/value-proposition-canvas.md](docs/course/value-proposition-canvas.md) |
-| 客户访谈提纲 | [docs/course/interview-guide.md](docs/course/interview-guide.md) |
-| 风险、法律与治理 | [docs/course/risks-and-legal.md](docs/course/risks-and-legal.md) |
+| 项目全貌(招股书式) | [docs/prospectus/Fit-Passport-Prospectus.md](docs/prospectus/Fit-Passport-Prospectus.md) |
+| 讯息架构 —— 定位与语气 | [docs/business/message-architecture.html](docs/business/message-architecture.html) |
 | Founder Brief | [docs/prospectus/Founder-Brief.html](docs/prospectus/Founder-Brief.html) |
+| 项目计划 | [docs/business/project-plan.md](docs/business/project-plan.md) |
+| Business Model Canvas | [docs/business/business-model-canvas.md](docs/business/business-model-canvas.md) |
+| Value Proposition Canvas | [docs/business/value-proposition-canvas.md](docs/business/value-proposition-canvas.md) |
+| 客户访谈提纲 | [docs/business/interview-guide.md](docs/business/interview-guide.md) |
+| 风险、法律与治理 | [docs/business/risks-and-legal.md](docs/business/risks-and-legal.md) |
+| 开发日志 | [DEVLOG.md](DEVLOG.md) |
 
 ---
 
-*这是一个学生项目和演示,不是已上市的产品。*
+*这是一个可用的原型,不是已上市的产品。它已部署、有测试、能真的用,但没有为商业流量
+做过加固 —— 已知限制见 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。*

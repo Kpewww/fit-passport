@@ -1,5 +1,5 @@
 # Fit Passport — Project Plan
-_49-800 Start Up Creation in Practice, Fall 2026 · Kong & Qi_
+_Operating plan · 2026_
 
 This is the operational plan for the 15 weeks. It complements the detailed
 proposal (in `docs/proposals/`) with concrete roles, tools, cadences, and
@@ -14,7 +14,7 @@ decision rules.
 | Jenny Cao | *To be assigned* | *To be assigned* |
 | Nicolas Wang | *To be assigned* | *To be assigned* |
 
-All four jointly own: the final pitch, the mid-project review, the Reflection Essay.
+All four jointly own: the final pitch, the mid-project review, and the closing retrospective.
 
 > Jenny and Nicolas joined the team on 2026-08-25. Their rows are deliberately
 > left unassigned rather than guessed — roles get filled in from an actual team
@@ -22,12 +22,12 @@ All four jointly own: the final pitch, the mid-project review, the Reflection Es
 
 ## 2. Cadences
 
-- **Tue class** (content) — take the frame Prof. Root gives us and match it to
-  Fit Passport by end of class.
-- **Thu class** (team work) — 60min working block + 20min review with Prof. Root.
-- **Weekly 30-min sync** outside class (Sunday) — plan the week, split tasks.
+- **Monday framing session** — take the week's strategic frame and match it to
+  Fit Passport by the end of the session.
+- **Thursday build block** — 60min working session + 20min review.
+- **Weekly 30-min sync** (Sunday) — plan the week, split tasks.
 - **DEVLOG entry** after every substantive work session (see `../../DEVLOG.md`).
-- **E of E rehearsal**: 3 dry-runs before Nov 4 (Oct 20, Oct 27, Nov 3).
+- **Showcase rehearsal**: 3 dry-runs before Nov 4 (Oct 20, Oct 27, Nov 3).
 
 ## 3. Milestones (per proposal §14, refined)
 
@@ -47,9 +47,9 @@ All four jointly own: the final pitch, the mid-project review, the Reflection Es
 | W12 | Alpha | QA, privacy pass, analytics, beta protocol |
 | W13 | Beta with ~10–15 users | Recommendation, confidence, usability, repeat-use data |
 | W14 | Analyze | Baseline vs personalized; effect of feedback; pet extension read; BMC v2 |
-| W15 | Final pitch | Demo, findings, roadmap, Reflection Essay submitted |
+| W15 | Final pitch | Demo, findings, roadmap, closing retrospective written |
 
-**Fixed dates**: Evening with Entrepreneurship — **Nov 4** (approx W10).
+**Fixed dates**: Showcase night — **Nov 4** (approx W10).
 Final panel — approx **Dec 12**.
 
 ## 4. Definition of "done" per week
@@ -61,7 +61,7 @@ Every Thursday we must be able to answer three questions in one page:
 ## 5. Risk register (short — see `risks-and-legal.md` for the full one)
 - **Interview access.** Recruiting shoppers takes lead time. Start Sunday W1.
 - **Extraction fragility.** Real retailer pages break parsers weekly. Fixtures
-  keep the demo reliable at E of E; live parsing stays behind a "confirm" step.
+  keep the demo reliable at the showcase; live parsing stays behind a "confirm" step.
 - **Data sensitivity.** Body measurements + purchase history are personal. All
   fields optional; explain each field; export & delete supported.
 

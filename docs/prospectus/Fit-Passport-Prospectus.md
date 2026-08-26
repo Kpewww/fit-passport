@@ -4,13 +4,13 @@
 
 *A consumer-owned fit layer for apparel. Project prospectus — 2026.*
 
-> Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang Instructor: Prof. Sheryl Root
-> Carnegie Mellon University · 49-800 *Start Up Creation in Practice* · Fall 2026
+> Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang
+> Live at **https://fit-passport.vercel.app**
 
-> **This document is a student-project prospectus, not an offer of securities.** It
-> describes the problem, the product as built today, the people we build it for, and
-> where it goes next. Figures describing usage are targets and illustrations, not
-> reported results.
+> **This document is a project prospectus, not an offer of securities.** It describes
+> the problem, the product as built today, the people we build it for, and where it
+> goes next. Figures describing usage are targets and illustrations, not reported
+> results.
 
 ---
 
@@ -59,13 +59,30 @@ Your ground-truth wardrobe. Add items by pasting a product URL — the extractor
 brand, garment type, gender, and size chart from the whole link, not just the last
 path segment. Organise into colour-coded collections in a **filing-cabinet view**:
 stacked file cards you pull out onto a "desk," a comparison bucket to set items
-aside, edit history, and honest per-garment fit ratings. This is the dataset the
-engine learns you from.
+aside, and edit history. This is the dataset the engine learns you from.
+
+The fit report on each garment is a **signed scale** — *too tight* through *just
+right* to *too loose* — not a quality score. That distinction is the whole point: a
+garment rated "2 out of 5" is either strangling the wearer or hanging off them, and
+**those two imply opposite recommendations.** A star rating cannot tell them apart,
+so the closet is asked which way a garment misses, and the star rating is *derived*
+from that rather than asked for twice. It is one tap, "just right" is pre-selected
+because that is the answer roughly three-quarters of the time, and the informative
+answers are the only ones that cost anything.
 
 ### 2.3 The Size Check
 
 Paste any product link — bare domains are fine. The engine reads the size chart and
-**ranks every available size, with a per-signal reason for each.** A live multi-region
+**ranks every available size, with a per-signal reason for each.** Beside each size
+it draws the ease — your silhouette with the garment's outline around it, at true
+proportion, with the centimetre gap printed next to it. It is a picture of arithmetic
+the engine was already doing, and it is deliberately schematic: image-based virtual
+try-on transfers *appearance, not fit*, so a photoreal figure would quietly make a
+promise nobody in the field can keep. The caption says so.
+
+When the signals disagree, **confidence falls and the app says why** — that your
+measurements point one way and your closet another, or that your own reports scatter.
+A lower number with no explanation would be worse than no number. A live multi-region
 converter sits alongside it. Crucially:
 
 > **The engine is a transparent rule-and-score model, not a black box and not an
@@ -142,11 +159,16 @@ a trust signal: this is *your* data, not a repackaging of the brands'.
 
 ## 5. What is built today
 
-Fit Passport is a working application, not a mockup. As of this writing:
+Fit Passport is a working application, not a mockup — **deployed and publicly
+reachable at https://fit-passport.vercel.app.** As of this writing:
 
 | Area | Status |
 |---|---|
 | Transparent fit engine with per-signal reasoning | **Built** |
+| Signed fit scale (too tight ↔ too loose) feeding the engine | **Built** |
+| Brand bias learned from the closet, with no purchase history needed | **Built** |
+| Confidence that falls when signals disagree, with the reason stated | **Built** |
+| Ease figure on the size check — the arithmetic, drawn | **Built** |
 | URL extractor (brand / garment / gender / size chart) | **Built** |
 | Closet with collections, filing-cabinet view, edit history | **Built** |
 | Passport metal card, badge-themed, PNG export, member numbers | **Built** |
@@ -157,7 +179,8 @@ Fit Passport is a working application, not a mockup. As of this writing:
 | Badge system — 20 medals, dimensional, turn-to-inspect, WebGL | **Built** |
 | Anonymous session → claim → shareable account code | **Built** |
 | Moderation: report, block list, admin review queue, rate limits | **Built** |
-| Coverage: automated tests across engine, badges, extractor, converters | **172 passing** |
+| Phone layout: navigation, tap targets, no clipped content | **Built** |
+| Coverage: automated tests across engine, badges, extractor, converters | **265 passing** |
 
 **Architecture.** Next.js (App Router) · React · TypeScript · Tailwind · Prisma ·
 Zod · Vitest, with Framer Motion for motion and a lazily-loaded three.js for
@@ -165,6 +188,21 @@ the badge inspect view only. Local development runs on SQLite with **no API keys
 no cloud services**; production runs on Vercel + Neon Postgres, with the Postgres
 schema *derived* from the same source so the two can't drift. Sessions are
 HMAC-signed cookies verified byte-identically on both the Node and Edge runtimes.
+
+**Two databases is the architecture's sharpest edge, and it has drawn blood.** A
+schema change that was pushed to local SQLite but never written as a migration took
+production down for twenty minutes — while typecheck, the full test suite, the
+production build and a fourteen-page smoke test all stayed green, because the defect
+lived entirely in the gap between the two databases and nothing was looking at that
+gap. A test now fails when any column in the schema appears in no migration; it needs
+no database of any kind, and it was verified to go red before it was kept.
+
+**User-supplied URLs are treated as hostile.** Every fetch is gated against private
+and reserved address ranges, embedded credentials and non-standard ports, with
+redirects followed manually and re-checked at every hop — following redirects
+automatically invalidates every check made on the original URL, and is the standard
+way past a naive guard. A page that is not apparel is refused outright rather than
+answered with a confident size.
 
 **Design system.** Black-led, on a cool porcelain workspace, with a single cobalt
 accent spent sparingly, and a characterful editorial serif (Fraunces) paired with a
@@ -177,8 +215,8 @@ to have it too.
 
 ## 6. How it could make money
 
-Not yet monetised — this is a course-stage MVP — but the model is legible and the
-data asset points at several honest options, in rough order of alignment:
+Not yet monetised — this is a pre-revenue prototype — but the model is legible and
+the data asset points at several honest options, in rough order of alignment:
 
 - **Affiliate on the buy.** When we tell you the right size and you buy with
   confidence, an affiliate link is a natural, non-intrusive cut that aligns us with
@@ -201,14 +239,25 @@ Sequenced smallest-first, so each step proves demand before the next is built:
 
 1. **Deepen the community loop** — richer Ask & Answer, the followed feed as the
    default home, daily top looks. *(Largely built; now about density.)*
-2. **Run one budget styling contest manually** — a $100 "Thrift Run" — to test
+2. **A browser extension**, which is the honest answer to the one thing the web app
+   cannot do. Some retailers refuse an automated fetch outright, and some size charts
+   only exist inside a JavaScript modal. The industry answer is a stealth proxy; we
+   have **declined that on legal posture, not price** — the case law protecting
+   public scraping also expects technical access controls to be respected, and a
+   block is one. An extension reads the page *in the shopper's own browser*, where
+   they are already welcome. Nothing to defeat, nothing per request, and it reaches
+   the login-walled marketplaces that matter outside the US.
+3. **Capture the size chart at the moment an item is added**, which unlocks a
+   measured personal ease target in centimetres. The extractor has those numbers in
+   hand today and discards them.
+4. **Run one budget styling contest manually** — a $100 "Thrift Run" — to test
    whether the fashion audience shows up *before* building event tooling.
-3. **Budget contests as a system** — $100 weekly, $1,000 monthly, $10,000 seasonal;
+5. **Budget contests as a system** — $100 weekly, $1,000 monthly, $10,000 seasonal;
    itemised-price looks, community voting, commemorative special-metal badges for
    winners. A budget makes taste comparable and levels the field.
-4. **Fit-matched discovery** — filter any feed by "people shaped like me," using the
+6. **Fit-matched discovery** — filter any feed by "people shaped like me," using the
    coarse public body type, never measurements. Needs member density to matter.
-5. **The retailer fit API** — once the crowd fit-knowledge is deep enough to sell.
+7. **The retailer fit API** — once the crowd fit-knowledge is deep enough to sell.
 
 The guardrails never move: everything social stays opt-in, precise measurements
 never become social or matching data, and no step relaxes the privacy invariant no
@@ -218,17 +267,27 @@ matter how useful it would be.
 
 ## 8. Team & context
 
-Built by **Xiangchen Kong**, **Alyssa Qi**, **Jenny Cao** and **Nicolas Wang** for Carnegie Mellon's *49-800 Start Up
-Creation in Practice* (Fall 2026), advised by **Prof. Sheryl Root**. The project is a
-functioning MVP and a live demo, developed under a detailed engineering log, with a
-Business Model Canvas, Value Proposition Canvas, customer-interview guide, and a
-risk/legal review maintained alongside the code.
+Built by **Xiangchen Kong**, **Alyssa Qi**, **Jenny Cao** and **Nicolas Wang**. It is
+a functioning MVP and a live deployment, developed under a detailed engineering log,
+with a Business Model Canvas, Value Proposition Canvas, message architecture,
+customer-interview guide and a risk/legal review maintained alongside the code.
+
+**How the work is done is part of the case.** Every claim in these documents carries
+a source, and anything that could not be verified is labelled as such inline rather
+than quietly asserted — including our own invented working constants. Design
+decisions get written down with the reasoning, and so do the ones that turned out to
+be wrong: a claimed-free feature that was not free, a performance diagnosis that was
+mistaken, a production outage and the guard that now catches it. A product whose
+entire proposition is *"our answers can be trusted"* cannot afford a different
+standard behind the curtain.
 
 > The bet, in one line: **the closet is the dataset, the passport is the interface,
 > and the community is the moat.**
 
 ---
 
-*Companion documents: the Badge System design document (this folder); the community
-ecosystem plan, deployment runbook, and identity/threat model (`docs/`); the
-engineering log (`DEVLOG.md`); and the source itself (`app-web/`).*
+*Companion documents: the Badge System design document (this folder); the business
+and positioning documents (`docs/business/`); the design notes — fit-algorithm
+research, closet signal and interaction cost, community ecosystem, fetch strategy,
+identity threat model (`docs/design/`); the deployment runbook (`docs/DEPLOYMENT.md`);
+the engineering log (`DEVLOG.md`); and the source itself (`app-web/`).*

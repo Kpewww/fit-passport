@@ -29,9 +29,9 @@ to **every factual statement we make anywhere**.
   know how they did it.
 - When a number is invented as a working device (e.g. the FIC point weights),
   **say that it is invented** in the same breath. An unlabelled made-up constant
-  in a graded deliverable is the worst failure mode available to this project.
+  in an outward-facing deliverable is the worst failure mode available to this project.
 
-**Why:** the course grades rigor, the differentiation has to be defensible under
+**Why:** the work is judged on rigor, the differentiation has to be defensible under
 questioning, and the product's entire proposition is that its answers can be
 trusted. A single fabricated citation would cost more than every feature is
 worth.
@@ -39,12 +39,12 @@ worth.
 ## 2. A DEVLOG entry is owed for every push, not every session
 
 Tightened in Session 43 after three pushes went out without one. `DEVLOG.md`
-doubles as the course-required Weekly Journal (20% of the grade), so a missing
+is the project's written record of how decisions were made, so a missing
 entry is a missing deliverable, not just untidy notes.
 
 **How to apply:** write the entry as part of the change, before pushing. Record
 what was built, *why*, what didn't work, and what's next — the reasoning is the
-part that maps into the Reflection Essay later.
+part worth having when a decision is re-examined later.
 
 ## 3. Memory changes get published to the repo — curated, never copied
 

@@ -1,7 +1,7 @@
 # Customer Interview Guide (v0.1)
 
 Structured to test the five hypotheses in the detailed proposal (H1–H5),
-and to answer Prof. Root's three concerns: customer problem clarity, PMF, and
+and to answer the three standing concerns: customer problem clarity, PMF, and
 legal/governance.
 
 **Format:** 30-minute semi-structured, no product shown in the first half.
@@ -45,7 +45,7 @@ _Show a plain, low-fidelity mock of the Fit Passport flow._
 - Free version = 5 checks/mo. Would you use that? What would push you to upgrade?
 - (Don't state a number first. Ask them to think aloud.)
 
-## 5. Privacy & control (3 min) — addresses Prof. Root's legal/governance concern
+## 5. Privacy & control (3 min) — addresses the legal/governance concern
 - How does entering body measurements online make you feel?
 - What would make you comfortable? What would make you *not*?
 - Would you want your data to be exportable or deletable? Have you ever used
@@ -67,8 +67,8 @@ For each interview, capture:
 - **Willingness-to-pay signal**: any dollar amount they self-anchored to.
 - **Privacy concerns**: any specific concern raised.
 
-Interviews live in `docs/course/interviews/` as one file per interviewee (no
-PII in the filename; use a UUID). Synthesis in `docs/course/synthesis-W3.md`.
+Interviews live in `docs/business/interviews/` as one file per interviewee (no
+PII in the filename; use a UUID). Synthesis in `docs/business/synthesis-W3.md`.
 
 ---
 

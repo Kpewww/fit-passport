@@ -65,11 +65,11 @@ controls**, reasonable rate limits, privacy-compliant, non-harmful use.
 technical access control. Paying for "stealth proxies" whose entire product is
 defeating that challenge is, by definition, not respecting it. It moves us from
 the defensible column into the one that generated the lawsuits — and it does so
-for a **course project that will be shown to a faculty panel and investors, whose
+for a **project that will be shown to reviewers and investors, whose
 stated differentiator is trustworthiness with body data**.
 
 We are also the wrong shape for that fight: no legal budget, and a governance
-story ([[risks-and-legal]], Prof. Root's third concern) that is currently an
+story ([[risks-and-legal]], one of the three standing concerns) that is currently an
 asset. Trading it for a few more size charts is a bad trade.
 
 ---
@@ -138,7 +138,7 @@ evidence people want the core loop at all.
    cases — including the Chinese image-chart case, which the research says is the
    *common* one, not an edge case.
 2. **NEXT, evidence-gated — Option 4.** Build the extension **only after** the
-   core loop shows real usage (the customer interviews the course needs will tell
+   core loop shows real usage (the customer interviews will tell
    us). It is the true answer to B, and it is free per-request.
 3. **OPPORTUNISTIC — Option 7.** Affiliate networks give legitimate product feeds
    for partner brands and are revenue-positive rather than a cost. Worth a look

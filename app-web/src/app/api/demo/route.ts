@@ -1,6 +1,6 @@
 // POST /api/demo
 // Seeds the current account with a realistic profile + closet for demos
-// (e.g. Evening with Entrepreneurship). Idempotent-ish: it clears the current
+// (e.g. a live showcase). Idempotent-ish: it clears the current
 // user's closet/collections first so repeated clicks don't pile up.
 
 import { NextResponse } from "next/server";

@@ -11,17 +11,44 @@
 // (self-hosted Fraunces + Inter, cobalt accent, porcelain paper) so the deck reads
 // like the app, not like a generic export.
 //
-// Rendering is done by headless Chrome (present on this machine) via
-// --print-to-pdf, which honours @page and our print CSS faithfully.
+// Rendering is done by headless Chrome via --print-to-pdf, which honours @page and
+// our print CSS faithfully. Chrome is located per-platform rather than hard-coded:
+// this repo is worked on from both macOS and Windows, and a baked-in macOS path
+// meant the script simply failed on the other one. Edge is accepted as a fallback
+// because it is the same engine and ships with Windows.
 
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync, existsSync, readdirSync, rmSync } from "node:fs";
 import { resolve, dirname, basename, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FONTS = resolve(HERE, "../src/app/fonts");
-const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+
+const CHROME_CANDIDATES = {
+  darwin: [
+    "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+    "/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge",
+  ],
+  win32: [
+    `${process.env["ProgramFiles"]}\\Google\\Chrome\\Application\\chrome.exe`,
+    `${process.env["ProgramFiles(x86)"]}\\Google\\Chrome\\Application\\chrome.exe`,
+    `${process.env["LOCALAPPDATA"]}\\Google\\Chrome\\Application\\chrome.exe`,
+    `${process.env["ProgramFiles(x86)"]}\\Microsoft\\Edge\\Application\\msedge.exe`,
+    `${process.env["ProgramFiles"]}\\Microsoft\\Edge\\Application\\msedge.exe`,
+  ],
+  linux: [
+    "/usr/bin/google-chrome",
+    "/usr/bin/chromium",
+    "/usr/bin/chromium-browser",
+    "/usr/bin/microsoft-edge",
+  ],
+};
+
+// CHROME_PATH overrides everything, for an install none of the above finds.
+const CHROME =
+  process.env.CHROME_PATH ||
+  (CHROME_CANDIDATES[process.platform] || []).find((p) => p && existsSync(p));
 
 // ---------- a small, correct Markdown subset ----------
 // Block grammar: headings, hr, fenced code, blockquotes, tables (GFM pipe),
@@ -154,8 +181,11 @@ function shell(title, bodyHtml) {
   const fraunces = join(FONTS, "Fraunces.woff2");
   return `<!doctype html><html><head><meta charset="utf-8"/>
 <style>
-  @font-face { font-family:'Fraunces'; src:url('file://${fraunces}') format('woff2'); font-weight:100 900; }
-  @font-face { font-family:'InterV'; src:url('file://${inter}') format('woff2'); font-weight:100 900; }
+  /* pathToFileURL, not 'file://' + path — see the note at the Chrome invocation.
+     A malformed font URL fails SILENTLY: Chrome falls back to a system face and
+     still produces a plausible-looking PDF, just not ours. */
+  @font-face { font-family:'Fraunces'; src:url('${pathToFileURL(fraunces).href}') format('woff2'); font-weight:100 900; }
+  @font-face { font-family:'InterV'; src:url('${pathToFileURL(inter).href}') format('woff2'); font-weight:100 900; }
   @page { size: A4; margin: 20mm 18mm 18mm; }
   :root {
     --ink:#14181d; --soft:#454b54; --faint:#6b7480; --line:#e3e6ea;
@@ -207,15 +237,21 @@ function convert(mdPath) {
     "--disable-gpu",
     "--no-pdf-header-footer",
     `--print-to-pdf=${pdfPath}`,
-    `file://${htmlPath}`,
+    // pathToFileURL, not `file://` + path: a Windows path needs the drive letter
+    // encoded as file:///d:/… and backslashes turned into slashes.
+    pathToFileURL(htmlPath).href,
   ], { stdio: "ignore" });
   // The HTML is only a rendering intermediate; keep it with --keep-html to debug.
   if (!process.argv.includes("--keep-html")) rmSync(htmlPath, { force: true });
   console.log(`  ✓ ${basename(pdfPath)}  ←  ${basename(abs)}`);
 }
 
-if (!existsSync(CHROME)) {
-  console.error("Google Chrome not found — needed for PDF rendering.");
+if (!CHROME || !existsSync(CHROME)) {
+  console.error(
+    "No Chrome/Edge binary found — needed for PDF rendering.\n" +
+      "Set CHROME_PATH to the executable, e.g.\n" +
+      '  CHROME_PATH="/path/to/chrome" node scripts/md-to-pdf.mjs --all',
+  );
   process.exit(1);
 }
 

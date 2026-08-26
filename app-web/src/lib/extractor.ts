@@ -1,7 +1,7 @@
 // Product-page extractor — URL-aware, fixture-backed.
 //
 // Per the proposal (§16 Risks — "Product-data availability"), automated scraping
-// of retailer pages is unreliable and sometimes prohibited. The semester goal is
+// of retailer pages is unreliable and sometimes prohibited. The goal here is
 // FEASIBILITY, not internet-scale crawling. So this extractor works in layers:
 //
 //   1. CURATED FIXTURES for a few known demo products (exact, hand-verified).

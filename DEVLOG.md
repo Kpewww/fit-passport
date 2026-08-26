@@ -1,11 +1,14 @@
 # Fit Passport — Development Log
 
-This log doubles as the course-required **Weekly Journal** (20% of final grade,
-49-800). One dated entry per work session: what we built, why, what worked, what
-didn't, and what's next. Concrete decisions and file references so the log maps
-straight into the Reflection Essay at the end of the semester.
+One dated entry per work session: what we built, why, what worked, what didn't, and
+what's next. Concrete decisions and file references, kept in enough detail that a
+decision can be re-examined months later on the reasoning that produced it — including
+the ones that turned out to be wrong.
 
-Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang. Instructor: Sheryl Root. Fall 2026.
+**An entry is owed for every push, not every session**, and it lands in the same
+commit as the code so the two can't drift.
+
+Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
@@ -25,6 +28,106 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang. Instructor: Sher
   exactly the "which signals actually matter" evidence the proposal calls for
   (§10.2) — we can now show the same product yields different recommendations
   depending on whether the user owns a same-brand anchor.
+
+---
+
+## 2026-08-25 · Session 50 — The repo stops describing itself as coursework, and the prospectus catches up
+
+Two requests, one sweep: remove the course framing from the project, and bring the
+prospectus current. A third thing fell out of doing them.
+
+### The repo now presents as a product, not an assignment
+
+The founder asked for course traces to come out — course numbers, an instructor's
+name, grade weightings — so the project reads as what it is rather than as
+homework.
+
+**The most visible one was live on the site.** The footer said *"A student project
+for 49-800 Start Up Creation in Practice · Carnegie Mellon University"* on every
+page in production. It now says the app is a working prototype whose
+recommendations are explained rather than silently guessed at. **The `DEMO` badge
+stays.** Removing it would have been the dishonest version of this change: the app
+genuinely is a prototype, it runs on a plan whose terms forbid commercial use, and
+saying so is the same transparency the engine is built on.
+
+Structural changes: `docs/course/` → **`docs/business/`**, `weekly-journal-template`
+→ `weekly-review-template` (the same tool, minus the grade framing), and two PDFs
+that were never ours — a syllabus and a prior year's proposal template — removed from
+the repo and preserved outside it. The team's own proposal PDFs kept their content
+and lost the course number from their filenames. Every `docs/course/` path in the
+repo was repointed, which was a correctness fix rather than cosmetics.
+
+**Where the line was drawn, and why it matters:** the *historical* DEVLOG entries
+were not rewritten. Substituting "the governance concern" for a person's name loses
+nothing factual; editing what past sessions actually decided would corrupt the
+record, and this log's value is precisely that it can be trusted about the past.
+Same reasoning for `docs/business/project-plan.md` — the 15-week schedule, the
+milestones and the success metrics all stayed; only the class times and the
+instructor's name went.
+
+One file left the repository rather than being edited: the course requirements
+memory. The obligations are real, so it is kept in the private working memory — but
+they are the team's obligations, not the project's documentation.
+
+### The prospectus was five sessions behind
+
+It still claimed 172 tests and described a closet with "honest per-garment fit
+ratings" — the exact unipolar field Session 44 established was the wrong shape of
+data. Rewritten around what is actually true now: the signed fit scale and *why* it
+replaced a star rating (a 2-out-of-5 is either strangling the wearer or hanging off
+them, and those imply **opposite** recommendations); the ease figure and the reason
+it is schematic rather than photoreal; confidence that falls with a stated reason;
+265 tests; and the live URL, which had never appeared in the document at all.
+
+Two sections were added because they are load-bearing to the pitch and were missing:
+**the two-database gap that took production down**, told as the failure it was
+including the fact that every gate stayed green — and **the SSRF posture**, since
+"we treat user-supplied URLs as hostile" is a claim a technical reader will want
+evidenced. The roadmap gained the browser extension, positioned as it actually is:
+the answer to blocked retailers that we chose **on legal posture rather than price**.
+
+Also added, deliberately: a paragraph saying that decisions are recorded with their
+reasoning *including the ones that turned out to be wrong*, and that unverifiable
+claims are labelled inline. A product whose proposition is "our answers can be
+trusted" cannot run a different standard behind the curtain, and that is worth
+stating where a reader can check it.
+
+### The PDF script had been broken on Windows the whole time
+
+`md-to-pdf.mjs` hard-coded `/Applications/Google Chrome.app/...`, so regenerating
+the prospectus PDF was impossible on a Windows checkout — which meant the committed
+PDF would have silently diverged from the Markdown it was generated from. Fixed
+properly rather than papered over: per-platform candidate paths for Chrome and Edge,
+a `CHROME_PATH` override, and `pathToFileURL` instead of string-concatenating
+`file://` (a Windows path needs `file:///d:/…`, not `file://d:\…`).
+
+**The first regeneration succeeded and was wrong, which is the part worth keeping.**
+Both PDFs came out roughly 45% smaller than the committed ones. The script reported
+success and the files opened. The `@font-face` rules had the *same* malformed
+`file://` bug, and **a bad font URL fails silently** — Chrome falls back to a system
+face and produces a perfectly plausible PDF that simply isn't in the project's
+typefaces, with no font subsets embedded. The only signal was the file size, and it
+would have been easy to explain away as "different platform, different compression".
+Fixed the same way; sizes returned to 424KB and 366KB against the previous 454KB and
+368KB, which is what an embedded-subset PDF should weigh.
+
+**Rule worth carrying: when a rendering step gets a lot cheaper for no reason, treat
+it as a failure until proven otherwise.** Silent degradation looks exactly like an
+optimisation from the outside.
+
+**This is the second and third macOS-only assumption to surface since the project
+started moving between machines.** Worth treating as a category rather than a bug:
+anything that names a path, a binary, or a shell is now a portability hazard.
+
+### Verified
+
+Typecheck clean · **265/265 tests** · clean production build from a removed `.next` ·
+credential sweep on the staged diff clean. Repo `docs/memory/` and the working memory
+re-verified identical, file by file.
+
+**Not done, and stated rather than absorbed:** the two artifact pages hosted outside
+the repo still show the old course credits until they are republished from these
+files; the repo copies are now the newer ones.
 
 ---
 
@@ -413,7 +516,7 @@ surfaces, not evidence a request was made.
 
 **Jenny Cao** and **Nicolas Wang** joined. Added to both READMEs, `DEVLOG.md`,
 the prospectus, the Founder Brief, the message architecture, the site footer and
-`docs/course/project-plan.md`. Their role rows in the project plan are left
+`docs/business/project-plan.md`. Their role rows in the project plan are left
 **explicitly unassigned** — inventing a division of labour would be exactly the
 kind of unsourced claim the standing rule below now forbids.
 
@@ -608,7 +711,7 @@ processes using it, not a worktree, no config referencing it).
 
 ### Message architecture → sharper product copy
 
-Filling in the course's Message Architecture template produced two sentences better
+Filling in a message-architecture template produced two sentences better
 than anything on the site, so they went into the product rather than staying in a
 deck:
 
@@ -622,7 +725,7 @@ deck:
   "clothes you already own" rather than "already love" — *own* is the defensible
   claim.
 
-`docs/course/message-architecture.html` is the filled template, laid out the way the
+`docs/business/message-architecture.html` is the filled template, laid out the way the
 workbook lays it out (North Star / Strategy / Expression, each field beside its own
 definition) so it reads as a completed worksheet rather than a pitch. Sourced claims
 footnote to the research files. The DNA assessment came out **overwhelmingly
@@ -673,7 +776,7 @@ The remaining audit entries were **scoped, not waved away**. They resolve only i
 Next 15/16 and cover features this app does not use: grepped and confirmed **no Server
 Actions, no `next/image`, no i18n, no Pages Router, no `remotePatterns`** (`next.config.mjs`
 sets only `reactStrictMode`). A major-version upgrade belongs before a real public
-launch, not before a course demo.
+launch, not before a demo.
 
 ### Two blockers that would have failed the first deploy
 
@@ -867,7 +970,7 @@ The stronger objection is legal. **hiQ v. LinkedIn** and **Meta v. Bright Data**
 but the low-risk profile both describe requires **respecting technical access
 controls**, and a Cloudflare 403 is one. A stealth proxy's whole product is
 defeating it. We would be spending a governance story that is currently an asset
-(Prof. Root's third concern) to win a few size charts. Bad trade.
+(the governance concern) to win a few size charts. Bad trade.
 
 **Decision:** key + a paste-the-chart fallback now; a **browser extension** later,
 gated on evidence of real usage — it reads the page in the user's own browser as
@@ -2063,7 +2166,7 @@ look at deploying — SQLite → Postgres on Vercel + Neon, with env vars.
 
 **Next:** the founder performs the actual Neon + Vercel account steps (I can't
 provision those); then swap the rate limiter to Upstash Redis before real users.
-Course deliverables (interviews, midterm Product Opportunity deck, BMC/VPC) remain.
+Business deliverables (interviews, the opportunity deck, BMC/VPC) remain.
 
 ---
 
@@ -2124,7 +2227,7 @@ stays out of the initial bundle) · live: all 13 pages 200; converter + convergi
 section render.
 
 **Next:** founder's finer card details; more badge motifs if wanted; deployment
-(SQLite→Postgres); course deliverables.
+(SQLite→Postgres); business deliverables.
 
 ---
 
@@ -2378,7 +2481,7 @@ hero markup.
 check, passport card, outfits, community, badges) — headings to serif, spacing/
 imagery to magazine rhythm; consider Framer Motion/GSAP for richer reveals; then
 a real product-photography treatment. Also still pending: drag-DnD reorder,
-deployment, course deliverables.
+deployment, business deliverables.
 
 ---
 
@@ -2429,7 +2532,7 @@ live: closet/passport/community/outfits/badges 200; collection color create +
 PATCH, edit-history coalescing, and reorder-exclusion all confirmed via API.
 
 **Next:** true drag-and-drop reorder (arrows shipped); global aesthetic pass;
-deployment (SQLite→Postgres); course deliverables.
+deployment (SQLite→Postgres); business deliverables.
 
 ---
 
@@ -2493,7 +2596,7 @@ live: closet/passport/badges 200, extract endpoint returns correct
 brand/name/category/gender for Patagonia + Uniqlo/H&M/Nike samples.
 
 **Next:** collection drag-reorder; global "Apple-level" aesthetic pass;
-deployment (SQLite→Postgres); course deliverables (interviews, midterm PO deck).
+deployment (SQLite→Postgres); business deliverables (interviews, opportunity deck).
 
 ---
 
@@ -3041,7 +3144,7 @@ passed. Committed 6e1f450, pushed to origin/main.
 **Founder Q&A this session (for the reflection essay):** walked through the
 current scoring logic (transparent 5-signal engine, adaptive anchor weights),
 whether to move to "LLM as judge" (advised: no for the size decision — keep the
-explainable engine as the course differentiator + governance answer; yes for
+explainable engine as the differentiator + governance answer; yes for
 extraction, explanation polish, and an optional confidence-only judge layer),
 LLM cost (~$14 Haiku / ~$54 Sonnet per ~2000 checks, plus caching), and
 deployment (SQLite is the blocker → Postgres on Vercel with pooled connections,
@@ -3190,7 +3293,7 @@ women buying men's); (2) let people log in by username, not just account code;
   amber warning that they can't recover without an email.
 - `/api/auth/recover` reworked: `{ identifier, email, newPassword }` — verifies
   the account with that identifier has EXACTLY that email on file, then resets
-  and logs in. No emails are actually sent yet (course-MVP; noted in code that
+  and logs in. No emails are actually sent yet (MVP stage; noted in code that
   real send-token flow is required for prod). Uniform error message.
 - `/recover` UI matches.
 - `/api/auth/me` now exposes the user's own email so the Account status page
@@ -3521,21 +3624,21 @@ add data that improves accuracy.
 ### Next up
 - Optional: a one-click "load demo data" button for E-of-E so the dashboard
   shows a populated state instantly.
-- W2 discovery: start shopper interviews with `docs/course/interview-guide.md`.
+- W2 discovery: start shopper interviews with `docs/business/interview-guide.md`.
 - Consider migrating SQLite→Postgres + real auth before beta (W12).
 
 ---
 
 ## 2026-08-10 · Session 01 — Repo bootstrap & core MVP loop
 
-**Goal:** After Prof. Root's approval email (Aug 9), turn the Fit Passport
+**Goal:** After the proposal was approved (Aug 9), turn the Fit Passport
 proposal into a repo that (a) demos end-to-end today, (b) can grow into a real
-beta by W13 per the 15-week plan, and (c) has course deliverables framed up.
+beta by W13 per the 15-week plan, and (c) has the business deliverables framed up.
 
 ### What we built
 - Repo layout at `/Users/xkk/Desktop/Kong Info/Self-Project/`:
   - `docs/proposals/` — archived the four PDFs (syllabus, official form, detailed proposal).
-  - `docs/course/` — course-facing deliverables live here.
+  - `docs/business/` — business and positioning deliverables live here.
   - `app-web/` — Next.js 14 (App Router, TypeScript, Tailwind v3) MVP.
 - **Data model** in Prisma (`app-web/prisma/schema.prisma`): `User`, `FitProfile`,
   `KnownGoodItem`, `Product`, `SizeOption`, `FitRecommendation`, `FitOutcome`,
@@ -3575,9 +3678,9 @@ beta by W13 per the 15-week plan, and (c) has course deliverables framed up.
   API route calls `getCurrentUser()`. Swapping to NextAuth/Clerk later is a
   one-file change. Rationale: proposal §9 explicitly de-scopes auth.
 - **Fit engine is NOT an LLM.** The proposal (§10.2) says a transparent scoring
-  model is preferable for the course "because it can be evaluated." Following
+  model is preferable "because it can be evaluated." Following
   that literally. LLMs may still assist in *extraction* upstream, but the size
-  decision is auditable arithmetic. This also directly addresses Prof. Root's
+  decision is auditable arithmetic. This also directly addresses the
   "customer problem clarity" concern: we can show the reasoning, not just a
   guess.
 - **SQLite** now for zero-config; migrate to Postgres before beta (W12–W13).
@@ -3599,8 +3702,8 @@ beta by W13 per the 15-week plan, and (c) has course deliverables framed up.
   attempted this session — deliberately punted to W6 per the 15-week plan.
 
 ### Next up
-- Wire the four course docs (project plan, BMC, VPC, interview guide, risks/
-  legal) into `docs/course/`. Draft in this same session so the team has one
+- Wire the four business docs (project plan, BMC, VPC, interview guide, risks/
+  legal) into `docs/business/`. Draft in this same session so the team has one
   coherent artifact set from day one.
 - (Sess 02) First 5–8 shopper interviews via the guide — W2 milestone.
 - (Sess 02) Add a "region + size chart" seed for a fourth retailer so we can
@@ -3611,7 +3714,7 @@ beta by W13 per the 15-week plan, and (c) has course deliverables framed up.
 ### Files touched
 ```
 docs/proposals/*.pdf                          (moved from repo root)
-docs/course/*                                 (created)
+docs/business/*                                 (created)
 app-web/package.json                          (pinned Next 14 / React 18 / Prisma 5.22 / Vitest 1.6)
 app-web/prisma/schema.prisma
 app-web/src/app/layout.tsx, page.tsx

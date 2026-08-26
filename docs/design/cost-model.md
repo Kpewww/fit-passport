@@ -28,7 +28,7 @@ Everything key-gated degrades gracefully, so the app is fully usable at zero cos
 
 ### 2a. Vercel Hobby forbids commercial use
 
-Vercel's terms restrict Hobby to non-commercial, personal projects. A course demo
+Vercel's terms restrict Hobby to non-commercial, personal projects. A demo
 is fine. **The moment this charges anyone, shows ads, or sells anything, it must be
 on Pro — $20/month per member with deploy access.** Two people with deploy access
 is $40/month. This is a licence term, not a resource limit, so no amount of staying

@@ -3,9 +3,9 @@
 *[English](README.md) · [简体中文](README.zh-CN.md)*
 
 > **One body. One fit identity. Any store.**
-> A consumer-owned fit layer for apparel — Fall 2026, CMU 49-800 *Start Up Creation in Practice*.
+> A consumer-owned fit layer for apparel. Live at **https://fit-passport.vercel.app**
 
-Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang  Instructor: Prof. Sheryl Root
+Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang
 
 Sizes never agree across brands. Fit Passport keeps **one portable profile** you
 own — your measurements, your preferred fit, and the clothes that already fit you
@@ -103,9 +103,10 @@ app-web/
 docs/
   DEPLOYMENT.md       # Vercel + Neon runbook
   design/             # design notes (identity threat model, community ecosystem plan)
-  course/             # course deliverables
+  business/           # business model, positioning, risk & legal review
+  prospectus/         # prospectus and badge-system design document
   proposals/          # original proposal PDFs
-DEVLOG.md             # per-session development log (also the Weekly Journal)
+DEVLOG.md             # per-session development log — decisions, and what they cost
 ```
 
 **Stack:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
@@ -150,17 +151,21 @@ Full runbook, env-var table, verification checklist, known limitations and costs
 
 ---
 
-## Course deliverables
+## Business & positioning documents
 
-| Deliverable | Location |
+| Document | Location |
 |---|---|
-| Weekly Journal | [DEVLOG.md](DEVLOG.md) |
-| Project Plan | [docs/course/project-plan.md](docs/course/project-plan.md) |
-| Business Model Canvas | [docs/course/business-model-canvas.md](docs/course/business-model-canvas.md) |
-| Value Proposition Canvas | [docs/course/value-proposition-canvas.md](docs/course/value-proposition-canvas.md) |
-| Customer interview guide | [docs/course/interview-guide.md](docs/course/interview-guide.md) |
-| Risks, legal & governance | [docs/course/risks-and-legal.md](docs/course/risks-and-legal.md) |
+| Prospectus — the full picture in one read | [docs/prospectus/Fit-Passport-Prospectus.md](docs/prospectus/Fit-Passport-Prospectus.md) |
+| Message architecture — positioning and voice | [docs/business/message-architecture.html](docs/business/message-architecture.html) |
+| Project plan | [docs/business/project-plan.md](docs/business/project-plan.md) |
+| Business Model Canvas | [docs/business/business-model-canvas.md](docs/business/business-model-canvas.md) |
+| Value Proposition Canvas | [docs/business/value-proposition-canvas.md](docs/business/value-proposition-canvas.md) |
+| Customer interview guide | [docs/business/interview-guide.md](docs/business/interview-guide.md) |
+| Risks, legal & governance | [docs/business/risks-and-legal.md](docs/business/risks-and-legal.md) |
+| Development log | [DEVLOG.md](DEVLOG.md) |
 
 ---
 
-*This is a student project and a demo, not a shipping product.*
+*A working prototype, not a shipping product. It is deployed, tested and used, but
+it has not been hardened for commercial traffic — see
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for the known limitations.*

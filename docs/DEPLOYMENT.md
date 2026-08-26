@@ -117,7 +117,7 @@ history has already drifted and this shortcut is unsafe — get a shadow databas
 
 ## 2. Create the database (Neon)
 
-1. Sign up at **neon.tech** (free tier is enough for the course demo).
+1. Sign up at **neon.tech** (the free tier is enough for a demo).
 2. Create a project → note **both** connection strings. Neon shows them under
    *Connection Details*; the only difference is the `-pooler` suffix on the host:
    - **pooled** → `postgresql://user:pass@ep-xxx-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require`
@@ -190,7 +190,7 @@ See `app-web/.env.example` for the full annotated list.
 
 ## 4. Known limitations to fix before real users
 
-These are honest gaps, not oversights — they're fine for a course demo and must
+These are honest gaps, not oversights — they're fine for a demo and must
 be addressed before a public launch.
 
 1. **Images are base64 data URLs** in Postgres (portraits, item photos). This is
@@ -270,5 +270,5 @@ never return `chestCm`/`waistCm`/etc.
 | `REPLICATE_API_TOKEN` | ~$0.003 per try-on image |
 | Resend free tier | $0 (~3,000 emails/mo) |
 
-So a course demo with a few dozen testers is **effectively free**, plus cents for
+So a demo with a few dozen testers is **effectively free**, plus cents for
 any LLM/image usage.
