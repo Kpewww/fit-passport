@@ -31,6 +31,69 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-26 · Session 51 — A new proposal, and two decisions the founder needed explained
+
+### The two open decisions, restated accurately
+
+The founder asked what the two parked decisions actually were. Checking the code
+before answering corrected one of them, which is the reason this is worth an entry.
+
+**`fitDirection` visibility to a code-holder** was described accurately: the field is
+simply absent from `/api/view/[code]`'s allow-list `select`, which is a safe default
+rather than a decision anyone made. The argument for exposing it is that it is closet
+information exactly like `fitRating`, which is already public, and strictly more
+useful. The argument against is that **direction points at the body in a way a star
+rating does not** — enough signed reports against published size charts form a system
+of inequalities about someone's measurements, and "precise centimetres never leave" is
+the hardest promise this product makes. Recommendation recorded: don't expose it, or
+expose it only coarsened to three buckets.
+
+**The 1–20 comfort scale was described wrongly, and the correction matters.** It was
+carried forward from the design document as "awaiting a decision" — but Session 45
+already built it, as a **signed −10…+10 VAS**, because a 1–20 *comfort* scale is
+unipolar and would reproduce the exact defect the whole closet-signal design exists to
+fix. So the real question is not "should we build it" but "does the founder accept the
+substitution that already shipped." **Repeating a document's stale open-question marker
+without checking whether the code moved past it is a specific failure mode worth
+naming** — the design doc is a record of what was decided *then*, not a description of
+the codebase now.
+
+### The new proposal
+
+`docs/proposals/Fit-Passport-Proposal-2026.md` (+ PDF), to the founder's structure.
+Its spine is one sentence: **a finished product is not a validated market.** Business
+model paths are labelled hypotheses with the condition each would need to hold; the
+validation plan states in advance what would falsify the concept, so it cannot be
+rationalised after the interviews come back.
+
+**Two things were checked rather than assumed before being written down.**
+`PetProfile` exists in the schema — species, breed, neck, chest girth, back length —
+and **no application code reads or writes it**; there is no pet API route and no UI. It
+is described as a placeholder, not a feature. The budget styling contests are fully
+designed in `docs/design/community-ecosystem.md` down to an `Event` model and three
+cadences, and **none of it is built**; the plan's own first step is to run one $100
+contest by hand. Both are now in the proposal as clearly-labelled unbuilt directions,
+which is what the founder asked for and also the only way to include them honestly.
+
+**One claim in our own documents did not survive the check.** The prospectus asserts
+that roughly a quarter of US online apparel is returned. That figure has **no source in
+any of our research files** — the well-sourced return data is Chinese. The proposal
+labels it directional and lists verification as an open item rather than repeating it
+as established. This is the evidence principle catching our own prose rather than
+someone else's.
+
+**Length: 7 pages against a 4–6 page target.** Stated rather than absorbed. Getting to
+6 would mean cutting roughly 400 words — the pet and contest sections are about 330 of
+them, and they were specifically requested, so the trade is the founder's to make.
+
+Page count verified four ways (`/Type /Page`, `/MediaBox`, `/Kids`, `/Count`) rather
+than eyeballed, because the PDF pipeline had already produced one confidently wrong
+output this week.
+
+265 tests, unchanged — documentation only.
+
+---
+
 ## 2026-08-25 · Session 50 — The repo stops describing itself as coursework, and the prospectus catches up
 
 Two requests, one sweep: remove the course framing from the project, and bring the
