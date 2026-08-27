@@ -31,6 +31,92 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-27 · Session 53 — The Fit Thread becomes a documented brand system
+
+Brand work, not application code, but it makes one product decision explicit: the
+mark is not a decorative FP pasted onto the interface. It is the visual form of the
+same proposition the product makes — **fit memory belongs to the person and travels
+across stores**.
+
+### The selected mark and the story it can honestly carry
+
+The founder selected the upper-left concept from the latest exploration and supplied
+two isolated 1024 × 1024 PNGs: one RGBA file with a true transparent channel and one
+RGB file on white. The visible artwork occupies roughly 538 × 503 px in the centre,
+so both have useful breathing room for documents and prototypes.
+
+The explanation is deliberately layered rather than pretending the monogram is an
+ancient symbol:
+
+- **Ariadne's thread** is the primary narrative. Brand-specific sizing is the
+  labyrinth; the user's tried, kept, returned, exchanged and re-rated garments are
+  the thread; an explainable recommendation helps the user follow that evidence back
+  to what fits. The story centres Ariadne as the provider of orientation and memory,
+  not the Minotaur's violence.
+- **The weaver's shuttle** is the material reading. Each outcome is another pass of
+  the weft; accumulated experience produces a personal pattern that is more useful
+  than an isolated S, M, L or number.
+- **The personal signet** is the identity reading. The mark can sit on the passport,
+  a verified fit record, an export, a profile or a future physical label without
+  becoming a literal government stamp.
+
+This is why the earlier Thor's-hammer association was rejected rather than
+rationalised. Combat, strength and Norse-fantasy cues pull toward gaming or masculine
+sports branding; they do not explain fashion, memory, portability or consumer
+ownership. The chosen public line is **“One thread through the maze of fit.”**
+
+### What was committed
+
+Commit `aafbe02` adds equivalent English and Chinese source documents plus rendered
+PDFs:
+
+- `docs/design/LOGO_CONCEPT.md`
+- `docs/design/LOGO_CONCEPT.zh-CN.md`
+- `docs/design/LOGO_CONCEPT.pdf`
+- `docs/design/LOGO_CONCEPT.zh-CN.pdf`
+- `docs/design/assets/fit-passport-logo-concept-transparent.png`
+- `docs/design/assets/fit-passport-logo-concept-white.png`
+
+Both documents record the myth and product mapping, formal references, negative
+readings to avoid, black-and-white-first colour policy, motion language, file-format
+hierarchy, extraction workflow, application rules, badge boundary and production
+checklist. They also state the limit of the current assets plainly: **the PNGs are
+good concept and prototype files, not the production master**. The source of truth
+should become an editable Figma component; SVG should be the digital production
+format; a separately adjusted micro-mark should serve 16–32 px contexts. Metallic
+depth stays with the future badge system rather than forcing the master logo into 3D.
+
+### Two render failures worth keeping
+
+**The first Chinese PDF was generated successfully and was unreadable.** ReportLab's
+CID font reference did not embed a usable Chinese font for the Poppler verification
+environment, so the rendered pages showed squares. Rebuilt with an embedded Noto Sans
+SC TrueType font and re-rendered every page. A successful PDF write is not evidence
+that its glyphs exist.
+
+**The transparent PNG first appeared as a black square in the PDF.** The file's alpha
+channel was valid; the image renderer had not been told to honour it. Adding an
+automatic alpha mask fixed the cover. This distinction matters because “repairing”
+the PNG would have modified a correct source to compensate for a rendering bug.
+
+The PDFs were then tightened from an orphaned ninth page to **8 pages each**. Final
+checks included full-page PNG rendering/contact sheets, cover inspection, PDF
+metadata/page count, text extraction in both languages, and direct PNG checks for
+dimensions, colour mode and alpha.
+
+### Process miss
+
+This entry is corrective. `aafbe02` was pushed before its DEVLOG entry, despite the
+rule at the top of this file that every push owes an entry in the same commit. A
+documentation-only brand push still counts as a push. This follow-up makes the record
+current but cannot retroactively make the first commit atomic; the miss is recorded
+rather than hidden.
+
+No application or test files changed; the test suite was not rerun. Last known count
+remains 265. Documentation and brand assets only.
+
+---
+
 ## 2026-08-26 · Session 52 — The proposal marked final, with both open decisions written into it
 
 Small session, one lesson worth the entry.
