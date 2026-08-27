@@ -8,11 +8,11 @@ metadata:
   modified: 2026-08-20T22:49:54.406Z
 ---
 
-Durable build state of the [[project-fit-passport]] web app. **Per-session history lives in the repo's `DEVLOG.md`** (through Session 48) — this file keeps only what isn't obvious from the code/DEVLOG. Repo: **github.com/Kpewww/fit-passport** (private; keychain has creds → `git push` works). **No machine path is recorded here on purpose** — the project has moved computers twice and every hard-coded path died with the move. A fresh clone has source only; `node_modules`, `.env` and `prisma/dev.db` are absent until set up (recipe in `docs/RESUME.md`). The in-repo **`docs/RESUME.md`** is the path-independent cold-start brief. The repo has its own local commit identity — check `git config user.email` rather than assuming the global one. **Chat 中文; commit messages + DEVLOG English** ([[principle-evidence-and-logging]]). Every feature must be research-grounded ([[principle-research-grounded]]).
+Durable build state of the [[project-fit-passport]] web app. **Per-session history lives in the repo's `DEVLOG.md`** (through Session 56) — this file keeps only what isn't obvious from the code/DEVLOG. Repo: **github.com/Kpewww/fit-passport** (private; keychain has creds → `git push` works). **No machine path is recorded here on purpose** — the project has moved computers twice and every hard-coded path died with the move. A fresh clone has source only; `node_modules`, `.env` and `prisma/dev.db` are absent until set up (recipe in `docs/RESUME.md`). The in-repo **`docs/RESUME.md`** is the path-independent cold-start brief. The repo has its own local commit identity — check `git config user.email` rather than assuming the global one. **Chat 中文; commit messages + DEVLOG English** ([[principle-evidence-and-logging]]). Every feature must be research-grounded ([[principle-research-grounded]]).
 
 **Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**265 tests as of Session 48**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**265 tests as of Session 56**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -146,3 +146,45 @@ See [[project-fit-passport-closet-signal-design]].
 visible to an account-code holder. Currently **no** — the view endpoint's allow-list
 `select` excludes it, and widening what a bearer code reveals is a decision, not a
 feature side effect.
+
+
+---
+
+**SESSION 49–56 UPDATE (2026-08-27).** 265 tests, unchanged — this stretch was
+documentation, brand and measurement rather than engine work.
+
+**Structural:** `docs/course/` → **`docs/business/`**. Course framing removed from
+the published docs; the work itself is unchanged.
+
+**Brand.** `src/components/Logo.tsx` now renders the **Fit Thread** mark and is
+**generated from `docs/design/assets/logo/fit-passport-mark-master.svg`** — edit the
+SVG and re-derive rather than hand-editing the path in the component. It picks
+weight automatically: micro under 40px, master above. Favicon assets live at
+`src/app/{favicon.ico,icon.svg,apple-icon.png}` and are picked up automatically by
+the App Router.
+
+**NEW INVARIANTS:**
+㉖ **The mark has size floors.** Master ≥40px, micro 24–40px, and **16–20px needs
+the separately drawn favicon glyph** — no amount of thickening makes the full mark
+survive there. Judge small sizes at `deviceScaleFactor=1`; a retina screenshot gives
+26 CSS px fifty-two device pixels and flatters it.
+㉗ **Check for `<path>` before believing an SVG is vector.** A supplied "fixed" SVG
+was a `<rect>`+`<pattern>` over an embedded PNG — 146KB against 5KB for the real
+vector — and its bitmap was byte-identical to one already in the repo. Filenames and
+intent both said "fixed".
+㉘ **Palette: cool porcelain `#F3F3F1`.** Warm Ivory `#F3EFE7` is retired from the
+logo documents. Two systems disagreeing was worse than either choice.
+
+**Measurement tooling now in the repo** (both need `npx playwright install chromium`;
+playwright is deliberately NOT a dependency):
+- `app-web/scripts/mobile-audit.mjs` — element rectangles at phone viewports.
+  Measures rectangles, not document scroll width, because `body`'s `overflow-x-clip`
+  hides overflow rather than making it scrollable.
+- `docs/design/assets/logo/tests/size-test.mjs` — the mark at real sizes and true
+  device pixels, on the approved grounds.
+
+**Information architecture is sketched, NOT built** —
+`docs/design/information-architecture.md`. Measured: `/closet` shows **23 input
+controls and 104 tappable elements** over 5.5 screens; the homepage runs 9.8. The
+least dense page is `/refresh`, and it is the only flow that already asks one
+question at a time. See [[project-fit-passport-next-steps]].

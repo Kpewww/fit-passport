@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 48 · 2026-08-25 — LIVE, 265 tests, mobile pass shipped.**
+> **Last updated: Session 56 · 2026-08-27 — LIVE, 265 tests, Fit Thread mark + favicon shipped.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -37,7 +37,9 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
 Framer Motion(**Lenis 已移除**);three.js 仅徽章 inspect 懒加载。
 命令:`npm run dev`、`npm run typecheck`、`npm test`(**265 个**)、`npm run build`、
-改 schema 后 `npm run db:push`、生成文档 PDF `npm run docs:pdf`。
+改 schema 后 `npm run db:push`(**还必须建 migration**,见铁律 10)、生成文档 PDF `npm run docs:pdf`。
+测量工具:`app-web/scripts/mobile-audit.mjs`(移动端布局)、
+`docs/design/assets/logo/tests/size-test.mjs`(标志尺寸)。两者都需 `npx playwright install chromium`。
 **每轮结束务必:tsc + test + build + live smoke 全过 → commit & push → 更新
 DEVLOG + memory。**
 
@@ -47,35 +49,42 @@ DEVLOG + memory。**
 `project-fit-passport-deployment`(**含一次生产事故的教训**)、
 `project-fit-passport-design-system`(视觉 + **移动端规则**)、
 `project-fit-passport-closet-signal-design`(合身信号)、
-`project-fit-passport-next-steps`(待办);
+`project-fit-passport-logo`(标志资产 + 尺寸下限)、
+`project-fit-passport-next-steps`(**待办,当前清单在文件底部**);
 以及 `docs/design/*.md`(研究)、`DEVLOG.md`(逐次记录)。
 
 ---
 
-## 现状(Session 48 · 2026-08-25)
+## 现状(Session 56 · 2026-08-27)
 
 **已上线:https://fit-passport.vercel.app** — Vercel + Neon Postgres + Upstash
 Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密码在 Session 41
 播种时随机生成(**与本地播种脚本的默认值不同**)。
 
-**最近几轮做完的事(Session 41–48):**
+**Session 41–48(引擎与体验):**
+- 上线;安全(Next 14.2.35 补丁、SSRF 守卫逐跳重检、非服装页 422 拒绝)
+- 置信度校准:信号矛盾时降置信并**说明原因**(`conflictNote`)
+- 抓取策略:不买穿透代理(法律姿态),答案是浏览器插件;`source.fetch` 埋点
+- 性能:移除 Lenis、修 per-pointermove setState、修 WebGL 泄漏、徽章默认扁平
+- **带符号合身刻度**(S45):`-10 太紧 … 0 正好 … +10 太松`;`fitRating` 改为**推导**;
+  `/check` 加松量示意图
+- **生产事故 + 护栏**(S46):只跑 `db:push` 没建 migration → 生产 500;
+  已加 `schemaMigrations.test.ts`
+- **衣橱信号**(S47):品牌偏差**零购买记录**即可从衣橱学习;报告散乱降置信
+- **移动端**(S48):**手机上原本没有导航**;已加菜单面板;修掉 3 处被
+  `overflow-x-clip` 藏起来的裁切
 
-- **上线**并修了两个本地暴露不出来的坑:缺 `migration_lock.toml`、migration 走了
-  连接池(改为 `directUrl` 直连)
-- **安全**:Next 14.2.35 补丁、SSRF 守卫(重定向逐跳重检)、非服装页 422 拒绝
-- **置信度校准**:信号矛盾时降置信并**说明原因**(`conflictNote`)
-- **抓取策略**:不买穿透代理(法律姿态),答案是浏览器插件;`source.fetch` 埋点
-- **性能**:移除 Lenis、修 per-pointermove setState、修 WebGL 上下文泄漏、徽章默认扁平
-- **带符号合身刻度**(Session 45):`-10 太紧 … 0 正好 … +10 太松`,引擎读方向修正
-  锚点;`fitRating` 改为**推导**;`/check` 加了松量示意图
-- **生产事故 + 护栏**(Session 46):只跑 `db:push` 没建 migration → 生产 500;
-  已加 `schemaMigrations.test.ts`,schema 有列而 migration 没有就红
-- **衣橱信号**(Session 47):品牌偏差**零购买记录**即可从衣橱学习;报告散乱降置信
-- **移动端**(Session 48):**手机上原本没有导航**(所有链接 `sm:block`);已加菜单面板;
-  修掉 3 处被 `overflow-x-clip` 藏起来的裁切;留白/触控目标/堆叠
+**Session 49–56(文档与品牌):**
+- 文档全面校准;`docs/course/` → **`docs/business/`**
+- **Fit Thread 标志**:清理出真矢量母版 + 反白 + micro;**favicon 重画为矢量**
+  (16px 404 字节);色板定为 **Cool Porcelain `#F3F3F1`**(Warm Ivory 退役)
+- **陷阱**:一份"修复版"SVG 其实是位图套壳(零 path),且内嵌 PNG 与仓库已有的
+  字节相同。**判断矢量先看有没有 `<path>`,别信文件名。**
+- **信息架构已测量并写成草案**(`docs/design/information-architecture.md`,
+  **未实现**)
 
-**下一步:见 `docs/memory/project-fit-passport-next-steps.md`。**
-(客户访谈**已由创始人推迟**,不要再把它排在第一位。)
+**下一步:见 `docs/memory/project-fit-passport-next-steps.md` 底部的当前清单。**
+(客户访谈**已由创始人推迟**;信息架构整理是当前第一优先级。)
 
 ---
 
@@ -103,6 +112,9 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
 15. **手机上导航必须存在**——所有 nav 链接都是 `sm:block`,`Nav.tsx` 里的菜单面板
     就是手机上的导航本体。
 16. 任何写 `fitRating` 的地方必须同时写 `fitDirection`,否则同一行数据自相矛盾。
+17. **判断一个 SVG 是不是矢量,先看有没有 `<path>`**——文件名和来意都可能骗人。
+18. **标志有尺寸下限**:母版 ≥40px、micro 24–40px、**16–20px 必须用另画的
+    favicon 字形**。小尺寸要在 `deviceScaleFactor=1` 下判断,视网膜截图会骗人。
 
 ## 已有的关键系统(别重造)
 

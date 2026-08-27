@@ -31,6 +31,29 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-27 · Session 57 — Memory currency pass before a context break
+
+Housekeeping ahead of compacting the working session, so nothing depends on what is
+only in the chat.
+
+`docs/RESUME.md` was still describing Session 48. Rewritten around Session 56: the
+brand work, the two measurement scripts now in the repo, the `docs/course/` →
+`docs/business/` move, and two invariants that came out of the logo work — **check
+for `<path>` before believing an SVG is vector**, and **the mark has size floors**
+(master ≥40px, micro 24–40, and 16–20 needs the separately drawn favicon glyph,
+judged at `deviceScaleFactor=1` because a retina screenshot flatters it).
+
+`build-state.md` gained the Session 49–56 block: the generated-from-master rule for
+`Logo.tsx`, the favicon asset locations, the settled cool-porcelain palette, and the
+fact that both measurement scripts need `npx playwright install chromium` because
+playwright is deliberately not a dependency.
+
+Verified rather than assumed: 13 memory files **byte-identical** between the repo
+and the working set, **zero dangling `[[links]]`**, and the two machine-specific
+files still correctly absent from the repo. 265 tests, typecheck clean.
+
+---
+
 ## 2026-08-27 · Session 56 — The favicon gets drawn, and a "fixed" SVG that was a bitmap
 
 ### The supplied replacement was not a repair
