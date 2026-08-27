@@ -11,7 +11,7 @@
 Chinese edition: [LOGO_CONCEPT.zh-CN.md](LOGO_CONCEPT.zh-CN.md)  
 PDF edition: [LOGO_CONCEPT.pdf](LOGO_CONCEPT.pdf)
 
-![Selected Fit Passport thread monogram.](assets/fit-passport-logo-concept-transparent.png)
+![Selected Fit Passport thread monogram.](assets/logo/fit-passport-mark-black-transparent.png)
 
 *Current selected mark. The isolated PNG is suitable for reference and immediate prototypes; the final logo must still be rebuilt as a clean vector.*
 
@@ -192,12 +192,20 @@ Do not use JPG for the logo master. JPG introduces compression artifacts and has
 
 ## 12. How to Extract the Selected Upper-Left Mark
 
-We now have two isolated 1024 × 1024 PNG exports of the selected mark:
+We now have a six-file source-export set, organized and documented in
+[`assets/logo/README.md`](assets/logo/README.md). The two immediate-use PNGs are:
 
-- `fit-passport-logo-concept-transparent.png` - RGBA with transparency, suitable for immediate prototypes and documents;
-- `fit-passport-logo-concept-white.png` - RGB on white, suitable for simple decks and references.
+- `fit-passport-mark-black-transparent.png` - RGBA with transparency, suitable for immediate prototypes and documents;
+- `fit-passport-mark-black-on-white.png` - RGB on white, suitable for simple decks and references.
 
 The transparent file keeps generous canvas padding; the visible artwork occupies approximately 538 × 503 px near the center. These are useful delivery assets, but they remain raster files and cannot become the editable master by themselves.
+
+The supplied SVGs contain real vector paths. The transparent SVG is the best current
+reconstruction source, but it still includes a white correction path that must be
+removed before recolouring or reverse use. The supplied PDFs each contain a flattened
+RGB JPEG rather than vector paths; the export labelled transparent is also flattened
+to white. They are preserved in `assets/logo/source-exports/` as references, not
+treated as print masters.
 
 ### Best workflow: return to the generating design file
 

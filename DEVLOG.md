@@ -31,6 +31,93 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-27 · Session 54 — Logo exports normalised, and format names stop overpromising
+
+The founder supplied the selected mark in all three requested containers — PNG, SVG
+and PDF — with transparent-background and white-background variants. The useful
+result is not “we have every format.” The useful result is knowing **which capabilities
+each file actually has**, because an extension is not a promise.
+
+### One directory and one naming grammar
+
+The assets now live under `docs/design/assets/logo/` and follow:
+
+```text
+fit-passport-mark-{colour}-{background}.{format}
+```
+
+The symbol is called `mark`, not `logo`, because it does not include the Fit
+Passport wordmark. The two supplied PDFs live one level lower in
+`source-exports/`; preserving them is useful, but putting them beside future
+production masters would imply capabilities they do not have.
+
+The normalised set is:
+
+- `fit-passport-mark-black-transparent.svg` and `.png`
+- `fit-passport-mark-black-on-white.svg` and `.png`
+- `source-exports/fit-passport-mark-black-transparent-export.pdf`
+- `source-exports/fit-passport-mark-black-on-white-export.pdf`
+
+`assets/logo/README.md` is the manifest: actual structure, correct use, known
+limitations and the required next asset set. The two old
+`fit-passport-logo-concept-*.png` paths are removed after their byte-identical files
+move under the new naming system; both logo-concept Markdown files and both rendered
+PDFs now point at and describe the normalised set.
+
+### The inspection changed what the filenames appeared to mean
+
+**Both SVGs are genuinely vector.** Neither embeds the PNG. The transparent file has
+a 1024 × 1024 viewBox and two paths: the dark principal artwork plus a small white
+correction path. On white it looks correct; rendered on Ink Black, that correction
+path exposes several white slivers. The black mark is not meant for a dark ground,
+but the white object still makes this a poor recolourable master. The on-white SVG is
+also vector, but its first path explicitly draws the white ground, so it is a layout
+variant rather than the source of truth.
+
+**Neither PDF is vector.** `pdfimages -list` found one 2048 × 2048 RGB JPEG on the
+single 768 × 768 pt page of each file and no vector or font resources. The file
+exported from the transparent source is already flattened to white. Both render
+correctly, so they remain useful placement and archive files; they are not suitable
+for recolouring, cutting, embroidery, animation or professional print production.
+Calling them “vector PDFs” because they came with SVGs would be a quiet documentation
+lie.
+
+The PNGs are the expected pair: 1024 × 1024 RGBA for transparent placement and
+1024 × 1024 RGB for white-background placement. The transparent PNG remains the
+right immediate asset for documents and light-background prototypes.
+
+### Next is geometry, not colour
+
+The next pass should not jump to oxblood, motion or badges. It should first produce a
+small, boring, dependable monochrome master set:
+
+1. a tightly bounded `fit-passport-mark-master.svg` with one single-colour shape,
+   no background and no white correction objects;
+2. a deliberate `fit-passport-mark-reverse.svg` for dark grounds;
+3. an optically adjusted `fit-passport-mark-micro.svg` for 16–32 px;
+4. approved horizontal and stacked wordmark lockups;
+5. a real vector `fit-passport-mark-print.pdf` generated from the clean master.
+
+Those assets then need light/dark, 16/24/32/48/128 px and 8 mm print tests. **Only
+after the silhouette survives those tests** should we choose the permanent accent
+colour. Motion follows the final path geometry; badges follow the finished logo
+language rather than determining it.
+
+### Verified
+
+All six supplied exports were identified and checksummed. Both source PDFs were
+inspected with `pdfinfo`, `pdfimages` and `pdffonts`, then rendered and viewed.
+Both SVGs were parsed for element types and rendered at high density on white and
+Ink Black; the dark-background render is what exposed the correction slivers. The
+updated English and Chinese concept PDFs remain **8 pages each** and were re-rendered
+in full to contact sheets; text extraction confirms the new filenames and limitation
+notes in both languages.
+
+No application or test files changed; the test suite was not rerun. Last known count
+remains 265. Documentation and brand assets only.
+
+---
+
 ## 2026-08-27 · Session 53 — The Fit Thread becomes a documented brand system
 
 Brand work, not application code, but it makes one product decision explicit: the
