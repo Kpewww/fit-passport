@@ -31,6 +31,88 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-27 · Session 55 — The vector master, and the size at which this mark stops working
+
+Step 1 of the logo plan: turn the supplied transparent SVG into a real monochrome
+master, plus reverse and micro. Done — and the size testing produced a harder
+finding than expected.
+
+### Removing the white path, after checking whether it was load-bearing
+
+The supplied SVG carries a dark mark path and a second white path of nine tiny
+subpaths. The obvious move is to delete the white one. **That would have been a
+guess, and in a thread mark it is a dangerous one:** a white shape sitting across a
+stroke is an over/under crossing, and deleting those flattens the weave that the
+whole design is about.
+
+So it was measured. Rendering with and without differs by **101 pixels out of
+1,048,576 (0.0096%)**, in five clusters of 9–15 pixels. Magnified, every one is a
+1–2 px sliver along the *edge* of a stroke, never a gap *across* one — tracer
+residue, not crossings. Safe to remove, and now recorded as such so nobody has to
+re-derive it.
+
+### The master, and a verification that caught my own bad test first
+
+Coordinates were translated to a tight origin (the mark occupied 536 × 502 of a
+1024 canvas — 24% padding on every side) and emitted as one path with
+`fill="currentColor"`.
+
+The first verification compared master and original rendered into the same box and
+reported **19% of pixels different** — alarming, and wrong. The master is tightly
+bounded, so it fills the box while the original renders smaller and centred; the
+test was measuring framing, not geometry. Re-run with the original cropped to the
+same viewBox: **zero pixels differ beyond anti-aliasing, best alignment offset
+(0,0)**. A test that fails for the wrong reason is worth writing down, because the
+temptation is to accept the first number and start "fixing" geometry that was never
+broken.
+
+Also dropped a `fill-rule="evenodd"` I had added out of habit. The source uses the
+default nonzero and there was no reason to change it — an unnecessary difference is
+still a difference.
+
+### The floor, and why the favicon is blocked
+
+Two measurements decide everything about small sizes. On the 536-wide artwork the
+median stroke is **24 units (4.5% of the width)**, and the tightest 5% of interior
+gaps are **20 units**.
+
+The micro variant thickens by stroking the fill path's own outline — same geometry,
+no redraw — which takes the stroke to 41.5 and the gaps down to 6. **16 is the
+ceiling, set by the gaps rather than by taste:** more and the strokes merge.
+
+Rendered at true device pixels: micro is good at 32, visible at 24 with the P
+bowl's counter filling, and **illegible at 16–20. So is the master.**
+
+**A 16 px favicon cannot be produced from this geometry by any amount of
+thickening.** It needs a simplified glyph — fewer strokes, wider counters — which is
+a drawing decision, not an export setting. The app still ships the previous mark's
+`favicon.ico`, and that is now recorded as a blocker rather than an oversight.
+
+**One correction to my own reading along the way.** The first size sheet was
+rendered at 3× and I read it as "fails below 32 px everywhere". Re-rendered at true
+device pixels, 26 CSS px on a retina screen gets 52 device pixels and reads fine —
+so the site's nav was never the problem. Judging small sizes on a retina screenshot
+is exactly how a logo ends up illegible in the one place it is smallest;
+`tests/size-test.mjs` now renders both densities so the mistake is not repeatable.
+
+### The site wears the new mark
+
+`Logo.tsx` is now generated from the master and picks its weight automatically —
+micro under 40 px, master above. The threshold errs toward micro because on a 1×
+display the master is too light, while micro at 2× is merely a touch heavy.
+
+Verified in the running app: the nav at 26 px and the passport card's engraved mark
+at 34 px on obsidian both read well, at 1× and 2×.
+
+The comparison sheets and their generator live in
+`docs/design/assets/logo/tests/`, and the manifest now carries the numbers rather
+than adjectives. **Colour, lockups and motion stay parked** — the plan puts them
+after monochrome passes size testing, and the 16 px case has not passed.
+
+265 tests, clean build.
+
+---
+
 ## 2026-08-27 · Session 54 — Logo exports normalised, and format names stop overpromising
 
 The founder supplied the selected mark in all three requested containers — PNG, SVG

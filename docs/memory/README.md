@@ -20,6 +20,7 @@ rediscover the hard way.
 | [`project-fit-passport-design-system.md`](project-fit-passport-design-system.md) | Any visual change — palette, type, motion, card, badges |
 | [`project-fit-passport-next-steps.md`](project-fit-passport-next-steps.md) | You're deciding what to work on — **the current list is at the BOTTOM of that file** |
 | [`project-fit-passport-closet-signal-design.md`](project-fit-passport-closet-signal-design.md) | Before touching the closet fit rating, `brandBias`, or confidence |
+| [`project-fit-passport-logo.md`](project-fit-passport-logo.md) | Anything touching the mark, its files, or small-size rendering |
 
 Also here: the identity/sharing threat model and the community-ecosystem plan.
 
@@ -49,8 +50,8 @@ a bug: remove it and rotate the credential.
 
 ## Currency
 
-Everything here is current as of **Session 48 (2026-08-25)** — 265 tests, live,
-mobile pass shipped. `docs/RESUME.md` is the cold-start brief and matches.
+Everything here is current as of **Session 55 (2026-08-27)** — 265 tests, live,
+the Fit Thread mark cleaned and wearing on the site. `docs/RESUME.md` is the cold-start brief and matches.
 
 Two habits this folder has had to learn the hard way, both recorded in
 [`principle-evidence-and-logging.md`](principle-evidence-and-logging.md):
