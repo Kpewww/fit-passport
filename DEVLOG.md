@@ -31,6 +31,79 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-27 · Session 58 — The closet stops asking eleven questions at once
+
+The information-architecture sketch from Session 56 becomes the first real change.
+The founder's complaint was that clicking into any section shows too much to want to
+fill in; the closet measured worst, and it is the page whose entire job is to make
+someone add three garments.
+
+**What changed.** `/closet`'s add form was an eleven-field grid. It is now
+`AddItemFlow` — four questions, one screen each, modelled on `/refresh`, which
+measured as the least dense page in the app precisely because it shows one decision
+at a time. Brand → type → size → how it sits. The URL paste box moved onto the first
+step and now *skips ahead* when it succeeds: read a brand and a category from the
+page and the user lands on the size question, which is the only thing extraction
+cannot answer for them.
+
+**Which four questions is not a taste call.** The FIC budget in
+`docs/design/closet-signal-and-interaction-cost.md` §3.2 prices a field against what
+the engine gains. Grepping `fitEngine.ts` settles it: `gender` appears zero times,
+`color` zero times, and `areaNotesJson` is written and displayed but never scored.
+Name, line, colour, fit notes, photo and the in-store flag are all engine-value 0,
+which fails the `value >= cost / 2` rule at any cost above zero. They moved behind an
+"Add details (optional)" disclosure on the last step, which says plainly that the fit
+engine does not read them. Nothing was removed — every one is still editable on the
+item afterwards, in the edit form that already carried all of them.
+
+The four that stayed cost 12 + 5 + 10 + 3 = 30 FIC, which is exactly §3.2's
+first-run budget. That is tight on purpose.
+
+**Measured, same script and same account before and after** (390px, logged in,
+`deviceScaleFactor=1`):
+
+| /closet | before | after |
+|---|---|---|
+| Input controls visible at once | 28 | **15** |
+| Tappable elements | 127 | **84** |
+| Words | 546 | **441** |
+| Screens tall | 5.5 | **4.5** |
+| Tap targets under 44px | 21 | **14** |
+| Horizontal overflow | none | none |
+
+The tap-target drop is not because anything got bigger — it is seven fewer small
+controls on screen at one time. Worth stating that way rather than claiming a fix.
+
+(The Session 56 sketch recorded 23 inputs / 104 tappable for this page. Those came
+from a different script and a different closet, so the before/after pair above is the
+comparable one; the sketch's numbers are not wrong, they are not the same
+measurement.)
+
+**The decision is pinned in a test, not just in prose.** `src/lib/addFlow.ts` holds
+the step list, the per-step FIC weights, the engine use each step has to justify, and
+the readiness rule; `addFlow.test.ts` fails if the flow exceeds the first-run budget,
+if a step is added with no stated engine use, if size is ever asked before category
+(size validity is category-dependent, so the reverse order would validate against the
+default), or if the blocking set grows past brand and size. Verified to go red before
+being kept: adding a fifth `colour` step failed on two counts, 33 > 30 and no engine
+use. A field is cheap to add and its cost is paid by every user, every time — the
+test is what should force the argument next time.
+
+The component imports that module rather than keeping its own copy, so the test
+guards the shipped flow and not a parallel description of it.
+
+**Verified:** typecheck clean, lint clean, **265 → 273 tests**, clean production
+build after `rm -rf .next`, and the flow walked end to end on a 390px viewport — the
+row written was `fitRating: 5, fitDirection: 0`, which holds invariant ⑰ (both
+written together) and ⑮ (a centred report maps to >= 4, so `hasStrongAnchor` still
+fires). Smoke row deleted afterwards.
+
+**Not done, deliberately:** moves 2 and 3 from the sketch — earning the next question
+with a visible payoff, and intent-led entry. Move 1 is the one that needed no new
+product decisions.
+
+---
+
 ## 2026-08-27 · Session 57 — Memory currency pass before a context break
 
 Housekeeping ahead of compacting the working session, so nothing depends on what is

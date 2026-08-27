@@ -11,6 +11,7 @@ import { garmentLabel, garmentGlyph } from "@/lib/garments";
 import { resizeImageToDataUrl } from "@/lib/imageResize";
 import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionInput";
 import { DIRECTION_DEFAULT, ratingFromDirection } from "@/lib/fitDirection";
+import { ADD_STEPS, type AddStep, canSubmit, stepReady } from "@/lib/addFlow";
 
 type Item = {
   id: string;
@@ -81,18 +82,12 @@ const BLANK = { brand: "", displayName: "", category: "tshirt", gender: "", size
 export default function ClosetPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
-  const [form, setForm] = useState({ ...BLANK });
-  const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [newCollectionName, setNewCollectionName] = useState("");
   const [newCollectionColor, setNewCollectionColor] = useState<string | null>(null);
   // Merge-select mode
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  // Add-by-URL
-  const [pasteUrl, setPasteUrl] = useState("");
-  const [extracting, setExtracting] = useState(false);
-  const [extractNote, setExtractNote] = useState<string | null>(null);
   // Closet view mode
   const [view, setView] = useState<"list" | "grid">("list");
   // Folder view: the file "pulled fully out" onto the desk (detail sheet), and
@@ -138,42 +133,6 @@ export default function ClosetPage() {
     });
   }, [items]);
 
-  async function extractFromUrl() {
-    if (!pasteUrl.trim()) return;
-    setExtracting(true);
-    setExtractNote(null);
-    try {
-      const r = await fetch("/api/closet/extract", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url: pasteUrl.trim() }),
-      }).then((r) => r.json());
-      if (r.error) { setExtractNote("Couldn't read that URL — fill the fields in manually."); return; }
-      setForm((f) => ({
-        ...f,
-        brand: r.brand || f.brand,
-        displayName: r.suggestedName || f.displayName,
-        category: r.category || f.category,
-        gender: r.gender || f.gender,
-        size: Array.isArray(r.sizes) && r.sizes.length ? "" : f.size, // let user pick a size
-      }));
-      const bits = [r.brand, r.category && garmentLabel(r.category)].filter(Boolean).join(" · ");
-      setExtractNote(`Read ${bits || "details"} from ${r.source?.host ?? "the page"} — review and pick your size below.`);
-    } catch {
-      setExtractNote("Couldn't read that URL — fill the fields in manually.");
-    } finally {
-      setExtracting(false);
-    }
-  }
-
-  async function onPickImage(file: File | undefined) {
-    if (!file) return;
-    try {
-      const dataUrl = await resizeImageToDataUrl(file, 320);
-      setForm((f) => ({ ...f, imageDataUrl: dataUrl }));
-    } catch { /* ignore */ }
-  }
-
   const load = useCallback(async () => {
     const [c, i] = await Promise.all([
       fetch("/api/collections").then((r) => r.json()),
@@ -183,27 +142,6 @@ export default function ClosetPage() {
     setItems(i.items);
   }, []);
   useEffect(() => { load(); }, [load]);
-
-  async function add(e: React.FormEvent) {
-    e.preventDefault();
-    if (!form.brand || !form.size || !isValidSize(form.category, form.size)) return;
-    setSaving(true);
-    await fetch("/api/closet", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        brand: form.brand, displayName: form.displayName || null,
-        category: form.category, gender: form.gender || null, size: form.size,
-        fitRating: form.fitRating, fitDirection: form.fitDirection, color: form.color || null, onlineAvailable: form.onlineAvailable,
-        imageDataUrl: form.imageDataUrl || null,
-        areaNotesJson: form.areaNotes ? JSON.stringify({ notes: form.areaNotes }) : null,
-      }),
-    });
-    setForm({ ...BLANK });
-    setPasteUrl(""); setExtractNote(null);
-    setSaving(false);
-    load();
-  }
 
   async function patch(id: string, data: Record<string, unknown>) {
     await fetch("/api/closet", {
@@ -334,103 +272,8 @@ export default function ClosetPage() {
           </div>
         </div>
 
-        {/* Add form */}
-        <Card className="mt-6">
-          {/* Paste a product URL → auto-fill */}
-          <div className="mb-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 p-3">
-            <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">Add from a link</p>
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <input className={inputClass + " flex-1"} placeholder="Paste a product URL to auto-fill…"
-                value={pasteUrl} onChange={(e) => setPasteUrl(e.target.value)} />
-              <Button type="button" variant="secondary" size="md" onClick={extractFromUrl} disabled={extracting || !pasteUrl.trim()}>
-                {extracting ? "Reading…" : "Auto-fill"}
-              </Button>
-            </div>
-            {extractNote && <p className="mt-1.5 text-[11px] text-ink-soft">{extractNote}</p>}
-          </div>
-
-          <form onSubmit={add} className="grid gap-3 sm:grid-cols-6">
-            {/* Item photo (user-uploaded — your own photo, not a scraped logo) */}
-            <div className="sm:col-span-6">
-              <Field label="Photo" hint="optional · your own photo">
-                <div className="flex items-center gap-3">
-                  <label className="flex h-16 w-16 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-neutral-300 bg-white text-xl text-ink-faint hover:border-brand">
-                    {form.imageDataUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={form.imageDataUrl} alt="" className="h-full w-full object-cover" />
-                    ) : (garmentGlyph(form.category))}
-                    <input type="file" accept="image/*" className="hidden" onChange={(e) => onPickImage(e.target.files?.[0])} />
-                  </label>
-                  {form.imageDataUrl
-                    ? <button type="button" onClick={() => setForm({ ...form, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-red-600">remove photo</button>
-                    : <span className="text-xs text-ink-faint">Click to upload a picture of this item.</span>}
-                </div>
-              </Field>
-            </div>
-            <div className="sm:col-span-2">
-              <Field label="Brand">
-                <BrandInput value={form.brand} onChange={(v) => setForm({ ...form, brand: v })} />
-              </Field>
-            </div>
-            <div className="sm:col-span-2">
-              <Field label="Name" hint="optional">
-                <input className={inputClass} placeholder="e.g. Blue Oxford"
-                  value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />
-              </Field>
-            </div>
-            <div className="sm:col-span-2">
-              <Field label="Type" hint="engine">
-                <CategoryPicker value={form.category}
-                  onChange={(v) => setForm({ ...form, category: v, size: "" })} />
-              </Field>
-            </div>
-            <div className="sm:col-span-1">
-              <Field label="Line" hint="optional">
-                <select className={inputClass} value={form.gender}
-                  onChange={(e) => setForm({ ...form, gender: e.target.value })}>
-                  {GENDERS.map((g) => <option key={g.v} value={g.v}>{g.label}</option>)}
-                </select>
-              </Field>
-            </div>
-            <div className="sm:col-span-6">
-              <Field label="How does it sit on you?">
-                <FitDirectionInput
-                  value={form.fitDirection}
-                  onChange={(n) => setForm({ ...form, fitDirection: n, fitRating: ratingFromDirection(n) })}
-                />
-              </Field>
-            </div>
-            <div className="sm:col-span-6">
-              <Field label="Size">
-                <SizeInput category={form.category} value={form.size}
-                  onChange={(v) => setForm({ ...form, size: v })} />
-              </Field>
-            </div>
-            <div className="sm:col-span-3">
-              <Field label="Color" hint="optional">
-                <ColorPicker value={form.color} onChange={(v) => setForm({ ...form, color: v })} />
-              </Field>
-            </div>
-            <div className="sm:col-span-3">
-              <Field label="Fit notes" hint="optional">
-                <input className={inputClass} placeholder="e.g. shoulders perfect, sleeves long"
-                  value={form.areaNotes} onChange={(e) => setForm({ ...form, areaNotes: e.target.value })} />
-              </Field>
-            </div>
-            <div className="flex items-center sm:col-span-6">
-              <label className="flex items-center gap-1.5 text-xs text-ink-soft">
-                <input type="checkbox" checked={!form.onlineAvailable} className="accent-brand"
-                  onChange={(e) => setForm({ ...form, onlineAvailable: !e.target.checked })} />
-                In-store only (not available online)
-              </label>
-            </div>
-            <div className="sm:col-span-6">
-              <Button type="submit" disabled={saving || !form.brand || !form.size || !isValidSize(form.category, form.size)}>
-                {saving ? "Adding…" : "Add to closet"}
-              </Button>
-            </div>
-          </form>
-        </Card>
+        {/* Add an item — one question per screen (see AddItemFlow). */}
+        <AddItemFlow onAdded={load} />
 
         {/* Merge toolbar */}
         {count >= 2 && (
@@ -1583,5 +1426,290 @@ function BucketPanel({
         </button>
       )}
     </div>
+  );
+}
+
+/* ---------------------------------------------------------------------------
+ * AddItemFlow — one question per screen.
+ *
+ * Replaces an eleven-field grid. Measured on a 390px phone, that grid was the
+ * bulk of the 23 input controls the closet showed at once, on the page whose
+ * whole job is to make someone add three garments — see
+ * docs/design/information-architecture.md.
+ *
+ * Which questions survive is not taste. The FIC budget
+ * (docs/design/closet-signal-and-interaction-cost.md §3.2) prices a field
+ * against what the engine actually gains, and only four fields here are read by
+ * fitEngine.ts: brand (brand bias + anchor), category (garment ease + anchor
+ * matching), size, and fitDirection (anchor shift). Name, line, colour, fit
+ * notes, photo and the in-store flag are stored and displayed but never scored
+ * — engine value 0 — so they move behind a disclosure on the last step. Nothing
+ * is lost: every one of them is editable on the item straight afterwards.
+ *
+ * The shape is /refresh's card stack, which measured as the least dense page in
+ * the app for exactly this reason: it shows one decision at a time.
+ * ------------------------------------------------------------------------ */
+
+const STEP_QUESTION: Record<AddStep, string> = {
+  brand: "What brand is it?",
+  category: "What kind of garment?",
+  size: "What size is on the label?",
+  fit: "How does it sit on you?",
+};
+
+// One line each, and each says what the answer buys. Asking for something
+// without saying why is most of what makes a form feel like homework.
+const STEP_WHY: Record<AddStep, string> = {
+  brand: "Sizing varies more between brands than between sizes — this is the most useful thing you can tell us.",
+  category: "A shirt and a coat are cut with different amounts of room.",
+  size: "Whatever the label says. Region conversions are handled for you.",
+  fit: "This is what moves a recommendation up or down a size for this brand.",
+};
+
+function AddItemFlow({ onAdded }: { onAdded: () => void }) {
+  const [form, setForm] = useState({ ...BLANK });
+  const [stepIndex, setStepIndex] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [justAdded, setJustAdded] = useState<string | null>(null);
+  // Add-by-URL — offered on the first step as a shortcut, never as a gate.
+  const [pasteUrl, setPasteUrl] = useState("");
+  const [extracting, setExtracting] = useState(false);
+  const [extractNote, setExtractNote] = useState<string | null>(null);
+
+  const step = ADD_STEPS[stepIndex];
+  const isLast = stepIndex === ADD_STEPS.length - 1;
+
+  // Readiness and the blocking set live in lib/addFlow.ts so a test can hold
+  // them to the FIC budget — a field is cheap to add and its cost is paid by
+  // every user, every time.
+  const ready = stepReady(step, form);
+  const canAdd = canSubmit(form);
+
+  // What has been answered so far, so the flow never loses the user's place.
+  const trail = [
+    stepIndex > 0 && form.brand.trim(),
+    stepIndex > 1 && garmentLabel(form.category),
+    stepIndex > 2 && form.size,
+  ].filter(Boolean).join(" · ");
+
+  async function extractFromUrl() {
+    if (!pasteUrl.trim()) return;
+    setExtracting(true);
+    setExtractNote(null);
+    try {
+      const r = await fetch("/api/closet/extract", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ url: pasteUrl.trim() }),
+      }).then((r) => r.json());
+      if (r.error) { setExtractNote("Couldn't read that URL — answer the questions instead."); return; }
+      setForm((f) => ({
+        ...f,
+        brand: r.brand || f.brand,
+        displayName: r.suggestedName || f.displayName,
+        category: r.category || f.category,
+        gender: r.gender || f.gender,
+        size: "", // sizes are offered, never chosen for the user
+      }));
+      const bits = [r.brand, r.category && garmentLabel(r.category)].filter(Boolean).join(" · ");
+      setExtractNote(`Read ${bits || "details"} from ${r.source?.host ?? "the page"}.`);
+      // The payoff for pasting a link is skipping the questions it answered.
+      if (r.brand && r.category) setStepIndex(ADD_STEPS.indexOf("size"));
+      else if (r.brand) setStepIndex(ADD_STEPS.indexOf("category"));
+    } catch {
+      setExtractNote("Couldn't read that URL — answer the questions instead.");
+    } finally {
+      setExtracting(false);
+    }
+  }
+
+  async function onPickImage(file: File | undefined) {
+    if (!file) return;
+    try {
+      const dataUrl = await resizeImageToDataUrl(file, 320);
+      setForm((f) => ({ ...f, imageDataUrl: dataUrl }));
+    } catch { /* ignore */ }
+  }
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!isLast) {
+      if (ready) { setJustAdded(null); setStepIndex(stepIndex + 1); }
+      return;
+    }
+    if (!canAdd || saving) return;
+    setSaving(true);
+    await fetch("/api/closet", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        brand: form.brand, displayName: form.displayName || null,
+        category: form.category, gender: form.gender || null, size: form.size,
+        fitRating: form.fitRating, fitDirection: form.fitDirection, color: form.color || null,
+        onlineAvailable: form.onlineAvailable,
+        imageDataUrl: form.imageDataUrl || null,
+        areaNotesJson: form.areaNotes ? JSON.stringify({ notes: form.areaNotes }) : null,
+      }),
+    });
+    setJustAdded(`${form.brand} ${garmentLabel(form.category)} · ${form.size}`);
+    setForm({ ...BLANK });
+    setStepIndex(0);
+    setShowDetails(false);
+    setPasteUrl(""); setExtractNote(null);
+    setSaving(false);
+    onAdded();
+  }
+
+  return (
+    <Card className="mt-6">
+      {justAdded && (
+        <p className="mb-4 rounded-lg bg-brand/10 px-3 py-2 text-sm text-brand-dark">
+          Added <span className="font-semibold">{justAdded}</span>. Add another below.
+        </p>
+      )}
+
+      {/* Where you are in the four questions. */}
+      <div className="mb-4">
+        <div className="mb-2 flex items-baseline justify-between gap-3">
+          <p className="flex-shrink-0 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
+            Add an item · {stepIndex + 1} of {ADD_STEPS.length}
+          </p>
+          {trail && <p className="min-w-0 truncate text-[11px] text-ink-soft">{trail}</p>}
+        </div>
+        <div className="h-1 w-full overflow-hidden rounded-full bg-neutral-200">
+          <div
+            className="h-full rounded-full bg-brand transition-[width] duration-300"
+            style={{ width: `${((stepIndex + 1) / ADD_STEPS.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* The shortcut sits on the first step only — it answers the first
+          questions, so offering it later would be offering to redo them. */}
+      {step === "brand" && (
+        <div className="mb-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 p-3">
+          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
+            Have a link? Skip ahead
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              className={inputClass + " min-w-0 flex-1"}
+              placeholder="Paste a product URL…"
+              value={pasteUrl}
+              onChange={(e) => setPasteUrl(e.target.value)}
+            />
+            <Button type="button" variant="secondary" size="md" onClick={extractFromUrl} disabled={extracting || !pasteUrl.trim()}>
+              {extracting ? "Reading…" : "Auto-fill"}
+            </Button>
+          </div>
+          {extractNote && <p className="mt-1.5 text-[11px] text-ink-soft">{extractNote}</p>}
+        </div>
+      )}
+
+      <form onSubmit={onSubmit}>
+        <h3 className="text-base font-semibold text-ink">{STEP_QUESTION[step]}</h3>
+        <p className="mt-0.5 text-xs text-ink-soft">{STEP_WHY[step]}</p>
+
+        <div className="mt-3">
+          {step === "brand" && (
+            <BrandInput value={form.brand} onChange={(v) => setForm({ ...form, brand: v })} />
+          )}
+          {step === "category" && (
+            <CategoryPicker
+              value={form.category}
+              onChange={(v) => setForm({ ...form, category: v, size: "" })}
+            />
+          )}
+          {step === "size" && (
+            <SizeInput category={form.category} value={form.size} onChange={(v) => setForm({ ...form, size: v })} />
+          )}
+          {step === "fit" && (
+            <FitDirectionInput
+              value={form.fitDirection}
+              onChange={(n) => setForm({ ...form, fitDirection: n, fitRating: ratingFromDirection(n) })}
+            />
+          )}
+        </div>
+
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          {stepIndex > 0 && (
+            <Button type="button" variant="ghost" onClick={() => setStepIndex(stepIndex - 1)}>Back</Button>
+          )}
+          <Button type="submit" disabled={!ready || (isLast && (saving || !canAdd))}>
+            {isLast ? (saving ? "Adding…" : "Add to closet") : "Continue"}
+          </Button>
+        </div>
+
+        {/* Everything the engine does not read. Reachable, not in the way. */}
+        {isLast && (
+          <div className="mt-5 border-t border-neutral-200 pt-3">
+            <button
+              type="button"
+              onClick={() => setShowDetails(!showDetails)}
+              className="text-xs font-semibold text-ink-soft hover:text-brand"
+            >
+              {showDetails ? "− Hide details" : "+ Add details (optional)"}
+            </button>
+            <p className="mt-1 text-[11px] text-ink-faint">
+              Photo, name, colour, notes. The fit engine doesn&apos;t read these — you can add them any time by editing the item.
+            </p>
+
+            {showDetails && (
+              <div className="mt-3 grid gap-3 sm:grid-cols-6">
+                <div className="sm:col-span-6">
+                  <Field label="Photo" hint="optional · your own photo">
+                    <div className="flex items-center gap-3">
+                      <label className="flex h-16 w-16 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-neutral-300 bg-white text-xl text-ink-faint hover:border-brand">
+                        {form.imageDataUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={form.imageDataUrl} alt="" className="h-full w-full object-cover" />
+                        ) : (garmentGlyph(form.category))}
+                        <input type="file" accept="image/*" className="hidden" onChange={(e) => onPickImage(e.target.files?.[0])} />
+                      </label>
+                      {form.imageDataUrl
+                        ? <button type="button" onClick={() => setForm({ ...form, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-red-600">remove photo</button>
+                        : <span className="min-w-0 text-xs text-ink-faint">Click to upload a picture of this item.</span>}
+                    </div>
+                  </Field>
+                </div>
+                <div className="sm:col-span-3">
+                  <Field label="Name" hint="optional">
+                    <input className={inputClass} placeholder="e.g. Blue Oxford"
+                      value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />
+                  </Field>
+                </div>
+                <div className="sm:col-span-3">
+                  <Field label="Line" hint="optional">
+                    <select className={inputClass} value={form.gender}
+                      onChange={(e) => setForm({ ...form, gender: e.target.value })}>
+                      {GENDERS.map((g) => <option key={g.v} value={g.v}>{g.label}</option>)}
+                    </select>
+                  </Field>
+                </div>
+                <div className="sm:col-span-3">
+                  <Field label="Color" hint="optional">
+                    <ColorPicker value={form.color} onChange={(v) => setForm({ ...form, color: v })} />
+                  </Field>
+                </div>
+                <div className="sm:col-span-3">
+                  <Field label="Fit notes" hint="optional">
+                    <input className={inputClass} placeholder="e.g. shoulders perfect, sleeves long"
+                      value={form.areaNotes} onChange={(e) => setForm({ ...form, areaNotes: e.target.value })} />
+                  </Field>
+                </div>
+                <div className="flex items-center sm:col-span-6">
+                  <label className="flex items-center gap-1.5 text-xs text-ink-soft">
+                    <input type="checkbox" checked={!form.onlineAvailable} className="accent-brand"
+                      onChange={(e) => setForm({ ...form, onlineAvailable: !e.target.checked })} />
+                    In-store only (not available online)
+                  </label>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </form>
+    </Card>
   );
 }

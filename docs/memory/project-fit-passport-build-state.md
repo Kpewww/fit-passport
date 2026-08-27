@@ -12,7 +12,7 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 
 **Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**265 tests as of Session 56**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**273 tests as of Session 58**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -188,3 +188,35 @@ playwright is deliberately NOT a dependency):
 controls and 104 tappable elements** over 5.5 screens; the homepage runs 9.8. The
 least dense page is `/refresh`, and it is the only flow that already asks one
 question at a time. See [[project-fit-passport-next-steps]].
+
+---
+
+**SESSION 58 UPDATE (2026-08-27).** 265 → **273 tests**.
+
+**The closet add form is now a four-question flow, not an eleven-field grid.**
+`AddItemFlow` in `src/app/closet/page.tsx`, with its question set, FIC weights and
+readiness rule extracted to **`src/lib/addFlow.ts`** so `addFlow.test.ts` can hold
+them. Brand → category → size → fitDirection, one screen each, modelled on
+`/refresh`. The add-by-URL box lives on step 1 and skips ahead to the size question
+when extraction returns a brand and a category.
+
+**NEW INVARIANT:**
+㉙ **A question only belongs on the closet add path if `fitEngine.ts` reads its
+answer.** Measured by grep, not by intuition: `gender` and `color` appear **zero**
+times in `fitEngine.ts`, and `areaNotesJson` is stored and displayed but never
+scored. Those, plus name, photo and the in-store flag, sit behind "Add details
+(optional)" and stay editable on the item. The four that remain cost 12 + 5 + 10 + 3
+= **30 FIC, exactly the §3.2 first-run budget**, so any fifth question breaks it —
+`addFlow.test.ts` fails on both the budget and the missing engine use, verified red
+before being kept. Also pinned there: **category must be asked before size**, because
+`isValidSize(category, size)` would otherwise validate against the default category.
+
+**Measured effect** (same script, same account, 390px, `deviceScaleFactor=1`):
+input controls on `/closet` **28 → 15**, tappable elements **127 → 84**, height
+**5.5 → 4.5 screens**, sub-44px tap targets **21 → 14**, no horizontal overflow
+either way. The tap-target figure fell because fewer small controls are on screen at
+once, not because anything got bigger.
+
+**Note on the Session 56 numbers:** the sketch recorded 23 inputs / 104 tappable for
+this page. Different script, different closet contents — not comparable with the pair
+above, and neither is wrong.

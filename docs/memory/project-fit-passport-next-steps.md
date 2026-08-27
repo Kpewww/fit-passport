@@ -215,3 +215,40 @@ nouns, last because it is most likely to be wrong on the first try.
 - **Lockups (horizontal / stacked)** — still blocked on choosing the wordmark
   typeface. Italic Fraunces in the app is a placeholder, not a decision.
 - **Vector print PDF** — no blocker, just tooling. Can be done any time.
+
+---
+
+## UPDATE — Session 58 (2026-08-27)
+
+**Information-architecture move 1 is BUILT.** The `/closet` add form is now four
+questions on four screens (`AddItemFlow` + `src/lib/addFlow.ts`), down from an
+eleven-field grid: input controls 28 → 15, tappable elements 127 → 84, 5.5 → 4.5
+screens, measured before and after with the same script on the same account. Which
+four questions survive is pinned by `addFlow.test.ts` against the §3.2 FIC budget —
+see [[project-fit-passport-build-state]] invariant ㉙.
+
+**Still to do from the sketch, in order:**
+1. **Move 2 — earn the next question with a visible payoff.** Let the first size check
+   run on nothing, show a real answer at honest low confidence, and use that number
+   as the invitation to add one garment. The `conflictNote` and confidence value
+   already exist; today they explain, and they could invite.
+2. **Move 3 — intent-led entry** instead of a nav of schema nouns. Largest change,
+   most likely to be wrong first try, so it stays last.
+3. **Apply move 1 to the other asking surfaces** — `/onboarding` and the profile
+   measurement fields have not been through this treatment. `/check` is already
+   short (3 inputs, 2.4 screens) and probably does not need it.
+
+**Unchanged and still parked:** logo story on the site (belongs inside move 3's
+decision about what a first-time visitor reads), foundation-shade picker (researched
+proposal, not a sprint), lockups (blocked on the wordmark typeface), vector print PDF.
+
+**Design-tooling note:** Recraft's **API units are prepaid and separate from
+subscription credits** ($1 = 1,000 units; a token requires a non-zero API balance),
+so a web-app subscription does not enable programmatic use. Sourced from Recraft's own
+API pricing and getting-started docs, 2026-08-27. Nothing in the current backlog needs
+it: the mark is already a vector master, colourways are a `fill` change, and the one
+place generation would genuinely help is **badge motifs**, which are waiting on the
+founder's own reference art. Also worth carrying into that decision: the US Copyright
+Office holds that purely prompt-generated output is not copyrightable, while trademark
+protection does not require human authorship — so an AI-generated brand asset can
+still be a trademark but may carry no copyright.

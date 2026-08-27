@@ -1,8 +1,17 @@
 # Information architecture — why the app feels like work, and the shape of the fix
 
-> **Status: SKETCH. Nothing here is built.** Written 2026-08-27 at the founder's
-> request for "a rough outline first, don't build it yet". It states the problem
-> with measurements, proposes a direction, and stops.
+> **Status: move 1 BUILT (Session 58), moves 2 and 3 still sketch.** Written
+> 2026-08-27 at the founder's request for "a rough outline first, don't build it
+> yet", then acted on for the first move only. It states the problem with
+> measurements, proposes a direction, and stops.
+>
+> **Move 1 shipped 2026-08-27.** `/closet`'s eleven-field add form is now four
+> questions on four screens — `AddItemFlow`, with the question set and its FIC
+> justification in `app-web/src/lib/addFlow.ts` and pinned by `addFlow.test.ts`.
+> Measured on the same script and account, before → after: input controls 28 → 15,
+> tappable elements 127 → 84, 5.5 → 4.5 screens, sub-44px tap targets 21 → 14, no
+> horizontal overflow either way. (The table below was measured with a different
+> script on a different closet; the before/after pair here is the comparable one.)
 
 ## The complaint, and the measurement
 

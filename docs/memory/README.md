@@ -50,8 +50,9 @@ a bug: remove it and rotate the credential.
 
 ## Currency
 
-Everything here is current as of **Session 56 (2026-08-27)** — 265 tests, live,
-the Fit Thread mark and its favicon shipped, palette settled on cool porcelain. `docs/RESUME.md` is the cold-start brief and matches.
+Everything here is current as of **Session 58 (2026-08-27)** — 273 tests, live,
+the Fit Thread mark and its favicon shipped, palette settled on cool porcelain, and
+the closet add form rebuilt as a four-question flow. `docs/RESUME.md` is the cold-start brief and matches.
 
 Two habits this folder has had to learn the hard way, both recorded in
 [`principle-evidence-and-logging.md`](principle-evidence-and-logging.md):
