@@ -154,7 +154,7 @@ The master logo must be approved in pure black and white. Color should identify 
 | Role | Color | Hex |
 |---|---|---|
 | Primary ink | Ink Black | `#171416` |
-| Light ground | Warm Ivory | `#F3EFE7` |
+| Light ground | Cool Porcelain | `#F3F3F1` | *(decided 2026-08-27; Cool Porcelain `#F3F3F1` retired - the app already runs on cool porcelain and two systems disagreeing is worse than either)* |
 | Reverse | White | `#FFFFFF` |
 
 ### Accent candidates to test after silhouette approval
@@ -165,7 +165,7 @@ The master logo must be approved in pure black and white. Color should identify 
 | Deep Aubergine | `#2B172C` | Artistic, nocturnal, restrained luxury |
 | Ultramarine | `#2737B8` | Contemporary art and runway energy; use carefully to avoid a technology feel |
 
-Recommended starting system: **Ink Black + Warm Ivory + Oxblood**. Metallic finishes belong to the badge and passport-material system, not the master logo.
+Recommended starting system: **Ink Black + Cool Porcelain + Oxblood**. Metallic finishes belong to the badge and passport-material system, not the master logo.
 
 ## 11. Asset Format: What We Should Keep
 
@@ -265,7 +265,7 @@ Use the width of the inner thread stroke as the minimum clear space on all sides
 
 ### Backgrounds
 
-- Use Ink Black on Warm Ivory or white.
+- Use Ink Black on Cool Porcelain or white.
 - Use white on Ink Black or sufficiently dark photography.
 - Use Oxblood only after the monochrome mark is approved.
 - Never add a drop shadow, glow, bevel, or outline merely to increase contrast.

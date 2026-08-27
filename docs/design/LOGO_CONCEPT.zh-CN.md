@@ -154,7 +154,7 @@ Logo 母版必须先在纯黑和纯白环境中通过。颜色的作用是强化
 | 用途 | 颜色 | 色值 |
 |---|---|---|
 | 主墨色 | Ink Black | `#171416` |
-| 浅色背景 | Warm Ivory | `#F3EFE7` |
+| 浅色背景 | Cool Porcelain | `#F3F3F1` |
 | 反白 | White | `#FFFFFF` |
 
 ### 黑白轮廓通过后再测试的强调色
@@ -165,7 +165,7 @@ Logo 母版必须先在纯黑和纯白环境中通过。颜色的作用是强化
 | Deep Aubergine 深茄紫 | `#2B172C` | 艺术、夜间感、克制的高级感 |
 | Ultramarine 群青 | `#2737B8` | 当代艺术与秀场能量；需控制用量以免产生科技感 |
 
-建议从 **Ink Black + Warm Ivory + Oxblood** 开始。金属效果属于未来的徽章和 Passport 材质系统，不应进入主 Logo 母版。
+建议从 **Ink Black + Cool Porcelain + Oxblood** 开始。金属效果属于未来的徽章和 Passport 材质系统，不应进入主 Logo 母版。
 
 ## 11. 应该保存哪些 Logo 格式
 
@@ -260,7 +260,7 @@ docs/design/brand/
 
 ### 背景
 
-- Warm Ivory 或白色背景使用 Ink Black。
+- Cool Porcelain 或白色背景使用 Ink Black。
 - Ink Black 或足够深的照片背景使用反白版本。
 - 只有黑白版本通过后，才使用 Oxblood。
 - 不要为了增加对比而临时添加投影、发光、斜面或外描边。

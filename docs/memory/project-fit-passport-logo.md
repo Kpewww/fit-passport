@@ -19,7 +19,10 @@ Full narrative in `docs/design/LOGO_CONCEPT.md`; assets and the numbers in
   own file because print, embroidery and third-party tools ignore `currentColor`
   and would render it black on a dark ground.
 - **`fit-passport-mark-micro.svg`** — same path, stroked +16 units. **Not** a
-  scaled master.
+  scaled master. For 24–40 px.
+- **`fit-passport-mark-favicon.svg`** (+ `-reverse`) — a **different, simpler
+  glyph** for 16–20 px, drawn on a 16-unit grid with a 2-unit stroke so edges land
+  on pixel boundaries. Ships as `app-web/src/app/{favicon.ico,icon.svg,apple-icon.png}`.
 
 `app-web/src/components/Logo.tsx` is **generated from the master** — edit the SVG
 and re-derive, do not hand-tweak the path in the component. It picks micro under
@@ -50,11 +53,22 @@ bowl's counter fills · **16–20 illegible, both weights**.
   fifty-two device pixels and flatters the mark — that is how a logo ends up
   illegible in the one place it is smallest. `tests/size-test.mjs` renders both.
 
+## Traps
+
+- **A supplied "fixed" SVG (2026-08-27) was a bitmap in an SVG wrapper** — zero
+  paths, one `<rect>` filled by a `<pattern>` over an embedded PNG, 146 KB against
+  5 KB for the real vector. And its embedded PNG was **byte-identical** to one
+  already in the repo, so there was no redraw to adopt. **Check for `<path>` before
+  believing any SVG is vector**, whatever the filename says.
+- Supplied PDFs from the same tool are JPEG placements, not vector. Never generate
+  variants from them.
+
 ## BLOCKED, and on what
 
-- **Favicon.** No amount of thickening survives 16 px. It needs a **simplified
-  glyph** — fewer strokes, wider counters — which is a drawing decision, not an
-  export setting. The app still ships the previous mark's `favicon.ico`.
+- ~~Favicon~~ — **done 2026-08-27.** A 16x16 raster concept was supplied; the
+  concept was right (simplify to the P and its loop) but a lone 16 px bitmap has no
+  vector source for the 32/48/180 sizes browsers also want. Redrawn as vector:
+  **404 bytes** at 16 px against the raster's 10,197, and crisp at 24/32/48.
 - **Lockups (horizontal / stacked).** Blocked on choosing the wordmark typeface.
   The app pairs the mark with italic Fraunces today; that is a placeholder, not a
   decision.
@@ -63,9 +77,8 @@ bowl's counter fills · **16–20 illegible, both weights**.
   when it does: Oxblood `#781F2B` (recommended start), Deep Aubergine `#2B172C`,
   Ultramarine `#2737B8`, over Ink Black `#171416` and Warm Ivory `#F3EFE7`.
 
-**Note a palette tension for whoever picks the colour:** the logo system names
-**Warm Ivory `#F3EFE7`**, while the app's design system runs on **cool porcelain
-`#F3F3F1`** — Session 25 replaced warm ivory deliberately, and
-[[project-fit-passport-design-system]] says warm-ivory values found in the app are
-stale. Two systems currently disagree; someone has to decide which wins rather than
-letting both persist.
+**Palette: SETTLED 2026-08-27 — cool porcelain `#F3F3F1` wins.** The logo documents
+had named Warm Ivory `#F3EFE7` while the app ran on cool porcelain; two systems
+disagreeing was worse than either choice. Warm Ivory is retired everywhere,
+including the size-test harness. The mark is monochrome and inherits
+`currentColor`, so this changes the ground it is tested on, not the geometry.

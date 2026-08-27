@@ -177,3 +177,41 @@ stay parked until interviews happen.
   up before anyone sees the member roster.
 - Neon is `us-east-2` while Vercel functions run `iad1` — a ~10–15ms hop, not worth
   moving.
+
+
+---
+
+## UPDATE — Session 56 (2026-08-27)
+
+Done: favicon unblocked (vector glyph drawn, 404 bytes at 16 px, shipped as
+ico/svg/apple-icon); palette settled on **cool porcelain `#F3F3F1`**, Warm Ivory
+retired; a supplied "fixed" SVG was caught as a bitmap wrapper and archived rather
+than adopted. See [[project-fit-passport-logo]].
+
+**New top item — INFORMATION ARCHITECTURE.** Sketched in
+`docs/design/information-architecture.md`, **not built** (founder: rough outline
+only). Measured on a phone: `/closet` shows **23 input controls and 104 tappable
+elements** at once over 5.5 screens, the homepage runs **9.8 screens**. The least
+dense page is `/refresh` — and it is the only flow that already asks one question at
+a time. That pattern is the model; it already exists in the codebase.
+
+Three moves proposed, smallest first: (1) one question per screen wherever we ask
+for anything, arbitrated by the existing FIC budget; (2) earn the next question with
+a visible payoff — let the first check run on nothing and use the honest low
+confidence as the invitation; (3) intent-led entry instead of a list of schema
+nouns, last because it is most likely to be wrong on the first try.
+
+**Parked deliberately, with reasons:**
+- **Logo story on the site** — worth doing, but it is new content and the request
+  arrived alongside "there is already too much to read". Belongs inside the IA
+  rework, not appended to a 9.8-screen homepage.
+- **Foundation-shade picker** — a *second product surface*, not a feature. Coherent
+  with "one profile, any store" (shade codes are as incompatible across cosmetics
+  brands as sizes are across labels), but it shares nothing with `fitEngine.ts`, and
+  it introduces a **more sensitive data class than anything held today**: skin tone
+  sits close to an identity attribute, and the standing line about never inferring
+  ethnicity is much harder to hold when the input *is* skin colour. Needs a research
+  write-up and a governance decision before any code.
+- **Lockups (horizontal / stacked)** — still blocked on choosing the wordmark
+  typeface. Italic Fraunces in the app is a placeholder, not a decision.
+- **Vector print PDF** — no blocker, just tooling. Can be done any time.

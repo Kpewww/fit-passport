@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="none" role="img" aria-labelledby="t">
+<title id="t">Fit Passport favicon glyph, reverse</title>
+<!-- A SIMPLIFIED glyph, not a scaled master. Measured: neither the master nor the
+     thickened micro survives 16-20 true device pixels - the counters fill and the
+     mark becomes a smudge. Fewer strokes and a wider counter is the only thing
+     that works at that size, so this keeps the thread's signature (one continuous
+     line that curves over, loops, and descends) and drops everything else.
+     Drawn on a 16-unit grid with a 2-unit stroke so edges land on pixel
+     boundaries at 16px instead of being averaged into grey. -->
+<path d="M3.5 4.2C6 3 9.5 3 11 5C12.5 7 10.5 9.5 8 9.5C5.5 9.5 4.2 8 4.2 6V13"
+      stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

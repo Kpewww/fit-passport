@@ -31,6 +31,90 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-27 · Session 56 — The favicon gets drawn, and a "fixed" SVG that was a bitmap
+
+### The supplied replacement was not a repair
+
+A corrected `FP_logo_trans_back 1.svg` arrived to replace the flawed one. Checked
+before adopting: it contains **zero paths**. One `<rect>` filled by a `<pattern>`
+pointing at an embedded 1024x1024 RGBA PNG - 146 KB of SVG wrapper around a raster,
+against 5 KB for the genuine vector it was meant to replace.
+
+**And the bitmap inside is not new artwork.** Its SHA-256 is byte-for-byte identical
+to the PNG already sitting in the repo. So the question "is the smoothed redraw
+better, and should we adopt it?" has a flat answer: **there is no redraw.** The
+pixels are the ones we already had. The accompanying PDF is still a JPEG placement.
+
+Both are kept in `source-exports/` under names that say what they are. The canonical
+geometry stays `fit-passport-mark-master.svg`, which came from the original *real*
+vector. Worth stating plainly because the file name and the intent both said
+"fixed", and adopting it would have quietly swapped a vector master for a bitmap.
+
+### The favicon, unblocked
+
+Session 55 left the 16 px favicon blocked on a drawing rather than an export. A
+16x16 concept was supplied and it settles the *design* question: simplify to the P
+and its loop. As an asset it could not ship - a lone 16x16 raster with no vector
+source cannot produce the 32 / 48 / 180 sizes browsers also request, its interior
+was grey anti-aliasing rather than strokes, and C2PA metadata made a 16x16 image
+10,197 bytes.
+
+So the concept was **redrawn as vector**: one continuous line that curves over,
+loops and descends, on a 16-unit grid with a 2-unit stroke so edges land on pixel
+boundaries instead of averaging to grey. Four candidates were rendered at true
+device pixels and compared side by side against the supplied raster before picking.
+
+Result: **404 bytes** at 16 px, against 10,197 - and it stays crisp at 24, 32 and
+48, which the raster could not. Shipped as `favicon.ico` (16/32/48 in one
+container), `icon.svg` and `apple-icon.png` (180, on porcelain), all three picked up
+automatically by the App Router and verified being served.
+
+It is registered as a **separate asset from the micro mark**, not a replacement:
+micro is the full mark thickened, for 24-40 px; the favicon glyph is a different,
+simpler drawing for 16-20 px. Session 55's measurements are why both exist.
+
+### Palette settled
+
+The logo documents named Warm Ivory `#F3EFE7` as the light ground while the app runs
+on cool porcelain `#F3F3F1`. **Cool porcelain wins**, on the founder's call. Warm
+Ivory is retired across the logo concept documents and the size-test harness now
+tests the ground we actually ship.
+
+### Information architecture — measured, then sketched
+
+Asked for a rough outline of consolidating the app, explicitly not a build. Measured
+first, on a phone, logged in, with real data:
+
+`/closet` shows **23 input controls and 104 tappable elements** at once, over 5.5
+screens - on the page whose whole job is to make someone want to add three garments.
+The homepage runs **9.8 screens** and 578 words.
+
+The useful part is at the other end of the table: **the least dense page in the app
+is `/refresh`** - 22 actions, 93 words, 1.8 screens - and it is the only flow that
+already asks one question at a time. It is not lighter because it does less; it is
+lighter because it defers. That pattern already exists in this codebase and is the
+model the rest is missing.
+
+Diagnosis in `docs/design/information-architecture.md`: the app is organised around
+its **data model** (closet, passport, outfits, community are schema nouns) rather
+than around the three things a person actually arrives to do. Direction proposed in
+three moves, smallest first, with the existing interaction-cost budget as the tool
+that arbitrates which fields survive.
+
+**Two requests were deliberately not built, with reasons recorded.** The logo story
+on the site is worth doing but is new content, and the same message asking for it is
+the one saying there is already too much to read - it belongs inside the rework, not
+appended to a 9.8-screen homepage. And a foundation-shade picker is a second product
+surface, not a feature: it shares nothing with the fit engine, and it introduces a
+**more sensitive data class than anything the app holds today** - skin tone sits
+close to an identity attribute, and the project's own line about never inferring
+ethnicity is much harder to hold when the input is skin colour. Parked as a
+proposal needing research first.
+
+265 tests, clean build.
+
+---
+
 ## 2026-08-27 · Session 55 — The vector master, and the size at which this mark stops working
 
 Step 1 of the logo plan: turn the supplied transparent SVG into a real monochrome

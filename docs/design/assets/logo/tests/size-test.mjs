@@ -19,7 +19,7 @@ const strip = (s) => s.replace(/width="[^"]*"\s*height="[^"]*"/, "").replace('fi
 const SIZES = [16, 20, 24, 32, 48, 128];
 const GROUNDS = [
   ["White #FFFFFF", "#FFFFFF", "#171416"],
-  ["Warm Ivory #F3EFE7", "#F3EFE7", "#171416"],
+  ["Cool Porcelain #F3F3F1", "#F3F3F1", "#171416"],
   ["Ink Black #171416", "#171416", "#FFFFFF"],
 ];
 

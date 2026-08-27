@@ -20,12 +20,30 @@ fit-passport-mark-{colour}-{background}.{format}
 | `fit-passport-mark-master.svg` | Tight 536.03 × 501.64 viewBox; **one path**, `fill="currentColor"` | **The canonical master.** Recolour, resize, derive everything from this | **Production master** |
 | `fit-passport-mark-reverse.svg` | Same geometry, `fill="#ffffff"` | Dark grounds, and any tool that ignores `currentColor` (print, embroidery, third-party) | **Production** |
 | `fit-passport-mark-micro.svg` | Same path, stroked +16 units to thicken it | 24–40 px use. **Not** a scaled master — see the measurements below | **Production, with a stated floor** |
+| `fit-passport-mark-favicon.svg` | A **different, simplified glyph** on a 16-unit grid, 2-unit stroke | 16–20 px: favicons, app icons, anywhere below the micro floor | **Production** |
+| `fit-passport-mark-favicon-reverse.svg` | Same glyph, explicit white | Dark browser chrome and dark app icons | **Production** |
 | `fit-passport-mark-black-transparent.svg` | 1024 × 1024 viewBox; two vector paths | Figma import, light-background web prototypes, vector reconstruction reference | **Best current vector source, cleanup required** |
 | `fit-passport-mark-black-transparent.png` | 1024 × 1024 RGBA | Documents, decks, social/profile mockups, rapid prototypes | Ready for light backgrounds |
 | `fit-passport-mark-black-on-white.svg` | 1024 × 1024 viewBox; white background path plus black mark path | White-background layouts and reconstruction reference | Vector, but not the canonical master |
 | `fit-passport-mark-black-on-white.png` | 1024 × 1024 RGB | Documents and systems that require a flattened white background | Ready for white backgrounds |
 | `source-exports/fit-passport-mark-black-transparent-export.pdf` | One 768 × 768 pt page containing a 2048 × 2048 RGB JPEG | Archive/reference and simple placement workflows | **Flattened white; not transparent or vector** |
 | `source-exports/fit-passport-mark-black-on-white-export.pdf` | One 768 × 768 pt page containing a 2048 × 2048 RGB JPEG | Archive/reference and simple placement workflows | **Raster PDF; not a vector print master** |
+
+## Supplied "fixed" SVG, 2026-08-27 — it is a bitmap, not a repair
+
+A replacement `FP_logo_trans_back 1.svg` was supplied as a corrected vector. It is
+not. It contains **zero paths**: one `<rect>` filled by a `<pattern>` that
+references an embedded 1024x1024 RGBA PNG. 146 KB of SVG wrapper around a raster,
+against 5 KB for the genuine vector it was meant to replace.
+
+**And the bitmap inside it is not new artwork.** Its SHA-256 is byte-for-byte
+identical to `fit-passport-mark-black-transparent.png`, already in this directory.
+So there is no smoother redraw to adopt - the pixels are the ones we already had.
+The accompanying PDF is likewise still a JPEG placement, not vector.
+
+Both are kept in `source-exports/` under names that say what they are. **Do not
+use either to generate variants.** The canonical geometry remains
+`fit-passport-mark-master.svg`, which was derived from the original *real* vector.
 
 ## What the cleanup actually did (2026-08-27)
 
@@ -110,9 +128,14 @@ PDF or use them to generate future variants.
 5. `fit-passport-lockup-stacked.svg` — same blocker
 6. `fit-passport-mark-print.pdf` — a true vector PDF from the master. Not yet
    generated; no blocker beyond tooling
-7. **Favicon — blocked on a drawing, not an export.** See "The size floor,
-   measured": no thickening of this geometry survives 16 px. The app still ships
-   the previous mark's `favicon.ico`.
+7. ~~Favicon~~ — **unblocked and done 2026-08-27.** A simplified glyph was drawn
+   (`fit-passport-mark-favicon.svg`): one continuous line that curves over, loops
+   and descends, keeping the thread's signature and dropping everything the size
+   cannot hold. On a 16-unit grid with a 2-unit stroke, so edges land on pixel
+   boundaries instead of averaging to grey. The 16 px PNG is **404 bytes**; the
+   supplied raster concept it is based on was 10,197 bytes and had no vector
+   source, so it could not produce the 32 / 48 / 180 sizes browsers also ask for.
+   Shipped as `app-web/src/app/{favicon.ico,icon.svg,apple-icon.png}`.
 
 Only after those monochrome assets pass size and background testing should the team
 choose the permanent accent colour and begin motion or badge adaptation.
@@ -120,3 +143,15 @@ choose the permanent accent colour and begin motion or badge adaptation.
 See [LOGO_CONCEPT.md](../../LOGO_CONCEPT.md) or
 [LOGO_CONCEPT.zh-CN.md](../../LOGO_CONCEPT.zh-CN.md) for the full narrative,
 symbolism, colour direction, motion concept, and application rules.
+
+
+## Palette — settled 2026-08-27
+
+The logo system originally named **Warm Ivory `#F3EFE7`** as the light ground while
+the app runs on **cool porcelain `#F3F3F1`**. Two systems disagreeing is worse than
+either choice, so it is decided: **`#F3F3F1` (Cool Porcelain) wins.** Warm Ivory is
+retired; if you find it in a logo document it is stale.
+
+The mark is monochrome and inherits `currentColor`, so this changes nothing about
+the geometry - only the ground it is tested and presented on. `tests/size-test.mjs`
+tests against `#F3F3F1`.
