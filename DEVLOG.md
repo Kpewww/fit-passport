@@ -31,6 +31,90 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-28 · Session 61 — The invitation now knows what the answer was, and the mark explains itself
+
+Three things the founder asked for together: finish move 2, give `/passport` the same
+treatment as onboarding, and put the logo metaphor somewhere on the site.
+
+### Move 2's other half — the number becomes the invitation
+
+`/check` already ran on an empty profile and already showed a "how to sharpen this"
+panel. What it did not do was **connect them**: the panel's copy was written in
+advance and never saw the answer the person had just been given. That is the one
+moment where the cost of missing evidence is visible, and it was being spent on
+generic encouragement.
+
+Now the panel reads the result. On a tie it opens *"Every size scored the same"* and
+says plainly that this is not a low score but an absence of evidence. On a real
+answer it opens with the actual number — *"That answer is 47% confident"* — and each
+remaining step carries what it is worth.
+
+**The worth is the engine's own arithmetic, not copywriting.** `CONFIDENCE_WEIGHTS`
+now has one home and both the scorer and the UI read it.
+
+### Two things went wrong on the way, and both were caught by the work itself
+
+**The constant was in the wrong file.** Exporting it from `fitEngine.ts` and importing
+that into a client component pulled sizing, sizeSystems, brandBias, fitDirection and
+closetConsistency into the browser bundle: **/check went 8.91 kB → 10.2 kB** for one
+object literal, because the tree-shaker could not drop the rest. Moved to
+`lib/confidenceWeights.ts`, a leaf with no imports — back to 9.33 kB, the difference
+being the new copy. One home *and* not the whole engine; those pull against each
+other and a leaf module is how both hold.
+
+**The first version of the copy overclaimed, and my own test failed it.** I wrote
+"worth +35 points" and asserted the delta equals the weight. It doesn't: a bare case
+measures **0.18, not 0.30**, because the raw sum passes through six caps and
+multipliers — cross-domain, report consistency, top-2 margin, signal agreement, and
+hard caps at 0.6 and 0.4. Every one can only shrink it, so the truthful word is
+**"up to"**, and the tests now pin what is actually true (confidence never exceeds
+the weight sum; never exceeds the floor with no evidence) instead of an equality I
+had assumed. **The copy was corrected to match the code, not the other way round** —
+which is the only acceptable direction when the product's claim is that its numbers
+are checkable.
+
+### `/passport` — the smaller change was the right one
+
+The measured problem was 10 inputs across 3.3 screens on a phone. The obvious move
+was to rebuild the form the way onboarding was rebuilt. That would have been wrong.
+
+`/passport` in edit mode is an **edit surface**: someone who came to change one
+number should see all of them, and Session 58 made exactly this call about the
+closet's edit form. The real defect is narrower — an empty passport *opens in edit
+mode*, so a first-time visitor was being met by eight blank number fields with no
+guided path offered, even though one now exists.
+
+So an empty passport now shows a short offer for `/onboarding` above the grid — an
+offer, not a redirect, with the fields still right there — and `/check`'s "add your
+measurements" CTA points at the guided flow rather than the raw grid. The grid is
+untouched. **Applying a treatment by rote because it worked somewhere else is not the
+same as fixing the thing that was wrong.**
+
+### The mark, on the site
+
+`/help` gains a "The mark" section, with the logo rendered at 96px **beside** the
+words rather than described elsewhere: the straight run is the measurement, the loop
+is the garment it comes back around to, and the point is that a measurement is only
+worth something once it closes around real clothing. It also states the size floor in
+plain language, so the browser-tab icon being a different glyph reads as a decision
+rather than an inconsistency.
+
+Placed next to the artwork on purpose — a metaphor a reader cannot check against the
+thing itself is just an assertion.
+
+### Verified
+
+Typecheck clean, lint clean, **300 → 304 tests**, clean production build after
+`rm -rf .next`, bundle sizes checked rather than assumed, and all three walked in a
+browser at 390px: the tie copy and the "up to +35 / +25" lines render, the empty
+passport shows the guided offer above its ten fields, and `/help` renders the mark
+with no overflow.
+
+**Still open:** information-architecture move 3 (intent-led entry) — the largest of
+the three and the most likely to be wrong on a first try, which is why it is last.
+
+---
+
 ## 2026-08-28 · Session 60 — Two ways the engine was inventing an answer
 
 The founder asked why the closet had "gone back" to a complicated form. It hadn't —

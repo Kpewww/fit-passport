@@ -291,3 +291,34 @@ first screen**, 3.2 → **1.9 screens** at 390px.
 
 **Also:** `/check` now shows the API's human `message` on a refusal instead of the
 machine slug — the route writes a careful sentence and the page was throwing it away.
+
+---
+
+**SESSION 61 (2026-08-28) — the invitation is grounded in the answer.** 300 → 304 tests.
+
+㉟ **`CONFIDENCE_WEIGHTS` lives in `lib/confidenceWeights.ts`, a leaf module with no
+imports — not in `fitEngine.ts`.** Two forces, both real. It must have ONE home
+because `/check` now tells people what a measurement or a closet garment is worth,
+and that promise has to be the arithmetic the scorer runs (the four-copy colour
+palette, invariant ㉛, is the counterexample). But importing it *from the engine*
+pulled sizing, sizeSystems, brandBias, fitDirection and closetConsistency into the
+client bundle — **measured: /check went 8.91 → 10.2 kB, back to 9.33 kB once the
+constant moved to its own file.** A shared constant that a client component needs
+belongs in a leaf, not in the module that happens to use it most.
+
+㊱ **The UI says "up to +35 points", and the "up to" is load-bearing.** A first draft
+claimed a flat +35 and a test caught it: `computeConfidence`'s raw sum then passes
+through **six** caps and multipliers — cross-domain 0.35, report consistency, top-2
+margin, signal agreement, and hard caps at 0.6 and 0.4 — every one of which can only
+shrink it. A bare floor case measures **0.18, not the 0.30** the constant alone
+implies. The tests now pin the property that is true (confidence never exceeds the
+weight sum; never exceeds the floor with no evidence) rather than the equality that
+isn't, and the copy was corrected to match the code rather than the reverse.
+
+㊲ **`/passport`'s edit grid stays dense, on purpose.** It is an EDIT surface —
+someone changing one number should see all of them — and Session 58 made the same
+call about the closet's edit form. What was wrong was *defaulting a first-time
+visitor into it*: an empty passport opens in edit mode, so a newcomer met eight blank
+number fields (10 inputs, 3.3 screens at 390px). An empty passport now offers the
+guided `/onboarding` above the grid — an offer, not a redirect, and `/check`'s
+"add your measurements" CTA points there too.

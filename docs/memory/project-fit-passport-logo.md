@@ -91,3 +91,14 @@ build inputs, not documentation. `src/lib/logoAsset.test.ts` fails if `Logo.tsx`
 inlined path, viewBox or micro stroke width drifts from the assets — see
 [[project-fit-passport-build-state]] invariant ㉚. The concept write-up stays at
 `docs/design/LOGO_CONCEPT.md`.
+
+---
+
+**SESSION 61 (2026-08-28) — the metaphor is now ON the site.** `/help` has a "The
+mark" section that shows the mark at 96px beside the story: the straight run is the
+**measurement**, the loop is the **garment it comes back around to**, and the point
+being made is that a measurement is only worth something once it closes around real
+clothing. It also states the size floor in plain language, so the favicon being a
+different glyph reads as a decision rather than an inconsistency. Placed next to the
+artwork deliberately — a metaphor a reader cannot check against the thing itself is
+just a claim.

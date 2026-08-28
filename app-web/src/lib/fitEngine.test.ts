@@ -11,6 +11,7 @@
 
 import { describe, expect, it } from "vitest";
 import { recommend, type EngineInput } from "./fitEngine";
+import { CONFIDENCE_WEIGHTS } from "./confidenceWeights";
 
 // Approximated Uniqlo AIRism T-shirt garment measurements.
 const UNIQLO_TEE_SIZES = [
@@ -63,6 +64,61 @@ describe("cold-start behavior", () => {
       }),
     );
     expect(out.best.label).toBe("M");
+  });
+});
+
+describe("confidence weights — the number the UI promises is the number the engine adds", () => {
+  // /check tells people a measurement is "worth +35 points" and a closet garment
+  // "+25". That is only defensible if it is this exact arithmetic. A second copy
+  // in the UI would drift silently — which is what happened to the colour palette
+  // before it was consolidated (invariant ㉛). These tests are the tripwire.
+  // The first version of these tests asserted the delta EQUALLED the weight, and
+  // failed: a bare case measures 0.18, not the 0.30 the floor implies. The raw
+  // sum then passes through six caps and multipliers (cross-domain, report
+  // consistency, top-2 margin, signal agreement, and two hard caps). Every one
+  // can only shrink it — which is why the UI says "up to". The tests now pin the
+  // property that is actually true, and the copy was corrected to match it
+  // rather than the other way round.
+  const WEIGHT_CEILING =
+    CONFIDENCE_WEIGHTS.floor +
+    CONFIDENCE_WEIGHTS.measurements +
+    CONFIDENCE_WEIGHTS.closetAnchor +
+    CONFIDENCE_WEIGHTS.chartShoulder +
+    CONFIDENCE_WEIGHTS.chartSleeve;
+
+  it("never exceeds the sum of its own weights", () => {
+    const rich = recommend(
+      baseInput({
+        profile: { chestCm: 96, preferredFit: "regular" },
+        sizes: [
+          { label: "M", chestCm: 100, shoulderCm: 45, sleeveCm: 21 },
+          { label: "L", chestCm: 106, shoulderCm: 47, sleeveCm: 22 },
+        ],
+        knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5 }],
+      }),
+    );
+    for (const r of rich.ranked) expect(r.confidence).toBeLessThanOrEqual(WEIGHT_CEILING);
+  });
+
+  it("never exceeds the floor when it has no evidence at all", () => {
+    const out = recommend(baseInput());
+    for (const r of out.ranked) expect(r.confidence).toBeLessThanOrEqual(CONFIDENCE_WEIGHTS.floor);
+  });
+
+  it("rises when a measurement arrives, and when a closet anchor does", () => {
+    const sizes = [{ label: "M", chestCm: 100 }, { label: "L", chestCm: 106 }];
+    const bare = recommend(baseInput({ sizes }));
+    const withChest = recommend(baseInput({ sizes, profile: { chestCm: 96, preferredFit: "regular" } }));
+    const withAnchor = recommend(
+      baseInput({ sizes, knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5 }] }),
+    );
+    expect(withChest.best.confidence).toBeGreaterThan(bare.best.confidence);
+    expect(withAnchor.best.confidence).toBeGreaterThan(bare.best.confidence);
+  });
+
+  it("weights measurements above a closet anchor, which is the order the UI lists them in", () => {
+    expect(CONFIDENCE_WEIGHTS.measurements).toBeGreaterThan(CONFIDENCE_WEIGHTS.closetAnchor);
+    expect(CONFIDENCE_WEIGHTS.closetAnchor).toBeGreaterThan(CONFIDENCE_WEIGHTS.chartShoulder);
   });
 });
 

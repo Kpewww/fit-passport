@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Card } from "@/components/ui";
 import { BadgeSeal } from "@/components/Badges";
 import { BADGES, METAL_STYLE } from "@/lib/badges";
+import { Logo } from "@/components/Logo";
 
 // Earn conditions come straight from each badge's own `blurb` in badges.ts —
 // a single source of truth, so this table can never drift from the real rules.
@@ -73,6 +74,38 @@ export default function HelpPage() {
             Pin up to 3 earned badges to your passport from the{" "}
             <Link href="/badges" className="text-brand hover:underline">badge library</Link>.
           </p>
+        </Section>
+
+        {/* The mark, with the mark itself beside it — a metaphor explained next to
+            the thing it explains, rather than as a paragraph somewhere it can't be
+            checked against. */}
+        <Section title="The mark">
+          <Card className="!p-5">
+            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
+              <div className="flex-shrink-0 self-start text-ink sm:self-center">
+                <Logo size={96} />
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-ink">It&apos;s called Fit Thread.</p>
+                <p className="mt-1.5 text-sm text-ink-soft">
+                  One continuous thread draws an <strong>F</strong> and a <strong>P</strong>,
+                  and never lifts. The straight run is the <strong>measurement</strong> — the
+                  tape, the number, the thing that is actually true about you. The loop is
+                  the <strong>garment</strong> it comes back around to.
+                </p>
+                <p className="mt-2 text-sm text-ink-soft">
+                  That is the whole product in one line: a measurement is only worth
+                  something once it closes around a real piece of clothing. Your closet is
+                  where the thread comes back.
+                </p>
+                <p className="mt-2 text-xs text-ink-faint">
+                  Drawn as a single path so it survives being stamped small — though not
+                  infinitely small: below about 20 pixels the loop fills in, which is why
+                  the browser-tab icon is a simpler glyph rather than this one shrunk.
+                </p>
+              </div>
+            </div>
+          </Card>
         </Section>
 
         <div className="mt-8 flex gap-3 text-sm">

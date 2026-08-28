@@ -33,6 +33,7 @@ import { domainForCategory } from "./sizeSystems";
 import { biasForBrand, type BrandBias } from "./brandBias";
 import { directionToLadderShift, describeDirection, isDirectional } from "./fitDirection";
 import { reportConsistency } from "./closetConsistency";
+import { CONFIDENCE_WEIGHTS } from "./confidenceWeights";
 
 // ------------ Input contracts ------------
 
@@ -475,11 +476,11 @@ function combine(reasons: Reason[], floor: number): number {
 
 /** Confidence is a function of *how much* data we combined, not the score itself. */
 function computeConfidence(size: SizeOptionInput, hasKnownGood: boolean, hasChest: boolean): number {
-  let c = 0.3;
-  if (hasChest && size.chestCm != null) c += 0.35;
-  if (hasKnownGood) c += 0.25;
-  if (size.shoulderCm != null) c += 0.05;
-  if (size.sleeveCm != null) c += 0.05;
+  let c = CONFIDENCE_WEIGHTS.floor;
+  if (hasChest && size.chestCm != null) c += CONFIDENCE_WEIGHTS.measurements;
+  if (hasKnownGood) c += CONFIDENCE_WEIGHTS.closetAnchor;
+  if (size.shoulderCm != null) c += CONFIDENCE_WEIGHTS.chartShoulder;
+  if (size.sleeveCm != null) c += CONFIDENCE_WEIGHTS.chartSleeve;
   return Math.min(1, c);
 }
 

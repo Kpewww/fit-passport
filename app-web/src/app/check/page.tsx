@@ -13,6 +13,7 @@ import {
 import { convert, detectScale, scalesForDomain } from "@/lib/sizeConvert";
 import type { SizeDomain } from "@/lib/sizeSystems";
 import { FitFigure } from "@/components/FitFigure";
+import { CONFIDENCE_WEIGHTS } from "@/lib/confidenceWeights";
 
 type SizeScore = {
   label: string;
@@ -250,7 +251,12 @@ function CheckInner() {
             almost nothing, so be honest about it and show exactly what would
             sharpen it. Shown above the result too, since that's when it matters. */}
         {status && status.accuracy !== "high" && !loading && (
-          <SignalGuide status={status} hasResult={!!data} />
+          <SignalGuide
+            status={status}
+            hasResult={!!data}
+            confidence={data?.result.undetermined ? undefined : data?.result.best.confidence}
+            undetermined={data?.result.undetermined}
+          />
         )}
 
         {err && (
@@ -366,19 +372,46 @@ function LiveConverter() {
 
 // An honest "how good is this answer, and how do I improve it" panel. The engine
 // is transparent by design, so we say plainly what it does and doesn't know yet.
-function SignalGuide({ status, hasResult }: { status: Status; hasResult: boolean }) {
+function SignalGuide({
+  status,
+  hasResult,
+  confidence,
+  undetermined,
+}: {
+  status: Status;
+  hasResult: boolean;
+  /** The confidence of the answer just given, 0..1. Undefined before any check. */
+  confidence?: number;
+  /** True when nothing separated the sizes — see EngineOutput.undetermined. */
+  undetermined?: boolean;
+}) {
+  // The numbers below come from the engine's own confidence arithmetic, not from
+  // copywriting — see CONFIDENCE_WEIGHTS, which is the same constant the scorer
+  // adds.
+  //
+  // "up to" is load-bearing, and was corrected before shipping: the raw sum then
+  // passes through six caps and multipliers (cross-domain, report consistency,
+  // top-2 margin, signal agreement, and two hard caps), every one of which can
+  // only SHRINK it. A flat "+35" would have been an overclaim, and a test caught
+  // it — a bare floor case measures 0.18, not the 0.30 the constant alone implies.
+  const pts = (w: number) => `up to +${Math.round(w * 100)} points`;
+
   const steps = [
     {
       done: status.hasBody,
       label: "Add your measurements",
-      why: "Lets us compare you to the product's actual size chart.",
-      href: "/passport",
-      cta: "Open passport",
+      why: `Lets us compare you to the product's actual size chart — worth ${pts(
+        CONFIDENCE_WEIGHTS.measurements,
+      )} of confidence when the chart states a chest.`,
+      href: "/onboarding",
+      cta: "Add measurements",
     },
     {
       done: status.closetCount >= 3,
       label: "Add 3 clothes that fit you well",
-      why: "The strongest signal there is — we learn how each brand runs on you.",
+      why: `The strongest signal there is — we learn how each brand runs on you. One garment of the same type is worth ${pts(
+        CONFIDENCE_WEIGHTS.closetAnchor,
+      )}.`,
       href: "/closet",
       cta: "Add to closet",
       progress: status.closetCount > 0 ? `${status.closetCount}/3 added` : undefined,
@@ -398,17 +431,33 @@ function SignalGuide({ status, hasResult }: { status: Status; hasResult: boolean
     <div className="mt-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
       <div className="border-b border-line bg-paper-soft px-6 py-4">
         <p className="eyebrow text-ink-faint">
-          {hasResult ? "How to sharpen this recommendation" : "Before you paste a link"}
+          {undetermined
+            ? "Why there's no answer yet"
+            : hasResult
+              ? "How to sharpen this recommendation"
+              : "Before you paste a link"}
         </p>
+        {/* The invitation is grounded in the answer just given. Generic copy here
+            would waste the one moment the person can actually SEE what the missing
+            evidence costs them — which is the whole argument for letting a first
+            check run on an empty profile. */}
         <h3 className="mt-2 font-serif text-2xl leading-tight text-ink">
-          {status.closetCount === 0 && !status.hasBody
-            ? "Right now we'd be guessing."
-            : "Good start — here's what's still missing."}
+          {undetermined
+            ? "Every size scored the same."
+            : confidence != null
+              ? `That answer is ${Math.round(confidence * 100)}% confident.`
+              : status.closetCount === 0 && !status.hasBody
+                ? "Right now we'd be guessing."
+                : "Good start — here's what's still missing."}
         </h3>
         <p className="mt-2 max-w-xl text-sm text-ink-soft">
-          {status.closetCount === 0 && !status.hasBody
-            ? "We can read any product page, but with nothing about you we can only fall back on the brand's own chart. Two minutes of setup changes the answer completely."
-            : "Each of these makes the engine measurably more confident — and every recommendation still shows its reasoning."}
+          {undetermined
+            ? "That isn't a low score, it's a tie — we had nothing about you to break it with. Either of the first two below turns this into a real recommendation."
+            : confidence != null
+              ? "Confidence is arithmetic here, not a feeling: it starts at 30 and rises with each piece of evidence we actually have. Here's what's still on the table."
+              : status.closetCount === 0 && !status.hasBody
+                ? "We can read any product page, but with nothing about you we can only fall back on the brand's own chart. Two minutes of setup changes the answer completely."
+                : "Each of these makes the engine measurably more confident — and every recommendation still shows its reasoning."}
         </p>
       </div>
       <ul className="divide-y divide-line">

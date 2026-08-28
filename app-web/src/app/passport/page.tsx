@@ -7,7 +7,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Button, Card } from "@/components/ui";
+import { Button, Card, LinkButton } from "@/components/ui";
 import { BodyFigure } from "@/components/BodyFigure";
 import { deriveBodyType } from "@/lib/bodyType";
 import { Avatar, BadgeSeal, EarnedSealRow } from "@/components/Badges";
@@ -200,6 +200,15 @@ export default function PassportPage() {
   }
 
   // ---------- EDIT MODE — the existing inline-editable book ----------
+  //
+  // The grid below is an EDIT surface, and it stays dense on purpose: someone who
+  // came here to change one number should see all of them at once, and Session 58
+  // made the same call about the closet's edit form. What is NOT right is meeting
+  // a first-time visitor with eight empty number fields — measured at 10 visible
+  // inputs across 3.3 screens on a 390px phone. `/onboarding` is the guided path
+  // now, so an empty passport offers that instead of dropping straight into the
+  // grid. It is an offer, not a redirect — the fields are right below it.
+  const isEmptyPassport = !hasContent(profile);
   return (
     <main className="flex-1 bg-paper py-10">
       <div className="mx-auto max-w-2xl px-4 sm:px-6">
@@ -209,6 +218,20 @@ export default function PassportPage() {
           </button>
           <Button size="md" onClick={() => setMode("view")}>Done editing</Button>
         </div>
+
+        {isEmptyPassport && (
+          <div className="mb-4 rounded-2xl border border-line bg-paper-soft px-5 py-4">
+            <p className="font-serif text-lg text-ink">Starting from nothing?</p>
+            <p className="mt-1 text-sm text-ink-soft">
+              There&apos;s a guided version of this — three questions, one at a time, and
+              every measurement optional. Or fill in whatever you know below; the two
+              write to the same passport.
+            </p>
+            <div className="mt-3">
+              <LinkButton href="/onboarding" size="md">Take me through it →</LinkButton>
+            </div>
+          </div>
+        )}
         {/* PASSPORT BOOK */}
         <div className="overflow-hidden rounded-2xl bg-white shadow-lift ring-1 ring-neutral-200">
           {/* Cover strip */}
