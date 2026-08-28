@@ -12,7 +12,7 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 
 **Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**273 tests as of Session 58**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**285 tests as of Session 59**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -157,7 +157,7 @@ documentation, brand and measurement rather than engine work.
 the published docs; the work itself is unchanged.
 
 **Brand.** `src/components/Logo.tsx` now renders the **Fit Thread** mark and is
-**generated from `docs/design/assets/logo/fit-passport-mark-master.svg`** — edit the
+**generated from `brand/fit-passport-mark-master.svg`** — edit the
 SVG and re-derive rather than hand-editing the path in the component. It picks
 weight automatically: micro under 40px, master above. Favicon assets live at
 `src/app/{favicon.ico,icon.svg,apple-icon.png}` and are picked up automatically by
@@ -180,7 +180,7 @@ playwright is deliberately NOT a dependency):
 - `app-web/scripts/mobile-audit.mjs` — element rectangles at phone viewports.
   Measures rectangles, not document scroll width, because `body`'s `overflow-x-clip`
   hides overflow rather than making it scrollable.
-- `docs/design/assets/logo/tests/size-test.mjs` — the mark at real sizes and true
+- `brand/tests/size-test.mjs` — the mark at real sizes and true
   device pixels, on the approved grounds.
 
 **Information architecture is sketched, NOT built** —
@@ -220,3 +220,34 @@ once, not because anything got bigger.
 **Note on the Session 56 numbers:** the sketch recorded 23 inputs / 104 tappable for
 this page. Different script, different closet contents — not comparable with the pair
 above, and neither is wrong.
+
+---
+
+**SESSION 59 UPDATE (2026-08-28).** 273 → **285 tests**. A tidying pass, no product
+change.
+
+**Repo layout changed: `brand/` is now top-level.** The logo masters, delivery
+exports, archived raw exports and `tests/size-test.mjs` moved out of
+`docs/design/assets/logo/`. **`docs/` is what you read; `brand/` is what the app and
+the print files are built from.** The written story stays in
+`docs/design/LOGO_CONCEPT.md`. Old DEVLOG entries still name the old path on purpose.
+
+**NEW INVARIANTS:**
+㉚ **`Logo.tsx` inlines the master's path as a string — it does not load the SVG.**
+So the artwork of record and what users see are two copies. `src/lib/logoAsset.test.ts`
+fails when they drift (path, viewBox, and `MICRO_STROKE` against the micro asset's
+`stroke-width`), and re-checks ㉗ on every shipped mark: a `<path>` present, no
+`<image>` and no embedded base64 bitmap. Verified red on a 0.01-unit nudge before
+being kept. **If it fails, re-derive the component from the SVG — never the reverse.**
+㉛ **The garment colour palette has exactly one home: `src/lib/colors.ts`.** It had
+four (closet page, `/refresh`, `/u/[code]`, `OutfitMannequin`) in two different
+shapes. They agreed by luck; nothing enforced it, and a colour added to the picker
+would have rendered as **no dot** on the three pages that never heard about it.
+`colorHex` returns null when it cannot resolve (draw nothing); `colorHexOr` takes a
+fallback, for the mannequin, which must paint something.
+
+**Also:** `credentials_layout.html` was a design mockup at the repo root under a name
+that tripped the standing credential sweep on every commit — now
+`docs/design/passport-card-mockup.html`. No orphaned components or lib modules
+(checked by import). Both READMEs now list `docs/memory/` and `docs/RESUME.md`, which
+they had never mentioned.

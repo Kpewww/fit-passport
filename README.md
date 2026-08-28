@@ -100,17 +100,26 @@ app-web/
     auth.ts / authEdge.ts  # HMAC sessions (Node + Edge, byte-compatible)
   prisma/schema.prisma     # data model (SQLite locally, Postgres in prod)
   middleware.ts       # mints the session cookie before any API call
+brand/                # the Fit Thread mark — BUILD INPUTS, not documentation.
+                      #   Logo.tsx renders the master's path; a test fails if they drift
 docs/
+  RESUME.md           # cold-start brief: read this first in a new session
   DEPLOYMENT.md       # Vercel + Neon runbook
-  design/             # design notes (identity threat model, community ecosystem plan)
+  memory/             # why the project is the way it is — decisions, invariants, traps
+  design/             # design notes and research (fit algorithm, IA, identity, logo story)
   business/           # business model, positioning, risk & legal review
   prospectus/         # prospectus and badge-system design document
   proposals/          # original proposal PDFs
 DEVLOG.md             # per-session development log — decisions, and what they cost
 ```
 
+**Where things live.** `docs/` is what you *read*; `brand/` is what the app and the
+print files are *built from*. The mark used to sit under `docs/design/assets/`, which
+made it look optional — it is not, and `src/lib/logoAsset.test.ts` now fails if
+`Logo.tsx` and the master SVG disagree.
+
 **Stack:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
-Vitest (**265 tests**) · Framer Motion (motion) · three.js (lazy, badge inspect only).
+Vitest (**285 tests**) · Framer Motion (motion) · three.js (lazy, badge inspect only).
 
 Key design decisions worth knowing before contributing:
 
@@ -162,6 +171,9 @@ Full runbook, env-var table, verification checklist, known limitations and costs
 | Value Proposition Canvas | [docs/business/value-proposition-canvas.md](docs/business/value-proposition-canvas.md) |
 | Customer interview guide | [docs/business/interview-guide.md](docs/business/interview-guide.md) |
 | Risks, legal & governance | [docs/business/risks-and-legal.md](docs/business/risks-and-legal.md) |
+| Logo concept and rationale | [docs/design/LOGO_CONCEPT.md](docs/design/LOGO_CONCEPT.md) · [简体中文](docs/design/LOGO_CONCEPT.zh-CN.md) |
+| Brand asset manifest — which file to use where | [brand/README.md](brand/README.md) |
+| Project memory — decisions, invariants, traps | [docs/memory/README.md](docs/memory/README.md) |
 | Development log | [DEVLOG.md](DEVLOG.md) |
 
 ---

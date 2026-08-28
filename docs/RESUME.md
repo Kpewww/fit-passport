@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 58 · 2026-08-27 — LIVE, 273 tests, closet add form rebuilt as a four-question flow.**
+> **Last updated: Session 59 · 2026-08-28 — LIVE, 285 tests, `brand/` moved to the repo root.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -36,10 +36,10 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 **技术栈:** Node 24 LTS + **Next.js 14.2.35** App Router + React 18 + TS +
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
 Framer Motion(**Lenis 已移除**);three.js 仅徽章 inspect 懒加载。
-命令:`npm run dev`、`npm run typecheck`、`npm test`(**273 个**)、`npm run build`、
+命令:`npm run dev`、`npm run typecheck`、`npm test`(**285 个**)、`npm run build`、
 改 schema 后 `npm run db:push`(**还必须建 migration**,见铁律 10)、生成文档 PDF `npm run docs:pdf`。
 测量工具:`app-web/scripts/mobile-audit.mjs`(移动端布局)、
-`docs/design/assets/logo/tests/size-test.mjs`(标志尺寸)。两者都需 `npx playwright install chromium`。
+`brand/tests/size-test.mjs`(标志尺寸)。两者都需 `npx playwright install chromium`。
 **每轮结束务必:tsc + test + build + live smoke 全过 → commit & push → 更新
 DEVLOG + memory。**
 
@@ -55,7 +55,7 @@ DEVLOG + memory。**
 
 ---
 
-## 现状(Session 58 · 2026-08-27)
+## 现状(Session 59 · 2026-08-28)
 
 **已上线:https://fit-passport.vercel.app** — Vercel + Neon Postgres + Upstash
 Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密码在 Session 41
@@ -88,6 +88,11 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
   `src/lib/addFlow.ts`)。实测:输入控件 **28 → 15**,可点元素 **127 → 84**,
   **5.5 → 4.5 屏**。留哪四个问题由 FIC 预算决定并由 `addFlow.test.ts` 钉住
   (铁律 ㉙)。
+
+**Session 59(整理):**
+- **`brand/` 移到仓库根目录** —— 标志是构建输入不是文档。`docs/` 是读的,
+  `brand/` 是构建用的;设计说明仍留在 `docs/design/LOGO_CONCEPT.md`。
+- 颜色调色板从 **4 份合并成 1 份**(`src/lib/colors.ts`)。
 
 **下一步:见 `docs/memory/project-fit-passport-next-steps.md` 底部的当前清单。**
 (客户访谈**已由创始人推迟**;信息架构第 2、3 步是接下来的事。)
@@ -124,6 +129,9 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
 19. **衣橱添加流程只问引擎会读的东西**——`gender`/`color` 在 `fitEngine.ts` 里
     出现 **0 次**,`areaNotesJson` 只存不算。四个问题合计 30 FIC,正好是首次预算
     上限,加第五个就破线,`addFlow.test.ts` 会红。**且必须先问品类再问尺码**。
+20. **`Logo.tsx` 是把母版路径当字符串内联的,不是读 SVG 文件**。两份要靠
+    `logoAsset.test.ts` 守住;不一致时**从 SVG 重新导出组件,不能反过来**。
+21. **颜色调色板只有 `src/lib/colors.ts` 一份**。曾经有四份,靠运气一致。
 
 ## 已有的关键系统(别重造)
 

@@ -107,17 +107,25 @@ app-web/
     auth.ts / authEdge.ts  # HMAC 会话(Node + Edge,字节级兼容)
   prisma/schema.prisma     # 数据模型(本地 SQLite,生产 Postgres)
   middleware.ts       # 在任何 API 调用之前铸造会话 cookie
+brand/                # Fit Thread 标志 —— **构建输入,不是文档**。
+                      #   Logo.tsx 直接渲染母版路径,两者不一致时测试会失败
 docs/
+  RESUME.md           # 冷启动简报:新会话先读这份
   DEPLOYMENT.md       # Vercel + Neon 部署手册
-  design/             # 设计文档(身份威胁模型、社区生态规划、抓取策略、成本模型)
+  memory/             # 项目为何是现在这样 —— 决定、铁律、踩过的坑
+  design/             # 设计文档与研究(合身算法、信息架构、身份威胁模型、标志)
   prospectus/         # 招股书式项目介绍、徽章设计文档、Founder Brief
   business/           # 商业模式、定位与讯息架构、风险与法律
   proposals/          # 最初的提案 PDF
 DEVLOG.md             # 逐次开发日志 —— 记决定,以及决定的代价
 ```
 
+**目录划分的逻辑**:`docs/` 是**读**的,`brand/` 是应用和印刷件**构建时用**的。
+标志原本放在 `docs/design/assets/` 下,看上去像是可有可无的附件 —— 它不是。
+现在 `src/lib/logoAsset.test.ts` 会在 `Logo.tsx` 与母版 SVG 不一致时报错。
+
 **技术栈:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
-Vitest(**265 个测试**)· Framer Motion(动效)· three.js(懒加载,仅用于徽章 inspect)。
+Vitest(**285 个测试**)· Framer Motion(动效)· three.js(懒加载,仅用于徽章 inspect)。
 
 **Node 版本:** 当前在 Node 24 LTS 上开发与部署。早期文档里"锁定 Node 18.20"
 是上一台开发机的限制,不是项目要求,换机时已解除。
@@ -169,6 +177,9 @@ migration 需要的会话级 advisory lock。
 | Value Proposition Canvas | [docs/business/value-proposition-canvas.md](docs/business/value-proposition-canvas.md) |
 | 客户访谈提纲 | [docs/business/interview-guide.md](docs/business/interview-guide.md) |
 | 风险、法律与治理 | [docs/business/risks-and-legal.md](docs/business/risks-and-legal.md) |
+| 标志设计说明 | [docs/design/LOGO_CONCEPT.zh-CN.md](docs/design/LOGO_CONCEPT.zh-CN.md) |
+| 品牌素材清单 —— 哪个文件用在哪 | [brand/README.md](brand/README.md) |
+| 项目记忆 —— 决定、铁律、踩过的坑 | [docs/memory/README.md](docs/memory/README.md) |
 | 开发日志 | [DEVLOG.md](DEVLOG.md) |
 
 ---

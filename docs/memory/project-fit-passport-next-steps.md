@@ -252,3 +252,19 @@ founder's own reference art. Also worth carrying into that decision: the US Copy
 Office holds that purely prompt-generated output is not copyrightable, while trademark
 protection does not require human authorship — so an AI-generated brand asset can
 still be a trademark but may carry no copyright.
+
+---
+
+## UPDATE — Session 59 (2026-08-28)
+
+Tidying, no product change. **Done:** colour palette de-duplicated from four copies
+into `src/lib/colors.ts`; **`brand/` moved to the repo root** because the app builds
+from those files; a drift test added between `Logo.tsx` and the master SVG;
+`credentials_layout.html` renamed and filed as the design mockup it is; both READMEs
+corrected. 273 → 285 tests.
+
+**Removed from the hygiene list** (all now done): the four-copy colour helper.
+
+**The queue is unchanged otherwise.** Next up is still information-architecture move
+2 — let the first size check run on nothing and use the honest low confidence as the
+invitation to add a garment.

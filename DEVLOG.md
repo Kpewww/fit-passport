@@ -31,6 +31,61 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-28 · Session 59 — One colour palette, and the brand assets stop pretending to be documentation
+
+A tidying pass, prompted by two observations: the colour helper flagged at the end
+of Session 58, and the founder's point that the logo does not belong in `docs/`
+because we build from it.
+
+**The colour palette had four copies.** `COLOR_PRESETS` and `colorHex` lived
+separately in the closet page, `/refresh`, `/u/[code]` and `OutfitMannequin`, in two
+different shapes — an ordered `{name, hex}[]` for the picker grid, a `name → hex` map
+for everything that turns a stored colour back into a dot. All four agreed when they
+were merged, so there was no live bug. There was also nothing making them agree: a
+colour added to the picker would simply have rendered as *no dot* on the three pages
+that never heard about it, which is the kind of failure nobody reports.
+
+Now one `src/lib/colors.ts`, with `colorHex` (null when it cannot resolve, so no
+swatch is drawn) and `colorHexOr` (for the mannequin, which must paint something).
+Verified live afterwards rather than assumed: 21 swatches still resolve on `/closet`
+with navy/charcoal/black/grey correct to the hex, and the mannequin still falls back
+on `/outfits`.
+
+**`brand/` is now a top-level directory.** The masters, delivery exports, archived
+raw exports and the size-test moved out of `docs/design/assets/logo/`. The founder's
+reasoning was right and the mechanism was worse than it looked: `Logo.tsx` does not
+load the SVG, it **inlines the master's path as a string**, so the artwork of record
+and the thing users actually see were two hand-synced copies with nothing enforcing
+the sync. They happened to be identical — checked, all 3,499 characters — but that
+was luck maintained by care, not by anything structural.
+
+`src/lib/logoAsset.test.ts` now fails if they drift: the path, the viewBox, and the
+micro stroke width against the micro asset. Verified red before being kept — nudging
+one coordinate by 0.01 in the master fails the test. It also re-checks Session 55's
+trap on every shipped mark: a `<path>` must be present and no `<image>` or embedded
+base64 bitmap, because a filename cannot tell you whether an SVG is a vector.
+
+The written story stays in `docs/design/LOGO_CONCEPT.md`. The split is now: **`docs/`
+is what you read, `brand/` is what things are built from.** Old DEVLOG entries still
+name the old path on purpose — they were accurate when written, and rewriting history
+to look tidy is how a log stops being evidence.
+
+**`credentials_layout.html` was neither.** A design mockup for the glass credential
+card, sitting at the repository root under a name that reads like a secrets file. It
+tripped the standing pre-commit credential sweep every time, which is how a sweep
+gets ignored. Moved to `docs/design/passport-card-mockup.html`, which is what it is.
+
+**Also swept:** no orphaned components or lib modules (checked by import, not by
+eye); both READMEs had a stale test count and a directory map that omitted
+`docs/memory/` and `docs/RESUME.md` entirely — the two files a new contributor most
+needs — now fixed in English and Chinese.
+
+**Verified:** typecheck clean, lint clean, **273 → 285 tests**, clean production
+build after `rm -rf .next`, the size-test script runs from its new home, and the
+colour rendering re-checked in a live browser.
+
+---
+
 ## 2026-08-27 · Session 58 — The closet stops asking eleven questions at once
 
 The information-architecture sketch from Session 56 becomes the first real change.

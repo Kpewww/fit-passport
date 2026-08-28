@@ -11,7 +11,7 @@
 English edition: [LOGO_CONCEPT.md](LOGO_CONCEPT.md)  
 PDF 版本：[LOGO_CONCEPT.zh-CN.pdf](LOGO_CONCEPT.zh-CN.pdf)
 
-![Fit Passport 当前选定的线形字母组合标志。](assets/logo/fit-passport-mark-black-transparent.png)
+![Fit Passport 当前选定的线形字母组合标志。](../../brand/fit-passport-mark-black-transparent.png)
 
 *当前选定标志。独立 PNG 可用于概念记录和近期原型；最终 Logo 仍需重新制作成干净的矢量文件。*
 
@@ -193,14 +193,14 @@ Logo 母版必须先在纯黑和纯白环境中通过。颜色的作用是强化
 ## 12. 如何提取左上角 Logo
 
 目前已经获得并统一整理了六份源导出文件，完整清单与准确能力说明见
-[`assets/logo/README.md`](assets/logo/README.md)。其中两份可以立即使用的 PNG 为：
+[`brand/README.md`](../../brand/README.md)。其中两份可以立即使用的 PNG 为：
 
 - `fit-passport-mark-black-transparent.png` - 带透明通道的 RGBA 文件，适合近期原型和文档；
 - `fit-passport-mark-black-on-white.png` - 白色背景 RGB 文件，适合普通演示文稿和参考图。
 
 透明版本保留了较充足的画布留白，实际可见图形约占 538 × 503 px，位于画布中央。这两份文件已经是很实用的交付资产，但依然属于位图，不能直接取代可编辑的矢量母版。
 
-两份 SVG 都包含真正的矢量路径。其中透明 SVG 是当前最好的重建来源，但内部仍有一条白色修补路径，在重新上色或制作反白版本前必须清理。两份 PDF 内部都只是被压平的 RGB JPEG，并非矢量路径；标记为透明的 PDF 也已经变成白底。因此它们被保存在 `assets/logo/source-exports/` 中作为原始导出记录，而不能作为印刷母版。
+两份 SVG 都包含真正的矢量路径。其中透明 SVG 是当前最好的重建来源，但内部仍有一条白色修补路径，在重新上色或制作反白版本前必须清理。两份 PDF 内部都只是被压平的 RGB JPEG，并非矢量路径；标记为透明的 PDF 也已经变成白底。因此它们被保存在 `brand/source-exports/` 中作为原始导出记录，而不能作为印刷母版。
 
 ### 最佳方法：回到生成它的原始设计文件
 

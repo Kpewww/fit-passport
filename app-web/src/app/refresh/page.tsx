@@ -21,6 +21,7 @@ import { Button, Card, EmptyState, LinkButton } from "@/components/ui";
 import { garmentGlyph, garmentLabel } from "@/lib/garments";
 import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionInput";
 import { DIRECTION_DEFAULT, DIRECTION_OPTIONS, nearestOption } from "@/lib/fitDirection";
+import { colorHex } from "@/lib/colors";
 
 type Item = {
   id: string;
@@ -390,19 +391,6 @@ function GarmentThumb({ item }: { item: Item }) {
       {glyph}
     </div>
   );
-}
-
-const COLOR_PRESETS: Record<string, string> = {
-  black: "#1a1a1a", white: "#f5f5f5", grey: "#9ca3af", charcoal: "#374151",
-  navy: "#1f2a44", blue: "#3b82f6", denim: "#4a6fa5", beige: "#d8c3a5",
-  cream: "#f0e9d6", brown: "#6b4f3a", olive: "#6b7443", green: "#4b7a53",
-  sage: "#9caf88", teal: "#2f8f83", burgundy: "#6d2036", red: "#b03a3a",
-  rust: "#b5622f", mustard: "#d0a028", pink: "#dba0b0", purple: "#7c5aa8",
-};
-function colorHex(c: string | null): string | null {
-  if (!c) return null;
-  if (/^#[0-9a-f]{3,8}$/i.test(c)) return c;
-  return COLOR_PRESETS[c.toLowerCase()] ?? null;
 }
 
 export default function RefreshPage() {

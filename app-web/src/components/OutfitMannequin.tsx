@@ -15,6 +15,7 @@
 // generatePhotoPreview scaffold at the bottom) without changing callers.
 
 import type { VolumeBand, TorsoShape } from "@/lib/bodyType";
+import { colorHexOr } from "@/lib/colors";
 
 export type OutfitLayer = { category: string; color?: string | null };
 
@@ -28,18 +29,7 @@ const BAND: Record<VolumeBand | "unknown", { shoulder: number; waist: number }> 
   unknown: { shoulder: 20, waist: 15 },
 };
 
-const COLOR_PRESETS: Record<string, string> = {
-  black: "#1a1a1a", white: "#f5f5f5", grey: "#9ca3af", charcoal: "#374151",
-  navy: "#1f2a44", blue: "#3b82f6", denim: "#4a6fa5", beige: "#d8c3a5",
-  cream: "#f0e9d6", brown: "#6b4f3a", olive: "#6b7443", green: "#4b7a53",
-  sage: "#9caf88", teal: "#2f8f83", burgundy: "#6d2036", red: "#b03a3a",
-  rust: "#b5622f", mustard: "#d0a028", pink: "#dba0b0", purple: "#7c5aa8",
-};
-function hex(c: string | null | undefined, fallback: string): string {
-  if (!c) return fallback;
-  if (/^#[0-9a-f]{3,8}$/i.test(c)) return c;
-  return COLOR_PRESETS[c.toLowerCase()] ?? fallback;
-}
+const hex = (c: string | null | undefined, fallback: string) => colorHexOr(c, fallback);
 
 // Which body zone a garment category paints.
 type Zone = "top" | "bottom" | "shoe" | "head" | "neck" | "none";

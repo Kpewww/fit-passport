@@ -1,5 +1,11 @@
 # Fit Passport Logo Asset Manifest
 
+> **These are build inputs, not documentation.** They moved out of
+> `docs/design/assets/logo/` in Session 59 because the app renders from them:
+> `app-web/src/components/Logo.tsx` carries the master's path, and
+> `src/lib/logoAsset.test.ts` fails if the two ever drift. The written story
+> behind the mark stays in [docs/design/LOGO_CONCEPT.md](../docs/design/LOGO_CONCEPT.md).
+
 This directory contains the selected **Fit Thread** logo-mark exports. The naming
 pattern is:
 
@@ -140,8 +146,8 @@ PDF or use them to generate future variants.
 Only after those monochrome assets pass size and background testing should the team
 choose the permanent accent colour and begin motion or badge adaptation.
 
-See [LOGO_CONCEPT.md](../../LOGO_CONCEPT.md) or
-[LOGO_CONCEPT.zh-CN.md](../../LOGO_CONCEPT.zh-CN.md) for the full narrative,
+See [LOGO_CONCEPT.md](../docs/design/LOGO_CONCEPT.md) or
+[LOGO_CONCEPT.zh-CN.md](../docs/design/LOGO_CONCEPT.zh-CN.md) for the full narrative,
 symbolism, colour direction, motion concept, and application rules.
 
 

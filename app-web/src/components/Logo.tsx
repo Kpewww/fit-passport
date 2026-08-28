@@ -2,7 +2,7 @@
 //
 // One continuous thread draws an F and a P: the thread is the measurement line,
 // the loop is the garment it comes back around to. Geometry is the cleaned master
-// in docs/design/assets/logo/fit-passport-mark-master.svg; this file is generated
+// in brand/fit-passport-mark-master.svg; this file is generated
 // from it, so edit the SVG and re-derive rather than hand-tweaking the path here.
 //
 // WHY THERE ARE TWO WEIGHTS. The master's stroke is 24 units on a 536-wide

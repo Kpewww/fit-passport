@@ -9,7 +9,7 @@ metadata:
 The mark is **Fit Thread**: one continuous line drawing an F and a P, the line
 standing for the measurement and the loop for the garment it comes back around to.
 Full narrative in `docs/design/LOGO_CONCEPT.md`; assets and the numbers in
-`docs/design/assets/logo/README.md`.
+`brand/README.md`.
 
 ## The production files (cleaned 2026-08-27)
 
@@ -82,3 +82,12 @@ had named Warm Ivory `#F3EFE7` while the app ran on cool porcelain; two systems
 disagreeing was worse than either choice. Warm Ivory is retired everywhere,
 including the size-test harness. The mark is monochrome and inherits
 `currentColor`, so this changes the ground it is tested on, not the geometry.
+
+---
+
+**SESSION 59 (2026-08-28) — the assets moved.** They now live in **`brand/`** at the
+repo root, not `docs/design/assets/logo/`, because the app builds from them: they are
+build inputs, not documentation. `src/lib/logoAsset.test.ts` fails if `Logo.tsx`'s
+inlined path, viewBox or micro stroke width drifts from the assets — see
+[[project-fit-passport-build-state]] invariant ㉚. The concept write-up stays at
+`docs/design/LOGO_CONCEPT.md`.
