@@ -79,6 +79,8 @@ type CheckResponse = {
     ranked: SizeScore[];
     best: SizeScore;
     explanation: string;
+    /** Nothing separated the sizes — `best` is ladder order, not a pick. */
+    undetermined?: boolean;
     domainNote: string | null;
     domainRelevance: "match" | "cross" | "empty";
     conflictNote: string | null;
@@ -132,7 +134,17 @@ function CheckInner() {
         body: JSON.stringify({ url: targetUrl }),
       });
       const j = await r.json();
-      if (!r.ok) throw new Error(typeof j.error === "string" ? j.error : "check failed");
+      // Prefer the API's human sentence over its machine code. A refusal here is
+      // the product working correctly — "we don't size footwear yet, and here is
+      // why" — and showing the raw slug `unsupported-category` instead throws away
+      // the whole explanation.
+      if (!r.ok) {
+        throw new Error(
+          typeof j.message === "string" ? j.message
+            : typeof j.error === "string" ? j.error
+            : "check failed",
+        );
+      }
       setData(j);
       setFit(j.effectiveFit as FitPref);
     } catch (e: unknown) {
@@ -527,23 +539,39 @@ function Result({
         </div>
       )}
 
-      {/* THE ANSWER + fit toggle */}
+      {/* THE ANSWER + fit toggle.
+          When the engine reports `undetermined`, every size scored identically and
+          `best` is just the first rung of the ladder — so we must NOT print it in
+          48px type with a confidence ring beside it. Showing a number there would
+          dress ladder order up as a recommendation, which is the exact failure this
+          product exists to avoid. */}
       <Card className="border-l-4 border-l-brand">
-        <div className="flex items-center justify-between gap-4">
+        {result.undetermined ? (
           <div>
-            <p className="text-xs uppercase tracking-widest text-brand">Recommended size</p>
-            <p className={`mt-1 text-5xl font-bold text-ink transition-opacity ${reranking ? "opacity-40" : ""}`}>
-              {result.best.label}
+            <p className="text-xs uppercase tracking-widest text-ink-faint">No recommendation yet</p>
+            <p className="mt-1 font-serif text-3xl text-ink">We can&apos;t tell these apart.</p>
+            <p className="mt-2 text-sm text-ink-soft">
+              All {result.ranked.length} sizes scored the same, so any pick would be ours, not
+              yours. The two things that break the tie are below.
             </p>
-            {result.best.normalized && result.best.normalized !== result.best.label && (
-              <p className="mt-1 text-sm text-ink-faint">≈ {result.best.normalized}</p>
-            )}
           </div>
-          <div className="text-center">
-            <ConfidenceRing value={result.best.confidence} />
-            <p className="mt-1 text-xs text-ink-faint">confidence</p>
+        ) : (
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-brand">Recommended size</p>
+              <p className={`mt-1 text-5xl font-bold text-ink transition-opacity ${reranking ? "opacity-40" : ""}`}>
+                {result.best.label}
+              </p>
+              {result.best.normalized && result.best.normalized !== result.best.label && (
+                <p className="mt-1 text-sm text-ink-faint">≈ {result.best.normalized}</p>
+              )}
+            </div>
+            <div className="text-center">
+              <ConfidenceRing value={result.best.confidence} />
+              <p className="mt-1 text-xs text-ink-faint">confidence</p>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Fit preference toggle — default regular; preview others live */}
         <div className="mt-4">

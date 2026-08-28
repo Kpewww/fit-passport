@@ -251,3 +251,43 @@ that tripped the standing credential sweep on every commit — now
 `docs/design/passport-card-mockup.html`. No orphaned components or lib modules
 (checked by import). Both READMEs now list `docs/memory/` and `docs/RESUME.md`, which
 they had never mentioned.
+
+---
+
+**SESSION 60 (2026-08-28) — two ways the engine was inventing answers, found by
+driving the live site rather than reading it.** 285 → 300 tests.
+
+㉜ **`/api/check` refuses any category the engine cannot score.** The scoreable set
+is `SCOREABLE_DOMAINS` in `sizeSystems.ts` — **`top` and `bottom` only** — and it
+lives there, not in the route, because adding to it is not a UI decision: it needs a
+real `FitProfile` field to compare against. There is no foot length, head or neck
+measurement, so footwear, socks and accessories cannot be scored at all. Without the
+guard, `buildSizes` in `extractor.ts` hands a shoe page **the same letter ladder and
+chest measurements it would give a t-shirt**, and the engine dutifully scores them:
+measured on production, a men's sneaker URL returned **"XS" at 24% confidence**. This
+is invariant ⑪ extended to the case its wording missed — a page we *can* read, for a
+garment we cannot measure anyone against.
+
+㉝ **A total tie is reported as `undetermined`, never as a pick.** When no signal
+produces a reason and every candidate scores identically, `best` is just the first
+rung of the ladder. Measured before the flag existed: an empty profile with an empty
+closet returned **XS at 0.24 on a t-shirt**, all five sizes tied at 0.20, with an
+explanation claiming the pick was *"based on your closet and preference"* — a closet
+that did not exist. `/check` now renders "We can't tell these apart" instead of a
+48px size with a confidence ring, and the "Alternative: S is close" line is
+suppressed, because calling the second rung close implies the first was ahead of it.
+**Ladder position is not evidence.**
+
+㉞ **The onboarding question set is governed the same way the closet's is.**
+`lib/onboardingFlow.ts` + `onboardingFlow.test.ts`, mirroring `addFlow`. Engine
+reference counts settled it: `chestCm` 32 · `shoulderCm` 19 · `waistCm` 15 ·
+`region` 15 · `preferredFit` 12 · `sex` 9, against **`hipCm` 0 · `heightCm` 0 ·
+`weightKg` 0 · `inseamCm` 0 · `shopsFor` 0 · `notes` 0**. The engine's five
+`sleeveCm` hits are the GARMENT's sleeve on `SizeOptionInput` — the wearer's own
+sleeve is never scored, which looks like a hit in a grep and is pinned by a test for
+exactly that reason. **`BLOCKING_STEPS` is empty and a test enforces it**: a first
+size check must be able to run on an empty profile. 10 visible inputs → **0 on the
+first screen**, 3.2 → **1.9 screens** at 390px.
+
+**Also:** `/check` now shows the API's human `message` on a refusal instead of the
+machine slug — the route writes a careful sentence and the page was throwing it away.

@@ -40,6 +40,35 @@ export function domainForCategory(category: string): SizeDomain {
   return CATEGORY_DOMAIN[category.toLowerCase()] ?? "top";
 }
 
+/**
+ * The domains the fit engine can honestly score, and the ONLY place that list
+ * lives.
+ *
+ * The engine works by comparing a body measurement to a garment measurement.
+ * `FitProfile` holds chest, waist, hip, shoulder, sleeve and inseam — which
+ * covers tops and bottoms. It holds nothing for a foot, a head or a neck, so a
+ * shoe, a sock and a hat have no measurement to be scored against.
+ *
+ * Adding a domain here is therefore not a UI decision: it requires a real body
+ * field to compare with, or the engine will fabricate an answer. `/api/check`
+ * refuses anything outside this list — see the guard there for what that looked
+ * like in production before it existed.
+ */
+export const SCOREABLE_DOMAINS: readonly SizeDomain[] = ["top", "bottom"];
+
+const DOMAIN_LABEL: Record<SizeDomain, string> = {
+  top: "tops",
+  bottom: "bottoms",
+  shoe: "footwear",
+  sock: "socks",
+  accessory: "accessories",
+};
+
+/** Plain-English plural for a domain, for user-facing copy. */
+export function domainLabel(domain: SizeDomain): string {
+  return DOMAIN_LABEL[domain];
+}
+
 export const ALPHA_SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
 
 // Preset chips offered in the picker, per domain. These are the "click once"

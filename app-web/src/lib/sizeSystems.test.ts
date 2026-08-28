@@ -1,5 +1,43 @@
 import { describe, expect, it } from "vitest";
-import { domainForCategory, isValidSize, presetSizesFor } from "./sizeSystems";
+import {
+  SCOREABLE_DOMAINS,
+  domainForCategory,
+  domainLabel,
+  isValidSize,
+  presetSizesFor,
+} from "./sizeSystems";
+
+describe("what the engine may score", () => {
+  // Production, before this guard existed: a men's sneaker URL came back
+  // "XS" at 24% confidence, because the estimated-size fallback hands every
+  // category the same letter ladder with chest measurements attached. The
+  // engine has no foot length to compare against, so the number was invented.
+  it("scores only the domains FitProfile has a measurement for", () => {
+    expect([...SCOREABLE_DOMAINS].sort()).toEqual(["bottom", "top"]);
+  });
+
+  it("refuses footwear, socks and accessories", () => {
+    for (const category of ["sneakers", "shoes", "boots", "socks", "hat", "belt", "scarf"]) {
+      expect(SCOREABLE_DOMAINS).not.toContain(domainForCategory(category));
+    }
+  });
+
+  it("still allows every top and bottom", () => {
+    for (const category of ["tshirt", "shirt", "sweater", "jacket", "hoodie", "polo",
+                            "pants", "jeans", "shorts", "skirt"]) {
+      expect(SCOREABLE_DOMAINS).toContain(domainForCategory(category));
+    }
+  });
+
+  // Adding a domain here without adding the body field it needs would put the
+  // fabricated-answer bug straight back. This is the tripwire for that.
+  it("names every domain in plain English for the refusal message", () => {
+    for (const d of ["top", "bottom", "shoe", "sock", "accessory"] as const) {
+      expect(domainLabel(d)).toMatch(/^[a-z]+$/);
+    }
+    expect(domainLabel("shoe")).toBe("footwear");
+  });
+});
 
 describe("sizeSystems", () => {
   it("maps categories to the right domain", () => {

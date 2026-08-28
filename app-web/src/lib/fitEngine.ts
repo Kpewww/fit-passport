@@ -122,6 +122,19 @@ export type EngineOutput = {
   ranked: SizeScore[];
   best: SizeScore;
   explanation: string;
+  /**
+   * True when NOTHING discriminated between the sizes: no signal contributed a
+   * reason, and every candidate scored identically. `best` is then simply the
+   * first rung of the ladder, and presenting it as a recommendation would be
+   * inventing an answer.
+   *
+   * Measured before this existed: an empty profile with an empty closet returned
+   * **XS at 0.24 confidence** on a t-shirt, with all five sizes tied at 0.20 and
+   * an explanation claiming it was "based on your closet and preference" — a
+   * closet that did not exist. Ladder position is not evidence. The honest
+   * output is to say we cannot tell them apart yet, and what would change that.
+   */
+  undetermined: boolean;
   // Set when the closet evidence is a different domain than the product, so the
   // UI can warn the recommendation is weak. Null when evidence is on-domain.
   domainNote: string | null;
@@ -766,16 +779,30 @@ export function recommend(input: EngineInput): EngineOutput {
     }
   }
 
+  // Nothing told these sizes apart: no signal produced a reason, and every
+  // candidate carries the same score. `best` is then the first rung of the
+  // ladder and nothing more.
+  const undetermined =
+    best.reasons.length === 0 &&
+    ranked.length > 1 &&
+    ranked.every((r) => Math.abs(r.score - best.score) < 1e-6);
+
+  // Suppress the "alternative" line when everything ties — calling the second
+  // rung "close" implies the first was ahead of it, and it wasn't.
   const alt =
-    !edgeNote && ranked[1] && ranked[1].score > best.score - 0.08
+    !undetermined && !edgeNote && ranked[1] && ranked[1].score > best.score - 0.08
       ? `\nAlternative: ${ranked[1].label} is close — consider it if you prefer ${profile.preferredFit === "slim" ? "extra room" : "a snugger fit"}.`
       : "";
-  const explanation =
-    (topReasons.length > 0
-      ? topReasons.join("\n")
-      : "Limited product data — recommendation based on your closet and preference.") +
-    edgeNote +
-    alt;
+  const explanation = undetermined
+    ? "We can't tell these sizes apart yet — we found no size chart we could read against you, " +
+      "and nothing in your closet to compare with. Every size here scored the same, so picking " +
+      "one would be guessing. Add your chest measurement, or one garment of this type that fits " +
+      "you well, and this becomes a real answer."
+    : (topReasons.length > 0
+        ? topReasons.join("\n")
+        : "Limited product data — recommendation based on your closet and preference.") +
+      edgeNote +
+      alt;
 
   // Cross-domain disclaimer: the closet is all a different garment domain than
   // what we're sizing, so warn the user plainly.
@@ -788,7 +815,7 @@ export function recommend(input: EngineInput): EngineOutput {
       `measurements and preference. Add a ${humanDomain(productDomain)} you own for a real recommendation.`;
   }
 
-  return { ranked, best, explanation, domainNote, domainRelevance, conflictNote };
+  return { ranked, best, explanation, undetermined, domainNote, domainRelevance, conflictNote };
 }
 
 /** Human name for a size domain, for disclaimers. */

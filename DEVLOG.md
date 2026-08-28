@@ -31,6 +31,119 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-28 · Session 60 — Two ways the engine was inventing an answer
+
+The founder asked why the closet had "gone back" to a complicated form. It hadn't —
+but chasing that produced two defects worth more than the question did, both found by
+**driving the live site with a browser instead of reading the code**.
+
+### The closet was fine; the pages either side of it were not
+
+Measured on production at 390px: `/closet`'s add flow shows **1 visible input**
+("ADD AN ITEM · 1 OF 4"). Session 58 landed and is live. But `/onboarding` shows
+**10** and `/passport` shows **10**, and Session 58's own notes say those surfaces
+were explicitly not done. My report of that session said the closet was rebuilt and
+did not say the pages around it were untouched — which is how "it didn't work" is the
+reasonable conclusion from the outside. The measurement is the fix for that, not the
+explanation.
+
+### Defect 1 — a size for a garment we cannot measure
+
+A men's sneaker URL returned **"XS" at 24% confidence** in production.
+
+`buildSizes` in `extractor.ts` ignores the size domain entirely: it branches on
+`system === "eu"` and otherwise returns `XS…XL` **with chest measurements attached**,
+whatever the category. So a shoe page gets a t-shirt's ladder, and the engine scores
+those chest numbers against the shopper. `FitProfile` holds chest, waist, hip,
+shoulder, sleeve and inseam — **nothing for a foot** — so there was never a number to
+compare with. The answer was not merely low-confidence; it was invented.
+
+`SCOREABLE_DOMAINS` in `sizeSystems.ts` is now the single home for what may be
+scored — `top` and `bottom` — and `/api/check` returns **422 `unsupported-category`**
+for anything else, with a sentence explaining why rather than a slug. Put in
+`sizeSystems.ts` deliberately: adding a domain there is not a UI decision, it needs a
+body field to compare against, and the test says so.
+
+### Defect 2 — ladder position presented as a recommendation
+
+Worse, and only visible because the first defect sent me looking. An **empty profile
+with an empty closet**, on a t-shirt:
+
+```
+XS  score=0.2  conf=0.24  reasons=0
+S   score=0.2  conf=0.24  reasons=0
+M   score=0.2  conf=0.24  reasons=0     ← all five identical
+L   score=0.2  conf=0.24  reasons=0
+XL  score=0.2  conf=0.24  reasons=0
+best: XS   explanation: "Limited product data — recommendation based on
+                         your closet and preference."
+```
+
+Three things wrong at once. **XS was the first rung of the ladder**, not a pick.
+The explanation named a closet that did not exist. And the UI offered *"Alternative: S
+is close"* — S was not close, it was **identical**.
+
+The engine already detected this state (`topReasons.length === 0`); it just had a
+false sentence for it. Now `EngineOutput.undetermined` is set when no signal produced
+a reason and every candidate ties, `/check` renders **"We can't tell these apart"**
+instead of a 48px size beside a confidence ring, the alternative line is suppressed,
+and the explanation says what would break the tie.
+
+This one matters beyond the bug: **the whole point of information-architecture move 2
+is to let a first size check run on nothing.** Building that invitation on top of a
+fabricated XS would have taken the product's worst behaviour and put it on the first
+screen a visitor sees.
+
+### Onboarding, rebuilt the way the closet was
+
+`lib/onboardingFlow.ts` + `onboardingFlow.test.ts`, mirroring `addFlow`. Which
+questions survive was settled by grepping the scoring modules, not by taste:
+
+    chestCm 32 · shoulderCm 19 · waistCm 15 · region 15 · preferredFit 12 · sex 9
+    ---- never read ----
+    hipCm 0 · heightCm 0 · weightKg 0 · inseamCm 0 · shopsFor 0 · notes 0
+
+The engine's five `sleeveCm` hits are the **garment's** sleeve on `SizeOptionInput`.
+The wearer's own sleeve is never scored — it looks like a hit until you read it, so a
+test pins it.
+
+Three steps, one screen each: how you like things to fit → which charts to read you
+against → any measurements you know. Five unscored numbers plus `shopsFor` and
+`notes` moved behind a disclosure that says plainly the fit engine does not read them.
+Nothing was deleted; all of it stays editable.
+
+**`BLOCKING_STEPS` is empty, and a test enforces it.** If a gate ever appears here it
+should have to be argued for — the engine answers on an empty profile, so demanding
+ten questions first throws away an honest answer to collect data the person may not
+have to hand. The skip is a first-class link, not fine print.
+
+Measured, 390px, `deviceScaleFactor=1`, before and after:
+
+| /onboarding | before | after |
+|---|---|---|
+| Visible inputs | 10 | **0 on the first screen** |
+| Screens tall | 3.2 | **1.9** |
+| Horizontal overflow | none | none |
+
+### Verified
+
+Typecheck clean, lint clean (three pre-existing warnings elsewhere), **285 → 300
+tests**, clean production build after `rm -rf .next`. Both new guards were **checked
+red before being kept**: adding `shoe` to `SCOREABLE_DOMAINS` fails two assertions,
+and forcing `undetermined` to false fails three.
+
+Then walked through a real browser against the built app: the three onboarding steps
+save; a sneaker URL is refused in the UI with the human sentence; and an empty profile
+on a t-shirt now reads *"No recommendation yet — we can't tell these apart"* instead
+of XS.
+
+**Not done:** move 2's other half — using the honest confidence number as the
+invitation to add a garment. The invitation panel already exists on `/check` ("Right
+now we'd be guessing"); wiring it to the actual number is the remaining piece, and it
+is now safe to build on. `/passport`'s ten inputs are untouched.
+
+---
+
 ## 2026-08-28 · Session 59 — One colour palette, and the brand assets stop pretending to be documentation
 
 A tidying pass, prompted by two observations: the colour helper flagged at the end

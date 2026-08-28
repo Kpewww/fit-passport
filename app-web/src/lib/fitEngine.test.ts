@@ -66,6 +66,45 @@ describe("cold-start behavior", () => {
   });
 });
 
+describe("undetermined — when nothing tells the sizes apart", () => {
+  // Measured on a production build before this flag existed: an empty profile
+  // with an empty closet returned "XS" at 0.24 confidence on a t-shirt, with all
+  // five sizes tied at 0.20 and an explanation claiming the pick was "based on
+  // your closet and preference" — a closet that did not exist. XS was simply the
+  // first rung of the ladder. Ladder position is not evidence.
+  it("flags a total tie instead of returning the first rung as a pick", () => {
+    const out = recommend(baseInput());
+    expect(out.undetermined).toBe(true);
+    const top = out.ranked[0].score;
+    expect(out.ranked.every((r) => Math.abs(r.score - top) < 1e-6)).toBe(true);
+  });
+
+  it("says so plainly, and does not claim a closet it does not have", () => {
+    const out = recommend(baseInput());
+    expect(out.explanation).toMatch(/can't tell these sizes apart/i);
+    expect(out.explanation).not.toMatch(/based on your closet/i);
+  });
+
+  it("suppresses the 'alternative' line, which implies a ranking that isn't there", () => {
+    const out = recommend(baseInput());
+    expect(out.explanation).not.toMatch(/Alternative:/);
+  });
+
+  it("clears as soon as ONE real signal arrives — a body measurement", () => {
+    const out = recommend(baseInput({ profile: { chestCm: 100, preferredFit: "regular" } }));
+    expect(out.undetermined).toBe(false);
+    expect(out.best.reasons.length).toBeGreaterThan(0);
+  });
+
+  it("clears on a closet anchor alone, with no measurements at all", () => {
+    const out = recommend(
+      baseInput({ knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5 }] }),
+    );
+    expect(out.undetermined).toBe(false);
+    expect(out.best.label).toBe("M");
+  });
+});
+
 describe("anchor dominance [F1]", () => {
   // Regression for the walkthrough finding on 2026-08-10: a chest-95 user with a
   // known-good COS EU 48 (fit 4/5) was recommended EU 44 because COS's chart runs

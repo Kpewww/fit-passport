@@ -12,6 +12,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { extractSmart } from "@/lib/extractorLLM";
 import { computeRecommendation } from "@/lib/recommendService";
+import { SCOREABLE_DOMAINS, domainForCategory, domainLabel } from "@/lib/sizeSystems";
 
 // Accept a loose string and normalize it (people paste bare domains), so
 // "patagonia.com/product/..." works the same as a full https:// link.
@@ -51,6 +52,40 @@ export async function POST(req: Request) {
         error: "not-apparel",
         message:
           "We couldn't find a clothing item on that page. Paste a link to a specific garment — a product page for a shirt, jacket, trousers and so on.",
+        source: extracted.source,
+      },
+      { status: 422 },
+    );
+  }
+
+  // REFUSE a category we can recognise but cannot honestly score.
+  //
+  // The engine compares body measurements to garment measurements. `FitProfile`
+  // holds chest, waist, hip, shoulder, sleeve and inseam — so tops and bottoms
+  // can be scored, and footwear, socks and accessories cannot: there is no foot
+  // length, head or neck field to compare against, and no plan to add one here.
+  //
+  // Without this guard the fallback ladder in `extractor.ts` hands a shoe page
+  // the SAME letter sizes and chest measurements it would give a t-shirt, and the
+  // engine dutifully scores them. Measured on production before the fix: a men's
+  // sneaker URL returned **"XS" at 24% confidence**. A low number does not make a
+  // fabricated answer honest — the category is simply outside what we do, and
+  // saying so is the only truthful response.
+  //
+  // This is invariant ⑪ ("never return a confident size for a page we can't read")
+  // extended to the case the original wording missed: a page we CAN read, for a
+  // garment we cannot measure anyone against.
+  const domain = domainForCategory(extracted.category);
+  if (!SCOREABLE_DOMAINS.includes(domain)) {
+    return NextResponse.json(
+      {
+        error: "unsupported-category",
+        message:
+          `We don't size ${domainLabel(domain)} yet. The engine works by comparing your ` +
+          `measurements to the garment's, and we don't hold the measurement that would ` +
+          `need — so anything we told you here would be a guess dressed up as an answer. ` +
+          `Tops and bottoms work today.`,
+        category: extracted.category,
         source: extracted.source,
       },
       { status: 422 },
