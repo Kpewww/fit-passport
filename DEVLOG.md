@@ -31,6 +31,64 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-08-28 · Session 62 — The mark's meaning had drifted from its own document
+
+The founder pointed out that the logo's story and its mythology were already written
+down in the repo. They were, in `docs/design/LOGO_CONCEPT.md` — 326 lines of it, with
+cited sources — and I had not read it. Yesterday's `/help` section was written from
+the memory file's one-line summary instead.
+
+**The summary was wrong, and had been for a while.** It said *"the line stands for the
+measurement and the loop for the garment it comes back around to."* That reading
+appears **nowhere** in the concept document. §2 gives six documented readings and none
+of them splits the mark into measurement-versus-garment; the primary reading in §3 is
+**Ariadne's thread**, which the summary omitted entirely.
+
+By the time it was caught the invented line had reached three places: the memory
+file, `Logo.tsx`'s header comment, and — because I reached for the summary rather
+than the source — the live site.
+
+### What the document actually says
+
+The labyrinth is sizing that disagrees across brands and regions. The thread is the
+wearer's accumulated fit memory. The way back out is an explainable recommendation.
+And the half of the myth the brand is meant to centre is that **Ariadne gives Theseus
+the means to navigate without taking over** — which is the product's posture stated
+in one image, and far better than anything I would have written.
+
+§16 carries approved public wording, which is now used verbatim rather than
+paraphrased: *"One thread through the maze of fit."* / *"Across brands, sizing becomes
+a labyrinth. Fit Passport keeps the thread…"* / internally, *"the logo is not a
+picture of clothing. It is the memory that travels through clothing."* The section
+also carries the document's own disclaimer — the myth is a lens for reading a modern
+mark, not a claim of ancient provenance.
+
+`/help` is rewritten around that, with a three-row myth mapping. The size-floor note
+stays: it is measured fact, and it is what makes the favicon being a different glyph
+read as a decision rather than an inconsistency.
+
+### The correction, and the rule it produces
+
+Fixed in all three places, and both the code comment and the memory file now carry an
+explicit note saying what the old reading was and that it was invented — a silent fix
+would leave the next person free to reintroduce it from an old copy.
+
+**The rule: a summary is downstream of its source, and when the summary is the thing
+you reach for, its errors ship.** `docs/memory/` exists to save time on things not
+obvious from the code — it is not a substitute for a design document that a human
+wrote deliberately. The memory file now says so about itself: *it is a pointer, not a
+paraphrase.*
+
+This is the same failure shape as the four-copy colour palette (invariant ㉛) and the
+`Logo.tsx`-versus-master path drift (㉚). Both were fixed by making one copy
+authoritative and testing the others against it. Prose can't be tested that way, so
+the defence has to be the habit: **for anything with a design document, read the
+document.**
+
+304 tests, unchanged — copy and comments only.
+
+---
+
 ## 2026-08-28 · Session 61 — The invitation now knows what the answer was, and the mark explains itself
 
 Three things the founder asked for together: finish move 2, give `/passport` the same

@@ -86,22 +86,46 @@ export default function HelpPage() {
                 <Logo size={96} />
               </div>
               <div className="min-w-0">
-                <p className="font-medium text-ink">It&apos;s called Fit Thread.</p>
-                <p className="mt-1.5 text-sm text-ink-soft">
-                  One continuous thread draws an <strong>F</strong> and a <strong>P</strong>,
-                  and never lifts. The straight run is the <strong>measurement</strong> — the
-                  tape, the number, the thing that is actually true about you. The loop is
-                  the <strong>garment</strong> it comes back around to.
-                </p>
+                {/* Wording is the concept document's own — docs/design/LOGO_CONCEPT.md
+                    §16 "Core Brand Language". An earlier version of this section
+                    paraphrased it from memory and invented a reading the document
+                    does not contain; the document is the source of truth. */}
+                <p className="font-serif text-xl text-ink">One thread through the maze of fit.</p>
                 <p className="mt-2 text-sm text-ink-soft">
-                  That is the whole product in one line: a measurement is only worth
-                  something once it closes around a real piece of clothing. Your closet is
-                  where the thread comes back.
+                  Across brands, sizing becomes a labyrinth. Fit Passport keeps the
+                  thread: what you wore, how it felt, and what worked. The mark is a
+                  single thread folded into an <strong>FP</strong> — a personal signet
+                  that guides you back to your fit.
                 </p>
-                <p className="mt-2 text-xs text-ink-faint">
-                  Drawn as a single path so it survives being stamped small — though not
-                  infinitely small: below about 20 pixels the loop fills in, which is why
-                  the browser-tab icon is a simpler glyph rather than this one shrunk.
+                <p className="mt-3 text-sm text-ink-soft">
+                  The reference is <strong>Ariadne&apos;s thread</strong>. She gives Theseus
+                  a thread to unroll into the Labyrinth so he can find his way out — and
+                  the useful half of that story is not the monster, it is that{" "}
+                  <em>she gives him the means to navigate without taking over</em>. That is
+                  the product:
+                </p>
+                <dl className="mt-3 space-y-1.5 text-sm">
+                  {[
+                    ["The labyrinth", "Sizes that disagree across brands and regions"],
+                    ["The thread", "Everything you've worn and how it actually fit"],
+                    ["The way back out", "A recommendation that shows its reasoning"],
+                  ].map(([myth, ours]) => (
+                    <div key={myth} className="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
+                      <dt className="w-40 flex-shrink-0 font-medium text-ink">{myth}</dt>
+                      <dd className="text-ink-soft">{ours}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p className="mt-3 text-sm text-ink-soft">
+                  Which is why it isn&apos;t a picture of a shirt, a hanger or a tape
+                  measure. <strong>It&apos;s the memory that travels through clothing.</strong>
+                </p>
+                <p className="mt-3 text-xs text-ink-faint">
+                  No claim is made on the myth — it&apos;s a lens for reading a modern mark,
+                  not a provenance. Drawn as one unbroken path so it survives being stamped
+                  small, though not infinitely small: below about 20 pixels the loop fills
+                  in, which is why the browser-tab icon is a simpler glyph rather than this
+                  one shrunk.
                 </p>
               </div>
             </div>

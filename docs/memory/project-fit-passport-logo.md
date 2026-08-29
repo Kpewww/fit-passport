@@ -6,10 +6,32 @@ metadata:
   type: project
 ---
 
-The mark is **Fit Thread**: one continuous line drawing an F and a P, the line
-standing for the measurement and the loop for the garment it comes back around to.
-Full narrative in `docs/design/LOGO_CONCEPT.md`; assets and the numbers in
-`brand/README.md`.
+The mark is **The Fit Thread / Ariadne Thread Signet**: one continuous line folding
+into an abstract **FP**. The primary reading is **Ariadne's thread** — the labyrinth
+is sizing that disagrees across brands and regions, the thread is the wearer's
+accumulated fit memory, and the way back out is an explainable recommendation. The
+half of the myth that matters is that *Ariadne gives Theseus the means to navigate
+without taking over*, which is the product's whole posture.
+
+Approved public wording (`LOGO_CONCEPT.md` §16, use these rather than paraphrasing):
+
+> **One thread through the maze of fit.**
+>
+> Across brands, sizing becomes a labyrinth. Fit Passport keeps the thread: what you
+> wore, how it felt, and what worked. The mark is a single thread folded into FP, a
+> personal signet that guides you back to your fit.
+>
+> *Internal:* the logo is not a picture of clothing. It is the memory that travels
+> through clothing.
+
+⚠ **This note previously said "the line is the measurement, the loop is the garment
+it comes back around to." That reading is nowhere in the concept document** — it was
+invented in a summary, and had reached `Logo.tsx`'s header and the `/help` page
+before anyone checked it against the source. Secondary readings that ARE documented:
+the weaver's shuttle (§4 — each fit outcome is one pass, and a pattern emerges over
+time) and the personal signet (§5). **`docs/design/LOGO_CONCEPT.md` is the source of
+truth for meaning; this file is a pointer, not a paraphrase.** Assets and the
+measured numbers are in `brand/README.md`.
 
 ## The production files (cleaned 2026-08-27)
 
@@ -94,11 +116,19 @@ inlined path, viewBox or micro stroke width drifts from the assets — see
 
 ---
 
-**SESSION 61 (2026-08-28) — the metaphor is now ON the site.** `/help` has a "The
-mark" section that shows the mark at 96px beside the story: the straight run is the
-**measurement**, the loop is the **garment it comes back around to**, and the point
-being made is that a measurement is only worth something once it closes around real
-clothing. It also states the size floor in plain language, so the favicon being a
-different glyph reads as a decision rather than an inconsistency. Placed next to the
-artwork deliberately — a metaphor a reader cannot check against the thing itself is
-just a claim.
+**SESSION 61–62 (2026-08-28) — the metaphor is now ON the site, and had to be
+corrected once first.** `/help` has a "The mark" section showing the mark at 96px
+beside the story. **The first version was written from this memory file's summary
+rather than from `LOGO_CONCEPT.md`, and carried the invented measurement/garment
+reading** — the founder caught it. Rewritten from §16's approved wording: the public
+line, the product explanation, a three-row Ariadne mapping (labyrinth = sizing that
+disagrees / thread = what you've worn and how it fit / way back out = a
+recommendation that shows its reasoning), and the closing *"not a picture of
+clothing — the memory that travels through clothing."* It carries the document's own
+disclaimer that the myth is a lens rather than a provenance claim, and states the
+size floor in plain language so the favicon being a different glyph reads as a
+decision.
+
+**The lesson is about direction, not wording.** A summary is downstream of its
+source; when a summary is the thing you reach for, its errors ship. The mark's
+meaning has exactly one source of truth and it is not this file.

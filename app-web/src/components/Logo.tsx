@@ -1,9 +1,20 @@
-// The Fit Passport mark — "Fit Thread".
+// The Fit Passport mark — "The Fit Thread / Ariadne Thread Signet".
 //
-// One continuous thread draws an F and a P: the thread is the measurement line,
-// the loop is the garment it comes back around to. Geometry is the cleaned master
-// in brand/fit-passport-mark-master.svg; this file is generated
-// from it, so edit the SVG and re-derive rather than hand-tweaking the path here.
+// One continuous thread folds into an abstract FP. The reading is Ariadne's
+// thread: the labyrinth is sizing that disagrees across brands, the thread is
+// the wearer's accumulated fit memory, and the way back out is an explainable
+// recommendation. Not a picture of clothing — the memory that travels through it.
+//
+// ⚠ An earlier version of this comment said "the thread is the measurement line,
+// the loop is the garment it comes back around to". That reading appears NOWHERE
+// in docs/design/LOGO_CONCEPT.md and was invented in a summary, then propagated
+// into the memory notes and onto /help before being caught. **The concept doc is
+// the source of truth for what the mark means** — §2 for the formal readings, §3
+// for the myth, §16 for the approved public wording.
+//
+// Geometry is the cleaned master in brand/fit-passport-mark-master.svg; this file
+// is generated from it, so edit the SVG and re-derive rather than hand-tweaking
+// the path here.
 //
 // WHY THERE ARE TWO WEIGHTS. The master's stroke is 24 units on a 536-wide
 // artwork — 4.5% of its width — which lands under one device pixel below ~32px.
