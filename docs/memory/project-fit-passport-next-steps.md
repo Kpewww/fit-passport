@@ -268,3 +268,20 @@ corrected. 273 → 285 tests.
 **The queue is unchanged otherwise.** Next up is still information-architecture move
 2 — let the first size check run on nothing and use the honest low confidence as the
 invitation to add a garment.
+
+---
+
+## UPDATE — Session 63 (2026-09-01)
+
+**Bug fixed:** the guided checklist's "Set your fit preference" was ticked for every
+visitor on their first request, because a `FitProfile` row is seeded alongside the
+`User` and the step asked `!!profile`. Now `hasStatedProfile()` in
+`src/lib/profileCompleteness.ts` — see [[project-fit-passport-build-state]]
+invariant ㉜. 304 → 314 tests.
+
+**Needs a decision from the founder — small but real:** `hasBody` (which drives the
+accuracy tier and the "add your measurements" nudge) counts chest/height/waist,
+while the engine scores chest/waist/**shoulder** and never reads height. A
+shoulder-only user is told they have no measurements; a height-only user is told
+they do. Aligning it is one line, but it changes the accuracy tier shown to existing
+users, so it should be chosen rather than drifted into.

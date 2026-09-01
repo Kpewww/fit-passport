@@ -18,6 +18,7 @@ type Step = {
 
 type Status = {
   profileExists: boolean;
+  profileStated: boolean;
   hasBody: boolean;
   preferredFit: string | null;
   closetCount: number;

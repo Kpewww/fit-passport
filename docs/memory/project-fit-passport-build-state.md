@@ -12,7 +12,7 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 
 **Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**285 tests as of Session 59**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**314 tests as of Session 63**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -322,3 +322,37 @@ visitor into it*: an empty passport opens in edit mode, so a newcomer met eight 
 number fields (10 inputs, 3.3 screens at 390px). An empty passport now offers the
 guided `/onboarding` above the grid — an offer, not a redirect, and `/check`'s
 "add your measurements" CTA points there too.
+
+---
+
+**SESSION 63 UPDATE (2026-09-01).** 304 → **314 tests**. One bug, worth the invariant.
+
+**"Set your fit preference" was ticked before anyone touched it.** `getCurrentUser()`
+creates the `User` **and** a seeded `FitProfile` (`preferredFit: "regular"`,
+`region: "US"`) in the same upsert, and `/api/status` runs through
+`getCurrentUser()`. So the status call created the profile, then queried for it,
+then found the row it had just made: `done: !!profile` was true on the first request
+for everyone. Clearing the browser cache did nothing — a fresh cookie just minted a
+fresh already-"done" row.
+
+**NEW INVARIANT:**
+㉜ **A `FitProfile` row existing proves nothing — it is seeded for every visitor on
+their first request.** Never gate UI on `!!profile`. Ask
+`hasStatedProfile()` from `src/lib/profileCompleteness.ts`, which needs **two**
+signals because neither alone is enough: `updatedAt > createdAt` (Prisma sets them
+exactly equal on create — measured, delta 0 — and this is the only thing that
+catches a user whose real answer *is* the seeded default), **or** a nullable
+no-default field holding a value (which catches single-`create` rows like the demo
+seeder's, where timestamps match but the values are real).
+
+**Known gap left in place on purpose:** `hasBody` is chest/height/waist, but
+`scoreMeasurementFit` scores chest/waist/**shoulder** and never reads height — so a
+shoulder-only user is told they have no measurements and a height-only user is told
+they do. Changing it moves the displayed accuracy tier for existing users, so it is
+a product decision. Recorded in the module, not left to be rediscovered.
+
+**Debugging note that generalised:** the bug was found by `curl`-ing `/api/status`
+with no cookie *before* reading any component — invariant ⑧'s "check the API first"
+applies to wrong state, not just to a hung page. `/check` renders the same checklist
+off `hasBody` and showed the step correctly undone; two surfaces disagreeing is a
+strong signal about which one is lying.

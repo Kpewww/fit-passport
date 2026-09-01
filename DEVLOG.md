@@ -31,6 +31,65 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-01 · Session 63 — "Set your fit preference" was ticked before anyone touched it
+
+Reported: the first checklist step shows as complete on a brand-new visit, and
+clearing the cache does not help.
+
+**Reproduced before reading further** — `curl` with no cookie at all, against a
+running server: the very first `/api/status` response comes back with
+`profileExists: true` and the step already ticked. A second cookieless request
+behaves identically, which is why clearing the cache changed nothing: the state
+was never in the browser.
+
+**Cause.** `getCurrentUser()` in `lib/session.ts` creates the `User` and a
+`FitProfile` **in the same upsert**, seeding `preferredFit: "regular"` and
+`region: "US"` so the engine always has something to read. `/api/status` itself
+runs through `getCurrentUser()`. So the sequence on a first visit is: the status
+call creates the profile, then queries for the profile, then finds the row it
+just created. `done: !!profile` was therefore true on the first request, for
+everyone, always. A fresh cookie just minted a fresh already-"done" row.
+
+The tell was three lines above the bug: `hasBody` carries the comment "beyond
+defaults" and correctly checks for values. Whoever wrote it knew about the seeded
+row; the step below it just asked the wrong question — "is there a row" rather
+than "did the user say anything".
+
+Corroboration: `/check` renders its own version of the same checklist off
+`status.hasBody`, and showed the step as **not** done. The two surfaces disagreed,
+and the one with the weaker check was the one on the homepage.
+
+**Fix.** `src/lib/profileCompleteness.ts`, with `hasStatedProfile` answering the
+question the label actually asks. Two signals, both needed:
+
+1. **The row has been written since it was created.** Prisma sets `@updatedAt`
+   equal to `@default(now())` on create — measured against the local database,
+   delta exactly 0 — so any later save moves them apart. This is the only signal
+   that catches a user whose honest answer *is* the seeded default: they pick
+   "regular" and "US", change nothing else, and still deserve the tick.
+2. **A field we never seed holds a value.** Every one listed is nullable with no
+   default, so a value can only be the user's. This catches rows written in a
+   single `create` — the demo seeder does that — where the timestamps match
+   despite the values being real.
+
+Verified end to end afterwards, not just unit-tested: a cookieless request now
+returns the step undone with `nextStep: "Set your fit preference"`, and a POST to
+`/api/profile` sending **only the seeded defaults back** flips it to done. That
+last case is the one a field-by-field check would have got wrong.
+
+**Deliberately not changed, and worth a decision.** `hasBody` is
+chest/height/waist, but `scoreMeasurementFit` scores chest/waist/**shoulder** and
+never reads height. So someone who entered only a shoulder is told they have no
+measurements while the engine uses it, and someone who entered only a height is
+told the opposite. Changing it moves the displayed accuracy tier for existing
+users — a product decision, not a bug fix, and now written into the module rather
+than left to be rediscovered.
+
+**Verified:** typecheck clean, **304 → 314 tests**, clean production build after
+`rm -rf .next`, and the reproduction re-run against the fix.
+
+---
+
 ## 2026-08-28 · Session 62 — The mark's meaning had drifted from its own document
 
 The founder pointed out that the logo's story and its mythology were already written

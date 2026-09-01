@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { computeBadgeStats } from "@/lib/badgeStats";
 import { earnedBadgeIds, earnedMetals, evaluateBadges, parsePinned } from "@/lib/badges";
+import { hasBodyMeasurement, hasStatedProfile } from "@/lib/profileCompleteness";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -25,19 +26,18 @@ export async function GET() {
       }),
     ]);
 
-  // Has the user set at least one useful body signal or preference beyond defaults?
-  const hasBody =
-    !!profile &&
-    (profile.chestCm != null ||
-      profile.heightCm != null ||
-      profile.waistCm != null);
+  // Both of these ask "did the user tell us this", NOT "does a row exist" — a
+  // FitProfile is seeded alongside the User on the first request, so a row
+  // exists before anyone has touched anything. See lib/profileCompleteness.ts.
+  const hasBody = hasBodyMeasurement(profile);
+  const profileStated = hasStatedProfile(profile);
 
   // Steps drive the guided checklist. `done` gates the "what's next" pointer.
   const steps = [
     {
       key: "profile",
       label: "Set your fit preference",
-      done: !!profile,
+      done: profileStated,
       href: "/passport",
     },
     {
@@ -75,7 +75,8 @@ export async function GET() {
   const pinned = parsePinned(user.pinnedBadges).filter((id) => earned.includes(id));
 
   return NextResponse.json({
-    profileExists: !!profile,
+    profileExists: !!profile, // a row exists — seeded for everyone, rarely what you want
+    profileStated, // the user actually stated something
     hasBody,
     preferredFit: profile?.preferredFit ?? null,
     closetCount,
