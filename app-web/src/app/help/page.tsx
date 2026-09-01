@@ -76,58 +76,110 @@ export default function HelpPage() {
           </p>
         </Section>
 
-        {/* The mark, with the mark itself beside it — a metaphor explained next to
-            the thing it explains, rather than as a paragraph somewhere it can't be
-            checked against. */}
+        {/* The mark, presented as a specimen plate rather than a paragraph with a
+            logo beside it. Every word here is the concept document's own —
+            docs/design/LOGO_CONCEPT.md §16 "Core Brand Language". An earlier
+            version paraphrased it from memory and invented a reading the document
+            does not contain, so the copy is fixed and only the presentation moves.
+
+            The size row at the bottom SHOWS the floor the caption describes. This
+            project measures things and publishes the evidence; a claim about
+            legibility that the reader can check in place is worth more than the
+            same sentence asserted. */}
         <Section title="The mark">
-          <Card className="!p-5">
-            <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-              <div className="flex-shrink-0 self-start text-ink sm:self-center">
-                <Logo size={96} />
+          <Card className="overflow-hidden !p-0">
+            {/* Reversed on ink — the brand's own ground pair, and the mark takes
+                its colour from `currentColor`, so this needs no separate asset. */}
+            <div className="bg-ink px-6 py-10 text-paper sm:px-10 sm:py-12">
+              <div className="flex flex-col items-center gap-7 text-center sm:flex-row sm:gap-10 sm:text-left">
+                <div className="flex-shrink-0">
+                  <Logo size={112} />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-serif text-2xl leading-snug sm:text-[1.75rem]">
+                    One thread through the maze of fit.
+                  </p>
+                  <p className="mt-3 text-sm leading-relaxed text-paper/70">
+                    Across brands, sizing becomes a labyrinth. Fit Passport keeps the
+                    thread: what you wore, how it felt, and what worked. The mark is a
+                    single thread folded into an <strong className="text-paper">FP</strong> — a
+                    personal signet that guides you back to your fit.
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0">
-                {/* Wording is the concept document's own — docs/design/LOGO_CONCEPT.md
-                    §16 "Core Brand Language". An earlier version of this section
-                    paraphrased it from memory and invented a reading the document
-                    does not contain; the document is the source of truth. */}
-                <p className="font-serif text-xl text-ink">One thread through the maze of fit.</p>
-                <p className="mt-2 text-sm text-ink-soft">
-                  Across brands, sizing becomes a labyrinth. Fit Passport keeps the
-                  thread: what you wore, how it felt, and what worked. The mark is a
-                  single thread folded into an <strong>FP</strong> — a personal signet
-                  that guides you back to your fit.
-                </p>
-                <p className="mt-3 text-sm text-ink-soft">
-                  The reference is <strong>Ariadne&apos;s thread</strong>. She gives Theseus
-                  a thread to unroll into the Labyrinth so he can find his way out — and
-                  the useful half of that story is not the monster, it is that{" "}
-                  <em>she gives him the means to navigate without taking over</em>. That is
-                  the product:
-                </p>
-                <dl className="mt-3 space-y-1.5 text-sm">
-                  {[
-                    ["The labyrinth", "Sizes that disagree across brands and regions"],
-                    ["The thread", "Everything you've worn and how it actually fit"],
-                    ["The way back out", "A recommendation that shows its reasoning"],
-                  ].map(([myth, ours]) => (
-                    <div key={myth} className="flex flex-col gap-0.5 sm:flex-row sm:gap-3">
-                      <dt className="w-40 flex-shrink-0 font-medium text-ink">{myth}</dt>
-                      <dd className="text-ink-soft">{ours}</dd>
+            </div>
+
+            <div className="px-6 py-7 sm:px-10">
+              <p className="max-w-2xl text-sm leading-relaxed text-ink-soft">
+                The reference is <strong className="text-ink">Ariadne&apos;s thread</strong>. She
+                gives Theseus a thread to unroll into the Labyrinth so he can find his way
+                out — and the useful half of that story is not the monster, it is that{" "}
+                <em>she gives him the means to navigate without taking over</em>. That is
+                the product:
+              </p>
+
+              {/* The myth maps to the product in three steps, and it is a journey,
+                  so it reads across rather than down. The 1px gap trick gives
+                  hairline rules between cells without border math. */}
+              <ol className="mt-5 grid gap-px overflow-hidden rounded-xl bg-line sm:grid-cols-3">
+                {[
+                  ["The labyrinth", "Sizes that disagree across brands and regions"],
+                  ["The thread", "Everything you\u2019ve worn and how it actually fit"],
+                  ["The way back out", "A recommendation that shows its reasoning"],
+                ].map(([myth, ours], i) => (
+                  <li key={myth} className="min-w-0 bg-paper-soft p-4">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-4 w-4 flex-shrink-0 items-center justify-center rounded-full bg-brand text-[9px] font-bold text-white">
+                        {i + 1}
+                      </span>
+                      <span className="min-w-0 text-[10px] font-bold uppercase tracking-[0.16em] text-brand">
+                        {myth}
+                      </span>
                     </div>
-                  ))}
-                </dl>
-                <p className="mt-3 text-sm text-ink-soft">
-                  Which is why it isn&apos;t a picture of a shirt, a hanger or a tape
-                  measure. <strong>It&apos;s the memory that travels through clothing.</strong>
-                </p>
-                <p className="mt-3 text-xs text-ink-faint">
-                  No claim is made on the myth — it&apos;s a lens for reading a modern mark,
-                  not a provenance. Drawn as one unbroken path so it survives being stamped
-                  small, though not infinitely small: below about 20 pixels the loop fills
-                  in, which is why the browser-tab icon is a simpler glyph rather than this
-                  one shrunk.
-                </p>
+                    <p className="mt-2 text-sm leading-snug text-ink">{ours}</p>
+                  </li>
+                ))}
+              </ol>
+
+              <p className="mt-6 border-l-2 border-brand pl-4 font-serif text-lg leading-snug text-ink">
+                Which is why it isn&apos;t a picture of a shirt, a hanger or a tape measure.
+                It&apos;s the memory that travels through clothing.
+              </p>
+            </div>
+
+            {/* Shown, not told: the caption's claim is checkable right here. */}
+            <div className="border-t border-line bg-paper px-6 py-6 sm:px-10">
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-ink-faint">
+                Where it stops working
+              </p>
+              {/* A fixed 4-column grid, not a wrapping flex row: the whole point is
+                  seeing the four side by side, and a wrap that drops 16px onto its
+                  own line breaks the comparison exactly where it matters most. */}
+              <div className="mt-4 grid grid-cols-4 items-end gap-2 sm:gap-8">
+                {[
+                  { px: 96, note: "full mark" },
+                  { px: 40, note: "the floor" },
+                  { px: 24, note: "thickened" },
+                  { px: 16, note: "gives up" },
+                ].map(({ px, note }) => (
+                  <div key={px} className="flex min-w-0 flex-col items-center gap-2 text-ink">
+                    <div className="flex h-20 items-end sm:h-24">
+                      <Logo size={px} />
+                    </div>
+                    <div className="min-w-0 text-center">
+                      <div className="text-[11px] font-semibold tabular-nums text-ink">{px}px</div>
+                      <div className="truncate text-[10px] text-ink-faint">{note}</div>
+                    </div>
+                  </div>
+                ))}
               </div>
+              <p className="mt-5 max-w-2xl text-xs leading-relaxed text-ink-faint">
+                No claim is made on the myth — it&apos;s a lens for reading a modern mark,
+                not a provenance. Drawn as one unbroken path so it survives being stamped
+                small, though not infinitely small: below about 20 pixels the loop fills
+                in, which is why the browser-tab icon is a simpler glyph rather than this
+                one shrunk.
+              </p>
             </div>
           </Card>
         </Section>

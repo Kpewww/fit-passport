@@ -90,7 +90,7 @@ type CheckResponse = {
   recommendationId: string;
 };
 
-type Status = { hasBody: boolean; closetCount: number; accuracy: "low" | "medium" | "high"; claimed?: boolean };
+type Status = { hasBody: boolean; hasChest: boolean; closetCount: number; accuracy: "low" | "medium" | "high"; claimed?: boolean };
 
 type FitPref = "slim" | "regular" | "relaxed" | "oversized";
 const FIT_LABELS: Record<FitPref, string> = {
@@ -398,13 +398,16 @@ function SignalGuide({
 
   const steps = [
     {
-      done: status.hasBody,
-      label: "Add your measurements",
+      // Gated on the CHEST, not on hasBody. The points below are only ever
+      // awarded for a chest (computeConfidence), so ticking this for someone who
+      // entered a waist would quietly withdraw an offer that is still open.
+      done: status.hasChest,
+      label: status.hasBody ? "Add your chest measurement" : "Add your measurements",
       why: `Lets us compare you to the product's actual size chart — worth ${pts(
         CONFIDENCE_WEIGHTS.measurements,
       )} of confidence when the chart states a chest.`,
       href: "/onboarding",
-      cta: "Add measurements",
+      cta: status.hasBody ? "Add chest" : "Add measurements",
     },
     {
       done: status.closetCount >= 3,

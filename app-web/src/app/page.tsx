@@ -20,6 +20,7 @@ type Status = {
   profileExists: boolean;
   profileStated: boolean;
   hasBody: boolean;
+  hasChest: boolean;
   preferredFit: string | null;
   closetCount: number;
   productCount: number;

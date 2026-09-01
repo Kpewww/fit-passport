@@ -12,7 +12,7 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 
 **Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**314 tests as of Session 63**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**321 tests as of Session 64**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -356,3 +356,33 @@ with no cookie *before* reading any component — invariant ⑧'s "check the API
 applies to wrong state, not just to a hung page. `/check` renders the same checklist
 off `hasBody` and showed the step correctly undone; two surfaces disagreeing is a
 strong signal about which one is lying.
+
+---
+
+**SESSION 64 UPDATE (2026-09-01).** 314 → **321 tests**.
+
+**`hasBody` completed — and it turned out to be two questions, not one.** It was
+chest/height/waist. `scoreMeasurementFit` scores **chest 0.6 / waist 0.22 /
+shoulder 0.18** and reads nothing else; `recommendService.ts` never even passes
+height, weight, hip, sleeve or inseam into `EngineInput`. So the flag counted a
+dimension the engine cannot use and missed one it does. (Height is not dead —
+`deriveBodyType` uses height + weight for the coarse body type. It just has nothing
+to do with picking a size.)
+
+**NEW INVARIANT:**
+㉝ **"Can we size this person" and "would another measurement raise confidence" are
+different questions, and `src/lib/profileCompleteness.ts` answers them separately.**
+`hasBodyMeasurement` = chest ∪ waist ∪ shoulder (`ENGINE_SCORED_DIMENSIONS`, pinned
+by a test so adding a `FitProfile` field cannot silently widen the claim) → accuracy
+tier and first-run nudges. `hasChestMeasurement` = chest only → any UI offering
+confidence points, because `computeConfidence` grants
+`CONFIDENCE_WEIGHTS.measurements` for `hasChest && size.chestCm != null` **and
+nothing else**. Gating `/check`'s "+35 points" on the wrong one told a waist-only
+user the offer was closed while the points were still unclaimed.
+
+**Help page — the mark section is a specimen plate.** Reversed on ink, the Ariadne
+mapping as three numbered steps across, a pull quote, and the mark rendered at
+96/40/24/16 px next to the caption claiming it fails below ~20. **The copy did not
+change** — it is the concept document's own wording (Session 62) and only the
+presentation moved. The size demo was checked at `deviceScaleFactor: 1` per ㉖; at 2x
+it would have flattered the 16px mark and quietly contradicted its own caption.

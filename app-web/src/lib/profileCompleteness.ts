@@ -66,20 +66,47 @@ export function hasStatedProfile(p: ProfileCompletenessInput | null | undefined)
 }
 
 /**
- * Whether the engine has a body measurement to compare against a size chart.
- * Narrower than `hasStatedProfile` on purpose — it drives the accuracy tier and
- * the "add your measurements" nudge, which are claims about the engine, not
- * about whether the user filled a form in.
+ * The three dimensions `scoreMeasurementFit` actually reads off the profile.
+ * Everything else the profile holds — height, weight, hip, sleeve, inseam — is
+ * stored, shown, and in height/weight's case feeds `deriveBodyType`, but none of
+ * it reaches the sizing engine. `recommendService.ts` does not even pass them.
+ */
+export const ENGINE_SCORED_DIMENSIONS = ["chestCm", "waistCm", "shoulderCm"] as const;
+
+/**
+ * Whether the engine has any of its scored dimensions from the user.
  *
- * KNOWN GAP, preserved deliberately: this is chest/height/waist, but
- * `scoreMeasurementFit` scores chest/waist/**shoulder** and never reads height.
- * So a user who entered only a shoulder is told they have no measurements while
- * the engine happily uses it, and one who entered only a height is told the
- * opposite. Left as-is because changing it moves the displayed accuracy tier for
- * existing users, which is a product decision and not part of the fix this file
- * was written for. It should be decided, not drifted into.
+ * Drives the accuracy tier and the first-run nudges, which are claims about how
+ * well we can size this person — so it asks about sizing inputs, not about
+ * whether a form looks filled in.
+ *
+ * This was chest/height/waist until Session 64, which was wrong in both
+ * directions: it counted height, which `scoreMeasurementFit` never reads, and
+ * missed shoulder, which carries weight 0.18 in the score. A shoulder-only user
+ * was told we had nothing while the engine was using their shoulder; a
+ * height-only user was told the opposite. Height still matters to the passport's
+ * body type — it just has nothing to do with picking a size.
  */
 export function hasBodyMeasurement(p: ProfileCompletenessInput | null | undefined): boolean {
   if (!p) return false;
-  return p.chestCm != null || p.heightCm != null || p.waistCm != null;
+  return ENGINE_SCORED_DIMENSIONS.some((d) => p[d] != null);
+}
+
+/**
+ * Whether the user has given us the one dimension that moves the confidence
+ * NUMBER, as opposed to the score.
+ *
+ * `computeConfidence` adds `CONFIDENCE_WEIGHTS.measurements` for
+ * `hasChest && size.chestCm != null` and for nothing else — waist and shoulder
+ * change which size wins, never how sure we say we are. So any UI promising
+ * "+35 points for adding your measurements" has to gate on this, not on
+ * `hasBodyMeasurement`, or it promises points to someone who already has them
+ * and stays silent for someone who could still collect them.
+ *
+ * Note this asks for the user's OWN chest. `recommendService.ts` fills a
+ * regional prior when it is missing, but that is flagged `chestIsEstimated` and
+ * deliberately caps confidence — a prior is not evidence about this person.
+ */
+export function hasChestMeasurement(p: ProfileCompletenessInput | null | undefined): boolean {
+  return p?.chestCm != null;
 }

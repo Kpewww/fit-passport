@@ -31,6 +31,81 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-01 · Session 64 — hasBody was wrong in both directions, and the mark gets a specimen plate
+
+Two requests: finish the `hasBody` logic flagged last session, and make the help
+page's mark section look like something.
+
+### hasBody
+
+The flag was chest/height/waist. Reading the engine rather than guessing at it:
+
+- `scoreMeasurementFit` scores **chest (0.6), waist (0.22), shoulder (0.18)** and
+  reads nothing else off the profile. `recommendService.ts` does not even pass
+  height, weight, hip, sleeve or inseam into `EngineInput`.
+- So the flag **counted height**, which cannot move a size recommendation, and
+  **missed shoulder**, which can. A shoulder-only user was told we had nothing
+  about them while the engine was already using their shoulder; a height-only user
+  was told the opposite.
+- Height is not dead data — `deriveBodyType` uses height and weight for the
+  passport's coarse body type. It just has nothing to do with picking a size, and
+  `hasBody` drives a claim about **sizing** accuracy.
+
+The more interesting finding is that one boolean was answering two questions.
+`computeConfidence` adds `CONFIDENCE_WEIGHTS.measurements` for
+`hasChest && size.chestCm != null` **and nothing else** — waist and shoulder change
+which size wins, never how confident we say we are. But `/check` gates "Add your
+measurements — worth up to +35 points" on `hasBody`. So a user who entered a waist
+saw that step ticked while the 35 points were still sitting there unclaimed. The
+promise and the tick disagreed.
+
+Now two flags, because there are two questions:
+
+- `hasBodyMeasurement` — chest ∪ waist ∪ shoulder. Can the engine score this
+  person at all. Drives the accuracy tier and the first-run nudges.
+- `hasChestMeasurement` — chest only. Would adding a measurement still raise the
+  confidence number. Drives `/check`'s offer, whose label now reads "Add your chest
+  measurement" for someone who already has other dimensions.
+
+`ENGINE_SCORED_DIMENSIONS` is exported and pinned by a test, so adding a field to
+`FitProfile` cannot silently widen what we claim the engine does with it.
+
+Verified against a running server rather than reasoned about, one dimension at a
+time: chest/waist/shoulder each give `hasBody=true`, height/weight/inseam each give
+`false`, and only chest gives `hasChest=true`.
+
+### The mark
+
+The copy was already right — Session 62 fixed it to the concept document's own
+words — so **not a word of it changed**. Only the presentation:
+
+- The mark reversed out of an ink band with the tagline, instead of a 96px logo
+  bolted to the left of a grey paragraph. It takes its colour from `currentColor`,
+  so this needed no new asset.
+- The Ariadne mapping reads across as three numbered steps rather than down as a
+  definition list. It is a journey — labyrinth, thread, way out — and it should
+  look like one.
+- "It's the memory that travels through clothing" promoted to a pull quote. It is
+  the sharpest sentence in the section and it was set as a footnote.
+- **The size floor is now shown, not just asserted.** The mark at 96 / 40 / 24 /
+  16 px beside the caption that claims it stops working below about 20. Checked at
+  `deviceScaleFactor: 1` per invariant ㉖, because a 2x screenshot hands a 16px
+  mark 32 device pixels and flatters it — at true device pixels the 16px loop does
+  fill in and 24 does hold, so the demonstration supports the sentence next to it.
+  This is a project that measures things and publishes the evidence; a claim the
+  reader can check in place beats the same claim asserted.
+
+One layout bug caught and fixed before it shipped: on a phone the size row wrapped
+and dropped 16px onto its own line, which breaks the one thing a size comparison is
+for. It is a fixed four-column grid now.
+
+**Verified:** typecheck clean, lint clean (3 pre-existing warnings, none in touched
+files), **314 → 321 tests**, clean production build after `rm -rf .next`, and the
+project's own `mobile-audit.mjs` reports no horizontal overflow on `/help`, `/check`
+or `/` at 390px.
+
+---
+
 ## 2026-09-01 · Session 63 — "Set your fit preference" was ticked before anyone touched it
 
 Reported: the first checklist step shows as complete on a brand-new visit, and

@@ -8,7 +8,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { computeBadgeStats } from "@/lib/badgeStats";
 import { earnedBadgeIds, earnedMetals, evaluateBadges, parsePinned } from "@/lib/badges";
-import { hasBodyMeasurement, hasStatedProfile } from "@/lib/profileCompleteness";
+import { hasBodyMeasurement, hasChestMeasurement, hasStatedProfile } from "@/lib/profileCompleteness";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -30,6 +30,10 @@ export async function GET() {
   // FitProfile is seeded alongside the User on the first request, so a row
   // exists before anyone has touched anything. See lib/profileCompleteness.ts.
   const hasBody = hasBodyMeasurement(profile);
+  // Separate on purpose: hasBody says the engine can score this person at all;
+  // hasChest says whether adding a measurement would still raise the confidence
+  // number. Only chest does that — see profileCompleteness.ts.
+  const hasChest = hasChestMeasurement(profile);
   const profileStated = hasStatedProfile(profile);
 
   // Steps drive the guided checklist. `done` gates the "what's next" pointer.
@@ -78,6 +82,7 @@ export async function GET() {
     profileExists: !!profile, // a row exists — seeded for everyone, rarely what you want
     profileStated, // the user actually stated something
     hasBody,
+    hasChest,
     preferredFit: profile?.preferredFit ?? null,
     closetCount,
     productCount,

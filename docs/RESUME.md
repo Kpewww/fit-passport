@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 63 · 2026-09-01 — LIVE, 314 tests.**
+> **Last updated: Session 64 · 2026-09-01 — LIVE, 321 tests.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -36,7 +36,7 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 **技术栈:** Node 24 LTS + **Next.js 14.2.35** App Router + React 18 + TS +
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
 Framer Motion(**Lenis 已移除**);three.js 仅徽章 inspect 懒加载。
-命令:`npm run dev`、`npm run typecheck`、`npm test`(**314 个**)、`npm run build`、
+命令:`npm run dev`、`npm run typecheck`、`npm test`(**321 个**)、`npm run build`、
 改 schema 后 `npm run db:push`(**还必须建 migration**,见铁律 10)、生成文档 PDF `npm run docs:pdf`。
 测量工具:`app-web/scripts/mobile-audit.mjs`(移动端布局)、
 `brand/tests/size-test.mjs`(标志尺寸)。两者都需 `npx playwright install chromium`。
@@ -55,7 +55,7 @@ DEVLOG + memory。**
 
 ---
 
-## 现状(Session 63 · 2026-09-01)
+## 现状(Session 64 · 2026-09-01)
 
 **已上线:https://fit-passport.vercel.app** — Vercel + Neon Postgres + Upstash
 Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密码在 Session 41
@@ -135,6 +135,10 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
 22. **`FitProfile` 有一行数据什么都不能证明** —— 每个访客第一个请求就会被种下一行
     (`preferredFit: "regular"`, `region: "US"`)。**永远不要用 `!!profile` 判断
     "用户填过了没有"**,用 `hasStatedProfile()`(`src/lib/profileCompleteness.ts`)。
+23. **"能不能给这个人推尺码" 和 "再填一项能不能提高置信度" 是两个问题。**
+    `hasBodyMeasurement` = 胸 ∪ 腰 ∪ 肩(引擎真正打分的三项,身高/体重引擎不读);
+    `hasChestMeasurement` = 只看胸围 —— 引擎**只为胸围加置信度分**,所以凡是
+    承诺"+35 分"的 UI 必须用后者,用错会对只填了腰围的人谎称机会已经用掉。
 
 ## 已有的关键系统(别重造)
 

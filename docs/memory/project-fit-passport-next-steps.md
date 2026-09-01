@@ -285,3 +285,18 @@ while the engine scores chest/waist/**shoulder** and never reads height. A
 shoulder-only user is told they have no measurements; a height-only user is told
 they do. Aligning it is one line, but it changes the accuracy tier shown to existing
 users, so it should be chosen rather than drifted into.
+
+---
+
+## UPDATE — Session 64 (2026-09-01)
+
+**Done, and it closes the decision left open last session:** `hasBody` was
+chest/height/waist; it is now chest ∪ waist ∪ shoulder, and a separate
+`hasChestMeasurement` drives anything that offers confidence points. See
+[[project-fit-passport-build-state]] invariant ㉝. The help page's mark section was
+rebuilt as a specimen plate (presentation only — the copy stays the concept
+document's own). 314 → 321 tests.
+
+**Nothing new blocked.** The queue is unchanged: information-architecture move 3
+(intent-led entry) is the next substantial item, and the wordmark typeface is still
+the thing blocking the lockups.
