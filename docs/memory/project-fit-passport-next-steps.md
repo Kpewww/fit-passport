@@ -333,3 +333,27 @@ dependency the way an SVG gets checked for a `<path>`. Permissive options exist:
 **Not recommended at any confidence:** attaching a generated image to a size
 recommendation. `tryonImage.ts` builds a text prompt and generates a *generic*
 person — an illustration of an outfit's idea, not this user in this garment.
+
+---
+
+## UPDATE — Session 66 (2026-09-01)
+
+**Built:** the measured 3D body (step 1 of `docs/design/3d-body-and-tryon.md`),
+opt-in on `/passport`. 321 → 340 tests. See
+[[project-fit-passport-build-state]] invariants ㉞–㉟.
+
+**The queue reshuffles slightly, and in a useful direction:**
+
+1. **The ease shell** — the garment's measurements as a second surface around the
+   same form. Needs **no new data** (chest/shoulder/sleeve already come out of the
+   size chart) and it is what makes the 3D view useful rather than merely
+   informative.
+2. **Capture the size chart at add-by-URL time** — already the top ready-to-build
+   item for an unrelated reason (it unblocks a personal ease target in cm). It now
+   *also* unblocks the best version of the 3D work: your own known-good garment as
+   one shell against the candidate as another. **Two separate threads want the same
+   change**, which makes it the highest-leverage item on the list.
+3. Information-architecture move 3 (intent-led entry) — unchanged.
+
+**Still parked, unchanged:** photo→body (a prior at best; see the 3.32 cm finding),
+wordmark typeface (blocks the lockups), foundation-shade picker.

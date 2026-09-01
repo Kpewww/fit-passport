@@ -1,9 +1,14 @@
 # A 3D body, and what it can honestly be for
 
-> **Status: DESIGN SKETCH. Nothing here is built.** Written 2026-09-01 at the
-> founder's request to "think about how to do a 3D simulated real-person
-> model / image". It states what the phrase can mean, which parts are possible,
-> which are blocked and on what, and recommends an order. It stops there.
+> **Status: step 1 BUILT (Session 66). Steps 2–5 are the plan.** Written
+> 2026-09-01 at the founder's request to "think about how to do a 3D simulated
+> real-person model / image", then acted on for option A only.
+>
+> **Built:** a measured dress form on `/passport` — `src/lib/bodyMesh.ts`
+> (geometry, pure and tested) + `src/components/BodyMesh3D.tsx` (three.js, lazy,
+> boundaried, disposed). Opt-in; the flat `BodyFigure` remains the default. It
+> is lofted from the user's own girths, so two people the flat figure would draw
+> identically now look different. See §8 for the staged path from here.
 
 ## 0. Three different products share one phrase
 
@@ -205,3 +210,50 @@ with any caption.
   try-on. Not something we can cause.
 - Interview evidence that people want to *see* fit rather than read it. Currently
   unknown, and the customer interviews that would answer it are deferred.
+
+---
+
+## 8. What got built, and the path up from it
+
+**Step 1 — a measured dress form. Done 2026-09-01.**
+
+The body is a stack of elliptical cross-sections at hip, waist, chest and
+shoulder. Each ellipse's *circumference* is the number the user typed; the
+depth:width ratio (≈2/3) and the landmark heights are drawing conventions, and
+the module says so in both the code and the UI. Two decisions worth keeping:
+
+- **It refuses to draw a body from no measurements.** A figure invented from
+  nothing is decoration pretending to be data.
+- **`circumferenceCm` is null for every ring we inferred**, so the panel can
+  never print a centimetre figure the user did not give us. Pinned by a test.
+
+It came out looking like a **tailor's dress form**, which turned out to be the
+right visual language rather than a compromise: a dress form *is* a body's
+measurements made into an object for fitting clothes, and nobody mistakes one
+for a photograph of themselves. It resolves the §1 honesty problem by
+construction instead of by caption.
+
+The shape needed two fixes worth remembering. Uniform Catmull-Rom **overshot**
+the sharp shoulder→neck step badly enough to bulge the neck wider than the
+shoulder — the first render read as a vase; centripetal parameterisation fixed
+it while still passing through the measured control points. And padding the
+camera framing by a width factor squashed the apparent proportions.
+
+**Step 2 — the ease shell. Next, and cheap.**
+A second translucent surface at the *garment's* measurements around the same
+form. We already extract chest, shoulder and sleeve from the size chart, so this
+needs no new data at all — and it is the step that turns the figure from
+informative into useful, because ease is the thing people cannot picture. Same
+contract as `FitFigure`: unstyled, no collar, centimetres printed.
+
+**Step 3 — the comparison, which the backlog already wants.**
+Capture the size chart when an item is added by URL. That is **already the top
+"ready to build" item** in `project-fit-passport-next-steps` for an unrelated
+reason (it unblocks a personal ease target in centimetres). It also unblocks the
+best version of this: showing the shirt you own and love as one shell and the
+one you are considering as another, on your own form. Nobody else offers that,
+and both the 3D work and the highest-value engine work want the same change.
+
+**Step 4 — photo → prior.** Only if interviews ask for it; §2 and §6 stand.
+
+**Step 5 — real garment geometry.** Blocked on data that does not exist publicly.

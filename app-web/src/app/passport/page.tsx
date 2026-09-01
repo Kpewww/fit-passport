@@ -5,10 +5,12 @@
 // portrait avatar) while staying quiet enough to be actually usable. Editable
 // inline: click a field, change it, blur/Enter saves. All fields optional.
 
-import { useEffect, useState } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import Link from "next/link";
 import { Button, Card, LinkButton } from "@/components/ui";
 import { BodyFigure } from "@/components/BodyFigure";
+import { SafeBoundary } from "@/components/SafeBoundary";
+import { bodyCrossSections, measuredFraction } from "@/lib/bodyMesh";
 import { deriveBodyType } from "@/lib/bodyType";
 import { Avatar, BadgeSeal, EarnedSealRow } from "@/components/Badges";
 import { badgeById, highestMetal } from "@/lib/badges";
@@ -18,6 +20,13 @@ import { MetalCard, CardField, resolveTheme, CARD_THEMES } from "@/components/Me
 import { downloadCardPng } from "@/lib/cardExport";
 import { garmentLabel } from "@/lib/garments";
 import type { OutfitView } from "@/components/OutfitCard";
+
+// three.js is ~150kB of runtime nobody needs unless they open the 3D view, and a
+// failed chunk silently blanks its subtree, so this is lazy AND boundaried —
+// the same treatment BadgeInspect gets.
+const BodyMesh3D = lazy(() =>
+  import("@/components/BodyMesh3D").then((m) => ({ default: m.BodyMesh3D })),
+);
 
 type Sex = "male" | "female" | "unspecified" | null;
 type Fit = "slim" | "regular" | "relaxed" | "oversized";
@@ -1087,6 +1096,23 @@ function BodyTypeSection({
     hipCm: profile.hipCm,
   });
   const anyData = bt.have.volume || bt.have.shape;
+
+  // The 3D view is driven by the RAW measurements, not by `deriveBodyType`'s six
+  // volume bands — that is the whole reason it earns its place. The flat figure
+  // draws every "average" build identically; this one distinguishes a 100/78
+  // chest-waist from a 100/96 because it is lofted from those numbers.
+  const sections = bodyCrossSections({
+    heightCm: profile.heightCm,
+    chestCm: profile.chestCm,
+    waistCm: profile.waistCm,
+    hipCm: profile.hipCm,
+    shoulderCm: profile.shoulderCm,
+    inseamCm: profile.inseamCm,
+  });
+  const can3d = sections.length >= 2;
+  const measuredPct = Math.round(measuredFraction(sections) * 100);
+  const [show3d, setShow3d] = useState(false);
+
   return (
     <Section title="Body type" subtitle="derived from your measurements">
       <div className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3">
@@ -1114,8 +1140,78 @@ function BodyTypeSection({
               onChange={(e) => onToggleShow(e.target.checked)} />
             Show my body type on my passport &amp; public view
           </label>
+          {can3d && !show3d && (
+            <button type="button" onClick={() => setShow3d(true)}
+              className="mt-2 text-[11px] font-semibold text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand">
+              See it in 3D →
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Opt-in, exactly as the badges keep their dimensional build behind an
+          inspect stage. Default stays the flat figure. */}
+      {can3d && show3d && (
+        <div className="mt-3 rounded-xl border border-neutral-200 bg-white px-4 py-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+            <SafeBoundary
+              fallback={
+                <p className="text-xs text-ink-faint">
+                  The 3D view couldn&apos;t start on this device — the figure above is unaffected.
+                </p>
+              }
+            >
+              <Suspense fallback={<div className="h-[240px] w-[240px] animate-pulse rounded-xl bg-paper-dim" />}>
+                <BodyMesh3D
+                  size={240}
+                  measurements={{
+                    heightCm: profile.heightCm,
+                    chestCm: profile.chestCm,
+                    waistCm: profile.waistCm,
+                    hipCm: profile.hipCm,
+                    shoulderCm: profile.shoulderCm,
+                    inseamCm: profile.inseamCm,
+                  }}
+                />
+              </Suspense>
+            </SafeBoundary>
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-ink">Built from your measurements</p>
+              <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                Each ring below is drawn at the circumference you entered, so the volume
+                is yours. Drag to turn it.
+              </p>
+              <dl className="mt-3 space-y-1">
+                {sections
+                  .slice()
+                  .reverse()
+                  .map((sec) => (
+                    <div key={sec.key} className="flex items-baseline gap-2 text-xs">
+                      <dt className="w-20 flex-shrink-0 capitalize text-ink-soft">{sec.key}</dt>
+                      <dd className="min-w-0 tabular-nums text-ink">
+                        {sec.circumferenceCm != null ? (
+                          `${Math.round(sec.circumferenceCm)} cm`
+                        ) : (
+                          <span className="text-ink-faint">
+                            {sec.estimated ? "inferred — add it to make this yours" : "from your shoulder width"}
+                          </span>
+                        )}
+                      </dd>
+                    </div>
+                  ))}
+              </dl>
+              <p className="mt-3 border-t border-line pt-2 text-[11px] leading-relaxed text-ink-faint">
+                <span className="font-semibold text-ink-soft">{measuredPct}% measured.</span>{" "}
+                Rings you haven&apos;t given us are inferred from the ones you have, and the
+                front-to-back depth is a drawing convention rather than something we know about
+                you. It is a form study of your numbers — not a scan, and not a preview of how
+                clothes will look.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </Section>
   );
 }

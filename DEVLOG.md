@@ -31,6 +31,77 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-01 · Session 66 — A dress form built from your own measurements
+
+Asked what we can actually do, done to the best state available now, with the
+path onward. Step 1 from yesterday's design doc is built.
+
+**What it is.** `/passport` now offers "See it in 3D": a body lofted from the
+girths the user typed. `src/lib/bodyMesh.ts` is the geometry — a stack of
+elliptical cross-sections at hip, waist, chest and shoulder, each ellipse carrying
+the *circumference* the user gave us. `src/components/BodyMesh3D.tsx` lofts them.
+Pure arithmetic on one side, three.js on the other, so the geometry is tested
+without a browser.
+
+**Why not a learned body model.** SMPL is patented and out (Session 65). But the
+permissive alternatives were rejected too, and for a better reason: a learned
+model's job is to plausibly *invent* the hundred dimensions you did not measure,
+and this project's whole proposition is that it does not invent. From four to
+seven numbers an honest abstract figure says more than a realistic one that is
+mostly fiction.
+
+**It came out looking like a tailor's dress form, and that is the answer, not a
+compromise.** A dress form *is* a body's measurements made into an object for
+fitting clothes, and nobody mistakes one for a photograph of themselves. It
+resolves the §1 honesty problem — image try-on transfers appearance, not fit —
+by construction rather than by caption.
+
+**Two honesty rules, both pinned by tests:**
+- It **refuses to draw a body from no measurements**. A figure invented from
+  nothing is decoration pretending to be data.
+- `circumferenceCm` is **null for every ring we inferred**, so the panel can never
+  print a centimetre the user did not give us. The neck and base rings that make
+  the form read as a torso live in a separate `drawingRings()` and are never
+  listed — they are drawing, not data, and there is no field for a user to go and
+  fill in.
+
+**What it buys over the flat figure.** `BodyFigure` is driven by `deriveBodyType`'s
+six volume bands, so every "average" build is drawn identically. This is driven by
+the raw numbers: a 100/76/94 chest-waist-hip and a 100/99/101 now render as a
+pronounced nip and a near-cylinder. Verified by rendering both.
+
+**Two shape bugs worth remembering.** Uniform Catmull-Rom **overshot** the sharp
+shoulder→neck step badly enough that the neck bulged wider than the shoulder — the
+first render read as a vase. Centripetal parameterisation fixed it and still
+interpolates its control points, so the measured rings stay on their measured
+values. And framing the camera on `max(height, width × 1.6)` pushed it back and
+squashed the apparent proportions.
+
+**WebGL discipline, all of it a scar:** `React.lazy` + `Suspense` + `SafeBoundary`
+(a failed three.js chunk silently blanks its subtree); one renderer with
+`forceContextLoss()` and a full dispose; rotation driven through refs inside the
+animation loop and never through React state. Verified rather than assumed —
+opening the view five times across navigations leaves **one** canvas with a
+healthy context, and the idle turn respects `prefers-reduced-motion`.
+
+**Next, and cheap: the ease shell.** A second translucent surface at the
+*garment's* measurements around the same form. We already extract chest, shoulder
+and sleeve from size charts, so it needs no new data, and it is what turns the
+figure from informative into useful — ease is the thing people cannot picture.
+
+**Then the step the backlog already wanted anyway:** capturing the size chart at
+add-by-URL time is *already* the top ready-to-build item, for an unrelated reason
+(it unblocks a personal ease target in cm). It also unblocks the best version of
+this — the shirt you own and love as one shell, the one you are considering as
+another, on your own form. Both threads want the same change.
+
+**Verified:** typecheck clean, lint clean (2 pre-existing warnings, neither in a
+touched file), **321 → 340 tests**, clean production build after `rm -rf .next`,
+and `mobile-audit.mjs` reports no horizontal overflow on `/passport` at 390px with
+the 3D panel open.
+
+---
+
 ## 2026-09-01 · Session 65 — What a 3D body could honestly be for
 
 Asked to think about how to do a 3D simulated body / try-on image. Researched and

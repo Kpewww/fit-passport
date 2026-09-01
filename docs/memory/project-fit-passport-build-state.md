@@ -12,7 +12,7 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 
 **Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**321 tests as of Session 64**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**340 tests as of Session 66**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -386,3 +386,35 @@ mapping as three numbered steps across, a pull quote, and the mark rendered at
 change** — it is the concept document's own wording (Session 62) and only the
 presentation moved. The size demo was checked at `deviceScaleFactor: 1` per ㉖; at 2x
 it would have flattered the 16px mark and quietly contradicted its own caption.
+
+---
+
+**SESSION 66 UPDATE (2026-09-01).** 321 → **340 tests**.
+
+**A measured 3D body shipped**, opt-in on `/passport`. `src/lib/bodyMesh.ts`
+(pure geometry — elliptical cross-sections at hip/waist/chest/shoulder, each
+carrying the circumference the user typed) + `src/components/BodyMesh3D.tsx`
+(three.js loft). The flat `BodyFigure` stays the default.
+
+**NEW INVARIANTS:**
+㉞ **The 3D body renders measurements, never invents them.** It refuses to draw
+from an empty profile, and `circumferenceCm` is **null for every inferred ring**
+so the UI cannot print a centimetre the user did not give. The neck/base rings
+that stop it reading as a vase live in a separate `drawingRings()`, are never
+listed, and sit entirely outside the measured range — all pinned by tests. A
+learned body model (Anny, MHR) was available and permissive and was still
+rejected: its job is to plausibly invent what you did not measure, which is the
+one thing this project does not do.
+㉟ **Use `centripetal` Catmull-Rom for the body loft.** Uniform parameterisation
+overshoots the sharp shoulder→neck step enough to bulge the neck wider than the
+shoulder — the first render looked like a vase. Centripetal still interpolates its
+control points, so measured rings stay on their measured values.
+
+**Visual language, decided:** it looks like a **tailor's dress form**, and that is
+the answer rather than a compromise — a dress form is a body's measurements made
+into an object for fitting clothes, and nobody mistakes one for a photo of
+themselves. It satisfies invariant ⑲ by construction instead of by caption.
+
+**Next step is the ease shell** (garment measurements as a second translucent
+surface); after that, capturing size charts at add-time, which the backlog already
+wanted for the personal-ease-target work. See `docs/design/3d-body-and-tryon.md` §8.

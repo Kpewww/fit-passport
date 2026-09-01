@@ -50,7 +50,7 @@ a bug: remove it and rotate the credential.
 
 ## Currency
 
-Everything here is current as of **Session 65 (2026-09-01)** — 321 tests, live,
+Everything here is current as of **Session 66 (2026-09-01)** — 340 tests, live,
 the closet add form rebuilt as a four-question flow, and the brand assets moved to a
 top-level `brand/` because the app builds from them. `docs/RESUME.md` is the cold-start brief and matches.
 
