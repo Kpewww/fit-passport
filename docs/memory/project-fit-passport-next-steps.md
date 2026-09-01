@@ -300,3 +300,36 @@ document's own). 314 → 321 tests.
 **Nothing new blocked.** The queue is unchanged: information-architecture move 3
 (intent-led entry) is the next substantial item, and the wordmark typeface is still
 the thing blocking the lockups.
+
+---
+
+## UPDATE — Session 65 (2026-09-01)
+
+**New design sketch, nothing built:** `docs/design/3d-body-and-tryon.md` — what a
+3D body could honestly be for. Founder asked to think about it; the deliverable is
+the thinking.
+
+**The finding that settles the photo question:** best published chest error from a
+photo is **3.32 cm** (CVPR 2025) — against this engine's chest sigma of **4 cm**
+and real size steps of **4–6 cm**. A photo-measured chest is off by about one whole
+size. It can be a *prior* (the `chestIsEstimated` slot already exists), never a
+fact. Do not let this be re-litigated on "the models will get better" — the bar is
+roughly **1.5 cm** and nothing is close.
+
+**Licensing trap to remember:** SMPL is patented, commercial use needs a negotiated
+licence (Meshcapade → **acquired by Epic Games, Feb 2026**), and most of the try-on
+literature is built on it. Check any candidate body-model library for an SMPL
+dependency the way an SVG gets checked for a `<path>`. Permissive options exist:
+**Anny** (Naver, Apache 2.0, CC0 MakeHuman assets) and Meta's **MHR** (Apache 2.0).
+
+**Recommended order, when it is picked up:**
+1. A 3D body driven by the measurements the user already typed — no photo, no
+   estimation, no new data class. Opt-in stage, flat `BodyFigure` stays the default.
+2. An **ease shell** rather than a garment (we have measurements, not patterns) —
+   `FitFigure`'s contract with one more dimension, and it must stay unstyled.
+3. Photo → prior only, and only if interviews say people want it. Most expensive
+   input in the FIC table, and the most sensitive data class the app would hold.
+
+**Not recommended at any confidence:** attaching a generated image to a size
+recommendation. `tryonImage.ts` builds a text prompt and generates a *generic*
+person — an illustration of an outfit's idea, not this user in this garment.

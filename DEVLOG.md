@@ -31,6 +31,70 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-01 · Session 65 — What a 3D body could honestly be for
+
+Asked to think about how to do a 3D simulated body / try-on image. Researched and
+written up as `docs/design/3d-body-and-tryon.md`; **nothing built**, which is what
+"think about how" asked for.
+
+**The phrase covers three products with nothing in common.** (A) a 3D figure
+shaped like you, from measurements you already typed; (B) that figure wearing the
+size you are considering; (C) a photoreal generated image. Different inputs,
+different blockers, different honesty problems. Most of the work was separating
+them.
+
+**The decisive number is not about graphics.** Best published chest-circumference
+error from a photo is **3.32 cm** (CVPR 2025, Chen et al.) and **5.1 cm** for the
+commercial apps that paper compares against. This engine scores chest at
+**sigma 4 cm** and shoulder at **sigma 2.5 cm**, and adjacent sizes in the charts
+already in `extractor.ts` step **4–6 cm** at the chest and **1–2 cm** at the
+shoulder. So a photo-measured chest carries an error of roughly one whole size
+step. It is not a weaker signal than a typed measurement — it is noise the width
+of the answer. **A photo cannot replace typing your chest**, and not for want of
+another year of research.
+
+It can be a *prior*, and the slot already exists: `populationPrior` fills an
+absent chest from a regional survey, flags `chestIsEstimated`, caps confidence at
+0.4 and says so in the answer. A photo estimate is a better prior than a regional
+average and a worse fact than a tape measure, which is exactly that slot.
+
+**Licensing quietly kills the obvious approach.** SMPL is patented; commercial use
+needs a negotiated licence through Meshcapade, which **Epic Games acquired in
+February 2026**, at prices that have never been public. Much of the try-on and
+garment literature is built on it, so "use the standard body model" is a trap.
+Permissive alternatives are recent and real: **Anny** (Naver, Apache 2.0, on CC0
+MakeHuman assets) whose parameters are literally height/weight/muscle/age — an odd
+match for what `FitProfile` already stores — and Meta's **MHR** (Apache 2.0).
+Candidate libraries now need an SMPL check the way SVGs need a `<path>` check.
+
+**Option B is blocked by data, not by rendering.** XPBD cloth in a browser is
+solved and three.js is already here. What is missing is garment geometry: a
+product page yields four numbers, and a simulated garment needs pattern pieces,
+seams and fabric parameters. The way through is to stop pretending we have the
+garment — we have its *measurements*, and a shell built from them is the
+garment's **ease** in 3D, which is the thing people cannot picture. That is
+`FitFigure`'s existing contract with one more dimension. It must stay unstyled;
+give it a collar and it starts making the appearance claim §1 says nobody can
+keep.
+
+**Recommendation: build A, design B as an ease shell, leave C alone.** C already
+exists and is off by default — worth being precise that `tryonImage.ts` builds a
+*text prompt* and generates a generic person, so it is an illustration of an
+outfit's idea, never this user in this garment.
+
+Recorded against the photo path: it is the most expensive single input in the FIC
+table (12, against 6 for typing a number) and introduces a more sensitive data
+class than anything the app holds — a body photo is worse on both counts than the
+centimetres the privacy invariant already refuses to share. The FIC arithmetic
+does cut in its favour (12 beats 6+6+6 for three typed measurements), and that is
+an argument about effort, not accuracy.
+
+Sources are cited in the document, with ⚠ on the two that could not be read at
+the primary source: the CVPR PDF returned 403 so its numbers come from search
+summaries, and the 3–12 cm industry range is a company blog, self-reported.
+
+---
+
 ## 2026-09-01 · Session 64 — hasBody was wrong in both directions, and the mark gets a specimen plate
 
 Two requests: finish the `hasBody` logic flagged last session, and make the help

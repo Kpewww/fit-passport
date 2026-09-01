@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 64 · 2026-09-01 — LIVE, 321 tests.**
+> **Last updated: Session 65 · 2026-09-01 — LIVE, 321 tests.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -55,7 +55,7 @@ DEVLOG + memory。**
 
 ---
 
-## 现状(Session 64 · 2026-09-01)
+## 现状(Session 65 · 2026-09-01)
 
 **已上线:https://fit-passport.vercel.app** — Vercel + Neon Postgres + Upstash
 Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密码在 Session 41
