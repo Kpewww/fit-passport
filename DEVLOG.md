@@ -31,6 +31,41 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-01 · Session 69 — A number that appeared from nowhere
+
+Found by looking at the actual screen rather than at the tests. `/check` was
+showing:
+
+> • Chest **14.5cm** smaller than your regular target
+
+while "regular" means **10cm** by default. The line explaining where 14.5 came
+from existed, was correct, and never appeared — `topReasons` sorts by absolute
+weight and takes the top two, and the personal ease target is deliberately
+weight-0 because it moves the target every size is measured against rather than
+pushing one size over another. So the design decision that made it honest in the
+data model is exactly what buried it in the UI.
+
+A number that appears from nowhere is the black box this engine exists not to be,
+so the sorting was the bug.
+
+Zero-weight reasons are now treated as **context** rather than as competitors:
+they are appended after the top two rather than ranked against them. The
+explanation still leads with what actually told the sizes apart, and then says
+why the target was what it was. Pinned by three tests, including that nothing
+extra is said when no context reason fired.
+
+**Verified:** **381 → 384 tests**, clean production build, and the line now reads
+on the real page: *"Adjusted to the more room you actually wear — from 4 garments
+in your closet whose own measurements we have (14.5cm target vs 10cm for
+regular)."*
+
+**Worth generalising:** the previous three sessions were verified by tests and by
+end-to-end API calls, both of which passed. This only showed up in a screenshot.
+A feature can be correct in the engine, correct through the API, and still
+unreadable — checking the rendered page is a separate act from checking the code.
+
+---
+
 ## 2026-09-01 · Session 68 — The engine reads the closet's measurements, and an old flaw shows up next to it
 
 Session 67 captured the garment's own measurements. This is the engine using

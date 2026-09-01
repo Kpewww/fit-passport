@@ -982,3 +982,47 @@ describe("cross-brand anchors align by measurement, not by label", () => {
     expect(rec.best.label).toBe("M");
   });
 });
+
+describe("the explanation carries context, not just the top two weights", () => {
+  // Found by looking at the real screen: the summary said "chest 14.5cm smaller
+  // than your regular target" while "regular" means 10cm by default, and the one
+  // line explaining where 14.5 came from was ranked last by weight and cut. A
+  // number that appears from nowhere is the black box this engine exists not to be.
+  const owned = (garmentChestCm: number) => ({
+    brand: "Other Brand", category: "tshirt", size: "M", fitRating: 5, fitDirection: 0,
+    garmentChestCm, garmentMeasuredFrom: "page",
+  });
+
+  it("puts the personal ease target in the explanation the user reads", () => {
+    const rec = recommend(
+      baseInput({
+        profile: { chestCm: 100, preferredFit: "regular" },
+        sizes: UNIQLO_TEE_SIZES,
+        knownGood: [owned(118), owned(118), owned(118), owned(118)],
+      }),
+    );
+    expect(rec.explanation).toMatch(/actually wear/);
+  });
+
+  it("still leads with what told the sizes apart", () => {
+    // Context is appended, never promoted over the signals that did the work.
+    const rec = recommend(
+      baseInput({
+        profile: { chestCm: 100, preferredFit: "regular" },
+        sizes: UNIQLO_TEE_SIZES,
+        knownGood: [owned(118), owned(118), owned(118), owned(118)],
+      }),
+    );
+    const lines = rec.explanation.split("\n").filter((l) => l.startsWith("•"));
+    expect(lines.length).toBeGreaterThan(1);
+    expect(lines[lines.length - 1]).toMatch(/actually wear/);
+    expect(lines[0]).not.toMatch(/actually wear/);
+  });
+
+  it("says nothing extra when no context reason fired", () => {
+    const rec = recommend(
+      baseInput({ profile: { chestCm: 100, preferredFit: "regular" }, sizes: UNIQLO_TEE_SIZES }),
+    );
+    expect(rec.explanation).not.toMatch(/actually wear/);
+  });
+});

@@ -841,10 +841,23 @@ export function recommend(input: EngineInput): EngineOutput {
   const best = ranked[0];
 
   // Build the plain-language explanation without an LLM. Grounded, template-based.
+  // The top two by absolute weight — what actually told these sizes apart.
   const topReasons = best.reasons
     .slice()
+    .filter((r) => r.weight !== 0)
     .sort((a, b) => Math.abs(b.weight) - Math.abs(a.weight))
     .slice(0, 2)
+    .map((r) => "• " + r.message);
+
+  // Zero-weight reasons are CONTEXT, not competitors: they changed the target
+  // every size was measured against rather than pushing one over another, so
+  // sorting them by weight buries them permanently. The personal ease target is
+  // the case that proved it — the summary was showing "14.5cm smaller than your
+  // regular target" while "regular" means 10cm by default, and the explanation
+  // for where 14.5 came from was the one line ranked last and cut. A number that
+  // appears from nowhere is exactly the black box this engine exists not to be.
+  const contextReasons = best.reasons
+    .filter((r) => r.weight === 0)
     .map((r) => "• " + r.message);
 
   // Edge-of-range note: if the pick is the largest/smallest offered but the
@@ -889,9 +902,12 @@ export function recommend(input: EngineInput): EngineOutput {
       "and nothing in your closet to compare with. Every size here scored the same, so picking " +
       "one would be guessing. Add your chest measurement, or one garment of this type that fits " +
       "you well, and this becomes a real answer."
-    : (topReasons.length > 0
-        ? topReasons.join("\n")
-        : "Limited product data — recommendation based on your closet and preference.") +
+    : [
+        ...(topReasons.length > 0
+          ? topReasons
+          : ["Limited product data — recommendation based on your closet and preference."]),
+        ...contextReasons,
+      ].join("\n") +
       edgeNote +
       alt;
 

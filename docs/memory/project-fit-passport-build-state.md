@@ -12,7 +12,7 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 
 **Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**381 tests as of Session 68**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**384 tests as of Session 69**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -498,3 +498,22 @@ approximation sitting next to the new code, not the new code.
 was. With a body chest present the measurement term (0.45) outranks a weak
 cross-brand anchor (0.35 × 0.75), so a test meant to isolate anchor behaviour must
 drop the chest or it is testing something else.
+
+---
+
+**SESSION 69 UPDATE (2026-09-01).** 381 → **384 tests**.
+
+**NEW INVARIANT:**
+㊵ **A weight-0 reason is CONTEXT and must still reach the explanation.**
+`topReasons` ranks by absolute weight and takes two, so a reason that legitimately
+carries no weight — the personal ease target moves the target every size is
+measured against, rather than pushing one over another — was permanently buried.
+The screen showed "chest 14.5cm smaller than your regular target" while regular
+means 10cm, with nothing saying why. Zero-weight reasons are appended after the
+top two now: the explanation still leads with what told the sizes apart.
+
+**Method note, which generalises beyond this bug:** Sessions 66–68 were verified by
+unit tests and by end-to-end API calls, and both passed. This only appeared in a
+screenshot of the rendered page. **Checking the rendered page is a separate act
+from checking the code** — a feature can be right in the engine, right through the
+API, and still unreadable.
