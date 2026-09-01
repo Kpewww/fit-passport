@@ -56,14 +56,57 @@ function columnsFromSchema(schemaPath: string): Map<string, Set<string>> {
   return out;
 }
 
-/** table name -> column names, read from every committed migration's SQL. */
-function columnsFromMigrations(dir: string): Map<string, Set<string>> {
-  const out = new Map<string, Set<string>>();
+/**
+ * table name -> column names, for one migration file's SQL, accumulated into
+ * `out`. Split out from the directory walk so the parsing itself can be
+ * exercised on fixtures — a parser that quietly matches nothing would make every
+ * assertion in this file vacuously true.
+ */
+export function parseMigrationSql(
+  sql: string,
+  out: Map<string, Set<string>> = new Map(),
+): Map<string, Set<string>> {
   const add = (table: string, col: string) => {
     if (!out.has(table)) out.set(table, new Set());
     out.get(table)!.add(col);
   };
 
+  // CREATE TABLE "X" ( ... );  — take the quoted identifier at the start of
+  // each line inside the parens as a column.
+  const createRe = /CREATE TABLE\s+"(\w+)"\s*\(([\s\S]*?)\n\);/g;
+  let c: RegExpExecArray | null;
+  while ((c = createRe.exec(sql)) !== null) {
+    const [, table, body] = c;
+    for (const rawLine of body.split("\n")) {
+      const col = /^"(\w+)"\s+\w/.exec(rawLine.trim());
+      if (col) add(table, col[1]);
+    }
+  }
+
+  // ALTER TABLE "X" ADD COLUMN "a" T, ADD COLUMN "b" T, ...;
+  //
+  // Read the WHOLE statement, not just its first clause. Prisma emits one ALTER
+  // per table with every new column comma-joined onto it, and a regex anchored
+  // on `ALTER TABLE … ADD COLUMN` sees only the first — which made this guard
+  // report four correctly-migrated columns as missing the first time a
+  // multi-column migration was written. A guard that cries wolf is one people
+  // learn to skip past, so this is a real defect in the guard, not a nitpick.
+  const stmtRe = /ALTER TABLE\s+"(\w+)"([\s\S]*?);/g;
+  let st: RegExpExecArray | null;
+  while ((st = stmtRe.exec(sql)) !== null) {
+    const [, table, rest] = st;
+    for (const m of rest.matchAll(/ADD COLUMN\s+"(\w+)"/g)) add(table, m[1]);
+    // Removals are honoured so the comparison reflects the end state rather than
+    // everything ever mentioned.
+    for (const m of rest.matchAll(/DROP COLUMN\s+"(\w+)"/g)) out.get(table)?.delete(m[1]);
+  }
+
+  return out;
+}
+
+/** table name -> column names, read from every committed migration's SQL. */
+function columnsFromMigrations(dir: string): Map<string, Set<string>> {
+  const out = new Map<string, Set<string>>();
   const files = readdirSync(dir)
     .filter((n) => statSync(join(dir, n)).isDirectory())
     .sort() // lexical sort == chronological, given the timestamp prefixes
@@ -76,30 +119,7 @@ function columnsFromMigrations(dir: string): Map<string, Set<string>> {
     } catch {
       continue; // a directory without migration.sql isn't a migration
     }
-
-    // CREATE TABLE "X" ( ... );  — take the quoted identifier at the start of
-    // each line inside the parens as a column.
-    const createRe = /CREATE TABLE\s+"(\w+)"\s*\(([\s\S]*?)\n\);/g;
-    let c: RegExpExecArray | null;
-    while ((c = createRe.exec(sql)) !== null) {
-      const [, table, body] = c;
-      for (const rawLine of body.split("\n")) {
-        const line = rawLine.trim();
-        const col = /^"(\w+)"\s+\w/.exec(line);
-        if (col) add(table, col[1]);
-      }
-    }
-
-    // ALTER TABLE "X" ADD COLUMN "y" ...
-    const alterRe = /ALTER TABLE\s+"(\w+)"\s+ADD COLUMN\s+"(\w+)"/g;
-    let a: RegExpExecArray | null;
-    while ((a = alterRe.exec(sql)) !== null) add(a[1], a[2]);
-
-    // ALTER TABLE "X" DROP COLUMN "y" — honour removals so the comparison
-    // reflects the end state rather than everything ever mentioned.
-    const dropRe = /ALTER TABLE\s+"(\w+)"\s+DROP COLUMN\s+"(\w+)"/g;
-    let d: RegExpExecArray | null;
-    while ((d = dropRe.exec(sql)) !== null) out.get(d[1])?.delete(d[2]);
+    parseMigrationSql(sql, out);
   }
   return out;
 }
@@ -146,5 +166,51 @@ describe("schema and migrations agree", () => {
     // the connector from here and aborts without it.
     const lock = readFileSync(join(MIGRATIONS_DIR, "migration_lock.toml"), "utf8");
     expect(lock).toContain("postgresql");
+  });
+});
+
+describe("parseMigrationSql — the guard's own parser", () => {
+  it("catches EVERY column in a multi-column ALTER, not just the first", () => {
+    // The regression that prompted this: Prisma comma-joins new columns onto one
+    // ALTER, and the old regex saw only the first, so four migrated columns were
+    // reported as un-migrated.
+    const sql = `-- AlterTable
+ALTER TABLE "KnownGoodItem" ADD COLUMN     "garmentChestCm" DOUBLE PRECISION,
+ADD COLUMN     "garmentLengthCm" DOUBLE PRECISION,
+ADD COLUMN     "garmentMeasuredFrom" TEXT;`;
+    const cols = parseMigrationSql(sql).get("KnownGoodItem")!;
+    expect([...cols].sort()).toEqual([
+      "garmentChestCm", "garmentLengthCm", "garmentMeasuredFrom",
+    ]);
+  });
+
+  it("still reads a single-column ALTER", () => {
+    const cols = parseMigrationSql(`ALTER TABLE "User" ADD COLUMN "role" TEXT;`).get("User")!;
+    expect([...cols]).toEqual(["role"]);
+  });
+
+  it("reads columns out of CREATE TABLE", () => {
+    const sql = `CREATE TABLE "Thing" (
+    "id" TEXT NOT NULL,
+    "name" TEXT,
+
+    CONSTRAINT "Thing_pkey" PRIMARY KEY ("id")
+);`;
+    const cols = parseMigrationSql(sql).get("Thing")!;
+    expect([...cols].sort()).toEqual(["id", "name"]);
+  });
+
+  it("honours DROP COLUMN so the result is the end state", () => {
+    const out = parseMigrationSql(`ALTER TABLE "User" ADD COLUMN "gone" TEXT, ADD COLUMN "kept" TEXT;`);
+    parseMigrationSql(`ALTER TABLE "User" DROP COLUMN "gone";`, out);
+    expect([...out.get("User")!]).toEqual(["kept"]);
+  });
+
+  it("does not attribute one table's columns to another", () => {
+    const out = parseMigrationSql(
+      `ALTER TABLE "A" ADD COLUMN "a1" TEXT;\nALTER TABLE "B" ADD COLUMN "b1" TEXT;`,
+    );
+    expect([...out.get("A")!]).toEqual(["a1"]);
+    expect([...out.get("B")!]).toEqual(["b1"]);
   });
 });

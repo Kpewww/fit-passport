@@ -12,7 +12,7 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 
 **Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**340 tests as of Session 66**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**353 tests as of Session 67**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -418,3 +418,47 @@ themselves. It satisfies invariant ⑲ by construction instead of by caption.
 **Next step is the ease shell** (garment measurements as a second translucent
 surface); after that, capturing size charts at add-time, which the backlog already
 wanted for the personal-ease-target work. See `docs/design/3d-body-and-tryon.md` §8.
+
+---
+
+**SESSION 67 UPDATE (2026-09-01).** 340 → **353 tests**. A schema change, done with
+a migration.
+
+**The ease shell** — `garmentShellRings()` in `bodyMesh.ts`, drawn by `BodyMesh3D`
+via an optional `garment` prop, offered on `/check` beneath the 2D `FitFigure`
+(never replacing it). Coloured by **sign**: cobalt when the garment has room,
+amber when it measures smaller than the wearer — because a too-small garment
+renders *inside* the form and the only visible part is where the body bursts out,
+which a viewer can otherwise read as decoration. Open tube, no caps; camera frames
+the union of body and shell.
+
+**`KnownGoodItem` now stores the garment's own measurements**
+(`garmentChestCm/ShoulderCm/SleeveCm/LengthCm` + `garmentMeasuredFrom`), captured
+from the chart at add-by-URL time. `/api/closet/extract` used to fetch a full chart
+and return only the labels. **This unblocks the personal ease target in
+centimetres**, which the Session 46–48 note recorded as *not derivable* — that note
+is now superseded.
+
+**NEW INVARIANTS:**
+㊱ **A stored garment measurement must carry its provenance.** `garmentMeasuredFrom`
+is enforced by a zod refinement on `/api/closet`, not by convention: a number off
+the retailer's chart and one from the extractor's fallback ladder are
+indistinguishable on screen, and that difference is what `source.sizesFrom` exists
+to preserve. The closet shows a "garment measured" / "garment estimated" badge.
+㊲ **The size chart the shell is drawn from states a chest and a shoulder and
+nothing else.** Below the chest the shell holds that circumference **straight
+down**, stated as an assumption in the UI — narrowing towards the body would invent
+a taper the garment may not have.
+
+**A hole in the migration guard, found and closed.** `schemaMigrations.test.ts`
+anchored its regex as `ALTER TABLE … ADD COLUMN`, so on Prisma's comma-joined
+multi-column `ALTER` it saw only the **first** column and reported four correctly
+migrated ones as missing. That is a false alarm on the first multi-column migration
+anyone writes, and a guard that cries wolf gets skipped past — which would have
+disarmed the alarm for the outage it exists to prevent. Now parses whole
+`ALTER TABLE … ;` statements, with the parser pinned by its own tests. The fix makes
+it report *fewer* missing columns, so it was re-verified in the dangerous direction:
+a column with no migration still turns it red.
+
+**Privacy re-checked:** the new columns are **not** in `/api/view/[code]`'s allow-list
+`select`, so an account-code holder does not see them. Widening it stays invariant ⑳.

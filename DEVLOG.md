@@ -31,6 +31,87 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-01 · Session 67 — The ease shell, and the size chart stops being thrown away
+
+Steps 2 and 3 of `docs/design/3d-body-and-tryon.md` §8, both built.
+
+### Step 2 — the ease shell (`/check`)
+
+A translucent surface at the *garment's* measurements around the dress form.
+`garmentShellRings()` in `bodyMesh.ts`, rendered by `BodyMesh3D` behind a new
+optional `garment` prop, offered on `/check` under the existing 2D `FitFigure`
+rather than replacing it — the flat diagram still loads by default and three.js
+only arrives if someone opens the 3D view.
+
+**The honest part is what a size chart does not contain.** It gives a chest
+girth and a shoulder breadth and nothing else, so the shell is truthful at
+exactly two heights. Below the chest it holds that circumference straight down,
+and both the code and the on-screen caption say that is an assumption: narrowing
+towards the body would invent a taper the garment may not have, and straight is
+the assumption that adds least.
+
+**Rendered by sign, not by preference.** A size *smaller* than its wearer draws
+inside the form, so all you see is where the body bursts out of it. That is
+correct and it is the most useful case, but a viewer can read a stray band as
+decoration — so it turns amber, at higher opacity, while a garment with room
+stays cobalt. Verified across XS/M/XL on a real fixture.
+
+Two rendering details worth keeping: the shell is **open** (no caps), because a
+capped one reads as a solid the body is trapped in rather than a garment's
+cross-section; and the camera frames the union of body and shell, since an
+oversized garment is wider than its wearer and framing on the body alone would
+crop the very thing being shown.
+
+### Step 3 — capture the size chart at add-by-URL time
+
+`/api/closet/extract` already fetched a full chart and returned **only the
+labels**. It now returns every row, and `KnownGoodItem` gained five nullable
+columns to keep them for the size the user actually owns.
+
+This is the change the backlog has wanted for a while: a personal ease target in
+centimetres was *not derivable* because `KnownGoodItem` stored no garment
+measurements. Now `ease = garment − body` is computable for a garment someone
+**owns and likes**, which is a stronger signal than a chart alone — a chart says
+how a brand cuts, this says what actually worked on this body.
+
+`garmentMeasuredFrom` is stored with them and **the API refuses a measurement
+without it** (a zod refinement, not a convention): a number read off the
+retailer's chart and one from the extractor's fallback ladder look identical on
+screen, and that difference is exactly what `source.sizesFrom` exists to
+preserve. The closet shows both — a "garment measured" / "garment estimated"
+badge beside the numbers — because data captured silently is data nobody can
+check, and because it is the only way the user can see we kept it.
+
+Privacy re-checked rather than assumed: `/api/view/[code]` uses an allow-list
+`select`, so the new columns are **not** exposed to an account-code holder by
+default. Widening that stays a governance decision (invariant ⑳).
+
+### The migration, and a hole in the guard that caught it
+
+Additive migration written by the offline two-datamodel diff in
+`docs/DEPLOYMENT.md` §1 — no shadow database, five nullable columns.
+
+Then `schemaMigrations.test.ts` **failed, and it was wrong**. Prisma comma-joins
+new columns onto one `ALTER TABLE`, and the guard's regex was anchored as
+`ALTER TABLE … ADD COLUMN`, so it saw only the first of the five and reported
+four correctly-migrated columns as missing. That is a false alarm on the first
+multi-column migration anyone writes, and **a guard that cries wolf is one people
+learn to skip past** — which would have quietly disarmed the alarm for the
+outage it exists to prevent.
+
+Fixed to parse whole `ALTER TABLE … ;` statements, and the parser is now pinned
+by its own tests (multi-column, single-column, `CREATE TABLE`, `DROP COLUMN`, and
+not attributing one table's columns to another). The fix makes the guard report
+*fewer* missing columns, so it was re-verified in the dangerous direction:
+adding a column with no migration still turns it red.
+
+**Verified:** typecheck clean, lint clean (3 pre-existing warnings), **340 → 353
+tests**, clean production build after `rm -rf .next`, and end to end in a browser
+— pasting a link in the closet skips to the size question, and picking M stores
+`chest 100 / shoulder 44 / sleeve 21 / length 70`, provenance `fixture`.
+
+---
+
 ## 2026-09-01 · Session 66 — A dress form built from your own measurements
 
 Asked what we can actually do, done to the best state available now, with the

@@ -33,9 +33,25 @@ type Item = {
   groupName: string | null;
   createdAt?: string;
   editHistory?: string | null;
+  // The garment's OWN measurements, captured from the retailer's chart when the
+  // item was added by URL. Null for anything typed in by hand.
+  garmentChestCm?: number | null;
+  garmentShoulderCm?: number | null;
+  garmentSleeveCm?: number | null;
+  garmentLengthCm?: number | null;
+  garmentMeasuredFrom?: string | null;
 };
 
 type Collection = { id: string; name: string; sortIndex: number; itemCount: number; color?: string | null };
+
+/** One row of the size chart the extractor read, as returned by /api/closet/extract. */
+type SizeRow = {
+  label: string;
+  chestCm: number | null;
+  shoulderCm: number | null;
+  sleeveCm: number | null;
+  lengthCm: number | null;
+};
 
 const GENDERS = [
   { v: "", label: "—" },
@@ -733,6 +749,7 @@ function ItemCard({
             {it.color && <span>· {it.color}</span>}
             {it.areaNotesJson && <span>· {safeNotes(it.areaNotesJson)}</span>}
           </div>
+          <GarmentMeasurements item={it} />
         </div>
       </div>
       {!selectMode && (
@@ -1443,6 +1460,12 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
   const [pasteUrl, setPasteUrl] = useState("");
   const [extracting, setExtracting] = useState(false);
   const [extractNote, setExtractNote] = useState<string | null>(null);
+  // The chart the extractor read, kept so the size the user picks can be stored
+  // WITH the garment's own measurements. Before this the numbers were fetched,
+  // shown once and thrown away — which is why a personal ease target in
+  // centimetres was not computable. See docs/design/3d-body-and-tryon.md §8.
+  const [sizeRows, setSizeRows] = useState<SizeRow[]>([]);
+  const [measuredFrom, setMeasuredFrom] = useState<string | null>(null);
 
   const step = ADD_STEPS[stepIndex];
   const isLast = stepIndex === ADD_STEPS.length - 1;
@@ -1471,6 +1494,8 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
         body: JSON.stringify({ url: pasteUrl.trim() }),
       }).then((r) => r.json());
       if (r.error) { setExtractNote("Couldn't read that URL — answer the questions instead."); return; }
+      setSizeRows(Array.isArray(r.sizeRows) ? r.sizeRows : []);
+      setMeasuredFrom(typeof r.measuredFrom === "string" ? r.measuredFrom : null);
       setForm((f) => ({
         ...f,
         brand: r.brand || f.brand,
@@ -1499,6 +1524,26 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
     } catch { /* ignore */ }
   }
 
+  /**
+   * The garment's own measurements for the size the user picked, if the chart we
+   * read has a row for it. Sends nothing at all when it does not — a partial or
+   * unattributed measurement is worse than none, and the API rejects a number
+   * with no stated provenance.
+   */
+  function garmentMeasurementsFor(size: string): Record<string, unknown> {
+    const row = sizeRows.find((r) => r.label === size);
+    if (!row || !measuredFrom) return {};
+    const has = row.chestCm != null || row.shoulderCm != null || row.sleeveCm != null || row.lengthCm != null;
+    if (!has) return {};
+    return {
+      garmentChestCm: row.chestCm,
+      garmentShoulderCm: row.shoulderCm,
+      garmentSleeveCm: row.sleeveCm,
+      garmentLengthCm: row.lengthCm,
+      garmentMeasuredFrom: measuredFrom,
+    };
+  }
+
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!isLast) {
@@ -1515,6 +1560,7 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
         category: form.category, gender: form.gender || null, size: form.size,
         fitRating: form.fitRating, fitDirection: form.fitDirection, color: form.color || null,
         onlineAvailable: form.onlineAvailable,
+        ...garmentMeasurementsFor(form.size),
         imageDataUrl: form.imageDataUrl || null,
         areaNotesJson: form.areaNotes ? JSON.stringify({ notes: form.areaNotes }) : null,
       }),
@@ -1524,6 +1570,7 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
     setStepIndex(0);
     setShowDetails(false);
     setPasteUrl(""); setExtractNote(null);
+    setSizeRows([]); setMeasuredFrom(null);
     setSaving(false);
     onAdded();
   }
@@ -1678,5 +1725,52 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
         )}
       </form>
     </Card>
+  );
+}
+
+/**
+ * The garment's own measurements, when we captured them.
+ *
+ * Shown rather than kept silently because this is what makes `ease = garment −
+ * body` computable for a piece the wearer OWNS AND LIKES — the strongest ease
+ * signal available, and until now the extractor read these numbers at add time
+ * and threw them away. Displaying them is also the only way the user can tell
+ * that we have them, and check them.
+ *
+ * `garmentMeasuredFrom` is always shown alongside. A measurement read off the
+ * retailer's own chart and one produced by the extractor's fallback ladder look
+ * identical on screen, and the difference is exactly what `source.sizesFrom`
+ * exists to preserve.
+ */
+function GarmentMeasurements({ item }: { item: Item }) {
+  const parts = [
+    item.garmentChestCm != null && `chest ${item.garmentChestCm}cm`,
+    item.garmentShoulderCm != null && `shoulder ${item.garmentShoulderCm}cm`,
+    item.garmentSleeveCm != null && `sleeve ${item.garmentSleeveCm}cm`,
+    item.garmentLengthCm != null && `length ${item.garmentLengthCm}cm`,
+  ].filter(Boolean) as string[];
+  if (parts.length === 0) return null;
+
+  const fromPage = item.garmentMeasuredFrom === "page" || item.garmentMeasuredFrom === "fixture";
+  return (
+    <div className="mt-1 flex min-w-0 flex-wrap items-center gap-1">
+      <span
+        className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
+          fromPage ? "bg-brand/10 text-brand-dark" : "bg-paper-dim text-ink-faint"
+        }`}
+        title={
+          fromPage
+            ? "Read from the retailer's own size chart when you added this."
+            : "Estimated by the extractor — the page had no chart we could read."
+        }
+      >
+        {fromPage ? "garment measured" : "garment estimated"}
+      </span>
+      {parts.map((t) => (
+        <span key={t} className="min-w-0 truncate rounded bg-paper-soft px-1.5 py-0.5 text-[10px] tabular-nums text-ink-soft">
+          {t}
+        </span>
+      ))}
+    </div>
   );
 }

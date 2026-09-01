@@ -357,3 +357,30 @@ opt-in on `/passport`. 321 → 340 tests. See
 
 **Still parked, unchanged:** photo→body (a prior at best; see the 3.32 cm finding),
 wordmark typeface (blocks the lockups), foundation-shade picker.
+
+---
+
+## UPDATE — Session 67 (2026-09-01)
+
+**Both remaining actionable 3D steps are built.** The ease shell on `/check`, and
+`KnownGoodItem` now captures the garment's own measurements at add-by-URL time.
+340 → 353 tests. See [[project-fit-passport-build-state]] invariants ㊱–㊲.
+
+**Two long-standing backlog items are now unblocked and are the obvious next work:**
+
+1. **The personal ease target in centimetres.** Recorded for several sessions as
+   *not derivable* because `KnownGoodItem` stored no garment measurements. It now
+   does. `ease = garment − body` is computable for every piece the user owns AND
+   rated, which is a stronger signal than any chart: a chart says how a brand cuts,
+   this says what actually worked on this body. **The engine does not read the new
+   columns yet** — that is the next engine change, and it is the highest-value one
+   available.
+2. **The garment comparison in 3D** — your known-good shirt as one shell against
+   the candidate as another, on your own form. The data for it now exists.
+
+**Note the ordering trap:** do (1) before (2). The comparison is the visible
+feature, but the ease target is what makes the recommendation better, and the 3D
+view is a picture of the engine rather than a replacement for it.
+
+**Unchanged:** IA move 3 (intent-led entry), wordmark typeface (blocks the lockups),
+photo→body (a prior at best), foundation-shade picker.

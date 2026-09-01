@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -13,7 +13,15 @@ import {
 import { convert, detectScale, scalesForDomain } from "@/lib/sizeConvert";
 import type { SizeDomain } from "@/lib/sizeSystems";
 import { FitFigure } from "@/components/FitFigure";
+import { SafeBoundary } from "@/components/SafeBoundary";
 import { CONFIDENCE_WEIGHTS } from "@/lib/confidenceWeights";
+import { chestEaseCm } from "@/lib/bodyMesh";
+
+// three.js only loads if someone opens the 3D view. Boundaried because a failed
+// chunk silently blanks its subtree rather than throwing.
+const BodyMesh3D = lazy(() =>
+  import("@/components/BodyMesh3D").then((m) => ({ default: m.BodyMesh3D })),
+);
 
 type SizeScore = {
   label: string;
@@ -681,6 +689,7 @@ function Result({
               shoulderCm: o.shoulderCm,
             }))}
           />
+          <EaseIn3D body={body} product={product} bestLabel={result.best.label} />
         </Card>
       )}
 
@@ -853,5 +862,119 @@ export default function CheckPage() {
     <Suspense fallback={<div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">Loading…</div>}>
       <CheckInner />
     </Suspense>
+  );
+}
+
+
+/**
+ * The same ease FitFigure draws, in three dimensions.
+ *
+ * WHY BOTH. The flat figure shows one cross-section; ease is not the same all
+ * the way round, and the number beside it is still the truth either way. This is
+ * offered, never substituted — it is opt-in, it costs three.js to open, and the
+ * 2D diagram stays the thing that loads by default.
+ *
+ * WHAT IT IS NOT. Still not a try-on: no collar, no hem, no sleeves, no fabric.
+ * A shell at the garment's measurements around a form at yours, which is the
+ * arithmetic and nothing more (invariant ⑲).
+ */
+function EaseIn3D({
+  body,
+  product,
+  bestLabel,
+}: {
+  body: { chestCm: number | null; shoulderCm: number | null; estimated?: boolean };
+  product: Product;
+  bestLabel: string;
+}) {
+  const drawable = product.sizeOptions.filter((o) => o.chestCm != null);
+  const [open, setOpen] = useState(false);
+  const [label, setLabel] = useState(bestLabel);
+
+  if (body.chestCm == null || drawable.length === 0) return null;
+  const current = drawable.find((o) => o.label === label) ?? drawable[0];
+  const ease = chestEaseCm(
+    { chestCm: body.chestCm },
+    { label: current.label, chestCm: current.chestCm, shoulderCm: current.shoulderCm },
+  );
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-3 text-xs font-semibold text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand"
+      >
+        See it around your shape in 3D →
+      </button>
+    );
+  }
+
+  return (
+    <div className="mt-4 border-t border-line pt-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+        <SafeBoundary
+          fallback={
+            <p className="text-xs text-ink-faint">
+              The 3D view couldn&apos;t start on this device — the diagram above is unaffected.
+            </p>
+          }
+        >
+          <Suspense fallback={<div className="h-[220px] w-[220px] animate-pulse rounded-xl bg-paper-dim" />}>
+            <BodyMesh3D
+              size={220}
+              measurements={{ chestCm: body.chestCm, shoulderCm: body.shoulderCm }}
+              garment={{
+                label: current.label,
+                chestCm: current.chestCm,
+                shoulderCm: current.shoulderCm,
+              }}
+            />
+          </Suspense>
+        </SafeBoundary>
+
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap gap-1.5">
+            {drawable.map((o) => (
+              <button
+                key={o.label}
+                type="button"
+                onClick={() => setLabel(o.label)}
+                className={`min-h-[34px] rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
+                  o.label === current.label
+                    ? "border-brand bg-brand text-white"
+                    : "border-line bg-paper-soft text-ink-soft hover:border-ink/30"
+                }`}
+              >
+                {o.label}
+              </button>
+            ))}
+          </div>
+
+          {ease != null && (
+            <p className="mt-3 text-sm text-ink">
+              <span className="font-semibold tabular-nums">
+                {ease > 0 ? `+${ease.toFixed(1)}` : ease.toFixed(1)} cm
+              </span>{" "}
+              <span className="text-ink-soft">
+                {ease >= 0
+                  ? "of room through the chest, over your own measurement."
+                  : "— this size measures smaller than you do through the chest."}
+              </span>
+            </p>
+          )}
+
+          <p className="mt-3 text-[11px] leading-relaxed text-ink-faint">
+            The {ease != null && ease < 0 ? "amber" : "blue"} shell is drawn at{" "}
+            <strong>{current.label}</strong>&apos;s stated chest
+            {current.shoulderCm != null ? " and shoulder" : ""}. Below the chest it holds that
+            circumference straight down, because a size chart states a length but never a waist —
+            that part is an assumption, not a measurement. No collar, no sleeves, no fabric: this
+            is the ease, not a preview of how it will look.
+            {body.estimated && " Your own figure here is from regional averages — add your chest to make it yours."}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

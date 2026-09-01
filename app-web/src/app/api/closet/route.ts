@@ -26,12 +26,34 @@ const ItemSchema = z
     groupId: z.string().optional().nullable(),
     groupName: z.string().max(80).optional().nullable(),
     onlineAvailable: z.boolean().optional(),
+    // The garment's OWN measurements, as read from the retailer's chart at
+    // add-by-URL time. All optional — hand-added items have none, and a page
+    // with no chart yields none either.
+    garmentChestCm: z.coerce.number().min(10).max(400).optional().nullable(),
+    garmentShoulderCm: z.coerce.number().min(5).max(120).optional().nullable(),
+    garmentSleeveCm: z.coerce.number().min(1).max(150).optional().nullable(),
+    garmentLengthCm: z.coerce.number().min(5).max(250).optional().nullable(),
+    garmentMeasuredFrom: z.enum(["page", "estimated", "fixture"]).optional().nullable(),
   })
   // Guard the size against the category's size system so junk can't be stored.
   .refine((d) => isValidSize(d.category, d.size), {
     message: "Size is not valid for this garment type",
     path: ["size"],
-  });
+  })
+  // A garment measurement with no stated provenance is indistinguishable from a
+  // measured one, which is the exact failure `source.sizesFrom` exists to stop.
+  .refine(
+    (d) =>
+      d.garmentMeasuredFrom != null ||
+      (d.garmentChestCm == null &&
+        d.garmentShoulderCm == null &&
+        d.garmentSleeveCm == null &&
+        d.garmentLengthCm == null),
+    {
+      message: "garmentMeasuredFrom is required when any garment measurement is given",
+      path: ["garmentMeasuredFrom"],
+    },
+  );
 
 export async function GET() {
   const user = await getCurrentUser();

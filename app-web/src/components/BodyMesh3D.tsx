@@ -26,7 +26,14 @@
 
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
-import { bodyCrossSections, drawingRings, type BodyMeasurementsInput } from "@/lib/bodyMesh";
+import {
+  bodyCrossSections,
+  drawingRings,
+  garmentShellRings,
+  type BodyMeasurementsInput,
+  type GarmentMeasurements,
+  type ShellRing,
+} from "@/lib/bodyMesh";
 
 const RADIAL_SEGMENTS = 48;
 // Interpolated rings between each measured pair. Enough that the surface reads
@@ -118,12 +125,66 @@ function buildBodyGeometry(measured: ReturnType<typeof bodyCrossSections>): THRE
   return g;
 }
 
+
+/**
+ * The garment shell: an open tube at the garment's measurements around the body.
+ *
+ * Open on purpose — no caps. A capped shell would read as a solid object the
+ * body is inside; an open one reads as a garment's cross-section, which is what
+ * it is. It is also rendered double-sided and translucent so a size that is
+ * SMALLER than the wearer is visible passing through them, which is the single
+ * most useful thing this picture can show.
+ */
+function buildShellGeometry(rings: ShellRing[]): THREE.BufferGeometry | null {
+  if (rings.length < 2) return null;
+  const spline = (pick: (r: ShellRing) => number) =>
+    new THREE.CatmullRomCurve3(
+      rings.map((r, i) => new THREE.Vector3(i, pick(r), 0)),
+      false,
+      "centripetal",
+    );
+  const cw = spline((r) => r.halfWidth);
+  const cd = spline((r) => r.halfDepth);
+  const cy = spline((r) => r.y);
+
+  const steps = (rings.length - 1) * RINGS_BETWEEN;
+  const loops: THREE.Vector3[][] = [];
+  for (let i = 0; i <= steps; i++) {
+    const t = i / steps;
+    loops.push(ring(cw.getPoint(t).y, cd.getPoint(t).y, cy.getPoint(t).y));
+  }
+
+  const positions: number[] = [];
+  const normals: number[] = [];
+  const push = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3) => {
+    const n = new THREE.Vector3().subVectors(b, a).cross(new THREE.Vector3().subVectors(c, a)).normalize();
+    for (const v of [a, b, c]) {
+      positions.push(v.x, v.y, v.z);
+      normals.push(n.x, n.y, n.z);
+    }
+  };
+  for (let r = 0; r < loops.length - 1; r++) {
+    for (let i = 0; i < RADIAL_SEGMENTS; i++) {
+      const j = (i + 1) % RADIAL_SEGMENTS;
+      push(loops[r][i], loops[r + 1][i], loops[r + 1][j]);
+      push(loops[r][i], loops[r + 1][j], loops[r][j]);
+    }
+  }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
+  g.setAttribute("normal", new THREE.Float32BufferAttribute(normals, 3));
+  return g;
+}
+
 export function BodyMesh3D({
   measurements,
+  garment,
   size = 280,
   className = "",
 }: {
   measurements: BodyMeasurementsInput;
+  /** Optional: draw this size's measurements as a shell around the body. */
+  garment?: GarmentMeasurements | null;
   size?: number;
   className?: string;
 }) {
@@ -135,7 +196,11 @@ export function BodyMesh3D({
   const idleRef = useRef(true);
 
   const sections = bodyCrossSections(measurements);
-  const key = JSON.stringify(sections.map((s) => [s.key, s.y, s.halfWidth, s.halfDepth]));
+  const shell = garment ? garmentShellRings(sections, garment) : [];
+  const key = JSON.stringify([
+    sections.map((s) => [s.key, s.y, s.halfWidth, s.halfDepth]),
+    shell.map((r) => [r.y, r.halfWidth, r.halfDepth]),
+  ]);
 
   useEffect(() => {
     const el = hostRef.current;
@@ -174,6 +239,33 @@ export function BodyMesh3D({
 
     const pivot = new THREE.Group();
     pivot.add(mesh);
+
+    // The garment, if we were given one. Translucent and double-sided so a size
+    // that is smaller than the wearer shows the body passing through it —
+    // clamping that away would hide the case people most need to see.
+    const shellGeometry = shell.length >= 2 ? buildShellGeometry(shell) : null;
+    let shellMaterial: THREE.MeshStandardMaterial | null = null;
+    if (shellGeometry) {
+      // Coloured by SIGN, not by preference. A garment smaller than its wearer
+      // renders inside the form, so all you see is where the body bursts out of
+      // it — true, but a viewer can read that band as decoration. Amber says
+      // "this does not close" at a glance; cobalt says "this is your room".
+      const negative = (garment?.chestCm ?? 0) < (measurements.chestCm ?? 0);
+      shellMaterial = new THREE.MeshStandardMaterial({
+        color: negative ? 0xc2761b : 0x2438d6,
+        roughness: 0.35,
+        metalness: 0.0,
+        transparent: true,
+        opacity: negative ? 0.55 : 0.34,
+        side: THREE.DoubleSide,
+        depthWrite: false, // or the far wall of the tube z-fights the near one
+      });
+      const shellMesh = new THREE.Mesh(shellGeometry, shellMaterial);
+      shellMesh.position.sub(centre);
+      shellMesh.renderOrder = 1;
+      pivot.add(shellMesh);
+    }
+
     scene.add(pivot);
 
     // One key light, one fill — the same single-source logic the badges use, so
@@ -184,8 +276,17 @@ export function BodyMesh3D({
     fill.position.set(1, 0.2, -0.6);
     scene.add(key1, fill, new THREE.AmbientLight(0xffffff, 0.42));
 
+    // Frame on the body AND the shell — an oversized garment is wider than its
+    // wearer, and framing on the body alone would crop the very thing being shown.
+    let framed = span;
+    if (shellGeometry) {
+      shellGeometry.computeBoundingBox();
+      const sb = shellGeometry.boundingBox!;
+      framed = Math.max(framed, sb.max.y - sb.min.y, sb.max.x - sb.min.x);
+    }
+
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 2000);
-    camera.position.set(0, 0, span * 2.35);
+    camera.position.set(0, 0, framed * 2.35);
     camera.lookAt(0, 0, 0);
 
     // ---- pointer drag, entirely outside React ----
@@ -232,6 +333,8 @@ export function BodyMesh3D({
       renderer.domElement.removeEventListener("pointercancel", onUp);
       geometry.dispose();
       material.dispose();
+      shellGeometry?.dispose();
+      shellMaterial?.dispose();
       renderer.dispose();
       renderer.forceContextLoss();
       renderer.domElement.remove();

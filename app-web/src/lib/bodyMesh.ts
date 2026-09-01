@@ -242,3 +242,114 @@ export function drawingRings(sections: CrossSection[]): {
     ],
   };
 }
+
+
+// ---------------------------------------------------------------------------
+// The garment shell — step 2 of docs/design/3d-body-and-tryon.md
+// ---------------------------------------------------------------------------
+//
+// A size chart gives us a garment CHEST circumference and a SHOULDER breadth,
+// and that is all the girth information that exists on a product page. So the
+// shell is honest at exactly two heights and has to state a convention for the
+// rest.
+//
+// It is a shell, not a garment. No collar, no hem detail, no sleeves — the
+// moment it looks like clothing it starts making the appearance claim that
+// docs/design/fit-algorithm-research.md §1 says nobody can keep, and this
+// project's own invariant ⑲ forbids.
+
+export type GarmentMeasurements = {
+  label: string;
+  /** Garment chest circumference, cm — the flat chart value doubled if needed. */
+  chestCm: number | null;
+  /** Garment shoulder breadth (across the back), cm. */
+  shoulderCm: number | null;
+};
+
+export type ShellRing = {
+  y: number;
+  halfWidth: number;
+  halfDepth: number;
+  /** True where this ring sits on a garment measurement rather than a convention. */
+  measured: boolean;
+};
+
+/**
+ * How far below the chest the shell hangs, as a fraction of the shoulder-to-hip
+ * rise. ⚠ A drawing convention: a size chart states a body length but not a
+ * waist girth, so there is nothing to narrow towards.
+ */
+const SHELL_DROP = 0.55;
+
+/**
+ * The shell around a body, at a garment's measurements.
+ *
+ * Returns [] when the garment has no chest — with no girth there is no ease to
+ * show, and a shell drawn from nothing would be decoration.
+ *
+ * BELOW THE CHEST the shell holds the chest circumference straight down. That is
+ * a stated convention, not a measurement: charts give a chest and a length, never
+ * a waist, and narrowing towards the body would invent a taper the garment may
+ * not have. Straight is the assumption that adds least.
+ */
+export function garmentShellRings(
+  body: CrossSection[],
+  garment: GarmentMeasurements,
+): ShellRing[] {
+  if (garment.chestCm == null || body.length < 2) return [];
+
+  const chestSec = body.find((s) => s.key === "chest");
+  const shoulderSec = body.find((s) => s.key === "shoulder");
+  if (!chestSec) return [];
+
+  const rise = body[body.length - 1].y - body[0].y;
+  const chestAxes = ellipseSemiAxes(garment.chestCm);
+
+  const rings: ShellRing[] = [];
+
+  // Bottom: straight down from the chest, at the chest's own girth.
+  rings.push({
+    y: chestSec.y - rise * SHELL_DROP,
+    halfWidth: chestAxes.halfWidth,
+    halfDepth: chestAxes.halfDepth,
+    measured: false,
+  });
+
+  // The chest itself — the one ring the chart actually states.
+  rings.push({
+    y: chestSec.y,
+    halfWidth: chestAxes.halfWidth,
+    halfDepth: chestAxes.halfDepth,
+    measured: true,
+  });
+
+  // Shoulder: a breadth, not a girth, so it sets the width directly. Missing
+  // from many charts, in which case the shell carries the chest up unchanged.
+  if (shoulderSec) {
+    const measured = garment.shoulderCm != null;
+    rings.push({
+      y: shoulderSec.y,
+      halfWidth: measured ? garment.shoulderCm! / 2 : chestAxes.halfWidth,
+      halfDepth: chestAxes.halfDepth * 0.94,
+      measured,
+    });
+  }
+
+  return rings.sort((a, b) => a.y - b.y);
+}
+
+/**
+ * Ease at the chest, in centimetres: garment − body. Negative means the garment
+ * is smaller than the wearer.
+ *
+ * This is the number the shell is a picture of, and the UI must print it — the
+ * drawing carries the gestalt, the number carries the truth (the same split
+ * FitFigure makes).
+ */
+export function chestEaseCm(
+  body: BodyMeasurementsInput,
+  garment: GarmentMeasurements,
+): number | null {
+  if (body.chestCm == null || garment.chestCm == null) return null;
+  return garment.chestCm - body.chestCm;
+}

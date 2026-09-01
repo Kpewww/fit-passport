@@ -449,6 +449,23 @@ model KnownGoodItem {
   groupId      String?
   groupName    String? // optional label for the merged card
 
+  // ---- The garment's OWN measurements, captured at add-by-URL time ----
+  // The extractor already reads a full size chart when someone pastes a product
+  // link; before this it returned only the labels and threw the numbers away.
+  // Keeping them is what makes `ease = garment − body` computable for a garment
+  // the user OWNS AND LIKES, which is the strongest ease signal available —
+  // a size chart alone says how a brand cuts, this says what actually worked.
+  // All nullable: items added by hand, or from a page with no chart, have none.
+  garmentChestCm    Float?
+  garmentShoulderCm Float?
+  garmentSleeveCm   Float?
+  garmentLengthCm   Float?
+  /// Where those numbers came from: "page" (read off the retailer's own chart)
+  /// or "estimated" (the extractor's fallback ladder). Never blank when any
+  /// measurement above is set — an unlabelled number is indistinguishable from
+  /// a measured one, which is the failure mode `source.sizesFrom` exists to stop.
+  garmentMeasuredFrom String?
+
   productUrl  String? // optional link so we can back-refer to the source
   // Optional USER-UPLOADED photo of the item (small client-resized data URL).
   // We deliberately store the user's own photo, not scraped brand imagery, to

@@ -3,9 +3,11 @@ import {
   DEFAULT_STATURE_CM,
   TORSO_DEPTH_RATIO,
   bodyCrossSections,
-  ellipseSemiAxes,
-  landmarkHeightCm,
+  chestEaseCm,
   drawingRings,
+  ellipseSemiAxes,
+  garmentShellRings,
+  landmarkHeightCm,
   measuredFraction,
   statureCm,
 } from "./bodyMesh";
@@ -166,5 +168,67 @@ describe("drawingRings", () => {
 
   it("produces nothing when there is not enough body to cap", () => {
     expect(drawingRings([])).toEqual({ above: [], below: [] });
+  });
+});
+
+describe("garmentShellRings — the ease shell", () => {
+  const body = bodyCrossSections({ heightCm: 178, chestCm: 100, waistCm: 82, hipCm: 96, shoulderCm: 46 });
+
+  it("draws nothing without a garment chest", () => {
+    // No girth means no ease to show; a shell from nothing is decoration.
+    expect(garmentShellRings(body, { label: "M", chestCm: null, shoulderCm: 44 })).toEqual([]);
+    expect(garmentShellRings([], { label: "M", chestCm: 110, shoulderCm: 44 })).toEqual([]);
+  });
+
+  it("puts the chest ring at exactly the garment's chest circumference", () => {
+    // The whole claim of the picture. If this drifts, the drawing is lying.
+    const rings = garmentShellRings(body, { label: "M", chestCm: 110, shoulderCm: 45 });
+    const chest = rings.find((r) => r.measured && r.halfDepth / r.halfWidth > 0.6)!;
+    const perim = Math.PI * (3 * (chest.halfWidth + chest.halfDepth)
+      - Math.sqrt((3 * chest.halfWidth + chest.halfDepth) * (chest.halfWidth + 3 * chest.halfDepth)));
+    expect(perim).toBeCloseTo(110, 6);
+  });
+
+  it("marks which rings are measured and which are convention", () => {
+    const rings = garmentShellRings(body, { label: "M", chestCm: 110, shoulderCm: 45 });
+    // The skirt below the chest is a stated assumption, never a measurement.
+    expect(rings[0].measured).toBe(false);
+    expect(rings.some((r) => r.measured)).toBe(true);
+  });
+
+  it("treats a missing garment shoulder as unmeasured rather than inventing one", () => {
+    const rings = garmentShellRings(body, { label: "M", chestCm: 110, shoulderCm: null });
+    expect(rings.every((r) => r.measured === (r.y === body.find((b) => b.key === "chest")!.y))).toBe(true);
+  });
+
+  it("sits outside the body when the garment is larger, and inside when smaller", () => {
+    // The inside case is the informative one — a size that will not close — and it
+    // has to be drawable, not clamped away.
+    const bodyChest = body.find((b) => b.key === "chest")!;
+    const roomy = garmentShellRings(body, { label: "L", chestCm: 116, shoulderCm: null });
+    const tight = garmentShellRings(body, { label: "XS", chestCm: 88, shoulderCm: null });
+    const at = (rs: ReturnType<typeof garmentShellRings>) =>
+      rs.find((r) => r.measured)!.halfWidth;
+    expect(at(roomy)).toBeGreaterThan(bodyChest.halfWidth);
+    expect(at(tight)).toBeLessThan(bodyChest.halfWidth);
+  });
+
+  it("hangs below the chest and reaches up to the shoulder", () => {
+    const rings = garmentShellRings(body, { label: "M", chestCm: 110, shoulderCm: 45 });
+    const ys = rings.map((r) => r.y);
+    expect(Math.min(...ys)).toBeLessThan(body.find((b) => b.key === "chest")!.y);
+    expect(Math.max(...ys)).toBe(body.find((b) => b.key === "shoulder")!.y);
+  });
+});
+
+describe("chestEaseCm", () => {
+  it("is garment minus body, signed", () => {
+    expect(chestEaseCm({ chestCm: 100 }, { label: "M", chestCm: 110, shoulderCm: null })).toBe(10);
+    expect(chestEaseCm({ chestCm: 100 }, { label: "S", chestCm: 94, shoulderCm: null })).toBe(-6);
+  });
+
+  it("is null when either side is missing, rather than guessing at zero", () => {
+    expect(chestEaseCm({}, { label: "M", chestCm: 110, shoulderCm: null })).toBeNull();
+    expect(chestEaseCm({ chestCm: 100 }, { label: "M", chestCm: null, shoulderCm: null })).toBeNull();
   });
 });
