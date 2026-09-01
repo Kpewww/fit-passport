@@ -384,3 +384,26 @@ view is a picture of the engine rather than a replacement for it.
 
 **Unchanged:** IA move 3 (intent-led entry), wordmark typeface (blocks the lockups),
 photo→body (a prior at best), foundation-shade picker.
+
+---
+
+## UPDATE — Session 68 (2026-09-01)
+
+**Both items from the last update are done.** The personal ease target is built and
+the engine reads it; and while testing it, the cross-brand anchor was found to be
+matching size *labels* rather than measurements and was fixed. 353 → 381 tests. See
+[[project-fit-passport-build-state]] invariants ㊳–㊴.
+
+**Next, in order:**
+1. **Surface the ease target on `/passport`** — "your closet says you wear +14.5cm,
+   your stated preference is regular (+10)". It is currently only visible inside a
+   `/check` result's reasons, which is where the fewest people will read it, and it
+   is a genuinely interesting thing to know about yourself.
+2. **The garment comparison in 3D** — your known-good shirt as one shell against
+   the candidate as another, on your own form. All the data now exists.
+3. **IA move 3** (intent-led entry) — unchanged.
+
+**Worth knowing before touching the engine again:** the ease target and the anchor
+are deliberately disjoint. The target moves the ease every size is scored against;
+the anchor moves which rung the closet points at. Neither double-counts the other,
+and that is by construction rather than by tuning — keep it that way.

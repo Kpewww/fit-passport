@@ -12,7 +12,7 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 
 **Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**353 tests as of Session 67**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**381 tests as of Session 68**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -462,3 +462,39 @@ a column with no migration still turns it red.
 
 **Privacy re-checked:** the new columns are **not** in `/api/view/[code]`'s allow-list
 `select`, so an account-code holder does not see them. Widening it stays invariant ⑳.
+
+---
+
+**SESSION 68 UPDATE (2026-09-01).** 353 → **381 tests**. The engine now reads the
+garment measurements Session 67 captured.
+
+**The personal ease target is BUILT** — `src/lib/personalEase.ts`. It learns the
+ease this wearer actually lives in and the engine scores with it in place of the
+constant behind their stated slim/regular/relaxed label. **The "not derivable"
+correction in `closet-signal-and-interaction-cost.md` §1.2 is superseded.**
+
+**NEW INVARIANTS:**
+㊳ **A learned ease target is capped at one ladder step from the stated
+preference**, needs **two** measured garments minimum (four for full weight), uses
+the **median**, ignores `estimated` provenance entirely, loses all weight when the
+garments disagree by a full ladder step, and is attached as a **weight-0 reason**
+on every size — it moved the target they were all measured against, so it belongs
+in the explanation even though it pushed no size over another.
+㊴ **Cross-brand anchors are placed by MEASUREMENT, not by size label** — when we
+have a read garment chest and the product states chests. `scoreKnownGood` used
+`alphaIndex(kg.size)`, so a Roomy Brand M (118cm) and a Uniqlo M (100cm) sat at
+the same rung and the engine recommended a garment **18cm smaller** than the one
+the wearer said fits. **Same-brand anchors deliberately stay on the label**: the
+ladder already lines up within a brand, the label is what the wearer recognises,
+and [F1] anchor dominance depends on that path.
+
+**How ㊴ was found, because the method generalises:** an end-to-end run of the new
+ease feature said "you wear +18cm of room" and then recommended a *smaller* size.
+The result was absurd rather than merely surprising, which is the signal worth
+chasing instead of tuning around — and the cause turned out to be a decade-old
+approximation sitting next to the new code, not the new code.
+
+**Note on writing engine tests:** two expectations here were wrong before the code
+was. With a body chest present the measurement term (0.45) outranks a weak
+cross-brand anchor (0.35 × 0.75), so a test meant to isolate anchor behaviour must
+drop the chest or it is testing something else.

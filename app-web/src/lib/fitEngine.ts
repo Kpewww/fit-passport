@@ -33,6 +33,7 @@ import { domainForCategory } from "./sizeSystems";
 import { biasForBrand, type BrandBias } from "./brandBias";
 import { directionToLadderShift, describeDirection, isDirectional } from "./fitDirection";
 import { reportConsistency } from "./closetConsistency";
+import { personalEaseTarget, resolveEase, type ResolvedEase } from "./personalEase";
 import { CONFIDENCE_WEIGHTS } from "./confidenceWeights";
 
 // ------------ Input contracts ------------
@@ -60,6 +61,15 @@ export type KnownGoodInput = {
    */
   fitDirection?: number | null;
   region?: string | null;
+  /**
+   * The GARMENT's own chest, captured from the retailer's chart when the item
+   * was added by URL (Session 67), plus where that number came from. Together
+   * with the wearer's chest these give `ease = garment − body` for a piece they
+   * own AND rated — see personalEase.ts. Absent on hand-added items, and the
+   * engine then behaves exactly as it did before these existed.
+   */
+  garmentChestCm?: number | null;
+  garmentMeasuredFrom?: string | null;
 };
 
 export type OutcomeInput = {
@@ -243,8 +253,12 @@ function scoreMeasurementFit(
   pref: FitPreference,
   category: string | null | undefined,
   W: Weights,
+  /** Ease to score with — the stated preference, possibly moved by the closet. */
+  resolvedEase?: ResolvedEase,
 ): { score: number; reason: Reason | null; verdict?: FitVerdict } {
-  const ease = easeChestCm(pref) + easeAdjustForCategory(category);
+  // `resolvedEase` is optional so every existing caller and test keeps the exact
+  // behaviour it had: with nothing learned, this is `easeChestCm(pref)` verbatim.
+  const ease = (resolvedEase?.easeCm ?? easeChestCm(pref)) + easeAdjustForCategory(category);
 
   type Dim = { key: string; sub: number; delta: number; weight: number; sigma: number };
   const dims: Dim[] = [];
@@ -330,12 +344,55 @@ function scoreMeasurementFit(
  * Boost a size if it matches (or is adjacent to) a known-good garment.
  * Same-brand-same-category is worth more than cross-brand.
  */
+/**
+ * Where a closet garment sits on THIS product's size ladder.
+ *
+ * By default the anchor is placed by its LABEL — a "Roomy Brand M" lands wherever
+ * M lands. That is the approximation the comment below has always acknowledged,
+ * and it is wrong in a way that shows: Roomy Brand's M measures 118cm and
+ * Uniqlo's measures 100cm, so matching the letter recommends a garment 18cm
+ * smaller than the one the wearer told us fits.
+ *
+ * When we captured the anchor garment's OWN chest (Session 67) and this product
+ * states its chests, we can do the honest thing instead: find the size on this
+ * ladder that measures closest to the garment that actually fits them. Labels are
+ * a brand's opinion; centimetres are not.
+ *
+ * Returns null when either side is missing, and the caller falls back to the
+ * label — which is every item added before the measurements were captured.
+ */
+function anchorIndexByMeasurement(
+  kg: KnownGoodInput,
+  sizes: SizeOptionInput[],
+): number | null {
+  if (kg.garmentChestCm == null) return null;
+  // Only a measurement we READ, never one the extractor guessed — the same bar
+  // personalEase.ts applies, for the same reason.
+  if (kg.garmentMeasuredFrom !== "page" && kg.garmentMeasuredFrom !== "fixture") return null;
+
+  let bestIdx: number | null = null;
+  let bestDelta = Infinity;
+  for (const s of sizes) {
+    if (s.chestCm == null) continue;
+    const idx = alphaIndex(normalizeToAlpha(s.label));
+    if (idx === null) continue;
+    const delta = Math.abs(s.chestCm - kg.garmentChestCm);
+    if (delta < bestDelta) {
+      bestDelta = delta;
+      bestIdx = idx;
+    }
+  }
+  return bestIdx;
+}
+
 function scoreKnownGood(
   size: SizeOptionInput,
   product: EngineInput["product"],
   knownGood: KnownGoodInput[],
   pref: FitPreference,
   W: Weights,
+  /** The full ladder, so an anchor can be placed by measurement rather than label. */
+  allSizes: SizeOptionInput[] = [],
 ): { score: number; reason: Reason | null } {
   if (knownGood.length === 0) return { score: 0, reason: null };
   const sizeAlpha = normalizeToAlpha(size.label);
@@ -369,7 +426,13 @@ function scoreKnownGood(
     //      two guesses.
     const strong = !!(sameBrand && sameCat);
     const dirShift = directionToLadderShift(kg.fitDirection);
-    const targetIdx = (strong ? kgIdx + preferenceShift(pref) : kgIdx) + dirShift;
+    // Prefer measurement alignment when we have it; fall back to the label.
+    // Same-brand anchors are left on the label deliberately: within one brand the
+    // ladder already lines up, and the label is what the wearer will recognise in
+    // the explanation.
+    const byMeasure = strong ? null : anchorIndexByMeasurement(kg, allSizes);
+    const baseIdx = byMeasure ?? kgIdx;
+    const targetIdx = (strong ? baseIdx + preferenceShift(pref) : baseIdx) + dirShift;
     const dist = Math.abs(sizeIdx - targetIdx);
 
     // Base falloff by ladder distance.
@@ -660,16 +723,43 @@ export function recommend(input: EngineInput): EngineOutput {
     (c) => productDomain == null || domainForCategory(c) === productDomain,
   );
 
+  // What ease this wearer actually lives in, learned from closet garments whose
+  // own measurements we captured. Revealed preference beats stated preference —
+  // but only on measured garments, only past a minimum evidence bar, and never
+  // by more than one ladder step. See personalEase.ts for the full discipline.
+  //
+  // Uses the FULL closet, not `usableKnownGood`: that filter exists to stop
+  // cross-domain anchors moving a size, whereas an ease preference is a property
+  // of the person. It moves the target ease, never the ladder directly, so it
+  // cannot double-count with the anchor or with brand bias.
+  const learnedEase = personalEaseTarget(
+    knownGood.map((k) => ({
+      category: k.category,
+      garmentChestCm: k.garmentChestCm,
+      garmentMeasuredFrom: k.garmentMeasuredFrom,
+      fitDirection: k.fitDirection,
+    })),
+    profile.chestCm,
+  );
+  const easeUsed = resolveEase(profile.preferredFit, learnedEase);
+
   const ranked: SizeScore[] = sizes.map((size) => {
     const reasons: Reason[] = [];
-    const fit = scoreMeasurementFit(size, profile, profile.preferredFit, product.category, W);
+    const fit = scoreMeasurementFit(size, profile, profile.preferredFit, product.category, W, easeUsed);
     if (fit.reason) reasons.push(fit.reason);
-    const kg = scoreKnownGood(size, product, usableKnownGood, profile.preferredFit, W);
+    const kg = scoreKnownGood(size, product, usableKnownGood, profile.preferredFit, W, sizes);
     if (kg.reason) reasons.push(kg.reason);
     const outc = scoreOutcome(size, product, outcomes, W);
     if (outc.reason) reasons.push(outc.reason);
     const bias = scoreBrandBiasForSize(size, brandBias, refIdx);
     if (bias) reasons.push(bias);
+    // Weight 0: this did not push this size up or down against its siblings — it
+    // moved the target every size was measured against. It is here so the user
+    // can SEE that their closet changed the question, which is the whole
+    // explainability contract. A hidden adjustment is the black box we refuse to be.
+    if (easeUsed.personalised && easeUsed.reason) {
+      reasons.push({ signal: "preference", weight: 0, message: easeUsed.reason });
+    }
 
     const score = combine(reasons, W.minDataFloor);
     let confidence = computeConfidence(size, usableKnownGood.length > 0, profile.chestCm != null);

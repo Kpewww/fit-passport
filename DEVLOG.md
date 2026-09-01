@@ -31,6 +31,87 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-01 · Session 68 — The engine reads the closet's measurements, and an old flaw shows up next to it
+
+Session 67 captured the garment's own measurements. This is the engine using
+them, and the second half was not planned.
+
+### The personal ease target
+
+`docs/design/closet-signal-and-interaction-cost.md` §1.2 has carried a
+**correction** since 2026-08-25 saying this was *not derivable* — `KnownGoodItem`
+stored no garment measurements, so `ease = garment − body` had no garment side.
+It does now, and the correction is superseded.
+
+`src/lib/personalEase.ts` learns what ease this wearer actually lives in, and the
+engine scores with it instead of the constant behind their stated
+slim/regular/relaxed label. Revealed preference beats stated preference — the
+label was always a proxy for this number.
+
+Each garment contributes the ease it gave them **corrected by what they said
+about it**: a garment they called "a bit snug" means their real target is above
+the ease that garment gave them, not equal to it. That correction is the whole
+reason a signed direction is worth collecting.
+
+It follows the pollution discipline `brandBias.ts` established, for the same
+founder concern:
+
+- **Measured garments only.** An `estimated` chest is the extractor's fallback
+  ladder guessing, and a personal target built on a guess is worse than the
+  stated preference it would replace.
+- **Two garments minimum, four for full weight.**
+- **Median, not mean** — one mis-entered measurement must not drag the target.
+- **Disagreement lowers trust**, to zero at a full ladder step of spread.
+- **Capped at one ladder step** from the stated preference. No learned signal
+  moves a recommendation by more than one size on its own.
+- **Explains itself.** Attached as a weight-0 reason on every size, because it
+  moved the target they were *all* measured against rather than pushing one over
+  another. A hidden adjustment is the black box we refuse to be.
+
+The engine change is additive: with no captured measurements `resolveEase`
+returns `easeChestCm(pref)` verbatim, so all 58 existing engine tests passed
+untouched.
+
+### The flaw that surfaced while testing it
+
+The end-to-end check said: closet of roomy tees → **"XL becomes M"**. A learned
+"you wear +18cm of room" producing a *smaller* recommendation is obviously wrong,
+so it was worth chasing rather than tuning around.
+
+It was not the new code. `scoreKnownGood` places an anchor by its **size label** —
+`alphaIndex("M")` — and the garment's actual measurements never entered. Roomy
+Brand's M measures 118cm and Uniqlo's measures 100cm, so matching the letter
+recommended a garment **18cm smaller** than the one the wearer had just said fits
+them. The code comment had acknowledged the weakness for a long time ("cross-brand
+ladder alignment is already approximate"); what changed is that we now hold the
+data to fix it.
+
+Cross-brand anchors are now placed by **measurement**: find the size on this
+ladder that measures closest to the garment that actually fits them. Labels are a
+brand's opinion; centimetres are not.
+
+Scoped tightly, because [F1] anchor dominance depends on this function:
+- only when the anchor has a **read** measurement and the product states chests;
+- **same-brand anchors stay on the label**, where the ladder already lines up and
+  the label is what the wearer recognises in the explanation;
+- everything else falls back exactly as before.
+
+The clearest test is the pair that differs in one field: the same anchor with an
+`estimated` measurement lands on M, and with a `page` measurement lands on XL.
+
+**Two test expectations of mine were wrong before the code was.** I asserted the
+label fallback would recommend M with a body chest present; it recommends XL,
+because the measurement term (0.45) outranks a weak cross-brand anchor (0.35 ×
+0.75). The tests now drop the body chest so the anchor is the only signal, which
+is what they were meant to isolate.
+
+**Verified:** typecheck clean, lint clean (3 pre-existing warnings), **353 → 381
+tests**, clean production build after `rm -rf .next`, and the scenario that
+exposed the flaw re-run through the real database and API — it was `XL → M`
+before and is `XL → XL` now, with the ease reason surfaced in the result.
+
+---
+
 ## 2026-09-01 · Session 67 — The ease shell, and the size chart stops being thrown away
 
 Steps 2 and 3 of `docs/design/3d-body-and-tryon.md` §8, both built.

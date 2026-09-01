@@ -89,6 +89,10 @@ export async function computeRecommendation(
       fitRating: k.fitRating,
       fitDirection: k.fitDirection,
       region: k.region,
+      // The garment's own chest, captured at add-by-URL time, plus where it came
+      // from. Feeds the personal ease target in personalEase.ts.
+      garmentChestCm: k.garmentChestCm,
+      garmentMeasuredFrom: k.garmentMeasuredFrom,
     })),
     outcomes: priorOutcomes.map<OutcomeInput>((o) => ({
       purchasedSize: o.purchasedSize,

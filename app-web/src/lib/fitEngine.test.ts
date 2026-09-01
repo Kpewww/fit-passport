@@ -810,3 +810,175 @@ describe("closet direction feeding brand bias and confidence", () => {
     expect(legacy.conflictNote ?? "").not.toContain("closet reports disagree");
   });
 });
+
+describe("personal ease target — the closet says what 'regular' means for you", () => {
+  // Session 67 captured the garment's own measurements at add-by-URL time, which
+  // is what made `ease = garment − body` computable for a piece the user owns AND
+  // rated. This is the engine reading it. See personalEase.ts for the discipline.
+
+  /** A garment the user owns, whose own chest we read off the retailer's chart. */
+  const owned = (garmentChestCm: number, fitDirection = 0) => ({
+    brand: "Other Brand", // deliberately NOT the product's brand, so the
+    category: "tshirt",   // same-brand anchor cannot be what moves the answer
+    size: "M",
+    fitRating: 5,
+    fitDirection,
+    garmentChestCm,
+    garmentMeasuredFrom: "page",
+  });
+
+  it("moves the recommendation towards the room the wearer actually lives in", () => {
+    const profile = { chestCm: 100, preferredFit: "regular" as const };
+    const sizes = UNIQLO_TEE_SIZES;
+
+    const stated = recommend(baseInput({ profile, sizes }));
+    // Four owned tees at 118 on a 100 chest, all called just right: this person
+    // wears +18, not the +10 "regular" assumes.
+    const learned = recommend(
+      baseInput({ profile, sizes, knownGood: [owned(118), owned(118), owned(118), owned(118)] }),
+    );
+
+    const idx = (label: string) => UNIQLO_TEE_SIZES.findIndex((x) => x.label === label);
+    expect(idx(learned.best.label)).toBeGreaterThanOrEqual(idx(stated.best.label));
+    expect(learned.best.label).toBe("XL");
+  });
+
+  it("says so in the reasons, rather than adjusting silently", () => {
+    const rec = recommend(
+      baseInput({
+        profile: { chestCm: 100, preferredFit: "regular" },
+        sizes: UNIQLO_TEE_SIZES,
+        knownGood: [owned(118), owned(118), owned(118), owned(118)],
+      }),
+    );
+    const msgs = rec.best.reasons.map((r) => r.message).join(" | ");
+    expect(msgs).toMatch(/actually wear/);
+    expect(msgs).toMatch(/closet/);
+  });
+
+  it("changes nothing when the garment measurements were ESTIMATED, not read", () => {
+    // A personal target built on the extractor's fallback guess is worse than the
+    // stated preference it would replace.
+    const profile = { chestCm: 100, preferredFit: "regular" as const };
+    const guessed = [1, 2, 3, 4].map(() => ({ ...owned(118), garmentMeasuredFrom: "estimated" }));
+    const a = recommend(baseInput({ profile, sizes: UNIQLO_TEE_SIZES }));
+    const b = recommend(baseInput({ profile, sizes: UNIQLO_TEE_SIZES, knownGood: guessed }));
+    expect(b.best.label).toBe(a.best.label);
+    expect(b.best.reasons.map((r) => r.message).join(" ")).not.toMatch(/actually wear/);
+  });
+
+  it("changes nothing for a closet with no captured measurements at all", () => {
+    // Every item added before Session 67, and every hand-added item. The engine
+    // must behave exactly as it did before these columns existed.
+    const profile = { chestCm: 100, preferredFit: "regular" as const };
+    const bare = [1, 2, 3, 4].map(() => ({
+      brand: "Other Brand", category: "tshirt", size: "M", fitRating: 5, fitDirection: 0,
+    }));
+    const a = recommend(baseInput({ profile, sizes: UNIQLO_TEE_SIZES }));
+    const b = recommend(baseInput({ profile, sizes: UNIQLO_TEE_SIZES, knownGood: bare }));
+    expect(b.best.label).toBe(a.best.label);
+  });
+
+  it("cannot move the answer by more than one size on its own", () => {
+    // The cap. An absurd closet must not produce an absurd recommendation.
+    const profile = { chestCm: 100, preferredFit: "slim" as const };
+    const absurd = [1, 2, 3, 4].map(() => owned(180));
+    const stated = recommend(baseInput({ profile, sizes: UNIQLO_TEE_SIZES }));
+    const learned = recommend(baseInput({ profile, sizes: UNIQLO_TEE_SIZES, knownGood: absurd }));
+    const idx = (label: string) => UNIQLO_TEE_SIZES.findIndex((x) => x.label === label);
+    expect(idx(learned.best.label) - idx(stated.best.label)).toBeLessThanOrEqual(2);
+  });
+
+  it("stays quiet when the closet simply agrees with the stated preference", () => {
+    const rec = recommend(
+      baseInput({
+        profile: { chestCm: 100, preferredFit: "regular" },
+        sizes: UNIQLO_TEE_SIZES,
+        knownGood: [owned(110), owned(110), owned(110), owned(110)],
+      }),
+    );
+    expect(rec.best.reasons.map((r) => r.message).join(" ")).not.toMatch(/actually wear/);
+  });
+});
+
+describe("cross-brand anchors align by measurement, not by label", () => {
+  // Found while testing the personal ease target end to end: a closet of roomy
+  // tees "M" was recommending Uniqlo M, because the anchor was placed by the
+  // LETTER. Roomy Brand's M measures 118cm and Uniqlo's measures 100cm, so
+  // matching the label recommends a garment 18cm smaller than the one the wearer
+  // just told us fits them. Labels are a brand's opinion; centimetres are not.
+
+  const roomyM = (measured = true) => ({
+    brand: "Roomy Brand",
+    category: "tshirt",
+    size: "M",
+    fitRating: 5,
+    fitDirection: 0,
+    garmentChestCm: 118,
+    garmentMeasuredFrom: measured ? "page" : "estimated",
+  });
+
+  it("maps a roomy 'M' onto the size that actually measures like it", () => {
+    const rec = recommend(
+      baseInput({
+        profile: { chestCm: 100, preferredFit: "regular" },
+        product: { brand: "Uniqlo", category: "tshirt" },
+        sizes: UNIQLO_TEE_SIZES,
+        knownGood: [roomyM()],
+      }),
+    );
+    // Uniqlo's biggest here is XL at 110 — the nearest thing to the 118 that fits
+    // them. It must NOT be M (100cm) just because their garment says "M".
+    expect(rec.best.label).toBe("XL");
+  });
+
+  // The fallback cases drop the body chest so the ANCHOR is the only signal in
+  // play. With a chest present the measurement term (weight 0.45) outranks a
+  // weak cross-brand anchor (0.35 × 0.75) and would mask what is being tested.
+  const anchorOnly = (kg: Record<string, unknown>) =>
+    recommend(
+      baseInput({
+        profile: { chestCm: null, preferredFit: "regular" },
+        product: { brand: "Uniqlo", category: "tshirt" },
+        sizes: UNIQLO_TEE_SIZES,
+        knownGood: [kg as never],
+      }),
+    );
+
+  it("still uses the label when the garment was never measured", () => {
+    // Every item added before the measurements were captured, and every
+    // hand-added one. Behaviour there must be exactly what it was.
+    const rec = anchorOnly({
+      brand: "Roomy Brand", category: "tshirt", size: "M", fitRating: 5, fitDirection: 0,
+    });
+    expect(rec.best.label).toBe("M");
+  });
+
+  it("ignores an ESTIMATED garment measurement and falls back to the label", () => {
+    expect(anchorOnly(roomyM(false)).best.label).toBe("M");
+  });
+
+  it("and with a READ measurement, the same anchor lands on XL instead", () => {
+    // The pair that shows the change is the measurement and nothing else.
+    expect(anchorOnly(roomyM(true)).best.label).toBe("XL");
+  });
+
+  it("leaves SAME-BRAND anchors on the label, where the ladder already lines up", () => {
+    // Within one brand the letters mean the same thing, and the label is what the
+    // wearer will recognise in the explanation. [F1] anchor dominance depends on
+    // this path, so it is left exactly as it was.
+    const ownUniqloM = {
+      brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5, fitDirection: 0,
+      garmentChestCm: 118, garmentMeasuredFrom: "page",
+    };
+    const rec = recommend(
+      baseInput({
+        profile: { chestCm: 100, preferredFit: "regular" },
+        product: { brand: "Uniqlo", category: "tshirt" },
+        sizes: UNIQLO_TEE_SIZES,
+        knownGood: [ownUniqloM],
+      }),
+    );
+    expect(rec.best.label).toBe("M");
+  });
+});

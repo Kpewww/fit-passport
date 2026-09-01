@@ -77,7 +77,15 @@ at: Zalando's hierarchical Bayesian model uses a **return-shift term η** where
 `η_small ~ N(−1,1)` and `η_big ~ N(+1,1)` — literally "returns move the target
 size by ±1". A signed closet rating is the same ±1 shift, sourced earlier.
 
-### 1.2 A personal ease target — *CORRECTED 2026-08-25: not derivable today*
+### 1.2 A personal ease target — *CORRECTED 2026-08-25, then BUILT 2026-09-01*
+
+> **Status: built.** The blocker below — `KnownGoodItem` storing no garment
+> measurements — was removed in Session 67, which captures the size chart at
+> add-by-URL time. Session 68 implemented this as `src/lib/personalEase.ts` and
+> the engine now scores with it. The correction is kept below because the reason
+> it was wrong is the useful part: a "free" derivation that turns out to need a
+> feature is exactly the kind of thing to write down.
+
 
 The idea: measure a user's real preferred ease as `ease = garment − body` for
 every closet item, per category, instead of trusting a self-reported
@@ -297,7 +305,7 @@ argument by default.
 | Feature | Cost | Value | Verdict |
 |---|---|---|---|
 | Bipolar fit tap replacing the 1–5 dropdown | 3 (was 5: >5 options + judgement) | 10 | **Build. Cheaper *and* more valuable than what it replaces.** |
-| Personal ease target (§1.2) | ~~0~~ — **not derivable; needs garment measurements captured at add-time** | 10 | **Blocked**, not free. See §1.2. |
+| Personal ease target (§1.2) | ~~0~~ — needed garment measurements captured at add-time (**done, Session 67**) | 10 | **BUILT** Session 68. See §1.2. |
 | Preference-consistency confidence (§1.3) | **0** — derived | 6 | **Built.** Free. |
 | Numeric mode switch (1–20 scale) | 5, and only for users who opt in | 6 | **Build, opt-in, never the default.** |
 | Per-area bipolar ratings (§1.4) | 3 × 4 areas = 12, +5 judgement | 6 | **Defer.** Fails the bar. Revisit as an optional deepening on items the user has already flagged as problematic. |

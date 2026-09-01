@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 67 · 2026-09-01 — LIVE, 353 tests.**
+> **Last updated: Session 68 · 2026-09-01 — LIVE, 381 tests.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -36,7 +36,7 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 **技术栈:** Node 24 LTS + **Next.js 14.2.35** App Router + React 18 + TS +
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
 Framer Motion(**Lenis 已移除**);three.js 仅徽章 inspect 懒加载。
-命令:`npm run dev`、`npm run typecheck`、`npm test`(**353 个**)、`npm run build`、
+命令:`npm run dev`、`npm run typecheck`、`npm test`(**381 个**)、`npm run build`、
 改 schema 后 `npm run db:push`(**还必须建 migration**,见铁律 10)、生成文档 PDF `npm run docs:pdf`。
 测量工具:`app-web/scripts/mobile-audit.mjs`(移动端布局)、
 `brand/tests/size-test.mjs`(标志尺寸)。两者都需 `npx playwright install chromium`。
@@ -55,7 +55,7 @@ DEVLOG + memory。**
 
 ---
 
-## 现状(Session 67 · 2026-09-01)
+## 现状(Session 68 · 2026-09-01)
 
 **已上线:https://fit-passport.vercel.app** — Vercel + Neon Postgres + Upstash
 Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密码在 Session 41
@@ -147,6 +147,11 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
 25. **存服装尺寸必须同时存来源。** `garmentMeasuredFrom` 由 `/api/closet` 的 zod
     refinement 强制,不是靠自觉 —— 从零售商尺码表读到的数字和抽取器兜底猜的数字
     在屏幕上长得一样,而这个区别正是 `source.sizesFrom` 存在的理由。
+
+26. **跨品牌锚点按"尺寸"对齐,不按"码名"。** `scoreKnownGood` 原来用
+    `alphaIndex(kg.size)`,于是 118cm 的别家 M 和 100cm 的优衣库 M 落在同一档,
+    引擎会推荐比用户说合身的那件**小 18cm** 的衣服。**同品牌锚点故意仍走码名**
+    (同品牌尺码梯本来就对齐,且 [F1] 锚点主导依赖那条路径)。
 
 ## 已有的关键系统(别重造)
 
