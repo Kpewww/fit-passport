@@ -31,6 +31,78 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-01 · Session 70 — Patagonia isn't unreachable, and we were inventing a size chart for it
+
+Founder pasted a Patagonia jacket and got five sizes, no recommendation, and four
+paragraphs of apology. Both halves of that were wrong.
+
+### It is a block, not an outage — and the note in memory said otherwise
+
+Measured directly rather than trusted:
+
+| Request | Result |
+|---|---|
+| `patagonia.com/` | **200**, 409 KB |
+| `patagonia.com/anything-at-all` | **410**, 318 KB — their own error page |
+| The real, in-stock product path | **404**, **10 bytes**, `Not found`, no content-type |
+
+The site is up and answering. It gates product pages against non-browser clients
+and answers **404 rather than 403**, which is quieter: the client is not told it
+was detected, and a naive classifier files it as a dead link. `looksBlocked`
+checks 403/429/503 and challenge markers, so it fell through to `unreachable` —
+and the build-state note has carried "Patagonia = unreachable" ever since, which
+reads as a transient network problem rather than the category the browser
+extension was designed for. Corrected.
+
+**The classifier was left alone on purpose.** A bare 404 cannot be told apart from
+a genuinely dead link without guessing, and this project does not guess in
+places where the guess would be invisible.
+
+**And we are not going to get through it.** `fetch-strategy.md` §2: a gate is a
+technical access control, and defeating it by impersonating a browser more
+convincingly is precisely the move rejected there on legal-posture grounds. That
+we cannot read Patagonia product pages is a decision, not a bug.
+
+### The worse half: we invented a size chart anyway
+
+With the fetch failed, the check still returned **XS–XL with chest
+106/111/116/121/126** — five measurements no page ever stated — and then told the
+user it couldn't tell them apart. Everything on that screen was ours: brand from
+the domain, category from a word in the URL, ladder from a generic table we keep
+for known brands.
+
+`/api/check` now returns **422 `unreadable`** when the fetch failed *and* the
+sizes are estimated. Invariant ⑪ one step wider: ⑪ covered a page we could read
+but couldn't find a garment on; this covers the page we never saw.
+
+### The tie was being announced four times
+
+"No recommendation yet" · "We can't tell these apart." · "All 5 sizes scored the
+same, so any pick would be ours, not yours…" · and then the engine's own four
+sentences saying it again. The heading now states it once, and the engine's line
+does the one job a heading cannot — say what is missing:
+
+> Add your chest measurement, or one garment of this type that fits you well —
+> either one turns this into a real answer.
+
+The homepage lede went from three sentences to one: *"Paste a product link. We
+weigh it against the clothes you already own — and show our working."* 35 words to
+18. "We tell you why" is demonstrated on the next screen; it does not need
+promising on this one.
+
+**Repeating a limitation does not make it clearer. It makes the product read as
+an apology.**
+
+One test had to change: it pinned the exact old sentence. Rewritten to assert the
+property — that the line names what would fix the tie — because a test that
+fails on a copy edit teaches nobody anything.
+
+**Verified:** 384 tests, clean production build, and all three paths re-checked
+live — Patagonia refuses with one sentence and no invented ladder, Uniqlo still
+returns a size, and the homepage lede renders at 18 words.
+
+---
+
 ## 2026-09-01 · Session 69 — A number that appeared from nowhere
 
 Found by looking at the actual screen rather than at the tests. `/check` was

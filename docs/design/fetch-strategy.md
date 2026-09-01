@@ -162,3 +162,30 @@ rests on.
 
 That ratio decides whether step 2 is urgent or optional, and it is currently
 unmeasured. **Instrumenting it is cheaper than guessing, and should come first.**
+
+---
+
+## Addendum — 2026-09-01: how Patagonia actually blocks
+
+Measured directly, because the earlier note recorded Patagonia as *unreachable*
+and that was misleading:
+
+| Request | Result |
+|---|---|
+| `patagonia.com/` | **200**, 409 KB |
+| `patagonia.com/anything-at-all` | **410**, 318 KB — their own error page |
+| A real, in-stock product path | **404**, **10 bytes**, `Not found\n`, no content-type |
+
+The site is up and answering. It gates **product pages** against non-browser
+clients and answers **404 rather than 403**, which is quieter — a scraper is not
+told it was detected, and a naive classifier records a dead link.
+
+**This changes the label, not the decision.** §2 stands: a gate is a technical
+access control, and getting through it by impersonating a browser more
+convincingly is the thing this document rejected. What changes is the roadmap
+reasoning — Patagonia sits in the **blocked** column with H&M, which is the
+column the browser extension exists for, rather than in a column implying the
+site was merely down.
+
+What we do today: `/api/check` refuses with 422 `unreadable` rather than serving
+an invented size ladder. See invariant ㊶.

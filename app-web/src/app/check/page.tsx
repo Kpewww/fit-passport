@@ -608,12 +608,14 @@ function Result({
       <Card className="border-l-4 border-l-brand">
         {result.undetermined ? (
           <div>
-            <p className="text-xs uppercase tracking-widest text-ink-faint">No recommendation yet</p>
-            <p className="mt-1 font-serif text-3xl text-ink">We can&apos;t tell these apart.</p>
-            <p className="mt-2 text-sm text-ink-soft">
-              All {result.ranked.length} sizes scored the same, so any pick would be ours, not
-              yours. The two things that break the tie are below.
-            </p>
+            {/* One statement, once. This block used to say "no recommendation
+                yet", then "we can't tell these apart", then "all N sizes scored
+                the same" — three phrasings of the same fact, and the engine's own
+                explanation below said it a fourth time. Saying it repeatedly does
+                not make it clearer, it makes the page feel like an apology. */}
+            <p className="text-xs uppercase tracking-widest text-ink-faint">No recommendation</p>
+            <p className="mt-1 font-serif text-3xl text-ink">All {result.ranked.length} sizes scored the same.</p>
+            <p className="mt-2 text-sm text-ink-soft">Here&apos;s what would break the tie.</p>
           </div>
         ) : (
           <div className="flex items-center justify-between gap-4">

@@ -407,3 +407,21 @@ matching size *labels* rather than measurements and was fixed. 353 → 381 tests
 are deliberately disjoint. The target moves the ease every size is scored against;
 the anchor moves which rung the closet points at. Neither double-counts the other,
 and that is by construction rather than by tuning — keep it that way.
+
+---
+
+## UPDATE — Session 70 (2026-09-01)
+
+**Patagonia is in the `blocked` column, not `unreachable`** — measured, see
+[[project-fit-passport-build-state]]. That strengthens the case for the **browser
+extension**, which reads the page in the user's own browser and so needs no gate
+defeated. It is still evidence-gated on interviews, but the evidence for *which
+problem it solves* just got firmer.
+
+**Also done:** `/api/check` refuses (422 `unreadable`) instead of serving an
+invented ladder when the fetch failed; the tie state and the homepage lede were
+cut down from four statements to one and from three sentences to one.
+
+**Copy is now a live thread, not a someday item.** The founder's note was that
+most of the site says too much. Two places are fixed; the same read-through has
+not been done on `/closet`, `/passport`, `/badges` or `/help`.

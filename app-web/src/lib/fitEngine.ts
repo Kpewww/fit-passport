@@ -898,10 +898,11 @@ export function recommend(input: EngineInput): EngineOutput {
       ? `\nAlternative: ${ranked[1].label} is close — consider it if you prefer ${profile.preferredFit === "slim" ? "extra room" : "a snugger fit"}.`
       : "";
   const explanation = undetermined
-    ? "We can't tell these sizes apart yet — we found no size chart we could read against you, " +
-      "and nothing in your closet to compare with. Every size here scored the same, so picking " +
-      "one would be guessing. Add your chest measurement, or one garment of this type that fits " +
-      "you well, and this becomes a real answer."
+    // The UI's own heading already states that the sizes tied. This says the one
+    // thing it does not: what is missing. Four sentences repeating the tie made
+    // the screen read as an apology instead of an instruction.
+    ? "Add your chest measurement, or one garment of this type that fits you well — " +
+      "either one turns this into a real answer."
     : [
         ...(topReasons.length > 0
           ? topReasons

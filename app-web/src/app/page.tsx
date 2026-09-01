@@ -234,9 +234,12 @@ function Hero({
           <span className="italic font-normal text-brand">anywhere.</span>
         </h1>
         <p className="mx-auto mt-8 max-w-lg text-base leading-relaxed text-paper/65 animate-rise sm:text-lg" style={{ animationDelay: "120ms" }}>
-          Paste any product link. We read its sizing, weigh it against the clothes
-          you already own, and tell you the size — and&nbsp;why. When we&nbsp;aren&rsquo;t
-          sure, we say&nbsp;so.
+          {/* Three sentences became one. The headline already says what this is;
+              this line only has to say what to do and what makes it different,
+              and "we tell you why" is demonstrated on the next screen rather than
+              promised on this one. */}
+          Paste a product link. We weigh it against the clothes you already
+          own — and show our working.
         </p>
 
         <form

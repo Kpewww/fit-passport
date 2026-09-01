@@ -46,6 +46,38 @@ export async function POST(req: Request) {
   // which is the worst possible failure for a tool whose entire proposition is
   // that you can trust its answer. Say we don't recognise it instead, and don't
   // write a bogus Product row.
+  // REFUSE when we never got the page at all.
+  //
+  // A failed fetch plus estimated sizes means NOTHING on screen came from the
+  // retailer: the brand is the domain, the category is a word in the URL, and the
+  // size ladder is a generic one we keep for brands we know. Serving that is a
+  // guess wearing the costume of a size check — and the user then reads five
+  // sizes with five chest measurements that no page ever stated.
+  //
+  // This is invariant ⑪ ("never return a confident size for a page we can't
+  // read") one step wider: it covered a page we COULD read but couldn't identify
+  // a garment on. This covers the page we never saw.
+  //
+  // Measured case that prompted it: patagonia.com serves a bare 10-byte 404 to a
+  // non-browser client on product paths, while serving its homepage and its own
+  // 410 page normally. We fetched nothing, invented XS–XL with chest
+  // 106/111/116/121/126, and then told the user we couldn't tell them apart.
+  if (
+    (extracted.source.fetch === "unreachable" || extracted.source.fetch === "blocked") &&
+    extracted.source.sizesFrom === "estimated"
+  ) {
+    return NextResponse.json(
+      {
+        error: "unreadable",
+        message:
+          "We couldn't read that page — the retailer didn't serve it to us, so we have no size chart. " +
+          "Anything we showed you here would be our guess rather than their numbers.",
+        source: extracted.source,
+      },
+      { status: 422 },
+    );
+  }
+
   if (extracted.source.categoryGuessed && extracted.source.sizesFrom === "estimated") {
     return NextResponse.json(
       {

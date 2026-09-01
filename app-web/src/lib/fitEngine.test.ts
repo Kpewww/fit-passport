@@ -135,9 +135,14 @@ describe("undetermined — when nothing tells the sizes apart", () => {
     expect(out.ranked.every((r) => Math.abs(r.score - top) < 1e-6)).toBe(true);
   });
 
-  it("says so plainly, and does not claim a closet it does not have", () => {
+  it("tells the user what would fix it, and does not claim a closet it does not have", () => {
     const out = recommend(baseInput());
-    expect(out.explanation).toMatch(/can't tell these sizes apart/i);
+    // Asserts the PROPERTY, not the phrasing: the tie is stated by the UI's own
+    // heading, so the engine's line has the one job the heading cannot do — say
+    // what is missing. Pinning the exact sentence here is how copy edits turn
+    // into test failures that teach nobody anything.
+    expect(out.explanation).toMatch(/chest measurement/i);
+    expect(out.explanation).toMatch(/fits you well/i);
     expect(out.explanation).not.toMatch(/based on your closet/i);
   });
 

@@ -47,7 +47,7 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 ⑬ **`MAX_PAGE_BYTES` is a cost control (80KB ≈ $0.02/check).** It was 600KB ≈ $0.15, ~20× the documented estimate. Safe only because `htmlToLlmText` emits `SIZE TABLES` before prose — tests pin that property.
 ⑭ **Confidence falls when signals disagree** (`signalDisagreement` in `fitEngine.ts`) and the reason is surfaced as `conflictNote` on `/check`. A lower number with no explanation would break the explainability invariant.
 
-**Extraction reality, measured in production:** `source.fetch` now records `blocked | unreachable | ok | skipped`. Real result: **H&M = blocked, Patagonia = unreachable, Allbirds = ok.** `ANTHROPIC_API_KEY` is set in prod, but it **cannot fix a 403** — it only helps pages we actually fetched. See `docs/design/fetch-strategy.md` (decision: no stealth proxies, browser extension later) and `docs/design/cost-model.md`.
+**Extraction reality, measured in production:** `source.fetch` now records `blocked | unreachable | ok | skipped`. Real result: **H&M = blocked, Patagonia = blocked (see the correction below), Allbirds = ok.** `ANTHROPIC_API_KEY` is set in prod, but it **cannot fix a 403** — it only helps pages we actually fetched. See `docs/design/fetch-strategy.md` (decision: no stealth proxies, browser extension later) and `docs/design/cost-model.md`.
 
 
 ---
@@ -517,3 +517,40 @@ unit tests and by end-to-end API calls, and both passed. This only appeared in a
 screenshot of the rendered page. **Checking the rendered page is a separate act
 from checking the code** — a feature can be right in the engine, right through the
 API, and still unreadable.
+
+---
+
+**SESSION 70 CORRECTION + UPDATE (2026-09-01).** 384 tests.
+
+**"Patagonia = unreachable" was wrong in what it implied.** Measured directly:
+`patagonia.com/` returns **200 with 409KB**, a nonsense path returns **410 with
+their own 318KB error page**, and a real, in-stock product path returns a bare
+**10-byte `Not found\n` with no content-type**. The site is up and answering; it
+gates product pages against non-browser clients, and returns 404 rather than 403
+so the client is not told it was detected. It belongs in the **blocked** column —
+which matters, because "unreachable" reads as a transient network problem while
+"blocked" is the category the browser-extension decision was made for.
+
+`looksBlocked` does not catch it (403/429/503 plus challenge markers), and a bare
+404 cannot be distinguished from a genuinely dead link without guessing, so the
+classifier was left alone. **The policy in `fetch-strategy.md` §2 settles what we
+do about it: a gate is a technical access control, and defeating it with spoofed
+headers is the move this project rejected on legal-posture grounds.** We cannot
+read Patagonia product pages, and that is a decision, not a bug.
+
+**NEW INVARIANT:**
+㊶ **If the fetch failed AND the sizes are estimated, refuse — do not serve a
+ladder.** Nothing on screen would have come from the retailer: brand from the
+domain, category from a word in the URL, sizes from a generic ladder we keep for
+known brands. The Patagonia check was showing **XS–XL with chest
+106/111/116/121/126** — five measurements no page ever stated — and then telling
+the user it couldn't tell them apart. `/api/check` now returns 422 `unreadable`.
+This is invariant ⑪ one step wider: ⑪ covered a page we could read but couldn't
+find a garment on; this covers the page we never saw.
+
+**Copy: the tie was being announced four times.** "No recommendation yet", "We
+can't tell these apart", "All N sizes scored the same…", and the engine's own
+four-sentence explanation. Now the heading states the fact once and the engine's
+line does the one job the heading cannot — say what is missing. The homepage's
+three-sentence lede is one sentence. **Repeating a limitation does not make it
+clearer; it makes the product read as an apology.**
