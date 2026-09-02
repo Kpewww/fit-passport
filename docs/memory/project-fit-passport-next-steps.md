@@ -425,3 +425,20 @@ cut down from four statements to one and from three sentences to one.
 **Copy is now a live thread, not a someday item.** The founder's note was that
 most of the site says too much. Two places are fixed; the same read-through has
 not been done on `/closet`, `/passport`, `/badges` or `/help`.
+
+---
+
+## UPDATE — Session 71 (2026-09-01)
+
+**Homepage reordered by intent** (dashboard screen 5.6 → 1.2), two duplicated
+showcase cards cut, the longest prose trimmed. 384 → 389 tests. See
+[[project-fit-passport-build-state]] invariant ㊷.
+
+**The copy thread is not finished, and here is what is left, with the measurement:**
+`/community` is 517 words / 363 prose over 4.5 screens and has not been read
+through. `/closet` (334/145) and `/check` (188/98) are already thin. `/help` and
+`/badges` are **deliberately exempt** — reference pages.
+
+**Still open from before:** surface the personal ease target on `/passport`
+(it only appears inside a `/check` result today); the 3D garment comparison; IA
+move 3.

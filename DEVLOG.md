@@ -31,6 +31,65 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-01 · Session 71 — The homepage stopped pitching people who already signed up
+
+Measured every page's reading load first, at 390px, logged in:
+
+| page | words | prose | blocks ≥8w | screens |
+|---|---|---|---|---|
+| **`/`** | 654 | 398 | 24 | **10** |
+| `/help` | 1033 | 807 | 51 | 7.4 |
+| `/community` | 517 | 363 | 21 | 4.5 |
+| `/badges` | 417 | 386 | 33 | 5.2 |
+| `/closet` | 334 | 145 | 11 | 4 |
+| `/check` | 188 | 98 | 5 | 2.4 |
+| `/passport` | 161 | 64 | 5 | 2.7 |
+
+**`/help` and `/badges` are reference pages and were left alone.** Reading is
+their job — `/badges` is dense because every row is a real earn condition
+generated from `badges.ts`. Trimming a page someone opened *in order to read* is
+cargo-culting the complaint rather than answering it.
+
+**The homepage's problem was order, not length.** Its spine was: hero, then four
+consecutive sections making the same case (read any store's page, weigh it
+against your closet, explain the answer), and only then the user's own dashboard
+— at **screen 5.6 of 10**. A returning user scrolled four and a half screens of
+argument to reach their own status.
+
+Ordered by intent now: for someone who has already given us data, the dashboard
+sits directly under the hero. **Screen 5.6 → 1.2.** Nothing was deleted; a
+first-time visitor still gets the whole case, in the order written for them, and
+that was verified separately (anonymous still gets the guided start and no
+dashboard).
+
+**Two showcase cards cut.** "Any store" and "Explained, not guessed" were a
+gradient panel each, carrying a sentence the how-it-works section directly above
+already makes. The three that remain each show something — two render a real
+mannequin, the third is the badge ladder, which nothing above covers.
+
+**Prose trimmed** where a sentence was making its point twice: the parallax
+statement went from three sentences to two, and the three community cards each
+lost their restating clause. Longest single block **36 → 25 words**, total prose
+**398 → 338**.
+
+**Total length barely moved: 10 → 9.8 screens.** Worth stating plainly rather than
+dressing up — the win here is *what you reach first*, not how much page exists
+below it.
+
+**One real bug found in the screenshot:** the dashboard read "M for **Uniqlo
+Uniqlo** AIRism Cotton Crew Neck T-Shirt". Extractors take a product name from
+the page title, and a page title leads with the retailer, so printing brand and
+name unconditionally says it twice. `src/lib/productLabel.ts` prepends the brand
+only when the name does not already start with it — and it lives in `lib` because
+a Next App Router `page` file may only export the framework's own symbols, which
+the generated type check enforces.
+
+**Verified:** typecheck clean, lint clean (3 pre-existing warnings), **384 → 389
+tests**, clean production build, no horizontal overflow at 390px, and both the
+signed-in and anonymous homepages walked in a browser.
+
+---
+
 ## 2026-09-01 · Session 70 — Patagonia isn't unreachable, and we were inventing a size chart for it
 
 Founder pasted a Patagonia jacket and got five sizes, no recommendation, and four

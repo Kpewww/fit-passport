@@ -7,6 +7,7 @@ import { motion, useScroll, useTransform, useReducedMotion, type MotionValue } f
 import { Card, LinkButton, AccuracyBadge, Skeleton } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
 import { OutfitMannequin } from "@/components/OutfitMannequin";
+import { productLabel } from "@/lib/productLabel";
 
 type Step = {
   key: string;
@@ -96,29 +97,45 @@ export default function Home() {
   const isNewUser =
     status != null && !status.hasBody && status.closetCount === 0 && status.productCount === 0;
 
+  // Someone who has already given us data is not here to be convinced. Measured
+  // before this change: the dashboard sat at screen 5.6 of 10 on a phone, behind
+  // four consecutive pitch sections that restate the same proposition — read any
+  // store's page, weigh it against your closet, explain the answer. A returning
+  // user scrolled 4.5 screens of argument to reach their own status.
+  //
+  // So the order is by INTENT, not by narrative: your state first, the pitch
+  // after it for anyone who wants it. Nothing is deleted — a first-time visitor
+  // still gets the full case, in the order that was written for them.
+  const returning = status !== null && !isNewUser;
+
   return (
     <main className="flex-1">
       <Hero url={url} setUrl={setUrl} goCheck={goCheck} reduce={!!reduce} />
+
+      {returning && (
+        <section className="mx-auto max-w-3xl px-4 pb-4 pt-16 sm:px-6">
+          <ReturningUserDashboard status={status} />
+        </section>
+      )}
+
       <StickyHowItWorks />
       <HorizontalShowcase reduce={!!reduce} />
       <ConvergingStack reduce={!!reduce} />
       <ParallaxStatement reduce={!!reduce} />
 
-      {/* Value-first content preserved: returning users get their dashboard,
-          new users get the guided start. */}
-      <section className="mx-auto max-w-3xl px-4 sm:px-6 pb-24 pt-16">
-        {status === null ? (
-          <Card className="space-y-3">
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-2/3" />
-          </Card>
-        ) : isNewUser ? (
-          <NewUserGuide />
-        ) : (
-          <ReturningUserDashboard status={status} />
-        )}
-      </section>
+      {!returning && (
+        <section className="mx-auto max-w-3xl px-4 pb-24 pt-16 sm:px-6">
+          {status === null ? (
+            <Card className="space-y-3">
+              <Skeleton className="h-5 w-40" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </Card>
+          ) : (
+            <NewUserGuide />
+          )}
+        </section>
+      )}
 
       <CommunityValue />
       <ClosingCTA />
@@ -136,7 +153,7 @@ const COMMUNITY_VALUE = [
     n: "01",
     title: "Fit intelligence from real bodies",
     body:
-      "Browse members' closets by account code and see which brands and sizes actually worked for people built like you — not a model in a studio.",
+      "See which brands and sizes actually worked for people built like you — not a model in a studio.",
     href: "/community",
     cta: "Browse the directory",
   },
@@ -144,7 +161,7 @@ const COMMUNITY_VALUE = [
     n: "02",
     title: "Share your taste, build a reputation",
     body:
-      "Post outfits from your own closet, collect likes, and earn struck-metal badges as your archive and influence grow. Your passport card upgrades with you.",
+      "Post outfits from your own closet and earn struck-metal badges as your archive grows.",
     href: "/outfits",
     cta: "Compose a look",
   },
@@ -152,7 +169,7 @@ const COMMUNITY_VALUE = [
     n: "03",
     title: "Learn what to buy next",
     body:
-      "Every look shows its pieces, sizes and whether they're online or in-store only — so a look you like is something you can actually find and fit.",
+      "Every look shows its pieces and sizes — so one you like is one you can actually find and fit.",
     href: "/badges",
     cta: "See the badge ladder",
   },
@@ -363,21 +380,15 @@ function StickyHowItWorks() {
 // ---------------- Horizontal scroll showcase (a lookbook you scroll sideways) ------
 type ShowCard = { n: string; title: string; line: string; render: () => React.ReactNode };
 
+// Two cards were cut here on 2026-09-01: "Any store" and "Explained, not
+// guessed". Both were a gradient panel carrying a sentence that the
+// how-it-works section directly above already makes — "paste a product" and "a
+// size, and the reason". They added a screen of scroll and no information. The
+// three that remain each show something: two render a real mannequin, and the
+// last is the badge ladder, which nothing above covers.
 const SHOW_CARDS: ShowCard[] = [
   {
     n: "01",
-    title: "Any store",
-    line: "Paste a link from anywhere. No retailer integration needed.",
-    render: () => <ColorField className="from-brand to-brand-dark" label="LINK →" />,
-  },
-  {
-    n: "02",
-    title: "Explained, not guessed",
-    line: "A transparent engine that shows every reason behind a size.",
-    render: () => <ColorField className="from-ink to-neutral-700" label="WHY" light />,
-  },
-  {
-    n: "03",
     title: "Your closet, learned",
     line: "Anchors from clothes you love; we learn how each brand runs on you.",
     render: () => (
@@ -387,7 +398,7 @@ const SHOW_CARDS: ShowCard[] = [
     ),
   },
   {
-    n: "04",
+    n: "02",
     title: "Compose the look",
     line: "Build outfits on a mannequin, then share them.",
     render: () => (
@@ -397,7 +408,7 @@ const SHOW_CARDS: ShowCard[] = [
     ),
   },
   {
-    n: "05",
+    n: "03",
     title: "Earn your taste",
     line: "Struck-metal badges for a curated closet and admired looks.",
     render: () => <ColorField className="from-brand via-ink to-ink" label="✦" light />,
@@ -642,9 +653,10 @@ function ParallaxStatement({ reduce }: { reduce: boolean }) {
           It works at every store.
         </h2>
         <p className="mx-auto mt-5 max-w-lg text-paper/60">
-          The industry keeps trying to make the picture better — scans, avatars,
-          models wearing your face. But fit was never a picture problem. It&rsquo;s a
-          memory problem, and the memory is already hanging in your closet.
+          {/* Was three sentences building to the same point. The idea is the
+              last clause; the run-up was decoration. */}
+          Fit was never a picture problem. It&rsquo;s a memory problem — and the
+          memory is already hanging in your closet.
         </p>
       </motion.div>
     </section>
@@ -784,7 +796,11 @@ function ReturningUserDashboard({ status }: { status: Status }) {
             <p className="eyebrow text-ink-faint">Last recommendation</p>
             <p className="mt-1 text-ink">
               <span className="font-semibold">{status.lastRecommendation.size}</span> for{" "}
-              {status.lastRecommendation.brand} {status.lastRecommendation.productName} ·{" "}
+              {/* Extractors usually derive the product name from the page title,
+                  which already begins with the brand — printing both gave
+                  "Uniqlo Uniqlo AIRism Cotton Crew Neck T-Shirt". Prepend the
+                  brand only when the name does not already carry it. */}
+              {productLabel(status.lastRecommendation.brand, status.lastRecommendation.productName)} ·{" "}
               {Math.round(status.lastRecommendation.confidence * 100)}% confidence
             </p>
           </div>

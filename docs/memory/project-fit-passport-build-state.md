@@ -12,7 +12,7 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 
 **Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**384 tests as of Session 69**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**389 tests as of Session 71**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -554,3 +554,31 @@ four-sentence explanation. Now the heading states the fact once and the engine's
 line does the one job the heading cannot — say what is missing. The homepage's
 three-sentence lede is one sentence. **Repeating a limitation does not make it
 clearer; it makes the product read as an apology.**
+
+---
+
+**SESSION 71 UPDATE (2026-09-01).** 384 → **389 tests**. Copy and order, no engine
+change.
+
+**NEW INVARIANT:**
+㊷ **Order the homepage by intent: someone who has already given us data gets
+their dashboard directly under the hero.** It used to sit at **screen 5.6 of 10**
+behind four consecutive sections restating the same proposition. Now screen 1.2.
+Anonymous visitors still get the full case in its original order — verified
+separately, since the branch is easy to break silently.
+
+**Reference pages are exempt from copy-trimming.** `/help` (1033 words) and
+`/badges` (417, almost all prose) are dense because reading is what they are for,
+and `/badges` rows are generated from `badges.ts`. Cutting a page someone opened
+in order to read is cargo-culting the "too much text" complaint rather than
+answering it.
+
+**Measured reading load, 390px logged in, for future comparison:** `/` 654→584
+words and 398→338 prose; longest single block 36→25. **Total height barely moved
+(10 → 9.8 screens) — the win was what you reach first, not how much exists below.**
+
+**A Next App Router `page` file may only export the framework's own symbols.**
+Exporting a helper from `page.tsx` fails the build's generated type check
+(`.next/types/app/page.ts`), which typecheck catches but only after a build has
+generated the types. Helpers go in `lib/` — see `src/lib/productLabel.ts`, added
+because the dashboard was printing "Uniqlo Uniqlo AIRism…".

@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 70 · 2026-09-01 — LIVE, 384 tests.**
+> **Last updated: Session 71 · 2026-09-01 — LIVE, 389 tests.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -36,7 +36,7 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 **技术栈:** Node 24 LTS + **Next.js 14.2.35** App Router + React 18 + TS +
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
 Framer Motion(**Lenis 已移除**);three.js 仅徽章 inspect 懒加载。
-命令:`npm run dev`、`npm run typecheck`、`npm test`(**384 个**)、`npm run build`、
+命令:`npm run dev`、`npm run typecheck`、`npm test`(**389 个**)、`npm run build`、
 改 schema 后 `npm run db:push`(**还必须建 migration**,见铁律 10)、生成文档 PDF `npm run docs:pdf`。
 测量工具:`app-web/scripts/mobile-audit.mjs`(移动端布局)、
 `brand/tests/size-test.mjs`(标志尺寸)。两者都需 `npx playwright install chromium`。
@@ -55,7 +55,7 @@ DEVLOG + memory。**
 
 ---
 
-## 现状(Session 70 · 2026-09-01)
+## 现状(Session 71 · 2026-09-01)
 
 **已上线:https://fit-passport.vercel.app** — Vercel + Neon Postgres + Upstash
 Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密码在 Session 41
