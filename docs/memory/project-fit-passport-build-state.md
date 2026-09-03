@@ -336,7 +336,7 @@ for everyone. Clearing the browser cache did nothing — a fresh cookie just min
 fresh already-"done" row.
 
 **NEW INVARIANT:**
-㉜ **A `FitProfile` row existing proves nothing — it is seeded for every visitor on
+㊳ **A `FitProfile` row existing proves nothing — it is seeded for every visitor on
 their first request.** Never gate UI on `!!profile`. Ask
 `hasStatedProfile()` from `src/lib/profileCompleteness.ts`, which needs **two**
 signals because neither alone is enough: `updatedAt > createdAt` (Prisma sets them
@@ -370,7 +370,7 @@ dimension the engine cannot use and missed one it does. (Height is not dead —
 to do with picking a size.)
 
 **NEW INVARIANT:**
-㉝ **"Can we size this person" and "would another measurement raise confidence" are
+㊴ **"Can we size this person" and "would another measurement raise confidence" are
 different questions, and `src/lib/profileCompleteness.ts` answers them separately.**
 `hasBodyMeasurement` = chest ∪ waist ∪ shoulder (`ENGINE_SCORED_DIMENSIONS`, pinned
 by a test so adding a `FitProfile` field cannot silently widen the claim) → accuracy
@@ -397,7 +397,7 @@ carrying the circumference the user typed) + `src/components/BodyMesh3D.tsx`
 (three.js loft). The flat `BodyFigure` stays the default.
 
 **NEW INVARIANTS:**
-㉞ **The 3D body renders measurements, never invents them.** It refuses to draw
+㊵ **The 3D body renders measurements, never invents them.** It refuses to draw
 from an empty profile, and `circumferenceCm` is **null for every inferred ring**
 so the UI cannot print a centimetre the user did not give. The neck/base rings
 that stop it reading as a vase live in a separate `drawingRings()`, are never
@@ -405,7 +405,7 @@ listed, and sit entirely outside the measured range — all pinned by tests. A
 learned body model (Anny, MHR) was available and permissive and was still
 rejected: its job is to plausibly invent what you did not measure, which is the
 one thing this project does not do.
-㉟ **Use `centripetal` Catmull-Rom for the body loft.** Uniform parameterisation
+㊶ **Use `centripetal` Catmull-Rom for the body loft.** Uniform parameterisation
 overshoots the sharp shoulder→neck step enough to bulge the neck wider than the
 shoulder — the first render looked like a vase. Centripetal still interpolates its
 control points, so measured rings stay on their measured values.
@@ -440,12 +440,12 @@ centimetres**, which the Session 46–48 note recorded as *not derivable* — th
 is now superseded.
 
 **NEW INVARIANTS:**
-㊱ **A stored garment measurement must carry its provenance.** `garmentMeasuredFrom`
+㊷ **A stored garment measurement must carry its provenance.** `garmentMeasuredFrom`
 is enforced by a zod refinement on `/api/closet`, not by convention: a number off
 the retailer's chart and one from the extractor's fallback ladder are
 indistinguishable on screen, and that difference is what `source.sizesFrom` exists
 to preserve. The closet shows a "garment measured" / "garment estimated" badge.
-㊲ **The size chart the shell is drawn from states a chest and a shoulder and
+㊸ **The size chart the shell is drawn from states a chest and a shoulder and
 nothing else.** Below the chest the shell holds that circumference **straight
 down**, stated as an assumption in the UI — narrowing towards the body would invent
 a taper the garment may not have.
@@ -474,13 +474,13 @@ constant behind their stated slim/regular/relaxed label. **The "not derivable"
 correction in `closet-signal-and-interaction-cost.md` §1.2 is superseded.**
 
 **NEW INVARIANTS:**
-㊳ **A learned ease target is capped at one ladder step from the stated
+㊹ **A learned ease target is capped at one ladder step from the stated
 preference**, needs **two** measured garments minimum (four for full weight), uses
 the **median**, ignores `estimated` provenance entirely, loses all weight when the
 garments disagree by a full ladder step, and is attached as a **weight-0 reason**
 on every size — it moved the target they were all measured against, so it belongs
 in the explanation even though it pushed no size over another.
-㊴ **Cross-brand anchors are placed by MEASUREMENT, not by size label** — when we
+㊺ **Cross-brand anchors are placed by MEASUREMENT, not by size label** — when we
 have a read garment chest and the product states chests. `scoreKnownGood` used
 `alphaIndex(kg.size)`, so a Roomy Brand M (118cm) and a Uniqlo M (100cm) sat at
 the same rung and the engine recommended a garment **18cm smaller** than the one
@@ -488,7 +488,7 @@ the wearer said fits. **Same-brand anchors deliberately stay on the label**: the
 ladder already lines up within a brand, the label is what the wearer recognises,
 and [F1] anchor dominance depends on that path.
 
-**How ㊴ was found, because the method generalises:** an end-to-end run of the new
+**How ㊺ was found, because the method generalises:** an end-to-end run of the new
 ease feature said "you wear +18cm of room" and then recommended a *smaller* size.
 The result was absurd rather than merely surprising, which is the signal worth
 chasing instead of tuning around — and the cause turned out to be a decade-old
@@ -504,7 +504,7 @@ drop the chest or it is testing something else.
 **SESSION 69 UPDATE (2026-09-01).** 381 → **384 tests**.
 
 **NEW INVARIANT:**
-㊵ **A weight-0 reason is CONTEXT and must still reach the explanation.**
+㊻ **A weight-0 reason is CONTEXT and must still reach the explanation.**
 `topReasons` ranks by absolute weight and takes two, so a reason that legitimately
 carries no weight — the personal ease target moves the target every size is
 measured against, rather than pushing one over another — was permanently buried.
@@ -539,7 +539,7 @@ headers is the move this project rejected on legal-posture grounds.** We cannot
 read Patagonia product pages, and that is a decision, not a bug.
 
 **NEW INVARIANT:**
-㊶ **If the fetch failed AND the sizes are estimated, refuse — do not serve a
+㊼ **If the fetch failed AND the sizes are estimated, refuse — do not serve a
 ladder.** Nothing on screen would have come from the retailer: brand from the
 domain, category from a word in the URL, sizes from a generic ladder we keep for
 known brands. The Patagonia check was showing **XS–XL with chest
@@ -561,7 +561,7 @@ clearer; it makes the product read as an apology.**
 change.
 
 **NEW INVARIANT:**
-㊷ **Order the homepage by intent: someone who has already given us data gets
+㊽ **Order the homepage by intent: someone who has already given us data gets
 their dashboard directly under the hero.** It used to sit at **screen 5.6 of 10**
 behind four consecutive sections restating the same proposition. Now screen 1.2.
 Anonymous visitors still get the full case in its original order — verified
@@ -582,3 +582,14 @@ Exporting a helper from `page.tsx` fails the build's generated type check
 (`.next/types/app/page.ts`), which typecheck catches but only after a build has
 generated the types. Helpers go in `lib/` — see `src/lib/productLabel.ts`, added
 because the dashboard was printing "Uniqlo Uniqlo AIRism…".
+
+---
+
+**NUMBERING NOTE (2026-09-03).** Invariants **㉜–㊲ were issued twice**: once by the
+Session 60–62 work and once by Sessions 63–67, because two lines of work numbered
+from the same stale count without seeing each other. The second set has been
+renumbered to **㊳–㊸**, and everything after it shifted to match, so the list is
+unambiguous again. **DEVLOG entries from Sessions 63–70 still carry the old
+numbers** — they are a historical record and were accurate when written; resolve
+them against this list by description rather than by number. Before adding a new
+invariant, take the number from the BOTTOM of this file, not from memory.

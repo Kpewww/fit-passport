@@ -277,7 +277,7 @@ invitation to add a garment.
 visitor on their first request, because a `FitProfile` row is seeded alongside the
 `User` and the step asked `!!profile`. Now `hasStatedProfile()` in
 `src/lib/profileCompleteness.ts` — see [[project-fit-passport-build-state]]
-invariant ㉜. 304 → 314 tests.
+invariant ㊳. 304 → 314 tests.
 
 **Needs a decision from the founder — small but real:** `hasBody` (which drives the
 accuracy tier and the "add your measurements" nudge) counts chest/height/waist,
@@ -293,7 +293,7 @@ users, so it should be chosen rather than drifted into.
 **Done, and it closes the decision left open last session:** `hasBody` was
 chest/height/waist; it is now chest ∪ waist ∪ shoulder, and a separate
 `hasChestMeasurement` drives anything that offers confidence points. See
-[[project-fit-passport-build-state]] invariant ㉝. The help page's mark section was
+[[project-fit-passport-build-state]] invariant ㊴. The help page's mark section was
 rebuilt as a specimen plate (presentation only — the copy stays the concept
 document's own). 314 → 321 tests.
 
@@ -340,7 +340,7 @@ person — an illustration of an outfit's idea, not this user in this garment.
 
 **Built:** the measured 3D body (step 1 of `docs/design/3d-body-and-tryon.md`),
 opt-in on `/passport`. 321 → 340 tests. See
-[[project-fit-passport-build-state]] invariants ㉞–㉟.
+[[project-fit-passport-build-state]] invariants ㊵–㊶.
 
 **The queue reshuffles slightly, and in a useful direction:**
 
@@ -364,7 +364,7 @@ wordmark typeface (blocks the lockups), foundation-shade picker.
 
 **Both remaining actionable 3D steps are built.** The ease shell on `/check`, and
 `KnownGoodItem` now captures the garment's own measurements at add-by-URL time.
-340 → 353 tests. See [[project-fit-passport-build-state]] invariants ㊱–㊲.
+340 → 353 tests. See [[project-fit-passport-build-state]] invariants ㊷–㊸.
 
 **Two long-standing backlog items are now unblocked and are the obvious next work:**
 
@@ -392,7 +392,7 @@ photo→body (a prior at best), foundation-shade picker.
 **Both items from the last update are done.** The personal ease target is built and
 the engine reads it; and while testing it, the cross-brand anchor was found to be
 matching size *labels* rather than measurements and was fixed. 353 → 381 tests. See
-[[project-fit-passport-build-state]] invariants ㊳–㊴.
+[[project-fit-passport-build-state]] invariants ㊹–㊺.
 
 **Next, in order:**
 1. **Surface the ease target on `/passport`** — "your closet says you wear +14.5cm,
@@ -432,7 +432,7 @@ not been done on `/closet`, `/passport`, `/badges` or `/help`.
 
 **Homepage reordered by intent** (dashboard screen 5.6 → 1.2), two duplicated
 showcase cards cut, the longest prose trimmed. 384 → 389 tests. See
-[[project-fit-passport-build-state]] invariant ㊷.
+[[project-fit-passport-build-state]] invariant ㊽.
 
 **The copy thread is not finished, and here is what is left, with the measurement:**
 `/community` is 517 words / 363 prose over 4.5 screens and has not been read
@@ -442,3 +442,36 @@ through. `/closet` (334/145) and `/check` (188/98) are already thin. `/help` and
 **Still open from before:** surface the personal ease target on `/passport`
 (it only appears inside a `/check` result today); the 3D garment comparison; IA
 move 3.
+
+---
+
+## OPEN DECISIONS — waiting on the founder (2026-09-03)
+
+Collected here because they were scattered through DEVLOG prose, and a decision
+nobody can find is the same as a decision never recorded.
+
+1. **The wordmark typeface.** Blocks the horizontal and stacked lockups entirely.
+   Italic Fraunces in the app is a placeholder, not a choice. Three options were
+   put up (Fraunces as-is / Inter uppercase tightly tracked / Instrument Serif,
+   all OFL 1.1 and free to use in a logo); the recommendation was **Inter**, on
+   the grounds that the product's metaphor is a travel document and institutional
+   type fits that better than editorial type. Not chosen.
+2. **Should `fitDirection` be visible to an account-code holder?** Currently no —
+   the `/api/view/[code]` allow-list excludes it, and so do the garment
+   measurements added in Session 67. Widening what a bearer code reveals is
+   governance, not a feature side effect.
+3. **The ~21 Next.js advisories against 14.2.35**, whose only offered fix is
+   `next@16` (breaking major). Needs per-advisory triage — most target features
+   this app does not use — rather than a version bump or a shrug.
+4. **Whether to cut homepage content, not just reorder it.** After Session 71 the
+   page is still **9.8 screens**. The reorder fixed what a returning user reaches
+   first; making the page genuinely shorter means deleting sections, which is a
+   product decision.
+5. **The foundation-shade picker** — parked as a researched proposal, not a
+   sprint. It is a second product surface sharing nothing with `fitEngine.ts`, and
+   skin tone is a more sensitive data class than anything held today.
+6. **Customer interviews stay DEFERRED** by the founder (2026-08-25). Note the
+   cost so it stays visible: the browser-extension decision and per-area fit
+   granularity are both gated on interview evidence, and Session 70 measured that
+   Patagonia *blocks* rather than being unreachable — which strengthens the
+   extension's case without unblocking the decision.

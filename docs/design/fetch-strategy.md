@@ -188,4 +188,4 @@ column the browser extension exists for, rather than in a column implying the
 site was merely down.
 
 What we do today: `/api/check` refuses with 422 `unreadable` rather than serving
-an invented size ladder. See invariant ㊶.
+an invented size ladder. See invariant ㊼.
