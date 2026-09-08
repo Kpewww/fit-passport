@@ -6,6 +6,7 @@ import {
   chartFor,
   chartToSizes,
   inToCm,
+  pointRange,
   type BrandChart,
 } from "./brandCharts";
 import { normalizeToAlpha } from "./sizing";
@@ -143,7 +144,7 @@ describe("chartFor", () => {
   });
 
   it("does not match a brand it has no chart for", () => {
-    expect(chartFor("www.patagonia.com", "jacket", "mens")).toBeNull();
+    expect(chartFor("www.adidas.com", "jacket", "mens")).toBeNull();
     expect(chartFor("example.com", "tshirt", "mens")).toBeNull();
   });
 
@@ -188,5 +189,73 @@ describe("normalizeToAlpha — the multi-X labels retailers actually print", () 
     expect(normalizeToAlpha("XXL")).toBe("XXL");
     expect(normalizeToAlpha("EU 48")).toBe("M");
     expect(normalizeToAlpha("US L")).toBe("L");
+  });
+});
+
+describe("pointRange — turning a one-value-per-size chart into ranges", () => {
+  // Patagonia men's shape: "S 37in · M 40in · L 44in".
+  const rows = [
+    { label: "S", chest: 37 },
+    { label: "M", chest: 40 },
+    { label: "L", chest: 44 },
+  ];
+
+  it("puts the boundaries at the midpoints to the neighbours", () => {
+    // The reading the chart is written for: pick the nearest size. Every input
+    // is the brand's; only the boundary rule is ours, and it is stated.
+    expect(pointRange(rows, 1, "chest")).toEqual([38.5, 42]);
+  });
+
+  it("extends the end rows outward by their own half-step", () => {
+    // A degenerate zero-width range at the extremes would claim we know the ends
+    // far more precisely than the middle, which is backwards.
+    expect(pointRange(rows, 0, "chest")).toEqual([35.5, 38.5]);
+    expect(pointRange(rows, 2, "chest")).toEqual([42, 46]);
+  });
+
+  it("never leaves a gap or an overlap between consecutive sizes", () => {
+    // Each size's upper bound is the next one's lower bound, so no body chest
+    // falls between two sizes or into both.
+    for (let i = 0; i < rows.length - 1; i++) {
+      expect(pointRange(rows, i, "chest")![1]).toBe(pointRange(rows, i + 1, "chest")![0]);
+    }
+  });
+
+  it("says only what it knows for a single-row chart", () => {
+    expect(pointRange([{ label: "M", chest: 40 }], 0, "chest")).toEqual([40, 40]);
+  });
+
+  it("returns null for a row with no point value", () => {
+    expect(pointRange([{ label: "M", chestMin: 39, chestMax: 41 }], 0, "chest")).toBeNull();
+  });
+});
+
+describe("Patagonia — captured by hand, because its edge refuses every automated client", () => {
+  const mens = BRAND_CHARTS.find((c) => c.brand === "Patagonia" && c.gender === "mens")!;
+  const womens = BRAND_CHARTS.find((c) => c.brand === "Patagonia" && c.gender === "womens")!;
+
+  it("records that a person read it, not a fetch", () => {
+    expect(mens.capturedBy).toBe("manual");
+    expect(womens.capturedBy).toBe("manual");
+  });
+
+  it("keeps the men's numbers as printed — one chest per size, no range", () => {
+    expect(mens.rows.find((r) => r.label === "M")!.chest).toBe(40);
+    expect(mens.rows.find((r) => r.label === "L")!.chest).toBe(44);
+    expect(mens.rows.every((r) => r.chestMin === undefined)).toBe(true);
+  });
+
+  it("keeps the women's numbers as printed — a stated range per letter", () => {
+    // Women's lists two numeric sizes under each letter, so the range is the
+    // chart's own rather than derived.
+    const m = womens.rows.find((r) => r.label === "M")!;
+    expect([m.chestMin, m.chestMax]).toEqual([36.5, 37.5]);
+  });
+
+  it("gives men's and women's genuinely different ladders at the same letter", () => {
+    // The reason chartFor refuses to answer without a known gender.
+    const m = chartToSizes(mens).find((s) => s.label === "M")!;
+    const w = chartToSizes(womens).find((s) => s.label === "M")!;
+    expect(m.bodyChestMinCm).toBeGreaterThan(w.bodyChestMaxCm!);
   });
 });

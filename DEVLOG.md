@@ -31,6 +31,83 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-08 · Session 72b — We are not IP-blocked; we were detected as headless
+
+**The question was "is our IP blocked?" and the answer is no.** Measured, in this
+order:
+
+1. Egress IP is a **Carnegie Mellon university ASN** (AS9), not residential.
+2. It is **not Patagonia-specific**: with the same client, `akamai.com`,
+   `homedepot.com`, `rei.com` and `northface.com` all return **403**, while
+   `llbean.com` and `google.com` return 200. Every refusal is an Akamai Bot
+   Manager property.
+3. The decisive test — same machine, same IP, Playwright Chromium:
+   **`headless: true` blocked, `headless: false` returns 200**, on both
+   `rei.com` and the Patagonia size-fit page.
+
+So the gate keys on **headless-automation fingerprints**, not on the network.
+Two consequences worth carrying:
+
+- **Residential proxies would not have fixed this.** That option was rejected on
+  legal posture; it now turns out to have been the wrong diagnosis as well.
+- **The browser-extension thesis is empirically confirmed.** Its whole premise is
+  "the user's own browser is not blocked", and that is now measured rather than
+  assumed. A Python scraper (requests/httpx/scrapy) sits in the same class as
+  curl and adds nothing here.
+
+**Patagonia's charts are captured** — men's and women's tops, read from the
+published guide in a real browser, `capturedBy: "manual"`. The page states "Find
+your exact size using the body measurements below", so `kind` is not a guess.
+
+**Their two charts are shaped differently from each other and from Nike's**, which
+is the general lesson: there is no standard size-chart shape.
+- **Women's** lists two numeric sizes under each letter (XS = 0 and 2), so the
+  per-letter range is the chart's own.
+- **Men's** prints **one value per size** (M = 40in), no range at all.
+
+**New: `pointRange()`.** A point-valued chart becomes ranges at the midpoints to
+its neighbours — the reading such a chart is written for, since it tells a shopper
+to pick the nearest size. Every input is the brand's and only the boundary rule is
+ours, which is why it lives in one named, tested function instead of being
+open-coded, and why a brand publishing real ranges never goes through it. End rows
+extend outward by their own half-step; a zero-width range would claim we know the
+extremes more precisely than the middle. Tested for no gaps and no overlaps
+between consecutive sizes.
+
+**The original bug report now answers.** The URL from the founder's first report
+— `patagonia.com/product/mens-insulated-boulder-fork-rain-jacket/85220.html` —
+returned "No recommendation yet" and then, after invariant 60, a 422. With a 100cm
+chest it now returns **M, "relaxed", 25% confidence**, from Patagonia's own chart,
+with `fetch: "unreachable"` still recorded honestly because we did not read the
+product page and are not trying to at check time.
+
+**Boundary, recorded deliberately:** the headed browser is for **curation** — a
+one-off read of a published reference page whose output is numbers typed into a
+library. It is NOT the app's transport at check time; that stays "read the page if
+it is readable, else the curated chart, else refuse", with the extension as the
+eventual answer. Driving a browser per user request would be automated access at
+scale against a control built to stop exactly that, and it is not viable on
+serverless anyway.
+
+**Two of my own tests went stale and were repointed**, which is worth noting
+because the failure was correct: they used Patagonia as the "brand with no chart"
+example. The replacement first tried Levi's and hit a **demo fixture** — fixtures
+match by URL substring regardless of domain, a known gotcha that bit immediately.
+Settled on adidas: in `BRAND_TABLE`, no curated chart, no fixture.
+
+**421 → 430 tests.** Typecheck, production build and the client-bundle check all
+clean.
+
+### Files touched
+```
+app-web/src/lib/brandCharts.ts         (Patagonia men's + women's; point-value support; pointRange)
+app-web/src/lib/brandCharts.test.ts    (+9 tests)
+app-web/src/lib/extractor.test.ts      (repointed 1, +2 Patagonia tests)
+docs/design/brand-size-charts.md       (the measured block diagnosis)
+```
+
+---
+
 ## 2026-09-08 · Session 72 — The brands we can't read now have real numbers instead of invented ones
 
 **The finding that shaped the session.** A recognised brand's "size chart" was two

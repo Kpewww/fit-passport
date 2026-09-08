@@ -1,8 +1,8 @@
 # Curated brand size charts — why, what's measured, and how to add one
 
 > **Status: BUILT (Session 72, 2026-09-08).** `app-web/src/lib/brandCharts.ts`
-> holds the library; one brand (Nike men's tops) is captured. This document is
-> the reasoning and the recipe for adding the rest.
+> holds the library. Captured so far: **Nike men's tops, Patagonia men's and
+> women's tops.** This document is the reasoning and the recipe for the rest.
 
 ## 1. The problem it replaces
 
@@ -43,6 +43,30 @@ Two conclusions. **The gate that blocks a product page usually blocks the size
 guide too** — Patagonia returns the same 10-byte 404 on both. And **being
 readable is not the same as being permitted**: J.Crew serves the page and
 disallows the data.
+
+### What the block actually keys on (measured 2026-09-08)
+
+It is **not our IP**, and it is not Patagonia singling us out:
+
+- Our egress is a Carnegie Mellon university ASN. With that same client,
+  `akamai.com`, `homedepot.com`, `rei.com` and `northface.com` all return 403,
+  while `llbean.com` and `google.com` return 200 — every refusal is an Akamai Bot
+  Manager property.
+- Same machine, same IP, Playwright Chromium: **`headless: true` is blocked,
+  `headless: false` returns 200** on both `rei.com` and Patagonia's size-fit page.
+
+The gate keys on **headless-automation fingerprints**. Two things follow.
+Residential proxies would not have fixed this, so that option was not only
+rejected on posture but was the wrong diagnosis. And **the browser-extension
+thesis is confirmed by measurement rather than assumed**: the user's own browser
+is not what is being refused. A Python scraper (requests/httpx/scrapy) is in the
+same class as curl and adds nothing.
+
+**Where the line sits.** A headed browser is acceptable for **curation** — a
+one-off read of a published reference page whose output is numbers typed into
+this library. It is not the app's transport at check time. Driving a browser per
+user request would be automated access at scale against a control built to stop
+exactly that, and it is not viable on serverless regardless.
 
 ## 3. Why this is not the scraping the project rejected
 
@@ -126,8 +150,11 @@ side can resolve, so it is a ceiling rather than a penalty.
 5. Run `npm test`. The library's own tests check provenance, the brand-domain
    rule, and the body/garment separation.
 
-**The gated brands need route 4-manual**, and that includes Patagonia — the case
-that started this. Nobody can automate it, and that is the point.
+**Patagonia is captured** (men's and women's tops, 2026-09-08). Its two charts
+are shaped differently from each other: women's lists two numeric sizes under each
+letter so the per-letter range is stated, while men's prints a single value per
+size and goes through `pointRange()`. **There is no standard size-chart shape** —
+read what the page actually gives before deciding which fields to fill.
 
 ## 7. Open
 

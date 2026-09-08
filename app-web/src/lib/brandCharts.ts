@@ -77,6 +77,15 @@ export type BrandChartRow = {
   chestMax?: number;
   waistMin?: number;
   waistMax?: number;
+  /**
+   * A SINGLE stated value, for charts that print one number per size rather than
+   * a range ("M — chest 40 in"). Patagonia's men's chart is like this; Nike's
+   * gives ranges. `chartToSizes` turns a point into a range at the midpoints to
+   * its neighbours — see `pointRange` for why that is a reading of the chart
+   * rather than an invention, and why it is done in one documented place.
+   */
+  chest?: number;
+  waist?: number;
 };
 
 export type BrandChart = {
@@ -145,6 +154,60 @@ export const BRAND_CHARTS: BrandChart[] = [
       { label: "4XL", chestMin: 58, chestMax: 63, waistMin: 52.5, waistMax: 57 },
     ],
   },
+
+  // Patagonia. The case this whole layer was built for: its edge refuses every
+  // automated client, so the app can never read a Patagonia page at check time.
+  // These numbers came from the published guide, read in a real browser.
+  //
+  // Its two charts are shaped differently from each other AND from Nike's, which
+  // is the general lesson: there is no standard size-chart shape.
+  {
+    brand: "Patagonia",
+    hostKeys: ["patagonia"],
+    gender: "mens",
+    domain: "top",
+    kind: "body",
+    units: "in",
+    sourceUrl: "https://www.patagonia.com/guides/size-fit/mens/",
+    capturedAt: "2026-09-08",
+    capturedBy: "manual",
+    note: "Patagonia states: “Find your exact size using the body measurements below,” and “Chest is usually the best size predictor.”",
+    // ONE value per size, not a range — hence `chest` rather than chestMin/Max.
+    rows: [
+      { label: "XXS", chest: 33 },
+      { label: "XS", chest: 35 },
+      { label: "S", chest: 37 },
+      { label: "M", chest: 40 },
+      { label: "L", chest: 44 },
+      { label: "XL", chest: 47 },
+      { label: "XXL", chest: 50 },
+      { label: "XXXL", chest: 56 },
+    ],
+  },
+  {
+    brand: "Patagonia",
+    hostKeys: ["patagonia"],
+    gender: "womens",
+    domain: "top",
+    kind: "body",
+    units: "in",
+    sourceUrl: "https://www.patagonia.com/guides/size-fit/womens/",
+    capturedAt: "2026-09-08",
+    capturedBy: "manual",
+    note: "Patagonia states: “Find your exact size using the body measurements below.” Each alpha size covers two numeric sizes, so these ranges are the chart's own, not derived.",
+    // Here the chart DOES state a range per alpha size, because it lists two
+    // numeric sizes under each letter (XS = 0 and 2). XXS covers only 00, so its
+    // range is a single value — that is what the chart says, not a gap in it.
+    rows: [
+      { label: "XXS", chestMin: 31.5, chestMax: 31.5, waistMin: 24.5, waistMax: 24.5 },
+      { label: "XS", chestMin: 32.5, chestMax: 33.5, waistMin: 25.5, waistMax: 26.5 },
+      { label: "S", chestMin: 34.5, chestMax: 35.5, waistMin: 27.5, waistMax: 28.5 },
+      { label: "M", chestMin: 36.5, chestMax: 37.5, waistMin: 29.5, waistMax: 30.5 },
+      { label: "L", chestMin: 39, chestMax: 41, waistMin: 32, waistMax: 34 },
+      { label: "XL", chestMin: 43, chestMax: 45, waistMin: 36, waistMax: 38 },
+      { label: "XXL", chestMin: 47, chestMax: 49, waistMin: 40, waistMax: 42 },
+    ],
+  },
 ];
 
 /**
@@ -198,10 +261,19 @@ export function chartToSizes(chart: BrandChart): ChartSize[] {
   const toCm = (v: number) => (chart.units === "in" ? inToCm(v) : v);
   const out: ChartSize[] = [];
 
-  for (const row of chart.rows) {
+  for (const [i, row] of chart.rows.entries()) {
     if (normalizeToAlpha(row.label) == null) continue;
 
     const size: ChartSize = { label: row.label };
+
+    // A point-valued row becomes a range at the midpoints to its neighbours.
+    const chestPoint = row.chest != null ? pointRange(chart.rows, i, "chest") : null;
+    if (chestPoint && chart.kind === "body") {
+      size.bodyChestMinCm = toCm(chestPoint[0]);
+      size.bodyChestMaxCm = toCm(chestPoint[1]);
+    } else if (chestPoint) {
+      size.chestCm = toCm(row.chest!);
+    }
 
     if (row.chestMin != null && row.chestMax != null) {
       if (chart.kind === "body") {
@@ -226,6 +298,40 @@ export function chartToSizes(chart: BrandChart): ChartSize[] {
   }
 
   return out;
+}
+
+/**
+ * The body range a point-valued row covers: the midpoints to its neighbours.
+ *
+ * WHY THIS IS A READING AND NOT AN INVENTION. A chart printing "S 37in · M 40in ·
+ * L 44in" is telling a shopper to pick the nearest size, so the boundary between
+ * S and M sits at 38.5in by the chart's own numbers — every input is the brand's
+ * and the rule is the one the chart is written to be used with. It is still a
+ * derivation, which is exactly why it lives in one named function with tests
+ * rather than being open-coded, and why a brand that publishes real ranges
+ * (Nike) never goes through it.
+ *
+ * The end rows have only one neighbour, so they extend outward by that same
+ * half-step — the alternative, a degenerate zero-width range, would tell the
+ * engine we know the extremes far more precisely than the middle, which is
+ * backwards.
+ */
+export function pointRange(
+  rows: BrandChartRow[],
+  i: number,
+  key: "chest" | "waist",
+): [number, number] | null {
+  const at = (j: number) => rows[j]?.[key];
+  const v = at(i);
+  if (v == null) return null;
+
+  const prev = at(i - 1);
+  const next = at(i + 1);
+  if (prev == null && next == null) return [v, v]; // a one-row chart says only this
+
+  const halfDown = prev != null ? (v - prev) / 2 : (next! - v) / 2;
+  const halfUp = next != null ? (next - v) / 2 : (v - prev!) / 2;
+  return [v - halfDown, v + halfUp];
 }
 
 /** How stale a chart is, for the UI that has to disclose it. */

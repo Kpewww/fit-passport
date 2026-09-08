@@ -151,7 +151,9 @@ describe("layer 2a — the brand's own published size chart", () => {
   });
 
   it("falls through to the synthesized ladder for a brand with no chart", () => {
-    const out = extractFromUrl("https://www.patagonia.com/product/mens-rain-jacket/85220.html");
+    // adidas: in BRAND_TABLE, but no curated chart and no fixture. (Levi's, COS,
+    // Uniqlo and Zara all hit demo fixtures — fixtures match by URL substring.)
+    const out = extractFromUrl("https://www.adidas.com/us/mens-hoodie/AB1234.html");
     expect(out.source.sizesFrom).toBe("estimated");
     expect(out.source.chart).toBeUndefined();
   });
@@ -161,5 +163,31 @@ describe("layer 2a — the brand's own published size chart", () => {
     expect(womens.source.sizesFrom).toBe("estimated");
     const pants = extractFromUrl("https://www.nike.com/t/mens-training-pants/ABC123");
     expect(pants.source.sizesFrom).toBe("estimated");
+  });
+});
+
+// Patagonia specifically, because it is the case the layer was built for: its
+// edge refuses every automated client, so the page can never be read at check
+// time and the chart is the only honest source of numbers.
+describe("Patagonia — the brand the chart layer exists for", () => {
+  it("answers a men's jacket from the published chart instead of refusing", () => {
+    const out = extractFromUrl("https://www.patagonia.com/product/mens-insulated-boulder-fork-rain-jacket/85220.html");
+    expect(out.source.sizesFrom).toBe("brand-chart");
+    expect(out.source.chart?.sourceUrl).toBe("https://www.patagonia.com/guides/size-fit/mens/");
+    // Patagonia prints ONE chest per size; the range is derived at the midpoints
+    // to its neighbours. M is 40in, between S (37) and L (44): 38.5 .. 42.
+    const m = out.sizes.find((s) => s.label === "M")!;
+    expect(m.bodyChestMinCm).toBe(97.8); // 38.5in
+    expect(m.bodyChestMaxCm).toBe(106.7); // 42in
+    expect(m.chestCm).toBeUndefined();
+  });
+
+  it("uses the women's chart for a women's product, with the chart's own ranges", () => {
+    const out = extractFromUrl("https://www.patagonia.com/product/womens-better-sweater-fleece-jacket/25617.html");
+    expect(out.source.chart?.sourceUrl).toBe("https://www.patagonia.com/guides/size-fit/womens/");
+    // Women's states two numeric sizes per letter, so M is a real stated range.
+    const m = out.sizes.find((s) => s.label === "M")!;
+    expect(m.bodyChestMinCm).toBe(92.7); // 36.5in
+    expect(m.bodyChestMaxCm).toBe(95.3); // 37.5in
   });
 });

@@ -659,3 +659,42 @@ on the very next feature after the session that first recorded it.
 **See also** `docs/design/brand-size-charts.md` — the capture recipe, the legal
 posture with its ⚠️ caveats, and the open questions (staleness, brand fit-lines, and
 retiring `BRAND_TABLE`'s invented constants once enough charts are real).
+
+**SESSION 72b UPDATE (2026-09-08).** 419 → **430 tests**. Patagonia captured, and
+the block finally diagnosed.
+
+**We are NOT IP-blocked.** Same machine, same IP, Playwright Chromium:
+`headless: true` blocked, **`headless: false` returns 200** — on `rei.com` and on
+Patagonia's size-fit page. And it is not Patagonia-specific: with the same client
+`akamai.com`, `homedepot.com`, `rei.com`, `northface.com` all 403 while
+`llbean.com` and `google.com` are fine. **The gate keys on headless-automation
+fingerprints, not on the network.** Consequences: residential proxies were not
+only rejected on posture, they were the **wrong diagnosis**; and the
+browser-extension thesis is now **measured rather than assumed** — the user's own
+browser is not what is refused. A Python scraper is in curl's class and adds
+nothing.
+
+**NEW INVARIANT:**
+**(52)** **A headed browser is for CURATION, never for check-time transport.** A
+one-off read of a published reference page, output typed into `brandCharts.ts`, is
+a person using a website as intended. Driving a browser per user request is
+automated access at scale against a control built to stop exactly that — and is
+not viable on serverless anyway. Check-time order stays: read the page if
+readable → curated chart → refuse.
+
+**There is no standard size-chart shape.** Nike states ranges; Patagonia women's
+states two numeric sizes per letter (so the per-letter range is the chart's own);
+Patagonia men's prints **one value per size**. `pointRange()` turns a point into a
+range at the midpoints to its neighbours — the reading such a chart is written
+for — with end rows extending outward by their own half-step, and tests pinning
+that consecutive sizes neither gap nor overlap. It is the one place we compute
+rather than transcribe, which is why it is named, isolated and tested.
+
+**The original bug report now answers.** `patagonia.com/product/mens-insulated-boulder-fork-rain-jacket/85220.html`
+returns **M / "relaxed" / 0.25** off Patagonia's own chart, with
+`fetch: "unreachable"` still recorded honestly.
+
+**Gotcha that bit immediately:** two of my own tests used Patagonia as the "brand
+with no chart" fixture and correctly went red once it had one. The replacement
+tried Levi's and hit a **demo fixture** — fixtures match by URL substring
+regardless of domain. Use **adidas** for "recognised brand, no chart, no fixture".

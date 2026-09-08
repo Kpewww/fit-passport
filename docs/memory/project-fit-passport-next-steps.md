@@ -528,3 +528,32 @@ not `tshirt`, because the `shirt` keyword sits before `tshirt` in `CATEGORY_KEYW
 and `t-shirt` becomes "t shirt" once separators are normalised. Harmless today — both
 are the `top` domain, so scoring and the chart lookup are unaffected — but it is
 wrong, and it would matter the moment anything keys off `tshirt` specifically.
+
+---
+
+## UPDATE — Session 72b (2026-09-08)
+
+**Patagonia is captured** (men's + women's tops). 419 → 430 tests. The original
+bug-report URL now returns M instead of refusing.
+
+**The blocking question is settled and should not be re-litigated:** we are not
+IP-blocked — the gate detects **headless automation**. A headed browser on the
+same IP gets 200. So residential proxies were the wrong diagnosis as well as the
+wrong posture, and **the browser extension is now backed by measurement**: the
+user's own browser is not what is being refused. See
+[[project-fit-passport-build-state]] invariant (52) for where the line sits
+(curation yes, check-time transport no).
+
+**Chart capture is now much cheaper than the 15-minutes-per-brand estimate** for
+any brand whose guide a headed browser can reach — which is most of them. The
+remaining cost is judgement, not typing: deciding `kind` (body vs garment) and
+noticing the chart's shape.
+
+**Still to capture:** the other ten brands in `BRAND_TABLE` (Uniqlo, COS, Levi's,
+Zara, H&M, Gap, Adidas, J.Crew, MUJI, Everlane, Arc'teryx). **J.Crew stays
+excluded** — its robots.txt disallows the path its numbers load from. Uniqlo and
+MUJI may not fit the one-chart-per-brand shape at all: they publish flat garment
+measurements per product.
+
+**Then** retire `BRAND_TABLE`'s invented constants — unchanged priority, now
+closer to reachable.
