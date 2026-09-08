@@ -160,10 +160,21 @@ export async function POST(req: Request) {
   // on the page), we cannot be highly confident — cap it so the number matches
   // the "⚠ sizes estimated" banner the UI shows. The engine stays pure; the
   // provenance discount is applied here, at the boundary that knows provenance.
-  if (extracted.source.sizesFrom === "estimated") {
-    const CAP = 0.5;
-    result.best.confidence = Math.min(result.best.confidence, CAP);
-    result.ranked = result.ranked.map((r) => ({ ...r, confidence: Math.min(r.confidence, CAP) }));
+  //
+  // A brand chart earns its own cap, between the two. The measurements are real
+  // — the brand published them — so 0.5 would understate them. But we did not
+  // read this product's page, so we do not know which sizes it is offered in, and
+  // we do not know whether this style is the brand's slim or relaxed cut. That
+  // residual uncertainty is about the GARMENT, which no amount of body data on
+  // our side can resolve, so it belongs as a ceiling rather than a penalty.
+  const PROVENANCE_CAP: Partial<Record<string, number>> = {
+    estimated: 0.5,
+    "brand-chart": 0.75,
+  };
+  const cap = PROVENANCE_CAP[extracted.source.sizesFrom ?? ""];
+  if (cap != null) {
+    result.best.confidence = Math.min(result.best.confidence, cap);
+    result.ranked = result.ranked.map((r) => ({ ...r, confidence: Math.min(r.confidence, cap) }));
   }
 
   const rec = await prisma.fitRecommendation.create({

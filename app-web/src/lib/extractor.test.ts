@@ -109,3 +109,57 @@ describe("Chinese garment terms are recognised", () => {
     expect(guessed("https://example.cn/p/游戏点券代充")).toBe(true);
   });
 });
+
+// The brand-chart layer (layer 2a). It replaced the case where a recognised
+// brand got a ladder extrapolated from two invented constants — the mechanism
+// that produced Patagonia's "chest 106/111/116/121/126", five numbers no page
+// ever stated.
+describe("layer 2a — the brand's own published size chart", () => {
+  const nikeTop = "https://www.nike.com/t/mens-dri-fit-training-t-shirt/ABC123";
+
+  it("uses the curated chart for a brand and garment we have one for", () => {
+    const out = extractFromUrl(nikeTop);
+    expect(out.source.sizesFrom).toBe("brand-chart");
+    expect(out.brand).toBe("Nike");
+  });
+
+  it("serves the brand's BODY ranges, not an invented garment chest", () => {
+    // The distinction the whole layer rests on. `chestCm` is the garment's flat
+    // chest; Nike published body ranges. A body number in the garment field would
+    // make every Nike recommendation wrong by about a full size, in the same
+    // direction, which reads as a tuning problem rather than a bug.
+    const out = extractFromUrl(nikeTop);
+    const m = out.sizes.find((s) => s.label === "M")!;
+    expect(m.bodyChestMinCm).toBe(95.3);
+    expect(m.bodyChestMaxCm).toBe(104.1);
+    expect(m.chestCm).toBeUndefined();
+    expect(out.sizes.every((s) => s.chestCm === undefined)).toBe(true);
+  });
+
+  it("carries a source URL and a capture date, so every number is checkable", () => {
+    const out = extractFromUrl(nikeTop);
+    expect(out.source.chart?.sourceUrl).toMatch(/^https:\/\/www\.nike\.com\//);
+    expect(out.source.chart?.capturedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(out.source.chart?.kind).toBe("body");
+  });
+
+  it("keeps derived=true so extractSmart still tries to read the real page", () => {
+    // A brand chart is not product-specific. If the page IS readable, its own
+    // chart must win — returning early here would trade the better source for
+    // the more convenient one.
+    expect(extractFromUrl(nikeTop).source.derived).toBe(true);
+  });
+
+  it("falls through to the synthesized ladder for a brand with no chart", () => {
+    const out = extractFromUrl("https://www.patagonia.com/product/mens-rain-jacket/85220.html");
+    expect(out.source.sizesFrom).toBe("estimated");
+    expect(out.source.chart).toBeUndefined();
+  });
+
+  it("does not use a men's tops chart for women's, or for trousers", () => {
+    const womens = extractFromUrl("https://www.nike.com/t/womens-dri-fit-t-shirt/ABC123");
+    expect(womens.source.sizesFrom).toBe("estimated");
+    const pants = extractFromUrl("https://www.nike.com/t/mens-training-pants/ABC123");
+    expect(pants.source.sizesFrom).toBe("estimated");
+  });
+});

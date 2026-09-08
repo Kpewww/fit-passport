@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 71 · 2026-09-01 — LIVE, 389 tests.**
+> **Last updated: Session 72 · 2026-09-08 — LIVE, 419 tests.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -35,8 +35,8 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 
 **技术栈:** Node 24 LTS + **Next.js 14.2.35** App Router + React 18 + TS +
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
-Framer Motion(**Lenis 已移除**);three.js 仅徽章 inspect 懒加载。
-命令:`npm run dev`、`npm run typecheck`、`npm test`(**389 个**)、`npm run build`、
+Framer Motion(**Lenis 已移除**);three.js 懒加载:徽章 inspect **以及** 3D 人台/松量壳(`BodyMesh3D.tsx`)。
+命令:`npm run dev`、`npm run typecheck`、`npm test`(**419 个**)、`npm run build`、
 改 schema 后 `npm run db:push`(**还必须建 migration**,见铁律 10)、生成文档 PDF `npm run docs:pdf`。
 测量工具:`app-web/scripts/mobile-audit.mjs`(移动端布局)、
 `brand/tests/size-test.mjs`(标志尺寸)。两者都需 `npx playwright install chromium`。
@@ -93,6 +93,15 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
 - **`brand/` 移到仓库根目录** —— 标志是构建输入不是文档。`docs/` 是读的,
   `brand/` 是构建用的;设计说明仍留在 `docs/design/LOGO_CONCEPT.md`。
 - 颜色调色板从 **4 份合并成 1 份**(`src/lib/colors.ts`)。
+
+**Session 72(品牌尺码表):**
+- **大牌的尺码表改成"策展真数据",不再是编的。** `src/lib/brandCharts.ts`,新来源
+  `sizesFrom: "brand-chart"`,排在 `page` 之下、`estimated` 之上。已收 **Nike 男装
+  上衣**(官网 body 表,robots 允许)。被墙的品牌(Patagonia/Uniqlo/COS/H&M/Zara/
+  Adidas)只能人工抄 —— 配方见 `docs/design/brand-size-charts.md`。
+- **两个只有"看渲染页面"才能发现的 bug**:body range 的判语全反了(铁律 32);
+  `/check` 对着一个从没读过的页面写"measurements from the page"。两个都通过了
+  全部单元测试和 API 检查。**这是 Session 69 那条教训隔一轮又复现了一次。**
 
 **下一步:见 `docs/memory/project-fit-passport-next-steps.md` 底部的当前清单。**
 (客户访谈**已由创始人推迟**;信息架构第 2、3 步是接下来的事。)
@@ -161,6 +170,20 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
     尺码来自我们给已知品牌留的通用表。
 29. **首页按意图排序**:已经给过数据的人,仪表盘紧跟首屏(原来在第 5.6/10 屏)。
     匿名访客仍看到完整说辞,顺序不变 —— 这条分支容易悄悄写坏,要单独验。
+
+30. **大牌尺码表是"策展"来的,不是爬来的。** `src/lib/brandCharts.ts` 存品牌官网自己
+    公布的数字,每张表都带 `sourceUrl` + `capturedAt` + `capturedBy`;第三方尺码
+    聚合站**不能用**(测试强制 sourceUrl 必须在品牌自己的域名下)。`capturedBy:
+    "fetch"` 还要求 robots.txt 允许该路径 —— Nike 允许所以收了,J.Crew 的数字来自
+    它自己 robots 禁掉的模块所以没收。被墙的品牌只能**人工在浏览器里读了抄进来**。
+31. **人体围度区间和服装平铺尺寸是两种断言,不能共用字段。** body 表只写
+    `bodyChestMinCm/MaxCm`,只有 garment 表可以写 `chestCm`。放错会让该品牌的所有
+    推荐**朝同一个方向差一整码**,看起来像调参问题而不是 bug。**且 body 表喂不了
+    `personalEase.ts`** —— 它算 `garment − body`,需要服装那一侧。
+32. **`verdictFromDelta` 的入参是"服装相对"的**(负 = 这件比你想要的小)。任何从
+    "人体"那侧算出来的 delta 必须取反。body range 分支原来没取反,于是所有档位的
+    判语是**反的**(胸围 100 时 L 显示"too small")。只有判语错、排序一直对,所以
+    藏了很久。
 
 ## 已有的关键系统(别重造)
 

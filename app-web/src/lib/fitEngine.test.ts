@@ -1031,3 +1031,54 @@ describe("the explanation carries context, not just the top two weights", () => 
     expect(rec.explanation).not.toMatch(/actually wear/);
   });
 });
+
+// A body range describes the WEARER; `verdictFromDelta` reads its input as
+// GARMENT-relative. The body-range branch fed the raw wearer-relative delta
+// straight in, so every neighbour's verdict came out backwards. It survived
+// because the RANKING was right — `sub` uses the unsigned distance — and because
+// the only existing body-range verdict test looked at the winning size, where
+// the two conventions differ by a fraction of a centimetre.
+//
+// Found by reading a live /check ladder off a real Nike chart: with a 100cm
+// chest, L was labelled "too small" and S "too big".
+describe("verdicts off a retailer BODY range point the right way", () => {
+  const chartSizes = [
+    { label: "S", bodyChestMinCm: 88.9, bodyChestMaxCm: 95.3 },
+    { label: "M", bodyChestMinCm: 95.3, bodyChestMaxCm: 104.1 },
+    { label: "L", bodyChestMinCm: 104.1, bodyChestMaxCm: 111.8 },
+    { label: "XL", bodyChestMinCm: 111.8, bodyChestMaxCm: 123.2 },
+  ];
+  const ladder = () =>
+    recommend(baseInput({
+      product: { brand: "Nike", category: "tshirt" },
+      profile: { chestCm: 100, preferredFit: "regular" },
+      sizes: chartSizes,
+    }));
+
+  it("picks the size whose published range contains the wearer", () => {
+    expect(ladder().best.label).toBe("M");
+  });
+
+  it("calls a size BELOW the wearer's range too small, not too big", () => {
+    const s = ladder().ranked.find((r) => r.label === "S")!;
+    expect(s.verdict).toBe("too small");
+  });
+
+  it("calls a size ABOVE the wearer's range too big, not too small", () => {
+    const l = ladder().ranked.find((r) => r.label === "L")!;
+    const xl = ladder().ranked.find((r) => r.label === "XL")!;
+    expect(l.verdict).toBe("too big");
+    expect(xl.verdict).toBe("too big");
+  });
+
+  it("orders the verdicts monotonically up the ladder", () => {
+    // The property that makes the whole column readable: as sizes get bigger the
+    // verdict may only move toward "too big", never back.
+    const order = ["too small", "snug", "true to size", "relaxed", "too big"];
+    const seen = ladder()
+      .ranked.slice()
+      .sort((a, b) => chartSizes.findIndex((s) => s.label === a.label) - chartSizes.findIndex((s) => s.label === b.label))
+      .map((r) => order.indexOf(r.verdict!));
+    expect(seen).toEqual([...seen].sort((a, b) => a - b));
+  });
+});

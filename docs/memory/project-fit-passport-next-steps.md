@@ -475,3 +475,56 @@ nobody can find is the same as a decision never recorded.
    granularity are both gated on interview evidence, and Session 70 measured that
    Patagonia *blocks* rather than being unreachable — which strengthens the
    extension's case without unblocking the decision.
+
+---
+
+## UPDATE — Session 72 (2026-09-08)
+
+**Built: curated brand size charts** (`src/lib/brandCharts.ts`), replacing the
+invented `BRAND_TABLE` ladder for any brand we have a real chart for. One brand
+captured: **Nike men's tops**. 389 → 419 tests. See
+[[project-fit-passport-build-state]] invariants ㊾, ㊿ and (51), and
+`docs/design/brand-size-charts.md` for the capture recipe.
+
+**Two bugs found by looking at the rendered page**, both of which passed every test
+and every API check: verdicts off a retailer body range were **inverted** (L read
+"too small"), and `/check` claimed "measurements from the page" for a check where no
+page was read. Same lesson as Session 69, one session later.
+
+### New work this created, in order
+
+1. **Capture the gated brands manually — Patagonia first.** It is the case that
+   started this thread, it is hard-blocked (10-byte 404 on the size guide too), and
+   the only route is a person reading it in a browser and typing the numbers in.
+   Recipe in `docs/design/brand-size-charts.md` §6. Each brand is ~15 minutes.
+   Highest value per minute of anything currently on this list.
+2. **Retire `BRAND_TABLE`'s invented constants** once enough charts are real.
+   Keeping a fabricated floor under two honest layers is exactly how the Patagonia
+   ladder happened. Not yet done because twelve brands still have no curated chart
+   and deleting it today would send them all to `estimated`/refuse.
+3. **Chart staleness.** Every chart carries `capturedAt` and the UI shows it, but
+   nothing re-checks. A brand that revises its chart leaves us confidently wrong with
+   a date attached. Re-reading the `capturedBy: "fetch"` charts could be automated;
+   the manual ones cannot be checked without a person.
+4. **Brand fit-lines.** Patagonia publishes Regular and Slim, Nike one chart per
+   domain. The current shape is one chart per brand × domain × gender with no notion
+   of a line, so a slim-cut style gets the regular numbers.
+
+### Unchanged and still owed
+
+Surface the personal ease target on `/passport` (still only inside a `/check`
+result's reasons); the 3D garment comparison; the `/community` copy read-through
+(517 words / 363 prose / 4.5 screens — `/help` and `/badges` stay exempt); IA move 3.
+
+**Note for the ease-target work:** a *body* chart cannot feed it. `personalEase.ts`
+learns `garment − body` and needs a garment side, so curating US brands' body charts
+improves recommendations and does nothing for ease learning. Do not expect one to fix
+the other.
+
+### Found and deliberately not fixed
+
+`detectCategoryStrict` classifies `.../mens-dri-fit-training-t-shirt` as **`shirt`**,
+not `tshirt`, because the `shirt` keyword sits before `tshirt` in `CATEGORY_KEYWORDS`
+and `t-shirt` becomes "t shirt" once separators are normalised. Harmless today — both
+are the `top` domain, so scoring and the chart lookup are unaffected — but it is
+wrong, and it would matter the moment anything keys off `tshirt` specifically.

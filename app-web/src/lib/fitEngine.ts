@@ -273,14 +273,28 @@ function scoreMeasurementFit(
       const b = profile.chestCm;
       let sub: number;
       let delta: number;
+      // SIGN CONVENTION. `verdictFromDelta` reads delta as GARMENT-relative:
+      // negative = this size is smaller than you want, positive = roomier. The
+      // garment branch below satisfies that naturally (`size.chestCm - target`).
+      // A body range is stated the other way round — it describes the WEARER —
+      // so it must be negated here. It was not, and every verdict off a body
+      // range came out inverted: with a 100cm chest against Nike's own chart, L
+      // was labelled "too small" and S "too big".
+      //
+      // Only the verdict was wrong; `sub` (and therefore the ranking) uses the
+      // unsigned distance and was always right, which is exactly why this
+      // survived — the recommended size was correct and only its neighbours'
+      // labels lied.
       if (b >= lo && b <= hi) {
         // Inside the range: best near the middle, still strong at the edges.
         const mid = (lo + hi) / 2;
-        delta = b - mid; // for the verdict: below mid = snugger end
+        delta = mid - b; // body above the middle => this size runs snug on you
         sub = 0.85 + 0.15 * gauss(b - mid, (hi - lo) / 2 || 1);
       } else {
-        const outBy = b < lo ? b - lo : b - hi; // signed cm outside the range
-        delta = outBy < 0 ? outBy - 4 : outBy + 4; // push verdict past the edge
+        const outBy = b < lo ? b - lo : b - hi; // signed cm your body sits outside
+        // Negate to garment-relative, then push past the edge so a size the body
+        // does not fit inside never reads as "true to size".
+        delta = outBy > 0 ? -outBy - 4 : -outBy + 4;
         sub = gauss(outBy, 4);
       }
       chestDelta = delta;

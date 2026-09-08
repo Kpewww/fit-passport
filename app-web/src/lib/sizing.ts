@@ -54,6 +54,18 @@ export function normalizeToAlpha(raw: string | null | undefined): AlphaSize | nu
   const us = s.match(/^US\s*(.+)$/);
   if (us) return normalizeToAlpha(us[1]);
 
+  // "2XL", "3XL", "2X" — the way most US retailers print the top of the ladder.
+  // Without this they normalise to null, and a null alpha is dropped silently by
+  // `alphaIndex` downstream, so the size is shown and then not scored.
+  // Starts at 2 on purpose: "1X" is a women's plus-size label on a different
+  // ladder, not a synonym for XL, and guessing at it would misplace a real size.
+  const multi = s.match(/^([2-9])\s*XL?$/);
+  if (multi) {
+    const expanded = "X".repeat(Number(multi[1])) + "L";
+    if ((ALPHA_LADDER as readonly string[]).includes(expanded)) return expanded as AlphaSize;
+    return null; // 4XL and up have no rung; say so rather than clamping to XXXL
+  }
+
   // "M/L" ambiguous → take first
   const slash = s.split("/")[0];
   if (slash !== s) return normalizeToAlpha(slash);

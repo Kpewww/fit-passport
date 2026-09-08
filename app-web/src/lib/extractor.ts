@@ -16,6 +16,13 @@
 // /check screen ("we read this — is it right?"), which is the mitigation the
 // proposal calls for. Real LLM/VLM extraction can later replace layer 2 without
 // changing this interface.
+//
+// LAYER 2a was added later and sits inside layer 2: if `brandCharts.ts` holds the
+// brand's OWN published size guide for this garment type and gender, those real
+// numbers are used instead of the synthesized ladder. See that file for why the
+// synthesized ladder was a problem worth solving.
+
+import { chartFor, chartToSizes } from "./brandCharts";
 
 export type ExtractedSize = {
   label: string;
@@ -49,10 +56,16 @@ export type ExtractedProduct = {
     slug?: string;
     // Where the SIZE CHART specifically came from — this is what the audit cared
     // about, and what /check surfaces so a user knows whether to trust the sizes:
-    //   "fixture"   — hand-verified demo product
-    //   "page"      — read off the real product page (JSON-LD/table or LLM)
-    //   "estimated" — synthesized from the brand + category (no real chart found)
-    sizesFrom?: "fixture" | "page" | "estimated";
+    //   "fixture"     — hand-verified demo product
+    //   "page"        — read off the real product page (JSON-LD/table or LLM)
+    //   "brand-chart" — the brand's own published size guide, curated in
+    //                   `brandCharts.ts`. REAL numbers the brand stated, but for
+    //                   the brand rather than for this product: we do not know
+    //                   which sizes this item is offered in, or whether it is a
+    //                   slim or relaxed line. Ranks BELOW "page" for that reason
+    //                   and far above "estimated", which is not measurement at all.
+    //   "estimated"   — synthesized from the brand + category (no real chart found)
+    sizesFrom?: "fixture" | "page" | "brand-chart" | "estimated";
     // WHY we ended up with the provenance above. `sizesFrom: "estimated"` has two
     // very different causes and they need very different fixes:
     //   "blocked"     — the retailer refused us (403/CAPTCHA/challenge). No model
@@ -71,6 +84,13 @@ export type ExtractedProduct = {
      * the honest response is to say so rather than size an unknown object.
      */
     categoryGuessed?: boolean;
+    /**
+     * Present only when `sizesFrom === "brand-chart"`. The page a user can open
+     * to check every number we showed them, and the date we read it. A curated
+     * chart with no traceable source is indistinguishable from the invented
+     * ladder this layer replaced, so the UI discloses both.
+     */
+    chart?: { sourceUrl: string; capturedAt: string; kind: "body" | "garment" };
   };
 };
 
@@ -382,6 +402,48 @@ export function extractFromUrl(url: string): ExtractedProduct {
   // stripped (we surface gender separately).
   const rawName = pickNameSlug(parts);
   const nameFromSlug = rawName.replace(GENDER_PREFIX_RE, "").trim();
+
+  // Layer 2a: the brand's OWN published size chart, if we have curated one.
+  //
+  // This sits above the synthesized ladder and below reading the real page.
+  // Above the ladder because these are numbers the brand actually published,
+  // where `buildSizes` returns two invented constants extrapolated linearly.
+  // Below the page because a brand chart is not product-specific: it cannot know
+  // which sizes this item is offered in, and it cannot know that this particular
+  // style is the slim-fit one. `extractSmart` still fetches after this and will
+  // overwrite `sizes` if it finds a real chart on the page.
+  const chart = chartFor(host, category, gender);
+  if (chart) {
+    const chartSizes = chartToSizes(chart);
+    if (chartSizes.length > 0) {
+      const brandName = chart.brand;
+      const productName =
+        nameFromSlug && nameFromSlug.toLowerCase() !== brandName.toLowerCase()
+          ? `${brandName} ${nameFromSlug}`
+          : `${brandName} ${garmentNoun(category)}`;
+      return {
+        retailer: brandName,
+        brand: brandName,
+        productName,
+        category,
+        gender,
+        material: "See product page",
+        fitNotes: brandProfile?.fitNotes ?? "",
+        sizes: chartSizes,
+        // `derived` stays TRUE: the sizes are real but the product identification
+        // is still a reading of the URL, and extractSmart must keep going.
+        source: {
+          url,
+          host,
+          derived: true,
+          slug,
+          sizesFrom: "brand-chart",
+          categoryGuessed: detected == null,
+          chart: { sourceUrl: chart.sourceUrl, capturedAt: chart.capturedAt, kind: chart.kind },
+        },
+      };
+    }
+  }
 
   if (brandProfile) {
     const productName =

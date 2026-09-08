@@ -31,6 +31,112 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-08 · Session 72 — The brands we can't read now have real numbers instead of invented ones
+
+**The finding that shaped the session.** A recognised brand's "size chart" was two
+invented constants. `BRAND_TABLE` in `extractor.ts` gave each of thirteen brands a
+`chestBaseCm` and a `stepCm`; `buildSizes()` extrapolated them linearly, with the
+shoulder, sleeve and length **identical for all thirteen**. Running that arithmetic
+for Patagonia + jacket returns `XS 106 · S 111 · M 116 · L 121 · XL 126` — the exact
+five numbers invariant ㊼ now refuses to serve. Refusing was the right emergency fix
+and left the real problem: we had nothing true to say about the brands people shop.
+
+**Measured who actually blocks us** (plain client, redirects followed, no header
+spoofing, 2026-09-08): Nike 200 and `robots.txt` says "just crawl it" · J.Crew 200
+but its numbers load from `*/sizecharts-module/`, which its **robots.txt disallows**
+· Gap 200 with an error page in the body · Patagonia the bare **10-byte 404** from
+Session 70, on the size guide as well as products · Uniqlo connection failure even
+on its homepage · COS / Adidas / H&M / Zara 403. **The gate that blocks a product
+page usually blocks the size guide too, and being readable is not the same as being
+permitted.**
+
+**Built: `src/lib/brandCharts.ts`,** a curated library of charts read from the
+brands' own published size guides, with a new provenance `sizesFrom: "brand-chart"`
+slotted between `page` and `estimated`. One brand captured — Nike men's tops, body
+ranges, from `nike.com/size-fit/mens_tops_alpha`. Every chart carries its source URL,
+capture date and capture method, and a test enforces that the URL is on the brand's
+own domain, which keeps third-party aggregators out.
+
+**The layer is above the synthesized ladder and below reading the page**, because a
+brand chart is real measurement but not product-specific: it cannot know which sizes
+this item is offered in, nor that this style is the slim cut. `derived` stays true so
+`extractSmart` still fetches; when the page lists offered sizes but holds no chart the
+two are merged — the page's labels carry the chart's measurements. Confidence caps at
+**0.75** against 0.5 for `estimated`.
+
+**The effect on the motivating case.** A blocked page for a brand with a curated chart
+no longer 422s. Live, with a 100cm chest: `M · true to size · 30%`, with "fits body
+chest 95.3–104.1cm" and a dated link to Nike's own guide.
+
+### Two bugs found by looking, not by testing
+
+**The verdict sign was inverted for every body range.** `verdictFromDelta` documents
+its input as garment-relative ("negative = garment smaller than you want"). The
+garment branch satisfies that (`size.chestCm - target`); the body-range branch fed it
+`b - mid`, which is **wearer**-relative. So with a 100cm chest against Nike's chart, L
+read "too small" and S read "too big" — every neighbour inverted. It survived because
+only the *verdict* was wrong: `sub` uses the unsigned distance, so the ranking was
+always right, and the one existing body-range verdict test looked at the winning size,
+where the two conventions differ by a fraction of a centimetre. Found by reading a
+live `/check` ladder. Four tests added, verified red against the old sign.
+
+**The rendered page claimed the numbers came from the page.** The per-size breakdown
+said "MEASUREMENTS FROM THE PAGE" unconditionally, and the top badge said "Read from
+nike.com" — for a check where the page was never read. The API response was correct
+and every test passed; this existed only in the render. That is the Session 69 lesson
+repeating exactly, on the very next feature.
+
+**Also fixed:** `normalizeToAlpha` did not understand `2XL` / `3XL`, the way most US
+retailers print the top of the ladder — they normalised to null and `alphaIndex`
+dropped them, so such a size was displayed and then never scored. Starts at 2 on
+purpose: `1X` is a women's plus-size label on a different ladder, not a synonym for XL.
+`4XL` and up return null rather than clamping onto a rung they do not occupy.
+
+**389 → 419 tests.** Typecheck clean, production build clean, `brandCharts` verified
+absent from the client bundle.
+
+### New invariants
+
+- **㊾ A curated chart stores the numbers a brand published, never a third party's
+  compilation, and always with the URL and date that make it checkable.** A chart
+  nobody can trace is indistinguishable from the invented ladder this replaced.
+  `capturedBy: "fetch"` additionally requires that robots.txt permits the path —
+  J.Crew serves its size-chart page and disallows the module its numbers come from.
+- **㊿ A body range and a garment measurement are different claims and must not share
+  a field.** A body chart emits `bodyChestMinCm/MaxCm`; only a garment chart may set
+  `chestCm`. Putting a body number in the garment field makes every recommendation
+  from that brand wrong by about a full size in the same direction — which reads as a
+  tuning problem, not a bug. A body chart also cannot feed `personalEase.ts`, which
+  needs a garment side.
+- **(51) `verdictFromDelta`'s input is GARMENT-relative.** Negative = this size is
+  smaller than you want. Any branch computing a delta from the wearer's side must
+  negate it. Pinned by a monotonicity test across the whole ladder, not just the pick.
+
+### Next
+
+Unchanged and still owed: the personal ease target on `/passport`; the 3D garment
+comparison; the `/community` copy read-through; IA move 3. New from this session:
+capture the gated brands manually (Patagonia first — it is the case that started
+this), and retire `BRAND_TABLE`'s invented constants once enough charts are real.
+Recipe and open questions in `docs/design/brand-size-charts.md`.
+
+### Files touched
+```
+app-web/src/lib/brandCharts.ts                (created — the library)
+app-web/src/lib/brandCharts.test.ts           (created — 20 tests)
+app-web/src/lib/extractor.ts                  (layer 2a, provenance type)
+app-web/src/lib/extractor.test.ts             (+6 tests)
+app-web/src/lib/extractorLLM.ts               (preserve provenance, merge labels)
+app-web/src/lib/fitEngine.ts                  (body-range verdict sign)
+app-web/src/lib/fitEngine.test.ts             (+4 tests)
+app-web/src/lib/sizing.ts                     (2XL/3XL labels)
+app-web/src/app/api/check/route.ts            (per-provenance confidence cap)
+app-web/src/app/check/page.tsx                (honest provenance in 3 places)
+docs/design/brand-size-charts.md              (created)
+```
+
+---
+
 ## 2026-09-01 · Session 71 — The homepage stopped pitching people who already signed up
 
 Measured every page's reading load first, at 390px, logged in:

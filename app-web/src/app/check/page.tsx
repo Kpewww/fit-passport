@@ -70,7 +70,8 @@ type Source = {
   host: string;
   derived: boolean;
   slug?: string;
-  sizesFrom?: "fixture" | "page" | "estimated";
+  sizesFrom?: "fixture" | "page" | "brand-chart" | "estimated";
+  chart?: { sourceUrl: string; capturedAt: string; kind: "body" | "garment" };
 };
 
 type Body = {
@@ -535,13 +536,33 @@ function Result({
       {/* PROVENANCE — prove we read THIS page */}
       <Card>
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 font-medium text-green-800">
-            <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
-            Read from {source.host || "the page"}
-          </span>
-          {/* Be honest about where the SIZE CHART came from — an estimated chart
-              is a guess, and the user deserves to know before trusting it. */}
-          {source.sizesFrom === "estimated" ? (
+          {/* This badge used to claim "Read from {host}" unconditionally, including
+              when nothing had been read. A brand chart is exactly that case — the
+              numbers are the brand's, but this product's page was never opened —
+              so the claim is now made only when it is true. */}
+          {source.sizesFrom === "brand-chart" ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 font-medium text-stone-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-stone-500" />
+              Identified from the link
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 font-medium text-green-800">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
+              Read from {source.host || "the page"}
+            </span>
+          )}
+          {/* Be honest about where the SIZE CHART came from. Three cases, because
+              they warrant three different amounts of trust: the brand's own
+              published guide is real measurement but not this product's; an
+              estimate is not measurement at all. */}
+          {source.sizesFrom === "brand-chart" ? (
+            <span
+              className="rounded-full bg-sky-100 px-2 py-0.5 font-medium text-sky-900"
+              title="These are the brand's own published size-guide measurements, not this product page's. We couldn't read the page itself, so we can't confirm which sizes this item comes in or whether it's a slim or relaxed cut."
+            >
+              ✓ {product.brand}&rsquo;s published size guide
+            </span>
+          ) : source.sizesFrom === "estimated" ? (
             <span
               className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-900"
               title="We couldn't find a real size chart on the page, so these measurements are estimated from the brand and category. Check them against the retailer's chart, or add the real numbers."
@@ -554,6 +575,24 @@ function Result({
             </span>
           )}
         </div>
+        {/* The chart is checkable or it is not trustworthy — link the page the
+            numbers came from, and date it, because a size guide goes stale. */}
+        {source.sizesFrom === "brand-chart" && source.chart ? (
+          <p className="mt-2 text-xs text-stone-600">
+            {source.chart.kind === "body"
+              ? "These are body measurements — the chest each size is cut to fit, as the brand states them."
+              : "These are the garment's flat measurements, as the brand states them."}{" "}
+            <a
+              href={source.chart.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2 hover:text-ink"
+            >
+              Check the brand&rsquo;s size guide
+            </a>{" "}
+            · read {source.chart.capturedAt}
+          </p>
+        ) : null}
         <h2 className="mt-2 text-xl font-semibold text-ink">{product.productName}</h2>
         <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-3">
           <Detail label="Retailer" value={product.retailer} />
@@ -706,6 +745,7 @@ function Result({
               score={s}
               isBest={idx === 0}
               option={product.sizeOptions.find((o) => o.label === s.label)}
+              sizesFrom={source.sizesFrom}
             />
           ))}
         </div>
@@ -728,10 +768,13 @@ function SizeRow({
   score,
   isBest,
   option,
+  sizesFrom,
 }: {
   score: SizeScore;
   isBest: boolean;
   option?: SizeOption;
+  /** Where these numbers came from — this row states it, so it must know it. */
+  sizesFrom?: Source["sizesFrom"];
 }) {
   const [open, setOpen] = useState(isBest);
   return (
@@ -803,11 +846,18 @@ function SizeRow({
             )}
           </div>
 
-          {/* Garment measurements from the page */}
+          {/* Where these numbers came from. The label used to say "from the page"
+              unconditionally; with a brand chart the page was never read, and the
+              rendered row was the only place that claim appeared — the API
+              response and every test were correct. */}
           {option && (
             <div>
               <p className="mb-1 text-[11px] uppercase tracking-widest text-ink-faint">
-                Measurements from the page
+                {sizesFrom === "brand-chart"
+                  ? "Measurements from the brand's size guide"
+                  : sizesFrom === "estimated"
+                    ? "Measurements estimated — not from the page"
+                    : "Measurements from the page"}
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {measurementChips(option).length > 0 ? (

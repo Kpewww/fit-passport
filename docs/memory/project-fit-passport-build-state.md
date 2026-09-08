@@ -10,9 +10,9 @@ metadata:
 
 Durable build state of the [[project-fit-passport]] web app. **Per-session history lives in the repo's `DEVLOG.md`** (through Session 56) — this file keeps only what isn't obvious from the code/DEVLOG. Repo: **github.com/Kpewww/fit-passport** (private; keychain has creds → `git push` works). **No machine path is recorded here on purpose** — the project has moved computers twice and every hard-coded path died with the move. A fresh clone has source only; `node_modules`, `.env` and `prisma/dev.db` are absent until set up (recipe in `docs/RESUME.md`). The in-repo **`docs/RESUME.md`** is the path-independent cold-start brief. The repo has its own local commit identity — check `git config user.email` rather than assuming the global one. **Chat 中文; commit messages + DEVLOG English** ([[principle-evidence-and-logging]]). Every feature must be research-grounded ([[principle-research-grounded]]).
 
-**Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy, badge inspect only). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
+**Stack (pinned for Node 18.20 — do NOT upgrade Next/Prisma without upgrading Node):** Next.js 14.2.15 (App Router, src dir), React 18.3, TS, Tailwind v3, Prisma 5.22 + SQLite (`app-web/prisma/dev.db`), Zod, bcryptjs, Vitest; Framer Motion + Lenis (motion); three.js (lazy: badge inspect AND the 3D dress form / ease shell in `BodyMesh3D.tsx`, Sessions 66-67 — the 'badge inspect only' this line used to say went stale the day the dress form shipped). Self-hosted fonts `src/app/fonts/{Inter,Fraunces}.woff2` via `next/font/local` (Google Fonts fetch at build time died on IPv6 — self-hosting removed that dependency; both OFL 1.1).
 
-**Commands:** `npm run typecheck`, `npm test` (**389 tests as of Session 71**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
+**Commands:** `npm run typecheck`, `npm test` (**419 tests as of Session 72**), `npm run build`, `npm run db:push` after schema edits, `npm run docs:pdf` (regenerate prospectus/badge PDFs). Prod build/deploy uses `npm run vercel-build`.
 
 **Prisma models:** User, FitProfile, Collection, KnownGoodItem, ComfortCheck, Product, SizeOption, FitRecommendation, FitOutcome, Outfit/OutfitItem/OutfitLike, Follow, Post/Answer/AnswerVote, Report, Block, PetProfile.
 - **User**: claimed, accountCode?(unique `FP-XXXX-XXXX-XXXXX`), username?, email?, passwordHash?, bodyType?(coarse), exportPolicy(owner|anyone), listedInCommunity, pinnedBadges(CSV≤3), signatureOutfitId?, **memberNo?**(Int unique, `No.00000001`), **role**("USER"|"ADMIN"), **grantAllBadges**, deactivated, reset-token fields.
@@ -593,3 +593,69 @@ unambiguous again. **DEVLOG entries from Sessions 63–70 still carry the old
 numbers** — they are a historical record and were accurate when written; resolve
 them against this list by description rather than by number. Before adding a new
 invariant, take the number from the BOTTOM of this file, not from memory.
+
+---
+
+**SESSION 72 UPDATE (2026-09-08).** 389 → **419 tests**. Curated brand size charts,
+plus two bugs that only the rendered page showed.
+
+**The invented ladder is no longer the only thing we can say about a walled brand.**
+`BRAND_TABLE` gave each of thirteen brands a `chestBaseCm` and a `stepCm`, and
+`buildSizes()` extrapolated them linearly with shoulder/sleeve/length **identical for
+all thirteen**. That arithmetic is where Patagonia's `XS 106 · S 111 · M 116 · L 121 ·
+XL 126` came from. `src/lib/brandCharts.ts` now holds charts read from the brands' own
+published size guides, behind a new provenance `sizesFrom: "brand-chart"` that ranks
+between `page` and `estimated`. One brand captured so far (Nike men's tops).
+
+**Measured blocking landscape (2026-09-08, plain client, no header spoofing):** Nike
+200 with a robots.txt reading "just crawl it" · J.Crew 200 but its numbers load from
+`*/sizecharts-module/`, **disallowed by its own robots.txt** · Patagonia the same
+bare 10-byte 404 as Session 70, on the size guide as well as on products · Uniqlo
+connection failure even on the homepage · COS/Adidas/H&M/Zara 403. **A gate that
+blocks products usually blocks the size guide, and readable ≠ permitted.**
+
+**NEW INVARIANTS:**
+㊾ **A curated chart stores numbers the brand published, never a third party's
+compilation, and always with the URL and date that make it checkable.** A chart nobody
+can trace back to a page is indistinguishable from the invented ladder it replaced; a
+test enforces that every `sourceUrl` is on the brand's own domain. `capturedBy:
+"fetch"` additionally requires robots.txt to permit the path — hence Nike in and
+J.Crew out. `capturedBy: "manual"` (a person reading it in their own browser) is the
+only route for a gated brand and is the intended use of a website, not a bypass of it.
+㊿ **A body range and a garment measurement are different claims and must never share
+a field.** `kind: "body"` emits `bodyChestMinCm/MaxCm`; only `kind: "garment"` may set
+`chestCm`. A body number in the garment field makes every recommendation from that
+brand wrong by roughly a full size **in the same direction**, which presents as a
+tuning problem rather than a bug. Corollary: a body chart **cannot** feed
+`personalEase.ts`, which learns `garment − body` and so needs a garment side.
+**(51)** **`verdictFromDelta`'s input is GARMENT-relative** — negative means this size
+is smaller than you want. The garment branch satisfies this naturally
+(`size.chestCm - target`); the body-range branch computed `b - mid`, which is
+**wearer**-relative, so every verdict off a retailer body range was inverted: with a
+100cm chest against Nike's chart, L read "too small" and S read "too big". Only the
+verdict was affected — `sub` uses the unsigned distance, so rankings were always right
+— which is why it survived, along with the fact that the one existing test looked at
+the *winning* size, where the two conventions differ by a fraction of a centimetre.
+Pinned now by a monotonicity check across the whole ladder.
+
+**GLYPH NOTE:** the circled-number characters end at ㊿ (50). Invariant 51 onward is
+written `(51)`, `(52)` … Same rule as before: take the next number from the BOTTOM of
+this file, never from memory.
+
+**Also fixed:** `normalizeToAlpha` did not understand `2XL`/`3XL` — the way most US
+retailers print the top of the ladder. They normalised to null, `alphaIndex` returned
+null, and the size was displayed and then silently never scored. Handled from 2 up;
+`1X` is deliberately left alone (a women's plus-size label on a different ladder, not
+a synonym for XL) and `4XL`+ returns null rather than clamping to a rung it does not
+occupy.
+
+**Method note, and it is the same one as Session 69.** Both bugs above passed
+typecheck, 400+ unit tests and end-to-end API calls. The inverted verdicts were found
+by reading a live `/check` ladder; the "MEASUREMENTS FROM THE PAGE" overclaim (shown
+for a check where no page was ever read) existed **only** in the render. Looking at
+the rendered page is a separate act from checking the code, and it caught something
+on the very next feature after the session that first recorded it.
+
+**See also** `docs/design/brand-size-charts.md` — the capture recipe, the legal
+posture with its ⚠️ caveats, and the open questions (staleness, brand fit-lines, and
+retiring `BRAND_TABLE`'s invented constants once enough charts are real).

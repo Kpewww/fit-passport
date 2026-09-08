@@ -25,6 +25,7 @@ import {
   findSizeChartImages,
   looksBlocked,
 } from "./pageParse";
+import { normalizeToAlpha } from "./sizing";
 
 // Garment categories worn on the torso, where a Chinese 号型 code's 型 girth is the
 // intended BODY chest (bust). For these we can turn "160/84A" into a real body-
@@ -535,6 +536,20 @@ export async function extractSmart(url: string): Promise<ExtractedProduct> {
   const labels = parseSizeLabels(html);
   if (labels.length >= 2) {
     const isTop = TOP_CATEGORIES.has((out.category ?? "").toLowerCase());
+
+    // If a brand chart supplied the measurements, keep them and attach them to
+    // the labels the PAGE says are offered. This is the best result available
+    // short of a real chart on the page: the page knows what you can buy, the
+    // brand's guide knows how big each one is. Without this the labels would
+    // overwrite the chart and leave sizes with no measurements at all while the
+    // provenance still claimed "brand-chart".
+    const fromChart =
+      out.source.sizesFrom === "brand-chart"
+        ? new Map(
+            out.sizes.map((s) => [normalizeToAlpha(s.label) ?? s.label.toUpperCase(), s]),
+          )
+        : null;
+
     out.sizes = labels.map((label) => {
       const code = isTop ? parseChineseSizeCode(label) : null;
       if (code) {
@@ -546,16 +561,36 @@ export async function extractSmart(url: string): Promise<ExtractedProduct> {
           bodyChestMaxCm: code.girthCm + 3,
         };
       }
+      const matched = fromChart?.get(normalizeToAlpha(label) ?? label.toUpperCase());
+      if (matched) return { ...matched, label }; // the page's label, the chart's numbers
       return { label };
     });
+
+    // A label the chart had nothing for keeps its label and no measurements —
+    // correct, and visible: the UI shows a size with no numbers rather than one
+    // with numbers we made up for it.
     // If we recovered real body measurements from 号型 codes, the sizes are no
     // longer a blind estimate — they came off the page's own labels.
-    if (out.sizes.some((s) => s.bodyChestMinCm != null)) {
+    //
+    // Measured against the CODES, not against `bodyChestMinCm` being present:
+    // once a brand chart can supply that field, "some size has a body range"
+    // stopped meaning "the page told us". Crediting the page for the brand
+    // guide's numbers would claim we read a page we did not read.
+    const fromPageCodes =
+      isTop && labels.some((label) => parseChineseSizeCode(label) != null);
+    if (fromPageCodes) {
       out.source.sizesFrom = "page";
       out.source.derived = false;
       return out;
     }
   }
-  out.source.sizesFrom = "estimated";
+  // We found no chart on the page. That does NOT demote a brand chart to a guess:
+  // when `extractFromUrl` supplied the brand's own published sizing, those numbers
+  // are still the brand's, and overwriting the provenance here would both mislabel
+  // them and trip the `unreadable` refusal in /api/check — which keys off
+  // "estimated" and would throw away real measurements.
+  if (out.source.sizesFrom !== "brand-chart") {
+    out.source.sizesFrom = "estimated";
+  }
   return out;
 }
