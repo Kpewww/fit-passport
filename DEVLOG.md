@@ -31,6 +31,66 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-08 · Session 72c — Settled: we cannot scrape every URL at request time
+
+The founder's priority is the loop that matters: paste any product URL, get the
+right size. So the question was whether runtime scraping can carry it. Tested with
+a real headed browser on real product pages, not on guessed URLs:
+
+| | result |
+|---|---|
+| Patagonia PDP | chart obtained — but only after finding and clicking "Size Guide", and the modal holds several tables at once |
+| REI PDP | 200, no size-guide control found, 0 tables |
+| H&M PDP | 200, no size-guide control found, 0 tables |
+| Uniqlo PDP | **HTTP 200 with the title "Access Denied"** — a soft block a status check misses |
+
+**One of four, at 10–15 seconds per page.** Access was the problem we solved in
+72b; **extraction is the one that remains.** A modern PDP hydrates long after
+`DOMContentLoaded`, keeps its chart behind a control that must be clicked, and
+names that control differently on every site.
+
+**And the configuration that works cannot be deployed.** What gets through is a
+browser with a real window; serverless has no display, so the only variant we
+could run server-side is headless — exactly what the protection detects. The
+working configuration and the deployable configuration are disjoint, which is not
+a budget problem and cannot be bought around. ⚠️ Untested variant: a persistent VM
+with a headed browser on a virtual display. Expect it to fail at volume — a
+datacenter IP running automated browsers is the profile these systems exist to
+flag — but that expectation is not measured.
+
+**So the runtime order is the architecture, not a compromise:** read the page when
+it is readable → the curated chart → refuse. The browser extension stays the only
+route to *product-specific* numbers from a protected retailer, and 72b measured
+why it works where the server cannot.
+
+**Also measured, and it moves the bottleneck:** a headed browser lifted Gap,
+Adidas and COS from 403 to 200 — and still returned zero tables. For brand-level
+guides the remaining obstacle is just *finding each brand's size-guide URL*; four
+of seven guessed URLs 404'd. That is a per-brand lookup, not something to
+automate by guessing.
+
+**New tool: `app-web/scripts/capture-chart.mjs`.** Headed capture for curation.
+It prints the page's tables and the sentence that answers body-vs-garment, then
+stops — it decides nothing, because both "which table applies" and "which kind of
+measurement is this" are routinely ambiguous and the library refuses to guess
+either. Playwright stays out of the dependencies, same arrangement as
+`mobile-audit.mjs`.
+
+### New invariant
+
+- **(53) The scraping configuration that works and the one we can deploy are
+  disjoint.** Headed gets through, serverless has no display, headless is
+  detected. This is why the runtime order above is the architecture.
+
+### Files touched
+```
+app-web/scripts/capture-chart.mjs      (created)
+docs/design/brand-size-charts.md       (§2b — the runtime verdict)
+docs/memory/project-fit-passport-build-state.md
+```
+
+---
+
 ## 2026-09-08 · Session 72b — We are not IP-blocked; we were detected as headless
 
 **The question was "is our IP blocked?" and the answer is no.** Measured, in this

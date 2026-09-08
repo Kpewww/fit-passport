@@ -68,6 +68,41 @@ this library. It is not the app's transport at check time. Driving a browser per
 user request would be automated access at scale against a control built to stop
 exactly that, and it is not viable on serverless regardless.
 
+## 2b. Can we just scrape every URL at request time? Measured: no
+
+The question worth settling, since it decides the whole architecture. Tested
+2026-09-08 with a real headed browser on real product pages:
+
+| | result |
+|---|---|
+| Patagonia product page | **chart obtained** — but only after finding and clicking "Size Guide", and the modal holds several tables at once |
+| REI product page | 200, **no size-guide control found, 0 tables** |
+| H&M product page | 200, **no size-guide control found, 0 tables** |
+| Uniqlo product page | HTTP **200 with the title "Access Denied"** — a soft block a status code alone would miss |
+
+So even with access solved: **one of four yielded a chart, and it took 10–15
+seconds per page.** A modern PDP hydrates long after `DOMContentLoaded`, keeps its
+chart behind a control that must be clicked, and names that control differently on
+every site. Extraction, not access, is now the hard part.
+
+**And the configuration that works cannot be deployed.** What gets through is a
+browser with a real window; serverless functions have no display, so the only
+variant we could run on the server is headless — which is precisely what the bot
+protection detects. The working configuration and the deployable configuration are
+disjoint. ⚠️ One variant is untested: a persistent VM running a headed browser on a
+virtual display. Expect it to fail at any volume, since it would be a datacenter
+IP running automated browsers — the exact profile these systems are built to
+flag — but that expectation is not measured.
+
+**Therefore the runtime order stands, and is not a compromise:** read the page when
+it is readable (works today, deployable, cheap) → the curated chart → refuse. The
+browser extension remains the only way to get *product-specific* numbers from a
+protected retailer at request time, and Session 72b measured why it would work
+where the server cannot.
+
+`app-web/scripts/capture-chart.mjs` does the capture side of this offline — the
+same headed browser, once per brand, with a person reading the result.
+
 ## 3. Why this is not the scraping the project rejected
 
 `fetch-strategy.md` §2 rejects defeating technical access controls, because the

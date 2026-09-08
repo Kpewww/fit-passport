@@ -698,3 +698,33 @@ returns **M / "relaxed" / 0.25** off Patagonia's own chart, with
 with no chart" fixture and correctly went red once it had one. The replacement
 tried Levi's and hit a **demo fixture** — fixtures match by URL substring
 regardless of domain. Use **adidas** for "recognised brand, no chart, no fixture".
+
+**SESSION 72c (2026-09-08). Settled: we cannot scrape every URL at request time.**
+
+Tested with a real headed browser on real product pages: Patagonia yielded a chart
+**only after clicking "Size Guide"** (and its modal holds several tables at once);
+REI and H&M had **no size-guide control and 0 tables**; Uniqlo returned **HTTP 200
+with the title "Access Denied"** — a soft block that a status-code check misses
+entirely. One of four, at **10–15s per page**.
+
+**NEW INVARIANT:**
+**(53)** **The scraping configuration that works and the one we can deploy are
+disjoint.** What gets past bot protection is a browser with a real window;
+serverless has no display, so the only deployable variant is headless, which is
+exactly what is detected. This is not a policy limit that could be bought around —
+it is why the runtime order (**readable page → curated chart → refuse**) is the
+architecture rather than a compromise, and why the browser extension is the only
+route to product-specific numbers from a protected retailer.
+
+**Extraction, not access, is now the hard part.** A headed browser lifted Gap,
+Adidas and COS from 403 to 200 — and still returned zero tables, because modern
+PDPs hydrate long after `DOMContentLoaded` and hide the chart behind a control
+named differently on every site. For brand-level guides the remaining bottleneck
+is simply *finding each brand's size-guide URL*, which is a per-brand lookup and
+not automatable by guessing (4 of 7 guessed URLs 404'd).
+
+**Tool:** `app-web/scripts/capture-chart.mjs` — headed capture for curation, prints
+the tables and the body-vs-garment sentence and then stops. It decides nothing: a
+person still picks which table applies and confirms the measurement kind. Needs
+playwright, which stays out of the dependencies (same arrangement as
+`mobile-audit.mjs`).
