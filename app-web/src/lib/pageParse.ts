@@ -187,8 +187,18 @@ function parseNumber(cell: string): number | null {
 /** Split raw <table> HTML into a grid of trimmed cell strings. */
 function tableGrid(tableHtml: string): string[][] {
   const rows: string[][] = [];
+  // Drop HTML comments FIRST. A commented-out cell is not a cell, and counting it
+  // shifts every column after it by one — which silently reads the neighbouring
+  // measurement instead of the one the header names.
+  //
+  // Measured on patagonia.com's size-guide modal, whose header carries
+  // `<!-- <th width="15%"> </th>-->` between two real cells: the header parsed as
+  // six columns against the rows' five, so `chestCm` took the Waist column and a
+  // 100cm chest was recommended 3XL. Nothing about the output looked malformed —
+  // it was a plausible ladder of plausible numbers, just the wrong column.
+  const html = tableHtml.replace(/<!--[\s\S]*?-->/g, "");
   const rowRe = /<tr[\s\S]*?<\/tr>/gi;
-  const trs = tableHtml.match(rowRe) ?? [];
+  const trs = html.match(rowRe) ?? [];
   for (const tr of trs) {
     const cellRe = /<t[dh][\s\S]*?<\/t[dh]>/gi;
     const cells = (tr.match(cellRe) ?? []).map(stripTags);

@@ -31,6 +31,78 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-10 · Session 73 — /api/check accepts the page, not just the link
+
+The founder's call: stop fighting for the URL and let the extension hand us the
+page. That is the transport `fetch-strategy.md` §4 argued for in Session 41 and
+that Sessions 70–72c replaced its evidence gate with measurement. This is the
+interface between the two worlds, and it is deliberately the smallest possible
+change — it can be tested end to end before any extension exists.
+
+`extractSmart(url, { html })` skips the fetch when markup is supplied. Everything
+downstream is untouched: same parser, same LLM, same engine, same refusals. Only
+where the bytes came from changed, and that is recorded as **`fetch: "extension"`**
+rather than smuggled into `sizesFrom`. **The two fields answer different
+questions** — the numbers still came off the retailer's real page, so `sizesFrom`
+is `"page"`; claiming `fetch: "ok"` would say our server read something it never
+requested. Supplied HTML deliberately **beats a fixture**: serving demo data while
+holding the real page is the same class of substitution as the invented ladder.
+
+**Three things the live test caught that the unit tests could not.**
+
+**1. The cap was a guess, and the first real page went through it.** I set 1 MB
+because "a megabyte is already an outlier". Patagonia's product page is **1353 KB**
+of raw DOM. Pruning `<script>`, `<style>`, `<svg>`, `<iframe>` and the attributes
+we never read takes it to **253 KB — 81% smaller, size table intact.** So the cap
+is right and the *message* was wrong; it now tells the caller to prune. Pruning is
+also the privacy control: a page the user is logged into carries their cart,
+address and order history, and the extension should send the product, not the
+session.
+
+**2. A commented-out `<th>` shifted every column by one.** Patagonia's size-guide
+modal carries `<!-- <th width="15%"></th>-->` between two real header cells.
+`tableGrid` counted it, so the header parsed as six columns against the rows' five
+and **`chestCm` took the Waist column**: a 100cm chest was recommended **3XL** off
+a ladder of entirely plausible numbers. Nothing looked malformed — every value was
+a real measurement, just the wrong one. The numeric-size and waist columns happened
+to carry identical digits, which hid it further. Comments are stripped before
+cells are counted now, verified red on the real shape.
+
+**3. The brand chart kept the credit after the page took over.** `extractFromUrl`
+attaches `source.chart` (the curated guide's URL and capture date) before anything
+is read; when a page chart then replaced those numbers, the label stayed. `/check`
+would have shown "Patagonia's published size guide" beside measurements that came
+from the product page. `dropBrandChartCredit()` clears it at all three sites where
+page data supersedes. **A stale label is the same failure as a wrong one.**
+
+**430 → 439 tests.** Both fixes verified red against their bugs.
+
+### Still wrong, and it is the next thing
+
+The end-to-end run now reads the right column and still recommends **XL for a
+100cm chest**. `parseSizeTables` has **no notion of body-vs-garment**: it always
+writes `chestCm`, the garment field. Patagonia's chart is body measurements — the
+page says so in a sentence we do not read — so the engine adds ~10cm of ease on
+top of a body number and lands a full size high. This is invariant ㊿ exactly, and
+it is **pre-existing and independent of transport**: any page carrying a body chart
+already had it. The extension path just makes us hit it constantly.
+
+Also seen and not yet handled: that chart yields **16 sizes with duplicated
+labels** (XS twice, S twice, M twice), because each letter spans two numeric sizes.
+The brand-chart library already models this; the page parser does not.
+
+### Files touched
+```
+app-web/src/lib/extractorLLM.ts        (supplied-HTML path, dropBrandChartCredit)
+app-web/src/lib/extractorLLM.test.ts   (+6 tests)
+app-web/src/lib/pageParse.ts           (strip comments before counting cells)
+app-web/src/lib/pageParse.test.ts      (+3 tests)
+app-web/src/lib/extractor.ts           (fetch: "extension")
+app-web/src/app/api/check/route.ts     (optional html, measured cap + message)
+```
+
+---
+
 ## 2026-09-08 · Session 72c — Settled: we cannot scrape every URL at request time
 
 The founder's priority is the loop that matters: paste any product URL, get the

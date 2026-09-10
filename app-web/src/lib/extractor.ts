@@ -74,9 +74,15 @@ export type ExtractedProduct = {
     //   "ok"          — we DID get the page, we just couldn't find a chart in it.
     //                   This is the case an LLM/vision read can fix.
     //   "skipped"     — fixture hit, or fetching disabled.
-    // Recording the split is what tells us whether to spend on extraction quality
-    // or on transport. See docs/design/fetch-strategy.md §6.
-    fetch?: "ok" | "blocked" | "unreachable" | "skipped";
+    //   "extension"   — WE did not fetch anything. The page came from the user's
+    //                   own browser, which was looking at it anyway. This is a
+    //                   transport, not a provenance: if a chart is found in that
+    //                   HTML then `sizesFrom` is still "page", because the numbers
+    //                   did come off the retailer's real page. The two fields
+    //                   answer different questions and must not be collapsed —
+    //                   see invariant ㊿ for the last time conflating two claims
+    //                   into one field cost us a full size.
+    fetch?: "ok" | "blocked" | "unreachable" | "skipped" | "extension";
     /**
      * True when NOTHING on the page or in the URL identified a garment — the
      * category below is a fallback, not a reading. Combined with

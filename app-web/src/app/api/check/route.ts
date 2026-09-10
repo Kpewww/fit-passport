@@ -1,9 +1,18 @@
 // POST /api/check
-//   body: { url: string }
+//   body: { url: string, html?: string }
 // Extracts a product from the URL (fixtures or URL-derived), saves it + sizes,
 // runs the fit engine, and persists the recommendation.
 // Returns the ranked breakdown + the extracted product (incl. provenance) so the
 // UI can prove it read THIS page.
+//
+// `html` is the browser-extension path: the caller already has the page open and
+// hands us its markup, so we read what our servers cannot (invariant (53) — the
+// scraping configuration that works and the one we can deploy are disjoint).
+// It is a NEW TRUST BOUNDARY: this markup did not come from our own fetch, so it
+// is capped, and it is recorded as `fetch: "extension"` rather than "ok". Someone
+// could of course send us invented markup — the only recommendation they would
+// corrupt is their own, and every number still arrives labelled with where it
+// came from.
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -13,6 +22,22 @@ import { getCurrentUser } from "@/lib/session";
 import { extractSmart } from "@/lib/extractorLLM";
 import { computeRecommendation } from "@/lib/recommendService";
 import { SCOREABLE_DOMAINS, domainForCategory, domainLabel } from "@/lib/sizeSystems";
+
+// Cap on supplied markup, sized against a measurement rather than a guess.
+//
+// A heavy retail PDP (patagonia.com, size guide opened) is **1353 KB** of raw DOM
+// and **253 KB** once a content script drops <script>, <style>, <svg>, <iframe>
+// and the attributes we never read — 81% smaller, with the size table intact.
+// So this cap accepts a pruned page with room to spare and refuses a raw dump,
+// which is the behaviour we want: the 1.1 MB a raw dump adds is tracking and
+// scripting that we would transport, parse and then ignore. The LLM step
+// truncates to MAX_PAGE_BYTES (80 KB) regardless.
+//
+// Pruning is also the privacy control. A page the user is logged into can carry
+// their cart, address and order history; the extension should send the product,
+// not the session. The first cut of this cap was a round number picked without
+// measuring, and the very first real page went through it.
+const MAX_SUPPLIED_HTML = 1_000_000;
 
 // Accept a loose string and normalize it (people paste bare domains), so
 // "patagonia.com/product/..." works the same as a full https:// link.
@@ -25,6 +50,15 @@ const Body = z.object({
     }
     return u;
   }),
+  // Optional: the page's markup, from a caller that already has it open.
+  html: z
+    .string()
+    .max(
+      MAX_SUPPLIED_HTML,
+      "that page is too large to send whole — strip <script>, <style>, <svg> and <iframe> first, " +
+        "which typically removes about 80% of it and none of the size chart",
+    )
+    .optional(),
 });
 
 export async function POST(req: Request) {
@@ -33,9 +67,9 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { url } = parsed.data;
+  const { url, html } = parsed.data;
 
-  const extracted = await extractSmart(url);
+  const extracted = await extractSmart(url, { html });
 
   // REFUSE what isn't clothing.
   //

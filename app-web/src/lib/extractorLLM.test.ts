@@ -225,3 +225,71 @@ describe("LLM input cap (cost control)", () => {
     expect(text.length).toBeLessThanOrEqual(80_000);
   });
 });
+
+// The browser-extension transport. Measured 2026-09-08: retailers' bot protection
+// detects headless automation, and the configuration that gets through needs a
+// display, which serverless does not have — so the page can only reach us from a
+// browser someone is already looking at. Everything downstream is unchanged; only
+// where the bytes came from is different.
+describe("extractSmart — HTML supplied by the caller (the extension path)", () => {
+  const UNREACHABLE = () => vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("network is off"); }));
+
+  it("reads a chart out of supplied HTML without any fetch at all", async () => {
+    const spy = vi.fn(async () => resp("should never be called"));
+    vi.stubGlobal("fetch", spy);
+    const out = await extractSmart("https://shop.test/p/mens-linen-shirt-x1", { html: TABLE_HTML });
+    expect(spy).not.toHaveBeenCalled();
+    expect(out.sizes.map((s) => s.label)).toEqual(["S", "M", "L"]);
+  });
+
+  it("says the numbers came from the PAGE and the bytes came from the EXTENSION", async () => {
+    // Two different questions. `sizesFrom` is about where the measurements came
+    // from — the retailer's real page, so "page" is true. `fetch` is about who
+    // went and got it, and claiming "ok" would say our server read a page it
+    // never requested. Collapsing them is the mistake invariant ㊿ records.
+    UNREACHABLE();
+    const out = await extractSmart("https://shop.test/p/mens-linen-shirt-x2", { html: TABLE_HTML });
+    expect(out.source.sizesFrom).toBe("page");
+    expect(out.source.fetch).toBe("extension");
+  });
+
+  it("works for a retailer our servers cannot reach", async () => {
+    // The whole point: this is the case that returns 422 today.
+    UNREACHABLE();
+    const out = await extractSmart(
+      "https://www.patagonia.com/product/mens-insulated-boulder-fork-rain-jacket/85220.html",
+      { html: TABLE_HTML },
+    );
+    expect(out.source.fetch).toBe("extension");
+    expect(out.source.sizesFrom).toBe("page");
+    expect(out.sizes.length).toBe(3);
+  });
+
+  it("prefers supplied HTML over a demo fixture", async () => {
+    // A fixture stands in for a page we could not read. Serving it while holding
+    // the real page substitutes our demo data for the retailer's, which is the
+    // same class of mistake as the invented ladder.
+    UNREACHABLE();
+    const out = await extractSmart("https://www.uniqlo.com/us/en/products/airism-t-shirt", { html: TABLE_HTML });
+    expect(out.source.sizesFrom).toBe("page");
+    expect(out.source.fetch).toBe("extension");
+  });
+
+  it("ignores markup too short to be a page, rather than treating it as a read", async () => {
+    // Guards against an extension that fired before the page had rendered.
+    vi.stubGlobal("fetch", vi.fn(async () => resp(TABLE_HTML)));
+    const out = await extractSmart("https://shop.test/p/mens-linen-shirt-x3", { html: "<html></html>" });
+    expect(out.source.fetch).toBe("ok"); // fell through to our own fetch
+  });
+
+  it("still refuses to invent when the supplied page holds no chart", async () => {
+    // Being handed the page is not permission to make numbers up: the honesty
+    // machinery is downstream of the transport and unchanged by it.
+    UNREACHABLE();
+    const out = await extractSmart("https://shop.test/p/mens-linen-shirt-x4", {
+      html: `<html><body><h1>A shirt</h1><p>${"no chart here. ".repeat(30)}</p></body></html>`,
+    });
+    expect(out.source.sizesFrom).toBe("estimated");
+    expect(out.source.fetch).toBe("extension");
+  });
+});

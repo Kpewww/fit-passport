@@ -440,6 +440,22 @@ function mapLlmSizes(sizes: LLMExtract["sizes"]): ExtractedSize[] {
 }
 
 /**
+ * Clear the curated-chart provenance once the PAGE's own sizes have replaced it.
+ *
+ * `extractFromUrl` may attach `source.chart` (the brand's published size guide,
+ * with its URL and capture date) before we have read anything. When a real chart
+ * is then found on the page, those numbers are gone — but the credit was staying
+ * behind, so `/check` would show "Patagonia's published size guide" and a link to
+ * it beside measurements that came from the product page instead.
+ *
+ * Every number on screen has to say where IT came from. A stale label is the same
+ * failure as a wrong one.
+ */
+function dropBrandChartCredit(out: ExtractedProduct): void {
+  delete out.source.chart;
+}
+
+/**
  * Drop-in async replacement for `extractFromUrl`.
  *
  * Layered, cheapest-first, and honest about where the SIZE CHART came from:
@@ -454,29 +470,66 @@ function mapLlmSizes(sizes: LLMExtract["sizes"]): ExtractedSize[] {
  *   4. Else use real offered labels / 号型 codes if present, else the URL-derived
  *      estimate (`sizesFrom: "estimated"`, except 号型 which yields real body cm).
  */
-export async function extractSmart(url: string): Promise<ExtractedProduct> {
+export async function extractSmart(
+  url: string,
+  opts: {
+    /**
+     * The page's HTML, supplied by a caller that already has it — the browser
+     * extension, reading the page the user is looking at.
+     *
+     * This is the transport the whole fetch problem turned out to need. Measured
+     * 2026-09-08: retailers' bot protection detects headless automation, and the
+     * configuration that gets through needs a display, which serverless does not
+     * have (invariant (53)). The user's own browser is not what is being refused,
+     * so it can read what our servers cannot.
+     *
+     * Everything downstream is unchanged: same parser, same LLM, same engine,
+     * same refusals. Only where the bytes came from is different, and that is
+     * recorded in `source.fetch` rather than smuggled into `sizesFrom`.
+     */
+    html?: string;
+  } = {},
+): Promise<ExtractedProduct> {
   const deterministic = extractFromUrl(url);
+  const supplied = opts.html && opts.html.length >= 200 ? opts.html : null;
 
   // 1. Fixture hit → hand-verified, don't touch the network.
-  if (!deterministic.source.derived) {
-    deterministic.source.fetch = "skipped";
-    return deterministic;
-  }
-  if (PAGE_FETCH_DISABLED) {
-    deterministic.source.fetch = "skipped";
-    return deterministic;
+  //
+  // Supplied HTML deliberately WINS over a fixture. A fixture is a stand-in for a
+  // page we could not read; serving it while holding the real page would be
+  // substituting our demo data for the retailer's, which is the same class of
+  // mistake as the invented ladder. Fixtures still cover the URL path.
+  if (!supplied) {
+    if (!deterministic.source.derived) {
+      deterministic.source.fetch = "skipped";
+      return deterministic;
+    }
+    if (PAGE_FETCH_DISABLED) {
+      deterministic.source.fetch = "skipped";
+      return deterministic;
+    }
   }
 
-  const { html, blocked } = await fetchPageHtml(url);
-  if (!html || html.length < 200) {
-    // Two very different failures, recorded as such — see the `fetch` field's
-    // comment in extractor.ts and docs/design/fetch-strategy.md §6.
-    deterministic.source.fetch = blocked ? "blocked" : "unreachable";
-    return deterministic; // page unreachable → estimate
+  let html: string | null;
+  if (supplied) {
+    html = supplied;
+    // We fetched nothing. Saying "ok" here would claim our server read a page it
+    // never requested.
+    deterministic.source.fetch = "extension";
+    deterministic.source.derived = true; // the URL reading is still a reading
+  } else {
+    const fetched = await fetchPageHtml(url);
+    html = fetched.html;
+    if (!html || html.length < 200) {
+      // Two very different failures, recorded as such — see the `fetch` field's
+      // comment in extractor.ts and docs/design/fetch-strategy.md §6.
+      deterministic.source.fetch = fetched.blocked ? "blocked" : "unreachable";
+      return deterministic; // page unreachable → estimate
+    }
+    // We DID get the page. Anything that still lands on "estimated" from here is an
+    // extraction-quality problem, not a transport one.
+    deterministic.source.fetch = "ok";
   }
-  // We DID get the page. Anything that still lands on "estimated" from here is an
-  // extraction-quality problem, not a transport one.
-  deterministic.source.fetch = "ok";
 
   // 2. Deterministic parse — free, no key.
   const parsed = parsePage(html);
@@ -495,6 +548,7 @@ export async function extractSmart(url: string): Promise<ExtractedProduct> {
     out.sizes = parsed.sizes;
     out.source.derived = false;
     out.source.sizesFrom = "page";
+    dropBrandChartCredit(out);
     return out; // real chart in hand — no need to spend an LLM call
   }
 
@@ -581,6 +635,7 @@ export async function extractSmart(url: string): Promise<ExtractedProduct> {
     if (fromPageCodes) {
       out.source.sizesFrom = "page";
       out.source.derived = false;
+      dropBrandChartCredit(out);
       return out;
     }
   }

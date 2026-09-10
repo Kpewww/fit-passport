@@ -217,3 +217,52 @@ describe("pageParse — size-chart image discovery", () => {
     expect(findSizeChartImages(html, base)).toEqual([]);
   });
 });
+
+// Real-world table shapes that broke the parser. Each is reduced from a page we
+// actually read, not invented.
+describe("tableGrid — markup that shifts columns", () => {
+  // patagonia.com's size-guide modal carries a commented-out <th> between two
+  // real header cells. Counted as a cell, it shifts every column by one, so
+  // chestCm silently takes the Waist column: a 100cm chest was recommended 3XL,
+  // off a ladder that looked perfectly plausible.
+  const PATAGONIA_SHAPE = `<table><thead>
+    <tr><th><strong>Alpha Size</strong></th>
+        <!-- <th width="15%"></th>-->
+        <th><strong>Numeric Size</strong></th>
+        <th><strong>Chest*</strong></th>
+        <th><strong>Waist</strong></th>
+        <th><strong>Hip**</strong></th></tr></thead><tbody>
+    <tr><td>XS</td><td>28</td><td>36 in</td><td>28 in</td><td>35 in</td></tr>
+    <tr><td>S</td><td>30</td><td>38 in</td><td>30 in</td><td>37 in</td></tr>
+    <tr><td>M</td><td>32</td><td>40 in</td><td>32 in</td><td>39 in</td></tr>
+    <tr><td>L</td><td>34</td><td>42 in</td><td>34 in</td><td>41 in</td></tr>
+  </tbody></table>`;
+
+  it("reads the column the header names, not its neighbour", () => {
+    const sizes = parseSizeTables(PATAGONIA_SHAPE)!;
+    expect(sizes).not.toBeNull();
+    const m = sizes.find((s) => s.label === "M")!;
+    expect(m.chestCm).toBe(101.6); // 40in — the Chest column
+    expect(m.waistCm).toBe(81.3); //  32in — the Waist column
+  });
+
+  it("does not mistake the numeric-size column for a measurement", () => {
+    // Here the numeric size and the waist happen to carry the same digits, which
+    // is why the original bug was invisible in the output: every number looked
+    // like a real measurement because it was one — just the wrong one.
+    const sizes = parseSizeTables(PATAGONIA_SHAPE)!;
+    const xs = sizes.find((s) => s.label === "XS")!;
+    expect(xs.chestCm).toBe(91.4); // 36in, NOT 28
+  });
+
+  it("ignores a fully commented-out row", () => {
+    const html = `<table>
+      <tr><th>Size</th><th>Chest</th></tr>
+      <!-- <tr><td>XXL</td><td>200</td></tr> -->
+      <tr><td>S</td><td>96</td></tr>
+      <tr><td>M</td><td>100</td></tr>
+    </table>`;
+    const sizes = parseSizeTables(html)!;
+    expect(sizes.map((s) => s.label)).toEqual(["S", "M"]);
+  });
+});

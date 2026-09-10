@@ -728,3 +728,44 @@ the tables and the body-vs-garment sentence and then stops. It decides nothing: 
 person still picks which table applies and confirms the measurement kind. Needs
 playwright, which stays out of the dependencies (same arrangement as
 `mobile-audit.mjs`).
+
+**SESSION 73 UPDATE (2026-09-10).** 430 → **439 tests**. `/api/check` now accepts
+`{ url, html }` — the browser-extension transport.
+
+`extractSmart(url, { html })` skips the fetch when markup is supplied; parser, LLM,
+engine and refusals are all unchanged.
+
+**NEW INVARIANTS:**
+**(54)** **`sizesFrom` and `fetch` answer different questions and must not be
+collapsed.** Supplied markup means the numbers still came off the retailer's real
+page (`sizesFrom: "page"`) but WE fetched nothing (`fetch: "extension"`). Claiming
+`"ok"` would say the server read a page it never requested. Supplied HTML also
+beats a fixture: serving demo data while holding the real page is the same
+substitution as the invented ladder.
+**(55)** **Strip HTML comments before counting table cells.** patagonia.com's
+size-guide modal carries `<!-- <th width="15%"></th>-->` between two real header
+cells; counted, the header had six columns against the rows' five and **`chestCm`
+read the Waist column** — a 100cm chest was recommended **3XL** off a ladder of
+entirely plausible numbers. Every value was a real measurement, just the wrong one,
+and the numeric-size column happened to duplicate the waist digits, which hid it
+further.
+**(56)** **Clear `source.chart` when page data supersedes the brand chart.**
+`extractFromUrl` attaches the curated guide's URL and date before anything is read;
+leaving it behind made `/check` credit "Patagonia's published size guide" for
+numbers that came off the product page. `dropBrandChartCredit()`, called at all
+three sites. **A stale provenance label is the same failure as a wrong one.**
+
+**Measured, for whoever builds the extension:** a heavy PDP is **1353 KB** raw and
+**253 KB** after dropping `<script>/<style>/<svg>/<iframe>` and unread attributes —
+81% smaller with the size table intact. The 1 MB cap on `html` is sized against
+that. Pruning is also the privacy control: a logged-in page carries the user's
+cart, address and order history, and only the product should leave the browser.
+
+**KNOWN WRONG, NEXT UP:** `parseSizeTables` has **no notion of body vs garment** —
+it always writes `chestCm`. Patagonia's chart is body measurements (its page says
+so in a sentence we do not read), so the engine adds ~10cm ease on top and lands a
+full size high: **XL for a 100cm chest**, measured end to end. This is invariant ㊿
+on the page path, it is **pre-existing and independent of transport**, and the
+extension makes it constant rather than occasional. Also unhandled: that chart
+yields **16 sizes with duplicated labels** (each letter spans two numeric sizes) —
+`brandCharts.ts` models this, `pageParse.ts` does not.
