@@ -1,6 +1,6 @@
 # Coursework split
 
-Fit Passport is one project used through two different course lenses. The codebase stays shared; the coursework is separated so each class can evaluate the part it actually cares about.
+Fit Passport is one project being built through two different course lenses. The codebase stays shared; the coursework is separated so each class can evaluate the part contributed by relevant coursework and within the scope of the class
 
 ## Technical course
 
