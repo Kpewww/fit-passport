@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parsePage, parseSizeTables, parseSizeLabels, parseChineseSizeCode, findSizeChartImages, looksBlocked, inferGender } from "./pageParse";
+import { detectMeasurementKind, parsePage, parseSizeTables, parseSizeLabels, parseChineseSizeCode, findSizeChartImages, looksBlocked, inferGender } from "./pageParse";
 
 describe("pageParse — JSON-LD", () => {
   it("reads brand/name/material from a schema.org Product block", () => {
@@ -264,5 +264,109 @@ describe("tableGrid — markup that shifts columns", () => {
     </table>`;
     const sizes = parseSizeTables(html)!;
     expect(sizes.map((s) => s.label)).toEqual(["S", "M"]);
+  });
+});
+
+describe("detectMeasurementKind", () => {
+  it("believes a page that says its numbers describe the body", () => {
+    // patagonia.com's own wording.
+    expect(detectMeasurementKind("<p>Find your exact size using the body measurements below.</p>")).toBe("body");
+    // nike.com's own wording.
+    expect(detectMeasurementKind("<p>The measurements on the size chart are body measurements.</p>")).toBe("body");
+  });
+
+  it("believes a page that says its numbers are the garment laid flat", () => {
+    expect(detectMeasurementKind("<p>All garment measurements are in cm.</p>")).toBe("garment");
+    expect(detectMeasurementKind("<p>Measured flat across the chest.</p>")).toBe("garment");
+    expect(detectMeasurementKind("<p>产品为平铺尺寸,误差1-2cm</p>")).toBe("garment");
+  });
+
+  it("says nothing when the page says nothing", () => {
+    expect(detectMeasurementKind("<table><tr><td>M</td><td>100</td></tr></table>")).toBeNull();
+  });
+
+  it("refuses to choose when the page claims both", () => {
+    // A page carrying both charts cannot be resolved by keyword, and guessing
+    // would be worse than admitting it: the caller keeps the long-standing
+    // garment reading and labels it unstated.
+    expect(detectMeasurementKind("<p>body measurements</p><p>garment measurements</p>")).toBeNull();
+  });
+
+  it("does not treat 'how to measure yourself' as a body chart", () => {
+    // It appears beside flat-measurement charts just as often — you measure
+    // yourself either way.
+    expect(detectMeasurementKind("<h3>How to measure yourself</h3><p>Measure your chest.</p>")).toBeNull();
+  });
+});
+
+describe("a body chart read off a page", () => {
+  // Reduced from patagonia.com's size-guide modal: alpha and numeric sizes in one
+  // table, so each letter spans two rows, and the page states the kind.
+  const PATAGONIA = `<p>Find your exact size using the body measurements below.</p>
+  <table>
+    <tr><th>Alpha Size</th><th>Numeric Size</th><th>Chest*</th><th>Waist</th></tr>
+    <tr><td>XS</td><td>28</td><td>36 in</td><td>28 in</td></tr>
+    <tr><td>XS</td><td>29</td><td>37 in</td><td>29 in</td></tr>
+    <tr><td>S</td><td>30</td><td>38 in</td><td>30 in</td></tr>
+    <tr><td>S</td><td>31</td><td>39 in</td><td>31 in</td></tr>
+    <tr><td>M</td><td>32</td><td>40 in</td><td>32 in</td></tr>
+    <tr><td>M</td><td>33</td><td>41 in</td><td>33 in</td></tr>
+  </table>`;
+
+  it("puts the numbers in the body-range fields, never in chestCm", () => {
+    // THE ONE THAT MATTERS. Left in chestCm, the engine adds the wearer's ease on
+    // top of a number that already IS the wearer, and every size from this page
+    // comes out a step too big — measured end to end: XL for a 100cm chest.
+    const sizes = parseSizeTables(PATAGONIA)!;
+    for (const s of sizes) {
+      expect(s.chestCm, `${s.label} must not claim a garment chest`).toBeUndefined();
+      expect(s.bodyChestMinCm).toBeGreaterThan(0);
+    }
+  });
+
+  it("folds the repeated letters into one size with the range the chart stated", () => {
+    const sizes = parseSizeTables(PATAGONIA)!;
+    expect(sizes.map((s) => s.label)).toEqual(["XS", "S", "M"]);
+    const m = sizes.find((s) => s.label === "M")!;
+    expect(m.bodyChestMinCm).toBe(101.6); // 40in
+    expect(m.bodyChestMaxCm).toBe(104.1); // 41in
+  });
+
+  it("still reads a garment chart as garment measurements", () => {
+    const flat = `<p>All measurements are garment measurements, measured flat.</p>
+      <table>
+        <tr><th>Size</th><th>Chest</th></tr>
+        <tr><td>S</td><td>96</td></tr>
+        <tr><td>M</td><td>100</td></tr>
+        <tr><td>L</td><td>104</td></tr>
+      </table>`;
+    const sizes = parseSizeTables(flat)!;
+    expect(sizes.find((s) => s.label === "M")!.chestCm).toBe(100);
+    expect(sizes.find((s) => s.label === "M")!.bodyChestMinCm).toBeUndefined();
+  });
+
+  it("leaves an unstated chart on the reading it has always had", () => {
+    // Changing the default would silently re-interpret every page ever parsed.
+    const bare = `<table>
+        <tr><th>Size</th><th>Chest</th></tr>
+        <tr><td>S</td><td>96</td></tr>
+        <tr><td>M</td><td>100</td></tr>
+      </table>`;
+    const sizes = parseSizeTables(bare)!;
+    expect(sizes.find((s) => s.label === "M")!.chestCm).toBe(100);
+  });
+
+  it("gives a one-value-per-size body chart a band, not a zero-width range", () => {
+    const points = `<p>These are body measurements.</p>
+      <table>
+        <tr><th>Size</th><th>Chest</th></tr>
+        <tr><td>S</td><td>94</td></tr>
+        <tr><td>M</td><td>100</td></tr>
+        <tr><td>L</td><td>106</td></tr>
+      </table>`;
+    const sizes = parseSizeTables(points)!;
+    const m = sizes.find((s) => s.label === "M")!;
+    expect(m.bodyChestMinCm).toBe(97); // midway to S
+    expect(m.bodyChestMaxCm).toBe(103); // midway to L
   });
 });

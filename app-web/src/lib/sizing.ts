@@ -163,3 +163,41 @@ export function preferenceShift(pref: FitPreference): number {
       return 2;
   }
 }
+
+/**
+ * The band a POINT-valued size covers: the midpoints to its neighbours.
+ *
+ * Retail charts come in two shapes. Some state a range per size ("L fits a
+ * 41–44in chest"); others state one number ("L — 44in") and leave the reader to
+ * pick the nearest. This turns the second shape into the first.
+ *
+ * WHY THAT IS A READING AND NOT AN INVENTION. A chart printing one value per size
+ * is written to be used by picking the closest, so the boundary between S (37) and
+ * M (40) sits at 38.5 by the chart's own numbers. Every input is the retailer's;
+ * only the boundary rule is ours, which is why it lives in one place with tests
+ * instead of being open-coded wherever a point value turns up.
+ *
+ * End rows have a single neighbour and extend outward by that same half-step. A
+ * degenerate zero-width band there would claim we know the extremes far more
+ * precisely than the middle, which is backwards.
+ *
+ * `points` may be sparse; entries that are null/undefined are skipped as
+ * neighbours. Returns null when this index has no value of its own.
+ */
+export function midpointBand(
+  points: Array<number | null | undefined>,
+  i: number,
+): [number, number] | null {
+  const v = points[i];
+  if (v == null) return null;
+
+  let prev: number | null = null;
+  for (let j = i - 1; j >= 0; j--) if (points[j] != null) { prev = points[j]!; break; }
+  let next: number | null = null;
+  for (let j = i + 1; j < points.length; j++) if (points[j] != null) { next = points[j]!; break; }
+
+  if (prev == null && next == null) return [v, v]; // one row says only itself
+  const halfDown = prev != null ? (v - prev) / 2 : (next! - v) / 2;
+  const halfUp = next != null ? (next - v) / 2 : (v - prev!) / 2;
+  return [v - halfDown, v + halfUp];
+}

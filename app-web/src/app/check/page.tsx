@@ -71,7 +71,8 @@ type Source = {
   derived: boolean;
   slug?: string;
   sizesFrom?: "fixture" | "page" | "brand-chart" | "estimated";
-  chart?: { sourceUrl: string; capturedAt: string; kind: "body" | "garment" };
+  chart?: { sourceUrl: string; capturedAt: string };
+  measurementKind?: "body" | "garment";
 };
 
 type Body = {
@@ -579,7 +580,7 @@ function Result({
             numbers came from, and date it, because a size guide goes stale. */}
         {source.sizesFrom === "brand-chart" && source.chart ? (
           <p className="mt-2 text-xs text-stone-600">
-            {source.chart.kind === "body"
+            {source.measurementKind === "body"
               ? "These are body measurements — the chest each size is cut to fit, as the brand states them."
               : "These are the garment's flat measurements, as the brand states them."}{" "}
             <a
@@ -746,6 +747,7 @@ function Result({
               isBest={idx === 0}
               option={product.sizeOptions.find((o) => o.label === s.label)}
               sizesFrom={source.sizesFrom}
+              measurementKind={source.measurementKind}
             />
           ))}
         </div>
@@ -764,17 +766,40 @@ function Detail({ label, value }: { label: string; value: string | null }) {
   );
 }
 
+/**
+ * What the numbers in a size row are, in the fewest words that stay true.
+ *
+ * Body and garment measurements are different claims (invariant ㊿): one is the
+ * wearer this size is cut for, the other is how big the thing is. Saying which
+ * costs a word and is the difference between a number the reader can use and one
+ * they have to assume about. When the page never said, we say that too rather
+ * than picking the likelier answer and presenting it as fact.
+ */
+function measurementLabel(
+  sizesFrom: Source["sizesFrom"],
+  kind: Source["measurementKind"],
+): string {
+  if (sizesFrom === "estimated") return "Measurements estimated — not from the page";
+  const where = sizesFrom === "brand-chart" ? "the brand's size guide" : "the page";
+  if (kind === "body") return `Body measurements from ${where}`;
+  if (kind === "garment") return `Garment measurements from ${where}`;
+  return `Measurements from ${where} — it didn't say body or flat`;
+}
+
 function SizeRow({
   score,
   isBest,
   option,
   sizesFrom,
+  measurementKind,
 }: {
   score: SizeScore;
   isBest: boolean;
   option?: SizeOption;
   /** Where these numbers came from — this row states it, so it must know it. */
   sizesFrom?: Source["sizesFrom"];
+  /** And what they measure. Body and garment numbers are different claims. */
+  measurementKind?: Source["measurementKind"];
 }) {
   const [open, setOpen] = useState(isBest);
   return (
@@ -853,11 +878,7 @@ function SizeRow({
           {option && (
             <div>
               <p className="mb-1 text-[11px] uppercase tracking-widest text-ink-faint">
-                {sizesFrom === "brand-chart"
-                  ? "Measurements from the brand's size guide"
-                  : sizesFrom === "estimated"
-                    ? "Measurements estimated — not from the page"
-                    : "Measurements from the page"}
+                {measurementLabel(sizesFrom, measurementKind)}
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {measurementChips(option).length > 0 ? (

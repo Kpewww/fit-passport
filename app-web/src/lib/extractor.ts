@@ -96,7 +96,24 @@ export type ExtractedProduct = {
      * chart with no traceable source is indistinguishable from the invented
      * ladder this layer replaced, so the UI discloses both.
      */
-    chart?: { sourceUrl: string; capturedAt: string; kind: "body" | "garment" };
+    chart?: { sourceUrl: string; capturedAt: string };
+    /**
+     * Whether the numbers describe the WEARER or the GARMENT — invariant ㊿, the
+     * distinction that decides whether the engine adds ease on top of them.
+     *
+     * ONE home for the concept, whichever layer produced the numbers: a curated
+     * chart states it, a page is read for it by `detectMeasurementKind`. Absent
+     * means unstated, and the long-standing garment reading applies — which the
+     * UI says out loud rather than passing off as knowledge.
+     */
+    measurementKind?: "body" | "garment";
+    /**
+     * Where that kind came from. "page" = the page said so in as many words;
+     * "brand" = the page said nothing and we carried over the convention from
+     * this brand's own published size guide, which is a sourced fact rather than
+     * a guess — but a weaker claim than the page stating it, so it is labelled.
+     */
+    measurementKindFrom?: "page" | "brand";
   };
 };
 
@@ -445,7 +462,9 @@ export function extractFromUrl(url: string): ExtractedProduct {
           slug,
           sizesFrom: "brand-chart",
           categoryGuessed: detected == null,
-          chart: { sourceUrl: chart.sourceUrl, capturedAt: chart.capturedAt, kind: chart.kind },
+          chart: { sourceUrl: chart.sourceUrl, capturedAt: chart.capturedAt },
+          measurementKind: chart.kind,
+          measurementKindFrom: "brand",
         },
       };
     }

@@ -769,3 +769,43 @@ on the page path, it is **pre-existing and independent of transport**, and the
 extension makes it constant rather than occasional. Also unhandled: that chart
 yields **16 sizes with duplicated labels** (each letter spans two numeric sizes) —
 `brandCharts.ts` models this, `pageParse.ts` does not.
+
+**SESSION 74 UPDATE (2026-09-15).** 439 → **449 tests**. The page path learned the
+difference between a body and a garment measurement.
+
+`parseSizeTables` always wrote `chestCm`, so a page's body chart got the wearer's
+ease added on top of a number that already was the wearer — **XL for a 100cm
+chest**, measured. Now `detectMeasurementKind(html)` reads the page's own words,
+and `foldByLabel` collapses repeated labels into the range the chart meant.
+
+**NEW INVARIANTS:**
+**(57)** **A page's chart is GARMENT measurements unless something says otherwise,
+and "otherwise" must have a source.** Order: the page's own words, then the brand's
+published convention from `brandCharts` (`chartFor`), and `source.measurementKindFrom`
+records which. Defaulting to body would silently re-interpret every page ever
+parsed. **The signal is not always on the page**: patagonia.com states "body
+measurements" on its size-GUIDE page and states nothing at all in its product-page
+modal — measured, not assumed. What carries over from the brand is the CONVENTION,
+never the numbers; their modal chart is a different chart from their guide chart.
+**(58)** **Fold repeated size labels before the engine sees them.** A chart pairing
+alpha with numeric sizes prints one row per numeric size — patagonia.com gives XS
+twice, S twice, M twice — so the ladder otherwise receives several rows sharing a
+label. Folded, those repeats ARE the stated body range for that letter; a letter
+appearing once gets a band at the midpoints to its neighbours.
+
+**One definition of the midpoint rule.** `sizing.midpointBand` now holds it and
+`brandCharts.pointRange` delegates — the page parser needed the same reading and a
+second copy would be invariant ㉛ again.
+
+**Provenance has one home:** `source.chart.kind` became `source.measurementKind`,
+set by whichever layer produced the numbers, plus `measurementKindFrom`
+("page" | "brand").
+
+**Trap re-encountered, caught by a test:** the Chinese patterns in
+`detectMeasurementKind` were written with `\b`, which is ASCII-defined and never
+matches at a CJK boundary — the whole group was dead. That is **invariant ⑫**, and
+it only surfaced because a test covered the Chinese case.
+
+**Measured outcome:** a 100cm chest against Patagonia's own product chart returns
+**S (snug 0.639) / M (relaxed 0.615)** — correctly a near-tie, since 100cm falls in
+the gap between S (96.5–99.1) and M (101.6–104.1). It was XL.

@@ -18,6 +18,7 @@
 // Everything here is a PURE function over an HTML string, so it unit-tests without
 // a network. No body measurements are involved; this only ever reads the product.
 
+import { midpointBand } from "./sizing";
 import type { ExtractedSize, Gender } from "./extractor";
 
 export type ParsedPage = {
@@ -294,7 +295,125 @@ function sizesFromGrid(grid: string[][]): ExtractedSize[] | null {
 }
 
 /** Find the best size-chart table on the page, if any. */
-export function parseSizeTables(html: string): ExtractedSize[] | null {
+/**
+ * Does the page say its chart describes the WEARER or the GARMENT?
+ *
+ * These are different claims and the engine consumes them through different
+ * fields (invariant ㊿). Read as a garment chest, a body measurement gets the
+ * wearer's preferred ease added on top of a number that already IS the wearer,
+ * and every size from that page comes out about one step too big — measured:
+ * patagonia.com's own chart recommended XL to a 100cm chest.
+ *
+ * Deliberately conservative. Retailers that mean "body" usually say so outright,
+ * and so do the ones that mean "flat". Anything else returns null, which leaves
+ * the long-standing garment reading in place rather than silently re-interpreting
+ * every page we have ever parsed — but the caller then LABELS it as unstated
+ * instead of asserting a kind it does not know.
+ *
+ * "How to measure yourself" is deliberately NOT a body signal: it appears beside
+ * flat-measurement charts just as often, because you have to measure yourself
+ * either way.
+ */
+export function detectMeasurementKind(html: string): "body" | "garment" | null {
+  const text = stripTags(html).replace(/\s+/g, " ");
+
+  const body =
+    /\bbody measurements?\b/i.test(text) ||
+    /measurements?\s+(?:below\s+)?(?:are|is)\s+(?:the\s+)?body\b/i.test(text) ||
+    // NO \b on the CJK patterns — word boundaries are ASCII-defined and never
+    // match at a CJK boundary, so adding one silently disables the whole group.
+    // This is invariant ⑫, and it caught this line in review rather than in
+    // production only because a test covered the Chinese case.
+    /(?:人体|净体)(?:尺寸|测量|围度)/.test(text);
+
+  const garment =
+    /\bgarment measurements?\b/i.test(text) ||
+    /\b(?:measured|laid|lying)\s+flat\b/i.test(text) ||
+    /\bflat measurements?\b/i.test(text) ||
+    /\bproduct measurements?\b/i.test(text) ||
+    /(?:平铺|衣服)(?:尺寸|测量)/.test(text); // no \b — see above
+
+  if (body && !garment) return "body";
+  if (garment && !body) return "garment";
+  return null; // said both, or said neither
+}
+
+/**
+ * Collapse rows that share a size label, and re-home the numbers if the chart
+ * describes bodies rather than garments.
+ *
+ * WHY ROWS REPEAT. A chart that lists alpha and numeric sizes together prints one
+ * row per numeric size, so a letter spans several: patagonia.com gives XS twice
+ * (36in and 37in), S twice, M twice. Left alone that hands the engine sixteen
+ * sizes with eight distinct labels, and the ladder logic has no idea which "M" it
+ * is looking at. Merged, those repeats become exactly what a body chart wants —
+ * a stated range per letter.
+ */
+function foldByLabel(sizes: ExtractedSize[], kind: "body" | "garment" | null): ExtractedSize[] {
+  const order: string[] = [];
+  const groups = new Map<string, ExtractedSize[]>();
+  for (const s of sizes) {
+    if (!groups.has(s.label)) { groups.set(s.label, []); order.push(s.label); }
+    groups.get(s.label)!.push(s);
+  }
+
+  const nums = (rows: ExtractedSize[], k: keyof ExtractedSize) =>
+    rows.map((r) => r[k]).filter((n): n is number => typeof n === "number");
+
+  // A body chart's chest becomes the retailer's intended body RANGE, which is the
+  // field fitEngine already scores membership in. Anything else keeps the flat
+  // garment reading it has always had.
+  const chestPoints: Array<number | null> = order.map((label) => {
+    const c = nums(groups.get(label)!, "chestCm");
+    return c.length ? (Math.min(...c) + Math.max(...c)) / 2 : null;
+  });
+
+  return order.map((label, i) => {
+    const rows = groups.get(label)!;
+    const out: ExtractedSize = { label };
+
+    for (const k of ["waistCm", "shoulderCm", "sleeveCm", "lengthCm"] as const) {
+      const v = nums(rows, k);
+      // Repeats of a secondary measurement average; they differ by a size step at
+      // most, and none of them is the binding dimension.
+      if (v.length) out[k] = Math.round((v.reduce((a, b) => a + b, 0) / v.length) * 10) / 10;
+    }
+
+    const chests = nums(rows, "chestCm");
+    if (!chests.length) return out;
+
+    if (kind !== "body") {
+      out.chestCm = Math.round((Math.min(...chests) + Math.max(...chests)) / 2 * 10) / 10;
+      return out;
+    }
+
+    const lo = Math.min(...chests);
+    const hi = Math.max(...chests);
+    if (lo !== hi) {
+      // The chart stated a range for this letter by listing several rows under it.
+      out.bodyChestMinCm = lo;
+      out.bodyChestMaxCm = hi;
+    } else {
+      // One value for this size, so read it the way the chart is meant to be
+      // read: nearest size wins, and the boundary sits midway to the neighbours.
+      const band = midpointBand(chestPoints, i);
+      out.bodyChestMinCm = band ? Math.round(band[0] * 10) / 10 : lo;
+      out.bodyChestMaxCm = band ? Math.round(band[1] * 10) / 10 : hi;
+    }
+    return out;
+  });
+}
+
+/**
+ * Find the best size-chart table on the page, if any.
+ *
+ * `kind` comes from `detectMeasurementKind` by default; pass it explicitly only
+ * when the caller knows better than the page does.
+ */
+export function parseSizeTables(
+  html: string,
+  kind: "body" | "garment" | null = detectMeasurementKind(html),
+): ExtractedSize[] | null {
   const tables = html.match(/<table[\s\S]*?<\/table>/gi) ?? [];
   let best: ExtractedSize[] | null = null;
   for (const t of tables) {
@@ -302,7 +421,7 @@ export function parseSizeTables(html: string): ExtractedSize[] | null {
     // Prefer the chart that yields the most sizes (usually THE size chart).
     if (sizes && (!best || sizes.length > best.length)) best = sizes;
   }
-  return best;
+  return best ? foldByLabel(best, kind) : null;
 }
 
 // ---------------------------------------------------------------------------
@@ -455,7 +574,20 @@ export function looksBlocked(status: number, html: string): boolean {
  * Deterministically parse everything we can from raw product-page HTML.
  * Merge priority: JSON-LD (most structured) → OpenGraph → text inference.
  */
-export function parsePage(html: string): ParsedPage {
+/**
+ * `kindFallback` answers "body or garment?" when the page itself does not say.
+ *
+ * Measured on patagonia.com: their size-GUIDE page states "find your exact size
+ * using the body measurements below", but the size-chart modal on a PRODUCT page
+ * states nothing at all — no "body", no "garment", no "measured flat". The signal
+ * is real and simply not present on every page of the same site.
+ *
+ * So the caller may pass what the brand's own published guide said, which is a
+ * sourced fact about that brand's convention rather than a guess. What transfers
+ * is the CONVENTION, never the numbers: Patagonia's modal chart is a different
+ * chart from its guide chart, and only the page's own rows are ever used.
+ */
+export function parsePage(html: string, kindFallback?: "body" | "garment"): ParsedPage {
   const ld = productFromJsonLd(html);
   const og = openGraph(html);
   const text = stripTags(html).slice(0, 20_000);
@@ -469,7 +601,7 @@ export function parsePage(html: string): ParsedPage {
     gender: inferGender(`${ld.productName ?? ""} ${og.productName ?? ""} ${text}`),
   };
 
-  const sizes = parseSizeTables(html);
+  const sizes = parseSizeTables(html, detectMeasurementKind(html) ?? kindFallback ?? null);
   if (sizes && sizes.length >= 2) merged.sizes = sizes;
 
   // Drop empty keys so callers can `??`-merge cleanly.

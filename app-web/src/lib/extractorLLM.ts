@@ -17,9 +17,11 @@
 
 import { z } from "zod";
 import { extractFromUrl, type ExtractedProduct, type ExtractedSize } from "./extractor";
+import { chartFor } from "./brandCharts";
 import { checkUrlSafety, resolvesToPrivateAddress } from "./urlSafety";
 import {
   parsePage,
+  detectMeasurementKind,
   parseSizeLabels,
   parseChineseSizeCode,
   findSizeChartImages,
@@ -453,6 +455,8 @@ function mapLlmSizes(sizes: LLMExtract["sizes"]): ExtractedSize[] {
  */
 function dropBrandChartCredit(out: ExtractedProduct): void {
   delete out.source.chart;
+  delete out.source.measurementKind; // re-established by the caller, with its source
+  delete out.source.measurementKindFrom;
 }
 
 /**
@@ -532,7 +536,14 @@ export async function extractSmart(
   }
 
   // 2. Deterministic parse — free, no key.
-  const parsed = parsePage(html);
+  //
+  // If the page does not say whether its chart measures bodies or garments, fall
+  // back to what this brand's own published guide said. Measured: Patagonia
+  // states it on their size-guide page and not in the product-page modal, so the
+  // fact exists and simply is not on the page in front of us. Only the CONVENTION
+  // carries over — the numbers always come from the page we are reading.
+  const brandChart = chartFor(deterministic.source.host, deterministic.category, deterministic.gender);
+  const parsed = parsePage(html, brandChart?.kind);
   let out: ExtractedProduct = {
     ...deterministic,
     brand: parsed.brand || deterministic.brand,
@@ -549,6 +560,16 @@ export async function extractSmart(
     out.source.derived = false;
     out.source.sizesFrom = "page";
     dropBrandChartCredit(out);
+    // What the page itself said these numbers are. Undefined when it said
+    // nothing, which the UI reports as unstated rather than guessing.
+    const stated = detectMeasurementKind(html);
+    const kind = stated ?? brandChart?.kind;
+    if (kind) {
+      out.source.measurementKind = kind;
+      // Which of the two we are relying on. A reader deserves to know whether the
+      // page said this or whether we carried it over from the brand's guide.
+      out.source.measurementKindFrom = stated ? "page" : "brand";
+    }
     return out; // real chart in hand — no need to spend an LLM call
   }
 

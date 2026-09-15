@@ -49,7 +49,7 @@
 
 import type { Gender } from "./extractor";
 import { domainForCategory, type SizeDomain } from "./sizeSystems";
-import { normalizeToAlpha } from "./sizing";
+import { midpointBand, normalizeToAlpha } from "./sizing";
 
 /** Units exactly as the brand printed them. See `rows` for why we keep them. */
 export type ChartUnits = "in" | "cm";
@@ -321,17 +321,9 @@ export function pointRange(
   i: number,
   key: "chest" | "waist",
 ): [number, number] | null {
-  const at = (j: number) => rows[j]?.[key];
-  const v = at(i);
-  if (v == null) return null;
-
-  const prev = at(i - 1);
-  const next = at(i + 1);
-  if (prev == null && next == null) return [v, v]; // a one-row chart says only this
-
-  const halfDown = prev != null ? (v - prev) / 2 : (next! - v) / 2;
-  const halfUp = next != null ? (next - v) / 2 : (v - prev!) / 2;
-  return [v - halfDown, v + halfUp];
+  // Delegates to `midpointBand` so this derivation has exactly one definition:
+  // page-parsed charts hit the same shape and must not grow a second copy of it.
+  return midpointBand(rows.map((r) => r[key]), i);
 }
 
 /** How stale a chart is, for the UI that has to disclose it. */

@@ -140,7 +140,7 @@ describe("layer 2a — the brand's own published size chart", () => {
     const out = extractFromUrl(nikeTop);
     expect(out.source.chart?.sourceUrl).toMatch(/^https:\/\/www\.nike\.com\//);
     expect(out.source.chart?.capturedAt).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    expect(out.source.chart?.kind).toBe("body");
+    expect(out.source.measurementKind).toBe("body");
   });
 
   it("keeps derived=true so extractSmart still tries to read the real page", () => {

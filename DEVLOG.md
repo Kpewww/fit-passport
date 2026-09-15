@@ -31,6 +31,91 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-15 · Session 74 — A body measurement is not a garment measurement, on pages too
+
+Session 73 left the extension path reading the right column and still answering
+**XL to a 100cm chest**. The cause was invariant ㊿ on the page path:
+`parseSizeTables` had no notion of body-vs-garment and always wrote `chestCm`, the
+garment field, so the engine added the wearer's ease on top of a number that
+already *was* the wearer.
+
+**`detectMeasurementKind(html)`** reads what the page says about its own numbers —
+"body measurements", "measured flat", "garment measurements", and the Chinese
+equivalents. Deliberately conservative: it returns null when a page says both or
+neither, which leaves the long-standing garment reading in place rather than
+silently re-interpreting every page ever parsed. "How to measure yourself" is
+**not** treated as a body signal — it sits beside flat-measurement charts just as
+often, because you measure yourself either way.
+
+**`foldByLabel`** collapses repeated labels. A chart listing alpha and numeric
+sizes together prints one row per numeric size, so patagonia.com gives XS twice
+(36in, 37in), S twice, M twice — sixteen rows, eight distinct labels, and ladder
+logic with no idea which "M" it is looking at. Folded, those repeats become
+exactly what a body chart wants: **a stated range per letter.** A letter that
+appears once gets a band at the midpoints to its neighbours instead.
+
+**The midpoint derivation now has one definition.** `brandCharts.pointRange` and
+the page parser need the same reading of a one-value-per-size chart, so it moved
+to `sizing.midpointBand` and `pointRange` delegates. Two copies of that rule would
+be invariant ㉛ all over again.
+
+**Then the live run said `measurementKind: (unstated)` and was still wrong** — so
+I went and read what the page actually says. Patagonia's *size-guide* page states
+"find your exact size using the body measurements below"; its **product-page modal
+states nothing at all** — no "body", no "garment", no "measured flat". The signal
+is real and simply absent from that page.
+
+So the page's own words come first, and **the brand's published convention is the
+fallback**: `chartFor()` already holds Patagonia's `kind: "body"`, captured by hand
+from their guide. What carries over is the CONVENTION, never the numbers — their
+modal chart is a different chart from their guide chart, and only the page's own
+rows are ever used. `source.measurementKindFrom` records which of the two we
+relied on, because "the page said so" is a stronger claim than "this brand
+usually means body", and the reader deserves the difference.
+
+**Result on the case that has been wrong since Session 72c:** a 100cm chest against
+Patagonia's own product chart now returns **S (snug, 0.639) against M (relaxed,
+0.615)** — a near-tie, because 100cm genuinely falls in the gap between S
+(96.5–99.1) and M (101.6–104.1). It was XL.
+
+**Provenance got one home, not two.** `source.chart.kind` became
+`source.measurementKind`, set by whichever layer produced the numbers. `/check`
+now says "Body measurements from the brand's size guide" / "Garment measurements
+from the page" / "Measurements from the page — it didn't say body or flat".
+
+**Caught by a test, and it was a documented trap:** my Chinese patterns used `\b`.
+Word boundaries are ASCII-defined and never match at a CJK boundary, so the whole
+group was silently dead — **invariant ⑫**, which exists because this happened once
+before. It only surfaced because the test covered the Chinese case.
+
+**439 → 449 tests.** Both behaviours verified red against their bugs.
+
+### New invariants
+
+- **(57) A page's chart is garment measurements unless something says otherwise,
+  and "otherwise" has a source.** The page's own words first
+  (`detectMeasurementKind`), then the brand's published convention from
+  `brandCharts`, and `measurementKindFrom` says which. Defaulting to body would
+  re-interpret every page already parsed; guessing silently would be worse than
+  either.
+- **(58) Fold repeated size labels before the engine sees them.** A chart pairing
+  alpha with numeric sizes emits one row per numeric size; unfolded, the ladder
+  gets several rows with the same label. Folded, the repeats ARE the body range
+  the chart meant.
+
+### Files touched
+```
+app-web/src/lib/pageParse.ts        (detectMeasurementKind, foldByLabel, kind fallback)
+app-web/src/lib/pageParse.test.ts   (+10 tests)
+app-web/src/lib/sizing.ts           (midpointBand — one definition)
+app-web/src/lib/brandCharts.ts      (pointRange delegates)
+app-web/src/lib/extractorLLM.ts     (brand convention as fallback, kind provenance)
+app-web/src/lib/extractor.ts        (measurementKind + measurementKindFrom)
+app-web/src/app/check/page.tsx      (say body vs garment, and where that came from)
+```
+
+---
+
 ## 2026-09-10 · Session 73 — /api/check accepts the page, not just the link
 
 The founder's call: stop fighting for the URL and let the extension hand us the
