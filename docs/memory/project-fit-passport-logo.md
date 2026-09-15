@@ -29,7 +29,7 @@ it comes back around to." That reading is nowhere in the concept document** — 
 invented in a summary, and had reached `Logo.tsx`'s header and the `/help` page
 before anyone checked it against the source. Secondary readings that ARE documented:
 the weaver's shuttle (§4 — each fit outcome is one pass, and a pattern emerges over
-time) and the personal signet (§5). **`docs/design/LOGO_CONCEPT.md` is the source of
+time) and the personal signet (§5). **`coursework/startup/product-design/LOGO_CONCEPT.md` is the source of
 truth for meaning; this file is a pointer, not a paraphrase.** Assets and the
 measured numbers are in `brand/README.md`.
 
@@ -112,7 +112,7 @@ repo root, not `docs/design/assets/logo/`, because the app builds from them: the
 build inputs, not documentation. `src/lib/logoAsset.test.ts` fails if `Logo.tsx`'s
 inlined path, viewBox or micro stroke width drifts from the assets — see
 [[project-fit-passport-build-state]] invariant ㉚. The concept write-up stays at
-`docs/design/LOGO_CONCEPT.md`.
+`coursework/startup/product-design/LOGO_CONCEPT.md`.
 
 ---
 

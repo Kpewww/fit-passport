@@ -184,7 +184,7 @@ playwright is deliberately NOT a dependency):
   device pixels, on the approved grounds.
 
 **Information architecture is sketched, NOT built** —
-`docs/design/information-architecture.md`. Measured: `/closet` shows **23 input
+`coursework/startup/product-design/information-architecture.md`. Measured: `/closet` shows **23 input
 controls and 104 tappable elements** over 5.5 screens; the homepage runs 9.8. The
 least dense page is `/refresh`, and it is the only flow that already asks one
 question at a time. See [[project-fit-passport-next-steps]].
@@ -230,7 +230,7 @@ change.
 exports, archived raw exports and `tests/size-test.mjs` moved out of
 `docs/design/assets/logo/`. **`docs/` is what you read; `brand/` is what the app and
 the print files are built from.** The written story stays in
-`docs/design/LOGO_CONCEPT.md`. Old DEVLOG entries still name the old path on purpose.
+`coursework/startup/product-design/LOGO_CONCEPT.md`. Old DEVLOG entries still name the old path on purpose.
 
 **NEW INVARIANTS:**
 ㉚ **`Logo.tsx` inlines the master's path as a string — it does not load the SVG.**
@@ -248,7 +248,7 @@ fallback, for the mannequin, which must paint something.
 
 **Also:** `credentials_layout.html` was a design mockup at the repo root under a name
 that tripped the standing credential sweep on every commit — now
-`docs/design/passport-card-mockup.html`. No orphaned components or lib modules
+`coursework/startup/product-design/passport-card-mockup.html`. No orphaned components or lib modules
 (checked by import). Both READMEs now list `docs/memory/` and `docs/RESUME.md`, which
 they had never mentioned.
 

@@ -8,7 +8,7 @@ metadata:
   modified: 2026-08-13T05:35:53.795Z
 ---
 
-Community/ecosystem direction for [[project-fit-passport]] (outlined Session 32, 2026-08-12). **Only step ① (follow + followed feed) is built** — shipped Session 33. Everything else is still plan: the founder said "暂时先不做,先把大纲思路弄起来" about the rest. Full doc in the repo at **`docs/design/community-ecosystem.md`** (read that for detail); this is the summary.
+Community/ecosystem direction for [[project-fit-passport]] (outlined Session 32, 2026-08-12). **Only step ① (follow + followed feed) is built** — shipped Session 33. Everything else is still plan: the founder said "暂时先不做,先把大纲思路弄起来" about the rest. Full doc in the repo at **`coursework/startup/product-design/community-ecosystem.md`** (read that for detail); this is the summary.
 
 **Founder's premise:** "生态才能维持更好的产品生存" — a size engine gets people in the door but is not a reason to return (once you know your size in a brand, you're done). Retention has to come from ecosystem.
 

@@ -168,7 +168,7 @@ stay parked until interviews happen.
 10. Mid-project **Product Opportunity** presentation; **BMC/VPC v1** update.
     `DEVLOG.md` is current.
 11. Roles for **Jenny Cao** and **Nicolas Wang** are unassigned in
-    `docs/business/project-plan.md` — deliberately, pending a team conversation.
+    `coursework/startup/business/project-plan.md` — deliberately, pending a team conversation.
 
 ### Hygiene
 
@@ -189,7 +189,7 @@ retired; a supplied "fixed" SVG was caught as a bitmap wrapper and archived rath
 than adopted. See [[project-fit-passport-logo]].
 
 **New top item — INFORMATION ARCHITECTURE.** Sketched in
-`docs/design/information-architecture.md`, **not built** (founder: rough outline
+`coursework/startup/product-design/information-architecture.md`, **not built** (founder: rough outline
 only). Measured on a phone: `/closet` shows **23 input controls and 104 tappable
 elements** at once over 5.5 screens, the homepage runs **9.8 screens**. The least
 dense page is `/refresh` — and it is the only flow that already asks one question at

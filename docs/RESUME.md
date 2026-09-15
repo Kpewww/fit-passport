@@ -43,7 +43,7 @@ Framer Motion(**Lenis 已移除**);three.js 懒加载:徽章 inspect **以及** 
 **每轮结束务必:tsc + test + build + live smoke 全过 → commit & push → 更新
 DEVLOG + memory。**
 
-**动手前必读**:`docs/memory/README.md` 是索引,其中
+**课程分工:** `coursework/technical/` = 技术实现/可行性/作业；`coursework/startup/` = 市场/商业/产品交付。核心代码仍只有 `app-web/` 一份。\n\n**动手前必读**:`docs/memory/README.md` 是索引,其中
 `project-fit-passport-build-state`(架构 + 铁律,**必读**)、
 `project-fit-passport-performance`(性能陷阱)、
 `project-fit-passport-deployment`(**含一次生产事故的教训**)、
@@ -80,7 +80,7 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
   (16px 404 字节);色板定为 **Cool Porcelain `#F3F3F1`**(Warm Ivory 退役)
 - **陷阱**:一份"修复版"SVG 其实是位图套壳(零 path),且内嵌 PNG 与仓库已有的
   字节相同。**判断矢量先看有没有 `<path>`,别信文件名。**
-- **信息架构已测量并写成草案**(`docs/design/information-architecture.md`,
+- **信息架构已测量并写成草案**(`coursework/startup/product-design/information-architecture.md`,
   **未实现**)
 
 **Session 57–58(信息架构):**
@@ -91,7 +91,7 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
 
 **Session 59(整理):**
 - **`brand/` 移到仓库根目录** —— 标志是构建输入不是文档。`docs/` 是读的,
-  `brand/` 是构建用的;设计说明仍留在 `docs/design/LOGO_CONCEPT.md`。
+  `brand/` 是构建用的;设计说明仍留在 `coursework/startup/product-design/LOGO_CONCEPT.md`。
 - 颜色调色板从 **4 份合并成 1 份**(`src/lib/colors.ts`)。
 
 **Session 72(品牌尺码表):**
