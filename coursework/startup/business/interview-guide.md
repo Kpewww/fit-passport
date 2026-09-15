@@ -67,8 +67,8 @@ For each interview, capture:
 - **Willingness-to-pay signal**: any dollar amount they self-anchored to.
 - **Privacy concerns**: any specific concern raised.
 
-Interviews live in `docs/business/interviews/` as one file per interviewee (no
-PII in the filename; use a UUID). Synthesis in `docs/business/synthesis-W3.md`.
+Interviews live in `coursework/startup/business/interviews/` as one file per interviewee (no
+PII in the filename; use a UUID). Synthesis in `coursework/startup/business/synthesis-W3.md`.
 
 ---
 

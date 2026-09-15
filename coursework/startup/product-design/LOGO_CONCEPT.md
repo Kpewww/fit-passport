@@ -11,7 +11,7 @@
 Chinese edition: [LOGO_CONCEPT.zh-CN.md](LOGO_CONCEPT.zh-CN.md)  
 PDF edition: [LOGO_CONCEPT.pdf](LOGO_CONCEPT.pdf)
 
-![Selected Fit Passport thread monogram.](../../brand/fit-passport-mark-black-transparent.png)
+![Selected Fit Passport thread monogram.](../../../brand/fit-passport-mark-black-transparent.png)
 
 *Current selected mark. The isolated PNG is suitable for reference and immediate prototypes; the final logo must still be rebuilt as a clean vector.*
 
@@ -193,7 +193,7 @@ Do not use JPG for the logo master. JPG introduces compression artifacts and has
 ## 12. How to Extract the Selected Upper-Left Mark
 
 We now have a six-file source-export set, organized and documented in
-[`brand/README.md`](../../brand/README.md). The two immediate-use PNGs are:
+[`brand/README.md`](../../../brand/README.md). The two immediate-use PNGs are:
 
 - `fit-passport-mark-black-transparent.png` - RGBA with transparency, suitable for immediate prototypes and documents;
 - `fit-passport-mark-black-on-white.png` - RGB on white, suitable for simple decks and references.

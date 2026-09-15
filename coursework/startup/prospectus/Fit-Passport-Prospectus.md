@@ -287,7 +287,7 @@ standard behind the curtain.
 ---
 
 *Companion documents: the Badge System design document (this folder); the business
-and positioning documents (`docs/business/`); the design notes — fit-algorithm
+and positioning documents (`coursework/startup/business/`); the design notes — fit-algorithm
 research, closet signal and interaction cost, community ecosystem, fetch strategy,
 identity threat model (`docs/design/`); the deployment runbook (`docs/DEPLOYMENT.md`);
 the engineering log (`DEVLOG.md`); and the source itself (`app-web/`).*

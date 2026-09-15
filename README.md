@@ -103,13 +103,13 @@ app-web/
 brand/                # the Fit Thread mark — BUILD INPUTS, not documentation.
                       #   Logo.tsx renders the master's path; a test fails if they drift
 docs/
-  RESUME.md           # cold-start brief: read this first in a new session
+  RESUME.md           # cold-start brief
   DEPLOYMENT.md       # Vercel + Neon runbook
-  memory/             # why the project is the way it is — decisions, invariants, traps
-  design/             # design notes and research (fit algorithm, IA, identity, logo story)
-  business/           # business model, positioning, risk & legal review
-  prospectus/         # prospectus and badge-system design document
-  proposals/          # original proposal PDFs
+  memory/             # shared decisions, invariants and traps
+  design/             # shared technical research and engineering design notes
+coursework/
+  technical/          # technical-course lens and deliverables
+  startup/            # startup/market/product documents and deliverables
 DEVLOG.md             # per-session development log — decisions, and what they cost
 ```
 
@@ -119,7 +119,7 @@ made it look optional — it is not, and `src/lib/logoAsset.test.ts` now fails i
 `Logo.tsx` and the master SVG disagree.
 
 **Stack:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
-Vitest (**285 tests**) · Framer Motion (motion) · three.js (lazy, badge inspect only).
+Vitest (**449 tests**) · Framer Motion (motion) · three.js (lazy, badge inspect only).
 
 Key design decisions worth knowing before contributing:
 
@@ -149,6 +149,12 @@ Key design decisions worth knowing before contributing:
 
 ---
 
+## Coursework tracks
+
+This repository supports two course lenses without forking the product. The **technical track** focuses on implementation, feasibility, baselines, data/algorithm decisions and reproducible engineering evidence. The **startup track** focuses on customer/market validation, positioning, business model, product delivery and brand. See [coursework/](coursework/) for the split.
+
+---
+
 ## Deployment
 
 Production runs on **Vercel + Neon Postgres**. Local stays on SQLite; the Postgres
@@ -160,18 +166,18 @@ Full runbook, env-var table, verification checklist, known limitations and costs
 
 ---
 
-## Business & positioning documents
+## Startup & product documents
 
 | Document | Location |
 |---|---|
-| Prospectus — the full picture in one read | [docs/prospectus/Fit-Passport-Prospectus.md](docs/prospectus/Fit-Passport-Prospectus.md) |
-| Message architecture — positioning and voice | [docs/business/message-architecture.html](docs/business/message-architecture.html) |
-| Project plan | [docs/business/project-plan.md](docs/business/project-plan.md) |
-| Business Model Canvas | [docs/business/business-model-canvas.md](docs/business/business-model-canvas.md) |
-| Value Proposition Canvas | [docs/business/value-proposition-canvas.md](docs/business/value-proposition-canvas.md) |
-| Customer interview guide | [docs/business/interview-guide.md](docs/business/interview-guide.md) |
-| Risks, legal & governance | [docs/business/risks-and-legal.md](docs/business/risks-and-legal.md) |
-| Logo concept and rationale | [docs/design/LOGO_CONCEPT.md](docs/design/LOGO_CONCEPT.md) · [简体中文](docs/design/LOGO_CONCEPT.zh-CN.md) |
+| Prospectus — the full picture in one read | [coursework/startup/prospectus/Fit-Passport-Prospectus.md](coursework/startup/prospectus/Fit-Passport-Prospectus.md) |
+| Message architecture — positioning and voice | [coursework/startup/business/message-architecture.html](coursework/startup/business/message-architecture.html) |
+| Project plan | [coursework/startup/business/project-plan.md](coursework/startup/business/project-plan.md) |
+| Business Model Canvas | [coursework/startup/business/business-model-canvas.md](coursework/startup/business/business-model-canvas.md) |
+| Value Proposition Canvas | [coursework/startup/business/value-proposition-canvas.md](coursework/startup/business/value-proposition-canvas.md) |
+| Customer interview guide | [coursework/startup/business/interview-guide.md](coursework/startup/business/interview-guide.md) |
+| Risks, legal & governance | [coursework/startup/business/risks-and-legal.md](coursework/startup/business/risks-and-legal.md) |
+| Logo concept and rationale | [coursework/startup/product-design/LOGO_CONCEPT.md](coursework/startup/product-design/LOGO_CONCEPT.md) · [简体中文](coursework/startup/product-design/LOGO_CONCEPT.zh-CN.md) |
 | Brand asset manifest — which file to use where | [brand/README.md](brand/README.md) |
 | Project memory — decisions, invariants, traps | [docs/memory/README.md](docs/memory/README.md) |
 | Development log | [DEVLOG.md](DEVLOG.md) |

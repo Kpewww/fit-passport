@@ -233,7 +233,7 @@ the community votes; winners take commemorative special-metal badges that cannot
 bought. Three cadences are designed — **$100 weekly, $1,000 monthly, $10,000
 seasonal** — because *a budget makes taste comparable and levels the field*, which is
 what turns a feed into a competition anyone can enter. **Status today: designed in
-`docs/design/community-ecosystem.md`, no code.** The deliberate first step is to **run
+`coursework/startup/product-design/community-ecosystem.md`, no code.** The deliberate first step is to **run
 one $100 contest entirely by hand** and see whether people enter, before any event
 tooling is written. Two open questions we would be testing: does a budget contest
 attract the fashion audience or only bargain hunters, and do prizes stay status-only
@@ -356,6 +356,6 @@ more product.
 
 ---
 
-*Supporting material: `docs/prospectus/` · `docs/business/` · `docs/design/` (fit
+*Supporting material: `coursework/startup/prospectus/` · `coursework/startup/business/` · `docs/design/` (fit
 research, closet-signal and interaction-cost analysis, fetch strategy, cost model,
 identity threat model) · `DEVLOG.md` · the source in `app-web/`.*

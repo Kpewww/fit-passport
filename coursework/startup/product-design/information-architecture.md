@@ -67,7 +67,7 @@ Three moves, in order of value. This is a sketch: each would need its own pass.
 Generalise `/refresh`. The closet add-form becomes a short sequence — *what brand?
 what size? how does it sit?* — with everything else (photo, colour, collection, URL,
 name, region) moved behind "add detail" and defaulted. The
-[interaction-cost budget](closet-signal-and-interaction-cost.md#32-the-metric--fic-fit-interaction-cost)
+[interaction-cost budget](../../../docs/design/closet-signal-and-interaction-cost.md#32-the-metric--fic-fit-interaction-cost)
 already exists to arbitrate this: it prices every field against what the engine
 actually gains, and it already says free-text notes and prompted photos do not earn
 their cost.

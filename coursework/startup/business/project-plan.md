@@ -2,7 +2,7 @@
 _Operating plan · 2026_
 
 This is the operational plan for the 15 weeks. It complements the detailed
-proposal (in `docs/proposals/`) with concrete roles, tools, cadences, and
+proposal (in `coursework/startup/proposals/`) with concrete roles, tools, cadences, and
 decision rules.
 
 ## 1. Team & roles
@@ -26,7 +26,7 @@ All four jointly own: the final pitch, the mid-project review, and the closing r
   Fit Passport by the end of the session.
 - **Thursday build block** — 60min working session + 20min review.
 - **Weekly 30-min sync** (Sunday) — plan the week, split tasks.
-- **DEVLOG entry** after every substantive work session (see `../../DEVLOG.md`).
+- **DEVLOG entry** after every substantive work session (see `../../../DEVLOG.md`).
 - **Showcase rehearsal**: 3 dry-runs before Nov 4 (Oct 20, Oct 27, Nov 3).
 
 ## 3. Milestones (per proposal §14, refined)

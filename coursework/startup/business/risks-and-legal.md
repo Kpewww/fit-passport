@@ -95,4 +95,4 @@ book meetings on:
 3. **Recruiting for interviews / beta** — the IRB & recruiting playbook,
    even if the classroom doesn't strictly require IRB review.
 
-These will be logged in [`../../DEVLOG.md`](../../DEVLOG.md) as they happen.
+These will be logged in [`../../../DEVLOG.md`](../../../DEVLOG.md) as they happen.

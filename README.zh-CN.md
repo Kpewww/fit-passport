@@ -125,7 +125,7 @@ DEVLOG.md             # 逐次开发日志 —— 记决定,以及决定的代�
 现在 `src/lib/logoAsset.test.ts` 会在 `Logo.tsx` 与母版 SVG 不一致时报错。
 
 **技术栈:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
-Vitest(**285 个测试**)· Framer Motion(动效)· three.js(懒加载,仅用于徽章 inspect)。
+Vitest(**449 个测试**)· Framer Motion(动效)· three.js(懒加载,仅用于徽章 inspect)。
 
 **Node 版本:** 当前在 Node 24 LTS 上开发与部署。早期文档里"锁定 Node 18.20"
 是上一台开发机的限制,不是项目要求,换机时已解除。
@@ -148,6 +148,17 @@ Vitest(**285 个测试**)· Framer Motion(动效)· three.js(懒加载,仅用于
 
 ---
 
+## 课程分工
+
+同一个 Fit Passport 项目现在按两门课分成两个视角，但**不复制代码**：
+
+- **Technical track**：技术实现、可行性、baseline/PoC、数据与算法、测试、部署、性能与约束。
+- **Startup track**：用户与市场验证、定位、商业模式、go-to-market、完整产品交付与品牌。
+
+入口见 [coursework/](coursework/)。核心代码仍只有一份，在 `app-web/`。
+
+---
+
 ## 部署
 
 生产环境跑在 **Vercel + Neon Postgres** 上。本地仍是 SQLite;Postgres 的 schema 在
@@ -165,19 +176,19 @@ migration 需要的会话级 advisory lock。
 
 ---
 
-## 商业与定位文档
+## Startup 与产品文档
 
 | 文档 | 位置 |
 |---|---|
-| 项目全貌(招股书式) | [docs/prospectus/Fit-Passport-Prospectus.md](docs/prospectus/Fit-Passport-Prospectus.md) |
-| 讯息架构 —— 定位与语气 | [docs/business/message-architecture.html](docs/business/message-architecture.html) |
-| Founder Brief | [docs/prospectus/Founder-Brief.html](docs/prospectus/Founder-Brief.html) |
-| 项目计划 | [docs/business/project-plan.md](docs/business/project-plan.md) |
-| Business Model Canvas | [docs/business/business-model-canvas.md](docs/business/business-model-canvas.md) |
-| Value Proposition Canvas | [docs/business/value-proposition-canvas.md](docs/business/value-proposition-canvas.md) |
-| 客户访谈提纲 | [docs/business/interview-guide.md](docs/business/interview-guide.md) |
-| 风险、法律与治理 | [docs/business/risks-and-legal.md](docs/business/risks-and-legal.md) |
-| 标志设计说明 | [docs/design/LOGO_CONCEPT.zh-CN.md](docs/design/LOGO_CONCEPT.zh-CN.md) |
+| 项目全貌(招股书式) | [coursework/startup/prospectus/Fit-Passport-Prospectus.md](coursework/startup/prospectus/Fit-Passport-Prospectus.md) |
+| 讯息架构 —— 定位与语气 | [coursework/startup/business/message-architecture.html](coursework/startup/business/message-architecture.html) |
+| Founder Brief | [coursework/startup/prospectus/Founder-Brief.html](coursework/startup/prospectus/Founder-Brief.html) |
+| 项目计划 | [coursework/startup/business/project-plan.md](coursework/startup/business/project-plan.md) |
+| Business Model Canvas | [coursework/startup/business/business-model-canvas.md](coursework/startup/business/business-model-canvas.md) |
+| Value Proposition Canvas | [coursework/startup/business/value-proposition-canvas.md](coursework/startup/business/value-proposition-canvas.md) |
+| 客户访谈提纲 | [coursework/startup/business/interview-guide.md](coursework/startup/business/interview-guide.md) |
+| 风险、法律与治理 | [coursework/startup/business/risks-and-legal.md](coursework/startup/business/risks-and-legal.md) |
+| 标志设计说明 | [coursework/startup/product-design/LOGO_CONCEPT.zh-CN.md](coursework/startup/product-design/LOGO_CONCEPT.zh-CN.md) |
 | 品牌素材清单 —— 哪个文件用在哪 | [brand/README.md](brand/README.md) |
 | 项目记忆 —— 决定、铁律、踩过的坑 | [docs/memory/README.md](docs/memory/README.md) |
 | 开发日志 | [DEVLOG.md](DEVLOG.md) |
