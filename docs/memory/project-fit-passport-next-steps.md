@@ -557,3 +557,60 @@ measurements per product.
 
 **Then** retire `BRAND_TABLE`'s invented constants — unchanged priority, now
 closer to reachable.
+
+---
+
+## UPDATE — Session 75 (2026-09-28). Sprint 5: the browser extension
+
+**The extension is no longer evidence-gated.** The founder's call in Session 73 was
+to stop fighting for the URL and let the extension hand us the page; the Session 48
+list's "gated on interview evidence" line is superseded. Sprint 5 builds it as a
+real acquisition layer, not a demo: it reads the page, the existing parser and
+engine decide, and nothing about the recommendation moves into the extension.
+
+### Sprint 5, in order
+
+1. **Done (S75): the server side.** `checkPolicy.ts` refuses an invented ladder on a
+   supplied page, an extension request with no session gets 401 instead of a new
+   account, `/api/check` is rate-limited, `/api/recommend` applies the provenance
+   cap, and page sizes record which reader produced them. See build-state (59)–(61).
+2. **S75b: the extension.** Manifest V3, `activeTab` + `scripting`, host permission
+   for Fit Passport's own origin only, no static content scripts — it runs on a
+   click, on that tab, once. The popup builds a **region-allowlisted minimal HTML**
+   (Product JSON-LD, meta, measurement tables as text-only cells, size selectors,
+   chart images, the body/garment sentence), shows the user what it found, and sends
+   only when they press Check. Plus a PII tripwire, a `/check?product=<id>` deep
+   link, and the production cookie check.
+3. **S75c: the evaluation.** `app-web/eval/`: real product cases, each with the
+   extension's capture and a ground truth **typed by two people from the retailer's
+   page — never produced by our parser**; fixed personas; a harness writing
+   `results/<date>.json`. Systems: A = the server URL path as deployed, B = curated
+   brand chart only, S5 = browser-assisted. Eight metrics, including the wrong-answer
+   rate (answered when it should have refused, or outside the acceptable sizes).
+4. **S75d+: fix what the benchmark ranks highest** from the audit list in build-state
+   Session 75 (waist never reaching the engine, range cells, flat half-chest, visible
+   table, LLM-path body/garment), each red-then-green with a before/after.
+5. **Deliverables:** `coursework/technical/deliverables/sprint-5/` (README with demo
+   steps, `evaluation.md`), and `docs/design/browser-extension.md` for the durable
+   design.
+
+**Teammates can start now:** pick 8–12 top (shirt / tee / jacket) product pages
+across different retailers — Patagonia, Nike, Uniqlo, H&M, Zara, REI, Adidas, Gap,
+COS, MUJI, Everlane, Arc'teryx — plus a shoe page and a page with no chart. Ground
+truth needs two people per case, independently.
+
+### Decisions waiting on the founder
+
+1. Sprint 5 deadline and who is on it (the plan assumes ~2 weeks, one developer plus
+   teammates typing ground truth).
+2. How benchmark captures are committed. Recommended: the reduced, attribute-stripped
+   captures, taken logged out, in this private repo. Alternative: captures stay
+   local and only ground truth + results are committed (weaker reproducibility).
+3. Whether "never score an invented ladder" should also cover pages our server CAN
+   read (`fetch: "ok"`) — i.e. retire `BRAND_TABLE`. Recommended: decide after the
+   benchmark counts how many cases it affects.
+4. Primary metric on tops only (the engine is only complete for tops); bottoms and
+   shoes as refusal / limitation cases.
+5. Which external ease reference defines the right size on a GARMENT chart. Body
+   charts carry the retailer's own rule; garment charts do not, and using our own
+   ease constants would be the engine grading itself.

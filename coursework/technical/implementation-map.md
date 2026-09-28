@@ -20,7 +20,8 @@ Use this as the technical-course entry point into the shared codebase.
 | Real-page parsing | `app-web/src/lib/pageParse.ts` |
 | Layered fetch + optional LLM/VLM + browser HTML | `app-web/src/lib/extractorLLM.ts` |
 | Curated first-party brand charts | `app-web/src/lib/brandCharts.ts` |
-| Check API / refusal gates | `app-web/src/app/api/check/route.ts` |
+| Check API | `app-web/src/app/api/check/route.ts` |
+| Refusal gates / provenance caps / extension session rule | `app-web/src/lib/checkPolicy.ts` |
 | Offline chart capture | `app-web/scripts/capture-chart.mjs` |
 
 ## Technical evidence
@@ -39,4 +40,4 @@ Use this as the technical-course entry point into the shared codebase.
 
 ## Current measured state
 
-Session 74 (2026-09-15): **449 automated tests**. The most recent technical correction distinguishes body-vs-garment measurement semantics on real page charts, folds repeated size labels before scoring, and records provenance for the semantic interpretation.
+Session 75 (2026-09-28): **475 automated tests**. Sprint 5 (browser-assisted acquisition) has started with its server side: a browser-supplied page with no size chart is refused rather than scored against an invented ladder, an extension request without a session is refused rather than given a new account, and `/api/check` is rate-limited. Session 74 before it distinguished body-vs-garment measurement semantics on real page charts.

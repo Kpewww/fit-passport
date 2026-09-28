@@ -31,6 +31,123 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-28 · Session 75 — The extension's server side: refuse the invented ladder, stop minting strangers, limit the route that spends money
+
+Sprint 5 is the browser extension: read the product page in the user's own browser
+and hand it to `/api/check`, the transport Sessions 72b–73 measured the server
+cannot replace. Before writing a line of extension, I audited the path it would use.
+Session 73 already made `/api/check` accept `{url, html}`, so the real question was
+what the route does when the caller is a browser rather than our own fetch. Three
+of its answers were wrong.
+
+**1. An invented ladder was still scored on the extension transport.** Invariant ㊼
+refuses when *our fetch* failed and the sizes are estimated. A page the browser
+supplied with no chart on it has `fetch: "extension"`, so ㊼ never fired: the sizes
+were `buildSizes()`'s two constants extrapolated, and the engine scored the user
+against chest measurements no page ever stated (capped at 0.5, which does not make
+fiction honest). **An existing test was named "still refuses to invent when the
+supplied page holds no chart" and asserted only the extractor's label** — the route
+served the ladder anyway. `source.sizesSynthesized` now marks the invented ladder
+where it is built and is cleared wherever real sizes replace it, and
+`checkPolicy.refusalFor` returns 422 `no-chart-on-page` with the one instruction
+that helps (open the size guide, then check again). Real offered labels with no
+measurements still go through — a closet anchor can rank real labels honestly, and
+with no evidence the engine already says "undetermined". The same ladder on a page
+our server *could* read (`fetch: "ok"`) is still served: refusing it too is the
+`BRAND_TABLE` retirement question, which is the founder's call, so a test pins
+today's scope rather than letting it widen by accident.
+
+**2. A cookieless request got a brand-new account.** `getCurrentUser()` mints an
+anonymous user whenever no session cookie arrives — the right behaviour for a first
+page load, and a silent failure for the extension. Chrome's own documentation says
+an extension's request to a site it holds host permission for is treated as
+same-site, so `fp_session` (SameSite=Lax) will be sent — *"and does not apply if
+third-party cookies are blocked."* Those users would have been checked against an
+empty profile in an account they would never see again, leaving an orphan row per
+click. An extension request (`x-fp-client: extension/<version>`) with no session
+now gets 401 `not-connected`, decided before `getCurrentUser()` can run. The
+website's requests are untouched. A web page cannot forge the header cross-origin:
+a custom header forces a CORS preflight, and this API answers none.
+
+**3. `/api/check` had no rate limit** — the one route that spends money (a chartless
+page goes to the LLM with up to 80 KB of text, then to vision with up to two images)
+and writes two rows per call, while eleven other routes were limited. Now 30 per
+10 minutes per session, with 300 per 10 minutes per IP as a backstop for cookieless
+callers. **These are working values, not measurements.** Keyed by session first,
+because a campus network or a demo room puts many real users behind one IP.
+
+Two more found on the same read:
+
+- **`/api/recommend` ignored the provenance cap.** It lived inline in the check
+  route, so toggling the fit preference on `/check` returned an "estimated" result's
+  confidence above the 0.5 the page had just shown beside its "sizes estimated"
+  warning. Both routes now call `applyProvenanceCap`. `/api/recommend` also returns
+  the product and its stored `source`, which the extension's "full explanation" link
+  will need.
+- **The LLM and vision branches kept the brand-chart credit.** Invariant (56) was
+  enforced at two of the four places page data replaces a brand chart, so a
+  Patagonia page read by the LLM would still claim "body measurements, from the
+  brand's guide". One `creditPage()` now serves all four, and records
+  **`extractedBy`** (`table` / `llm-text` / `llm-vision` / `hao-xing`): `sizesFrom:
+  "page"` alone could not tell four very different levels of trust apart, and the
+  Sprint 5 evaluation has to count how often the LLM was the reader.
+
+Also: the 1 MB error message told callers to strip every `<script>`, which would
+delete the JSON-LD the parser reads for brand and name. It now says to keep it.
+
+**449 → 475 tests.** Both main fixes verified red: removing the new refusal fails
+two tests, and restoring the old LLM branch fails the (56) test. (This machine's
+typecheck failed before any change — a stale Prisma client from before the Session
+67 garment columns; `prisma generate` cleared it. Known gotcha, not a code fault.)
+
+**Moved to 75b, on purpose:** the cookie spike. On production it can only be run
+safely once the 401 guard is live — `/api/auth/me` and `/api/status` both go through
+`getCurrentUser()` and would mint accounts for every failed attempt — and the
+payload-size numbers should come from the real capture code, not a stub.
+
+### Found in the audit, deliberately NOT fixed yet
+
+Each changes recommendations, so each gets measured by the Sprint 5 benchmark first
+and fixed after, with a before/after:
+- `recommendService` never passes a size's `waistCm` to the engine, so the waist
+  scoring at `fitEngine.ts:311` has never run in production.
+- A body-range cell ("96–100") collapses to its midpoint; the stated range is lost.
+- "Body width" / 胸宽 (flat half-chest) is not a known header, and 胸宽 matches the
+  chest pattern and is then read as inches (median under 65) — expected to break
+  Uniqlo/MUJI-style charts; unverified until the benchmark runs.
+- With several tables on a page, the one with the most rows wins, visible or not.
+- The LLM/vision path does no body-vs-garment detection.
+- The outcome loop: `exchange` scores nothing, `exchangedForSize` is dropped before
+  the engine, and a return penalises both neighbouring sizes regardless of direction.
+
+### New invariants
+
+- **(59) An invented ladder is never scored on a page the browser handed us.**
+  `sizesSynthesized` marks it at birth; `refusalFor` refuses it on the extension
+  transport. ㊼ extended to the transport it did not know about.
+- **(60) An extension request never mints an account.** No session → 401
+  `not-connected`, decided before `getCurrentUser()`.
+- **(61) Every route that returns a recommendation applies the provenance cap
+  through one function** (`applyProvenanceCap`). Two copies of a ceiling is how one
+  of them stopped being applied.
+
+### Files touched
+```
+app-web/src/lib/checkPolicy.ts          (new: refusals, provenance cap, session gate — pure)
+app-web/src/lib/checkPolicy.test.ts     (new, 21 tests)
+app-web/src/lib/extractor.ts            (sizesSynthesized, extractedBy)
+app-web/src/lib/extractorLLM.ts         (creditPage at all four sites)
+app-web/src/lib/extractorLLM.test.ts    (+5 tests, misleading test renamed)
+app-web/src/app/api/check/route.ts      (session gate, rate limits, checkPolicy, message)
+app-web/src/app/api/recommend/route.ts  (provenance cap, product + source)
+coursework/technical/README.md          (test count, checkPolicy listed)
+coursework/technical/implementation-map.md
+docs/memory/project-fit-passport-build-state.md   (Session 75, invariants (59)–(61))
+docs/memory/project-fit-passport-next-steps.md    (Sprint 5 plan, decisions owed)
+```
+
+---
+
 ## 2026-09-15 · Session 74 — A body measurement is not a garment measurement, on pages too
 
 Session 73 left the extension path reading the right column and still answering

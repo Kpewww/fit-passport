@@ -460,6 +460,28 @@ function dropBrandChartCredit(out: ExtractedProduct): void {
 }
 
 /**
+ * Credit the PAGE for the sizes now in `out`, and record which reader got them.
+ *
+ * One function for every site where page data replaces what `extractFromUrl`
+ * started with, because each site forgetting one of these has been a real bug:
+ *   • a brand-chart credit left behind (invariant (56)) — the LLM and vision
+ *     branches never cleared it, so a Patagonia page read by the LLM still said
+ *     "body measurements, from the brand's guide" beside numbers from the page;
+ *   • a synthesized-ladder flag left behind would make /api/check refuse a page
+ *     we actually read.
+ */
+function creditPage(
+  out: ExtractedProduct,
+  by: NonNullable<ExtractedProduct["source"]["extractedBy"]>,
+): void {
+  out.source.derived = false;
+  out.source.sizesFrom = "page";
+  out.source.extractedBy = by;
+  delete out.source.sizesSynthesized;
+  dropBrandChartCredit(out);
+}
+
+/**
  * Drop-in async replacement for `extractFromUrl`.
  *
  * Layered, cheapest-first, and honest about where the SIZE CHART came from:
@@ -557,9 +579,7 @@ export async function extractSmart(
   };
   if (parsed.sizes && parsed.sizes.length >= 2) {
     out.sizes = parsed.sizes;
-    out.source.derived = false;
-    out.source.sizesFrom = "page";
-    dropBrandChartCredit(out);
+    creditPage(out, "table");
     // What the page itself said these numbers are. Undefined when it said
     // nothing, which the UI reports as unstated rather than guessing.
     const stated = detectMeasurementKind(html);
@@ -585,8 +605,9 @@ export async function extractSmart(
         material: llm.material ?? out.material,
         fitNotes: llm.fitNotes ?? out.fitNotes,
         sizes: mapLlmSizes(llm.sizes),
-        source: { ...out.source, derived: false, sizesFrom: "page" },
+        source: { ...out.source },
       };
+      creditPage(out, "llm-text");
       return out;
     }
 
@@ -597,7 +618,7 @@ export async function extractSmart(
       const vision = await callVisionLLM(chartImgs);
       if (vision && vision.sizes.length >= 2) {
         out.sizes = mapLlmSizes(vision.sizes);
-        out.source = { ...out.source, derived: false, sizesFrom: "page" };
+        creditPage(out, "llm-vision");
         return out;
       }
     }
@@ -640,6 +661,9 @@ export async function extractSmart(
       if (matched) return { ...matched, label }; // the page's label, the chart's numbers
       return { label };
     });
+    // Whatever these sizes carry now, it is not the invented ladder: the labels
+    // are the page's own, and any numbers are the brand's or the 号型 code's.
+    delete out.source.sizesSynthesized;
 
     // A label the chart had nothing for keeps its label and no measurements —
     // correct, and visible: the UI shows a size with no numbers rather than one
@@ -654,9 +678,7 @@ export async function extractSmart(
     const fromPageCodes =
       isTop && labels.some((label) => parseChineseSizeCode(label) != null);
     if (fromPageCodes) {
-      out.source.sizesFrom = "page";
-      out.source.derived = false;
-      dropBrandChartCredit(out);
+      creditPage(out, "hao-xing");
       return out;
     }
   }

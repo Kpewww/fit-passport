@@ -809,3 +809,56 @@ it only surfaced because a test covered the Chinese case.
 **Measured outcome:** a 100cm chest against Patagonia's own product chart returns
 **S (snug 0.639) / M (relaxed 0.615)** — correctly a near-tie, since 100cm falls in
 the gap between S (96.5–99.1) and M (101.6–104.1). It was XL.
+
+**SESSION 75 UPDATE (2026-09-28).** 449 → **475 tests**. Sprint 5 begins: the
+browser extension. This session is its server side only — no extension code yet.
+
+The audit behind it (full account in DEVLOG Session 75) found `/api/check` behaving
+wrongly for a browser caller in three ways, all fixed: an invented ladder scored on
+a supplied page with no chart; a cookieless request minted a new account; no rate
+limit on the one route that spends money. Also fixed: `/api/recommend` ignored the
+provenance cap, and the LLM/vision branches kept a stale brand-chart credit.
+
+**New module `src/lib/checkPolicy.ts`** (pure): `refusalFor` (the ㊼/⑪/㉜ refusals,
+moved verbatim from the route, plus `no-chart-on-page`), `applyProvenanceCap`
+(`PROVENANCE_CAP` estimated 0.5 / brand-chart 0.75), `sessionGate` +
+`isExtensionRequest` (header `x-fp-client: extension/<version>`),
+`sourceFromRawJson`. **New `source` fields:** `sizesSynthesized` (the
+`buildSizes()` ladder — no source stated these numbers) and `extractedBy`
+(`table | llm-text | llm-vision | hao-xing`, set only with `sizesFrom: "page"`).
+`extractorLLM.creditPage()` is the single place page data replaces a brand chart.
+
+**Rate limits on `/api/check`:** 30 / 10 min per session, 300 / 10 min per IP as a
+backstop. Working values, not measurements. Session first because a campus network
+or a demo room puts many users behind one IP.
+
+**Cookie evidence, for the extension:** Chrome's docs — an extension's request to a
+site it holds host permission for is treated as same-site (so `fp_session`,
+SameSite=Lax, is sent) — *"and does not apply if third-party cookies are
+blocked."* Content scripts are subject to the page's same-origin policy and must not
+call our API; the popup or service worker does. **`/api/auth/me` and `/api/status`
+both go through `getCurrentUser()`**, so probing identity from a cookieless client
+mints an account — use an extension-marked `/api/check` (401 when there is no
+session) to test cookie delivery on production.
+
+**NEW INVARIANTS:**
+**(59)** **An invented ladder is never scored on a page the browser handed us.**
+`sizesSynthesized` marks it where `buildSizes()` runs and every replacement clears
+it; `refusalFor` returns 422 `no-chart-on-page` for `fetch: "extension"`. A page's
+real offered labels (no measurements) still pass — a closet anchor can rank real
+labels. **Scope is pinned by a test:** the same ladder on a server-read page
+(`fetch: "ok"`) is still served; widening that is the `BRAND_TABLE` retirement
+decision, the founder's call.
+**(60)** **An extension request never mints an account.** No session → 401
+`not-connected`, decided before `getCurrentUser()` runs. Website requests unchanged.
+**(61)** **Every route that returns a recommendation applies the provenance cap
+through `applyProvenanceCap`.** The inline copy in the check route is how
+`/api/recommend` came to skip it.
+
+**Found, measured-first, NOT fixed (the Sprint 5 benchmark decides the order):**
+`recommendService` drops a size's `waistCm` (waist scoring at `fitEngine.ts:311`
+never runs in production); range cells collapse to midpoints; "Body width" / 胸宽
+unmapped and 胸宽 read as chest-in-inches; most-rows table wins regardless of
+visibility; no body/garment detection on the LLM/vision path; the outcome loop
+ignores `exchange`, drops `exchangedForSize`, and penalises both neighbours of a
+return regardless of direction.

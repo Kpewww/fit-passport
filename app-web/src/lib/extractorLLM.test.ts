@@ -282,14 +282,90 @@ describe("extractSmart — HTML supplied by the caller (the extension path)", ()
     expect(out.source.fetch).toBe("ok"); // fell through to our own fetch
   });
 
-  it("still refuses to invent when the supplied page holds no chart", async () => {
-    // Being handed the page is not permission to make numbers up: the honesty
-    // machinery is downstream of the transport and unchanged by it.
+  it("flags the fallback ladder as synthesized when the supplied page holds no chart", async () => {
+    // Being handed the page is not permission to make numbers up. This test used
+    // to be called "still refuses to invent…" while asserting only the label
+    // below — and the ROUTE then scored the invented ladder anyway, because ㊼
+    // only looked at our own fetch failing. The flag is what lets checkPolicy
+    // refuse it; checkPolicy.test.ts asserts the refusal end to end.
     UNREACHABLE();
     const out = await extractSmart("https://shop.test/p/mens-linen-shirt-x4", {
       html: `<html><body><h1>A shirt</h1><p>${"no chart here. ".repeat(30)}</p></body></html>`,
     });
     expect(out.source.sizesFrom).toBe("estimated");
     expect(out.source.fetch).toBe("extension");
+    expect(out.source.sizesSynthesized).toBe(true);
+  });
+});
+
+// Which reader produced the numbers, and what is and is not kept. `sizesFrom:
+// "page"` alone could mean a parsed table, a language model reading prose, a
+// vision model reading an image, or 号型 codes — four levels of trust.
+describe("extractSmart — provenance of page sizes", () => {
+  const UNREACHABLE = () => vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("network is off"); }));
+
+  it("credits a parsed table to 'table' and clears the synthesized flag", async () => {
+    UNREACHABLE();
+    const out = await extractSmart("https://shop.test/p/mens-linen-shirt-y1", { html: TABLE_HTML });
+    expect(out.source.extractedBy).toBe("table");
+    expect(out.source.sizesSynthesized).toBeUndefined();
+  });
+
+  it("credits 号型 labels to 'hao-xing'", async () => {
+    UNREACHABLE();
+    const html = `<html><body><h1>男士纯棉长袖衬衫</h1><p>${"经典版型,100%纯棉,透气舒适。".repeat(12)}</p>
+      <select name="尺码"><option>160/84A</option><option>165/88A</option><option>170/92A</option></select>
+      </body></html>`;
+    const out = await extractSmart("https://shop.test/p/mens-shirt-y2", { html });
+    expect(out.source.sizesFrom).toBe("page");
+    expect(out.source.extractedBy).toBe("hao-xing");
+  });
+
+  it("marks the URL-only ladder as synthesized — no source stated those numbers", async () => {
+    UNREACHABLE();
+    const out = await extractSmart("https://shop.test/p/mens-linen-shirt-y3");
+    expect(out.source.fetch).toBe("unreachable");
+    expect(out.source.sizesSynthesized).toBe(true);
+    expect(out.source.extractedBy).toBeUndefined();
+  });
+
+  it("drops the brand-chart credit when the LLM reads the page instead (invariant (56))", async () => {
+    // Before Session 75 only the table and 号型 branches cleared it, so a
+    // Patagonia page read by the LLM still claimed "body measurements, from the
+    // brand's guide" beside numbers that came from the page.
+    process.env.ANTHROPIC_API_KEY = "test-key"; // restored by afterEach
+    const llmReply = {
+      brand: "Patagonia",
+      productName: "Boulder Fork Rain Jacket",
+      category: "jacket",
+      sizes: [{ label: "S", chestCm: 104 }, { label: "M", chestCm: 110 }, { label: "L", chestCm: 116 }],
+    };
+    const fetchSpy = vi.fn(async (input: unknown) => {
+      if (String(input).includes("api.anthropic.com")) {
+        return { ok: true, status: 200, json: async () => ({ content: [{ type: "text", text: JSON.stringify(llmReply) }] }) };
+      }
+      throw new Error("no other network in this test");
+    });
+    vi.stubGlobal("fetch", fetchSpy);
+    const out = await extractSmart(
+      "https://www.patagonia.com/product/mens-insulated-boulder-fork-rain-jacket/85220.html",
+      { html: `<html><body><h1>Boulder Fork Rain Jacket</h1><p>${"Waterproof, breathable shell. ".repeat(20)}</p></body></html>` },
+    );
+    expect(out.source.sizesFrom).toBe("page");
+    expect(out.source.extractedBy).toBe("llm-text");
+    expect(out.source.chart).toBeUndefined();
+    expect(out.source.measurementKindFrom).toBeUndefined();
+    expect(out.sizes.map((s) => s.label)).toEqual(["S", "M", "L"]);
+  });
+
+  it("keeps none of the supplied page's prose in what gets stored", async () => {
+    // /api/check persists JSON.stringify(extracted) as Product.rawJson. The page
+    // a user was looking at never should be in it — only what we read off it.
+    UNREACHABLE();
+    const marker = "PRIVATE-PROSE-MARKER-7f3a";
+    const html = TABLE_HTML.replace("<h1>Linen Shirt</h1>", `<h1>Linen Shirt</h1><p>Deliver to ${marker}</p>`);
+    const out = await extractSmart("https://shop.test/p/mens-linen-shirt-y4", { html });
+    expect(out.sizes.length).toBe(3);
+    expect(JSON.stringify(out)).not.toContain(marker);
   });
 });

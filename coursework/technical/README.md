@@ -18,7 +18,7 @@ transparent fit engine
 ranked sizes + confidence + provenance + explanation
 ```
 
-As of Session 74 (2026-09-15), the repository has 449 automated tests. The page path now distinguishes **body measurements** from **garment measurements**, folds repeated alpha labels into ranges, and records where that semantic interpretation came from.
+As of Session 75 (2026-09-28), the repository has 475 automated tests. The page path distinguishes **body measurements** from **garment measurements**, folds repeated alpha labels into ranges, and records where that semantic interpretation came from. Sprint 5 adds the browser extension as the acquisition layer for retailers our servers cannot read; its server side (the refusal, session and rate-limit rules for browser-supplied pages) is in `checkPolicy.ts`.
 
 ## Canonical implementation
 
@@ -28,7 +28,8 @@ Do not duplicate these files into coursework. They are the working proof:
 - `app-web/src/lib/pageParse.ts` — deterministic page/size-table parsing
 - `app-web/src/lib/extractorLLM.ts` — layered extraction and browser-supplied HTML path
 - `app-web/src/lib/brandCharts.ts` — curated first-party brand size charts
-- `app-web/src/app/api/check/route.ts` — end-to-end size-check API and refusal gates
+- `app-web/src/app/api/check/route.ts` — end-to-end size-check API
+- `app-web/src/lib/checkPolicy.ts` — refusal gates, provenance caps and the extension session rule (pure, tested)
 - `app-web/scripts/capture-chart.mjs` — reproducible chart-capture utility
 - matching `*.test.ts` files — baselines, regressions and reproducibility evidence
 

@@ -1,5 +1,6 @@
 // POST /api/check
 //   body: { url: string, html?: string }
+//   header (extension only): x-fp-client: extension/<version>
 // Extracts a product from the URL (fixtures or URL-derived), saves it + sizes,
 // runs the fit engine, and persists the recommendation.
 // Returns the ranked breakdown + the extracted product (incl. provenance) so the
@@ -13,15 +14,26 @@
 // could of course send us invented markup — the only recommendation they would
 // corrupt is their own, and every number still arrives labelled with where it
 // came from.
+//
+// The decisions around the engine — when to refuse, how far to trust each
+// source, whether an extension request may run without a session — live in
+// `lib/checkPolicy.ts`, so /api/recommend applies the same ones.
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { normalizeUrl } from "@/lib/normalizeUrl";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
+import { getCurrentUser, readSession } from "@/lib/session";
 import { extractSmart } from "@/lib/extractorLLM";
 import { computeRecommendation } from "@/lib/recommendService";
-import { SCOREABLE_DOMAINS, domainForCategory, domainLabel } from "@/lib/sizeSystems";
+import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
+import {
+  NOT_CONNECTED_MESSAGE,
+  applyProvenanceCap,
+  isExtensionRequest,
+  refusalFor,
+  sessionGate,
+} from "@/lib/checkPolicy";
 
 // Cap on supplied markup, sized against a measurement rather than a guess.
 //
@@ -39,6 +51,20 @@ import { SCOREABLE_DOMAINS, domainForCategory, domainLabel } from "@/lib/sizeSys
 // measuring, and the very first real page went through it.
 const MAX_SUPPLIED_HTML = 1_000_000;
 
+// Rate limits. `/api/check` is the one route that can spend money — a page with
+// no parseable table goes to the LLM (up to 80 KB of text) and then to vision
+// (up to two images) — and it writes a Product and a FitRecommendation row on
+// every call. It had no limit at all before Session 75, and the extension makes
+// arbitrary markup one POST away.
+//
+// These numbers are WORKING VALUES, not measurements: generous enough that no
+// shopper comparing products should meet them, tight enough to bound the bill.
+// Keyed by the signed session first, because a campus network or a demo room
+// puts many real users behind one IP; the per-IP bucket is only a backstop for
+// callers with no session.
+const PER_USER = { limit: 30, windowMs: 10 * 60_000 };
+const PER_IP = { limit: 300, windowMs: 10 * 60_000 };
+
 // Accept a loose string and normalize it (people paste bare domains), so
 // "patagonia.com/product/..." works the same as a full https:// link.
 const Body = z.object({
@@ -55,13 +81,32 @@ const Body = z.object({
     .string()
     .max(
       MAX_SUPPLIED_HTML,
-      "that page is too large to send whole — strip <script>, <style>, <svg> and <iframe> first, " +
-        "which typically removes about 80% of it and none of the size chart",
+      // Keep the JSON-LD. An earlier version of this message said to strip every
+      // <script>, which would have deleted the one script the parser reads for
+      // the brand and product name.
+      "that page is too large to send whole — send only the product's parts, or strip <style>, " +
+        "<svg>, <iframe> and every <script> except type=\"application/ld+json\" (the parser reads " +
+        "that one), which typically removes about 80% of a page and none of the size chart",
     )
     .optional(),
 });
 
 export async function POST(req: Request) {
+  // Decide on the session BEFORE anything can create one: `getCurrentUser()`
+  // mints an anonymous account for a request without a cookie, which for the
+  // extension would mean a silent check against an empty profile.
+  const session = readSession();
+  if (sessionGate(isExtensionRequest(req.headers), session != null) === "not-connected") {
+    return NextResponse.json({ error: "not-connected", message: NOT_CONNECTED_MESSAGE }, { status: 401 });
+  }
+
+  const byIp = await rateLimit(clientKey(req, "check"), PER_IP.limit, PER_IP.windowMs);
+  if (!byIp.ok) return tooMany(byIp.retryAfterSec);
+  if (session) {
+    const byUser = await rateLimit(`check-user:${session.userId}`, PER_USER.limit, PER_USER.windowMs);
+    if (!byUser.ok) return tooMany(byUser.retryAfterSec);
+  }
+
   const user = await getCurrentUser();
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) {
@@ -71,91 +116,12 @@ export async function POST(req: Request) {
 
   const extracted = await extractSmart(url, { html });
 
-  // REFUSE what isn't clothing.
-  //
-  // Nothing in the URL or the page identified a garment, AND we never found a real
-  // size chart — so we are looking at something that is not an apparel product: a
-  // game top-up page, an article, a login wall, a random file. The extractor used
-  // to quietly default such pages to "tshirt" and hand back a confident size,
-  // which is the worst possible failure for a tool whose entire proposition is
-  // that you can trust its answer. Say we don't recognise it instead, and don't
-  // write a bogus Product row.
-  // REFUSE when we never got the page at all.
-  //
-  // A failed fetch plus estimated sizes means NOTHING on screen came from the
-  // retailer: the brand is the domain, the category is a word in the URL, and the
-  // size ladder is a generic one we keep for brands we know. Serving that is a
-  // guess wearing the costume of a size check — and the user then reads five
-  // sizes with five chest measurements that no page ever stated.
-  //
-  // This is invariant ⑪ ("never return a confident size for a page we can't
-  // read") one step wider: it covered a page we COULD read but couldn't identify
-  // a garment on. This covers the page we never saw.
-  //
-  // Measured case that prompted it: patagonia.com serves a bare 10-byte 404 to a
-  // non-browser client on product paths, while serving its homepage and its own
-  // 410 page normally. We fetched nothing, invented XS–XL with chest
-  // 106/111/116/121/126, and then told the user we couldn't tell them apart.
-  if (
-    (extracted.source.fetch === "unreachable" || extracted.source.fetch === "blocked") &&
-    extracted.source.sizesFrom === "estimated"
-  ) {
-    return NextResponse.json(
-      {
-        error: "unreadable",
-        message:
-          "We couldn't read that page — the retailer didn't serve it to us, so we have no size chart. " +
-          "Anything we showed you here would be our guess rather than their numbers.",
-        source: extracted.source,
-      },
-      { status: 422 },
-    );
-  }
-
-  if (extracted.source.categoryGuessed && extracted.source.sizesFrom === "estimated") {
-    return NextResponse.json(
-      {
-        error: "not-apparel",
-        message:
-          "We couldn't find a clothing item on that page. Paste a link to a specific garment — a product page for a shirt, jacket, trousers and so on.",
-        source: extracted.source,
-      },
-      { status: 422 },
-    );
-  }
-
-  // REFUSE a category we can recognise but cannot honestly score.
-  //
-  // The engine compares body measurements to garment measurements. `FitProfile`
-  // holds chest, waist, hip, shoulder, sleeve and inseam — so tops and bottoms
-  // can be scored, and footwear, socks and accessories cannot: there is no foot
-  // length, head or neck field to compare against, and no plan to add one here.
-  //
-  // Without this guard the fallback ladder in `extractor.ts` hands a shoe page
-  // the SAME letter sizes and chest measurements it would give a t-shirt, and the
-  // engine dutifully scores them. Measured on production before the fix: a men's
-  // sneaker URL returned **"XS" at 24% confidence**. A low number does not make a
-  // fabricated answer honest — the category is simply outside what we do, and
-  // saying so is the only truthful response.
-  //
-  // This is invariant ⑪ ("never return a confident size for a page we can't read")
-  // extended to the case the original wording missed: a page we CAN read, for a
-  // garment we cannot measure anyone against.
-  const domain = domainForCategory(extracted.category);
-  if (!SCOREABLE_DOMAINS.includes(domain)) {
-    return NextResponse.json(
-      {
-        error: "unsupported-category",
-        message:
-          `We don't size ${domainLabel(domain)} yet. The engine works by comparing your ` +
-          `measurements to the garment's, and we don't hold the measurement that would ` +
-          `need — so anything we told you here would be a guess dressed up as an answer. ` +
-          `Tops and bottoms work today.`,
-        category: extracted.category,
-        source: extracted.source,
-      },
-      { status: 422 },
-    );
+  // Not clothing, a page we never saw, a category we cannot measure anyone
+  // against, or an invented ladder on a page the browser handed us: say so, and
+  // write no Product row. See checkPolicy.ts for each rule and the case behind it.
+  const refusal = refusalFor(extracted);
+  if (refusal) {
+    return NextResponse.json({ ...refusal, source: extracted.source }, { status: 422 });
   }
 
   // Persist product + sizes.
@@ -188,28 +154,14 @@ export async function POST(req: Request) {
     include: { sizeOptions: true },
   });
 
-  const { result, effectiveFit, body } = await computeRecommendation(user.id, product);
+  const computed = await computeRecommendation(user.id, product);
+  const { effectiveFit, body } = computed;
 
-  // Honesty gate: if the size chart was ESTIMATED from the brand (no real chart
-  // on the page), we cannot be highly confident — cap it so the number matches
-  // the "⚠ sizes estimated" banner the UI shows. The engine stays pure; the
-  // provenance discount is applied here, at the boundary that knows provenance.
-  //
-  // A brand chart earns its own cap, between the two. The measurements are real
-  // — the brand published them — so 0.5 would understate them. But we did not
-  // read this product's page, so we do not know which sizes it is offered in, and
-  // we do not know whether this style is the brand's slim or relaxed cut. That
-  // residual uncertainty is about the GARMENT, which no amount of body data on
-  // our side can resolve, so it belongs as a ceiling rather than a penalty.
-  const PROVENANCE_CAP: Partial<Record<string, number>> = {
-    estimated: 0.5,
-    "brand-chart": 0.75,
-  };
-  const cap = PROVENANCE_CAP[extracted.source.sizesFrom ?? ""];
-  if (cap != null) {
-    result.best.confidence = Math.min(result.best.confidence, cap);
-    result.ranked = result.ranked.map((r) => ({ ...r, confidence: Math.min(r.confidence, cap) }));
-  }
+  // Honesty gate: the engine is pure and never learns where the chart came from,
+  // so the ceiling for estimated and brand-chart sizes is applied here, at the
+  // boundary that knows provenance — so the number matches the banner the UI
+  // shows beside it.
+  const result = applyProvenanceCap(computed.result, extracted.source.sizesFrom);
 
   const rec = await prisma.fitRecommendation.create({
     data: {

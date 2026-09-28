@@ -114,6 +114,27 @@ export type ExtractedProduct = {
      * a guess — but a weaker claim than the page stating it, so it is labelled.
      */
     measurementKindFrom?: "page" | "brand";
+    /**
+     * True when `sizes` is the ladder `buildSizes()` synthesized from two
+     * constants — numbers NO source ever stated. Cleared the moment anything real
+     * replaces them (a page chart, an LLM/vision read, the page's own labels).
+     *
+     * `sizesFrom: "estimated"` cannot carry this on its own: it covers both this
+     * invented ladder AND a page's real offered labels with no measurements, and
+     * those deserve opposite treatment. Real labels still let a closet anchor rank
+     * them honestly; invented chest numbers only let the engine score against
+     * fiction. `/api/check` refuses the second kind on the extension transport —
+     * see `checkPolicy.ts`.
+     */
+    sizesSynthesized?: boolean;
+    /**
+     * Which reader produced numbers credited to the page (`sizesFrom: "page"`).
+     * "page" alone could mean a parsed <table>, a language model reading the
+     * page's text, a vision model reading a chart image, or Chinese 号型 codes —
+     * four very different levels of trust that the UI and the evaluation both
+     * need to tell apart.
+     */
+    extractedBy?: "table" | "llm-text" | "llm-vision" | "hao-xing";
   };
 };
 
@@ -484,7 +505,10 @@ export function extractFromUrl(url: string): ExtractedProduct {
       material: "See product page",
       fitNotes: brandProfile.fitNotes,
       sizes: buildSizes(brandProfile, category),
-      source: { url, host, derived: true, slug, sizesFrom: "estimated", categoryGuessed: detected == null },
+      source: {
+        url, host, derived: true, slug, sizesFrom: "estimated",
+        categoryGuessed: detected == null, sizesSynthesized: true,
+      },
     };
   }
 
@@ -506,7 +530,10 @@ export function extractFromUrl(url: string): ExtractedProduct {
     material: "Unknown",
     fitNotes: genericProfile.fitNotes,
     sizes: buildSizes(genericProfile, category),
-    source: { url, host, derived: true, slug, sizesFrom: "estimated", categoryGuessed: detected == null },
+    source: {
+      url, host, derived: true, slug, sizesFrom: "estimated",
+      categoryGuessed: detected == null, sizesSynthesized: true,
+    },
   };
 }
 
