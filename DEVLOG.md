@@ -31,6 +31,51 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 78b — Every scoring number now says where it came from
+
+Phase B of the Session 78 plan: the founder asked for a scoring system that cannot
+hallucinate. The engine already refused to invent measurements; its own constants
+were the other place invention could hide.
+
+**`src/lib/scoringConstants.ts`** is now the one home for every number the scorer
+uses — 83 of them, previously bare literals across nine modules (`fitEngine`,
+`sizing`, `checkPolicy`, `closetConsistency`, `personalEase`, `brandBias`,
+`fitDirection`, `confidenceWeights`). Each carries a provenance: **measured** (with
+its n), **cited** (a source states the value), or **assumed**.
+
+**The count is the finding: 80 assumed, 1 measured, 2 cited.** The literature the
+engine cites supports the model's SHAPE — bipolar fit, multi-measurement — and not
+one of its values. The two cited values are the feeling scale's meaning (full range
+= one size step, Guigourès et al.) and its default (the modal "fit" answer). The one
+measured value rests on two demo fixtures.
+
+**It was a pure move.** Values unchanged; the 550 existing tests passed untouched
+after each module was rewired, and every literal replacement was asserted to match
+exactly once. Two duplicated rules got one home on the way: `isDirectional()` and
+brand bias's closet vote each carried their own `3`.
+
+**`scoringConstants.test.ts`** fails if a value has no provenance, a provenance
+names no value, a "measured" entry omits its n, a "cited" entry names nothing, an
+assumed value is missing from the published table, or the registry imports
+anything (㉟). Verified red on an unregistered constant and on a "measured" claim
+with no n.
+
+**`docs/design/scoring-system.md`** — the spec: the one rule, how a size is scored,
+what the confidence percentage is **and is not** (not a probability until
+calibrated), verdicts, the calibration plan, and a calibration table generated from
+the registry.
+
+**Measured, and not yet applied:** the real curated charts step **8.3 cm** between
+adjacent sizes (median, n = 19; central sizes also 8.3, n = 9), against the **4.5 cm**
+the feeling-to-centimetres conversion uses. Every "too tight" report is converted to
+about half the room it describes. Three charts, two brands — recorded now, applied in
+Phase D with a before/after.
+
+`/check` First Load JS 113 → 114 kB (the provenance strings); one registry was worth
+more than 400 bytes. 556 tests + 1 skip, exit 0.
+
+---
+
 ## 2026-09-29 · Session 78g — The extension is the front door; the link box is folded
 
 Phase G of the Session 78 plan. The founder's call: pasting a URL is too unstable

@@ -35,6 +35,21 @@ import { directionToLadderShift, describeDirection, isDirectional } from "./fitD
 import { reportConsistency } from "./closetConsistency";
 import { personalEaseTarget, resolveEase, type ResolvedEase } from "./personalEase";
 import { CONFIDENCE_WEIGHTS } from "./confidenceWeights";
+import {
+  AGREEMENT,
+  ANCHOR_WEIGHTS,
+  BINDING,
+  BODY_RANGE,
+  BRAND_BIAS_WEIGHT,
+  CONFIDENCE_CAPS,
+  DEFAULT_WEIGHTS,
+  DIMENSIONS,
+  KNOWN_GOOD,
+  MARGIN,
+  OUTCOME,
+  TIE,
+  VERDICT_CM,
+} from "./scoringConstants";
 
 // ------------ Input contracts ------------
 
@@ -172,23 +187,17 @@ export type Weights = {
 };
 
 // Default weights: measurement-led. Used when we have NO strong brand anchor.
-const DEFAULT_W: Weights = {
-  chestFit: 0.45,
-  knownGood: 0.35,
-  preferenceBonus: 0.05, // small nudge; preferred fit already reshapes chestFit target
-  outcomePenalty: 0.15,
-  minDataFloor: 0.2, // score never drops below this due to missing data
-};
+const DEFAULT_W: Weights = { ...DEFAULT_WEIGHTS };
 
 // Brand-bias signal weight. Deliberately smaller than chest/anchor — it's one
 // more piece of evidence, not a dominator, and capped at ±1 step upstream.
-const BRAND_BIAS_W = 0.15;
+const BRAND_BIAS_W = BRAND_BIAS_WEIGHT;
 
 // Trust given to an anchor whose fit DIRECTION the wearer reported. Below 1.0
 // because mapping a subjective word onto a fraction of a ladder step is itself
 // uncertain, but above what a matching star rating would give, because the
 // correction has already been applied.
-const DIRECTED_ANCHOR_TRUST = 0.9;
+const DIRECTED_ANCHOR_TRUST = KNOWN_GOOD.directedTrust;
 
 // Anchor-led weights: used when the closet contains a same-brand + same-category
 // item the user rated well. In that case "size X fits me in THIS brand+category"
@@ -196,13 +205,7 @@ const DIRECTED_ANCHOR_TRUST = 0.9;
 // garment numbers (each brand calibrates its chart differently). So the
 // known-good anchor dominates and chest-fit degrades to a tie-breaker.
 // [F1] fix — see DEVLOG 2026-08-10.
-const ANCHOR_W: Weights = {
-  chestFit: 0.18,
-  knownGood: 0.62,
-  preferenceBonus: 0.05,
-  outcomePenalty: 0.15,
-  minDataFloor: 0.2,
-};
+const ANCHOR_W: Weights = { ...ANCHOR_WEIGHTS };
 
 /** True if the closet has a trustworthy same-brand + same-category anchor. */
 function hasStrongAnchor(
@@ -215,7 +218,7 @@ function hasStrongAnchor(
       product.category != null &&
       kg.brand.toLowerCase() === product.brand.toLowerCase() &&
       kg.category.toLowerCase() === product.category.toLowerCase() &&
-      kg.fitRating >= 4,
+      kg.fitRating >= KNOWN_GOOD.strongRating,
   );
 }
 
@@ -226,10 +229,10 @@ const gauss = (deltaCm: number, sigma: number) =>
 // Verdict thresholds (cm) on the CHEST delta from the preference-adjusted target.
 // Negative = garment smaller than you want; positive = roomier than you want.
 function verdictFromDelta(delta: number): FitVerdict {
-  if (delta <= -6) return "too small";
-  if (delta < -2) return "snug";
-  if (delta < 2) return "true to size";
-  if (delta < 6) return "relaxed";
+  if (delta <= VERDICT_CM.tooSmall) return "too small";
+  if (delta < VERDICT_CM.snug) return "snug";
+  if (delta < VERDICT_CM.relaxed) return "true to size";
+  if (delta < VERDICT_CM.tooBig) return "relaxed";
   return "too big";
 }
 
@@ -250,13 +253,14 @@ function bodyRangeFit(b: number, lo: number, hi: number): { sub: number; delta: 
     const mid = (lo + hi) / 2;
     return {
       delta: mid - b, // body above the middle => this size runs snug on you
-      sub: 0.85 + 0.15 * gauss(b - mid, (hi - lo) / 2 || 1),
+      sub: BODY_RANGE.insideFloor + BODY_RANGE.insideSpan * gauss(b - mid, (hi - lo) / 2 || 1),
     };
   }
   const outBy = b < lo ? b - lo : b - hi; // signed cm the body sits outside
   // Negate to garment-relative, then push past the edge so a size the body does
   // not fit inside never reads as "true to size".
-  return { delta: outBy > 0 ? -outBy - 4 : -outBy + 4, sub: gauss(outBy, 4) };
+  const push = BODY_RANGE.outsidePushCm;
+  return { delta: outBy > 0 ? -outBy - push : -outBy + push, sub: gauss(outBy, BODY_RANGE.outsideSigmaCm) };
 }
 
 /**
@@ -299,12 +303,12 @@ function scoreMeasurementFit(
       // Retailer gives the intended BODY range for this size — score membership.
       const { sub, delta } = bodyRangeFit(profile.chestCm, size.bodyChestMinCm, size.bodyChestMaxCm);
       chestDelta = delta;
-      dims.push({ key: "chest", sub, delta, weight: 0.6, sigma: 4 });
+      dims.push({ key: "chest", sub, delta, weight: DIMENSIONS.chest.weight, sigma: DIMENSIONS.chest.sigmaCm });
     } else if (size.chestCm != null) {
       const target = profile.chestCm + ease;
       const delta = size.chestCm - target;
       chestDelta = delta;
-      dims.push({ key: "chest", sub: gauss(delta, 4), delta, weight: 0.6, sigma: 4 });
+      dims.push({ key: "chest", sub: gauss(delta, DIMENSIONS.chest.sigmaCm), delta, weight: DIMENSIONS.chest.weight, sigma: DIMENSIONS.chest.sigmaCm });
     }
   }
 
@@ -314,11 +318,11 @@ function scoreMeasurementFit(
       // The body waist this size is cut for — membership, like chest. No ease is
       // added: the number already describes the wearer, not the garment.
       const { sub, delta } = bodyRangeFit(profile.waistCm, size.bodyWaistMinCm, size.bodyWaistMaxCm);
-      dims.push({ key: "waist", sub, delta, weight: 0.22, sigma: 4 });
+      dims.push({ key: "waist", sub, delta, weight: DIMENSIONS.waist.weight, sigma: DIMENSIONS.waist.sigmaCm });
     } else if (size.waistCm != null) {
-      const target = profile.waistCm + ease * 0.8;
+      const target = profile.waistCm + ease * DIMENSIONS.waist.easeFactor;
       const delta = size.waistCm - target;
-      dims.push({ key: "waist", sub: gauss(delta, 4), delta, weight: 0.22, sigma: 4 });
+      dims.push({ key: "waist", sub: gauss(delta, DIMENSIONS.waist.sigmaCm), delta, weight: DIMENSIONS.waist.weight, sigma: DIMENSIONS.waist.sigmaCm });
     }
   }
 
@@ -326,7 +330,7 @@ function scoreMeasurementFit(
   if (profile.shoulderCm != null && size.shoulderCm != null) {
     const target = profile.shoulderCm + 1; // shoulders want minimal ease
     const delta = size.shoulderCm - target;
-    dims.push({ key: "shoulder", sub: gauss(delta, 2.5), delta, weight: 0.18, sigma: 2.5 });
+    dims.push({ key: "shoulder", sub: gauss(delta, DIMENSIONS.shoulder.sigmaCm), delta, weight: DIMENSIONS.shoulder.weight, sigma: DIMENSIONS.shoulder.sigmaCm });
   }
 
   if (dims.length === 0) return { score: 0, reason: null };
@@ -341,9 +345,9 @@ function scoreMeasurementFit(
   const chest = dims.find((d) => d.key === "chest");
   const est = profile.chestIsEstimated ? " (regional averages — add yours for accuracy)" : "";
   let msg: string;
-  if (chest && Math.abs(chest.delta) < 1.5 && (worst.key === "chest" || worst.sub > 0.82)) {
+  if (chest && Math.abs(chest.delta) < BINDING.chestNearCm && (worst.key === "chest" || worst.sub > BINDING.strongSub)) {
     msg = `Matches a ${pref} fit for ${dims.map((d) => d.key).join(" + ")}${est}`;
-  } else if (worst.key !== "chest" && worst.sub < 0.7) {
+  } else if (worst.key !== "chest" && worst.sub < BINDING.weakSub) {
     const side = worst.delta > 0 ? "roomy" : "narrow";
     msg = `Chest works, but the ${worst.key} runs ${Math.abs(worst.delta).toFixed(1)}cm ${side}`;
   } else {
@@ -458,7 +462,7 @@ function scoreKnownGood(
     const dist = Math.abs(sizeIdx - targetIdx);
 
     // Base falloff by ladder distance.
-    const proximity = Math.max(0, 1 - dist * 0.5);
+    const proximity = Math.max(0, 1 - dist * KNOWN_GOOD.perStep);
     // A reported DIRECTION is strictly more information than a star rating: we
     // know both the size and which way it misses, and we have already corrected
     // for the miss above. So a directed anchor is trusted on the quality of the
@@ -467,7 +471,7 @@ function scoreKnownGood(
     // usually comes with, when in fact it is one of the most informative items in
     // the closet.
     const trust = kg.fitDirection != null ? DIRECTED_ANCHOR_TRUST : kg.fitRating / 5;
-    const mult = strong ? 1.0 : sameCat ? 0.75 : 0.55;
+    const mult = strong ? KNOWN_GOOD.mult.strong : sameCat ? KNOWN_GOOD.mult.sameCategory : KNOWN_GOOD.mult.other;
     const s = proximity * trust * mult;
     if (s > best) {
       best = s;
@@ -523,15 +527,15 @@ function scoreOutcome(
     const sameCat =
       product.category &&
       o.productCategory?.toLowerCase() === product.category.toLowerCase();
-    const mult = sameBrand && sameCat ? 1.0 : sameCat ? 0.6 : 0.4;
+    const mult = sameBrand && sameCat ? OUTCOME.mult.sameBrandCategory : sameCat ? OUTCOME.mult.sameCategory : OUTCOME.mult.other;
     if (o.decision === "return") {
-      const p = (1 - dist * 0.5) * mult;
+      const p = (1 - dist * OUTCOME.perStep) * mult;
       if (p > bestPenalty) {
         bestPenalty = p;
         msg = `You returned a ${o.purchasedSize} in ${o.productBrand ?? "similar"} (${o.areaIssues ? Object.entries(o.areaIssues).map(([k, v]) => `${k}: ${v}`).join(", ") : "fit issue"})`;
       }
-    } else if (o.decision === "keep" && (o.overallFit ?? 0) >= 4) {
-      const b = (1 - dist * 0.5) * mult * 0.6;
+    } else if (o.decision === "keep" && (o.overallFit ?? 0) >= OUTCOME.goodFitRating) {
+      const b = (1 - dist * OUTCOME.perStep) * mult * OUTCOME.keepBoost;
       if (b > bestBoost) {
         bestBoost = b;
         msg = `You kept a ${o.purchasedSize} in ${o.productBrand ?? "similar"} with a good fit`;
@@ -800,7 +804,7 @@ export function recommend(input: EngineInput): EngineOutput {
     const score = combine(reasons, W.minDataFloor);
     let confidence = computeConfidence(size, usableKnownGood.length > 0, profile.chestCm != null);
     // Cross-domain closet evidence should not lend confidence: cap it hard.
-    if (domainRelevance === "cross") confidence = Math.min(confidence, 0.35);
+    if (domainRelevance === "cross") confidence = Math.min(confidence, CONFIDENCE_CAPS.crossDomain);
     // Scattered self-reports reduce it further — the reason is surfaced below.
     confidence *= consistency.factor;
     return {
@@ -822,7 +826,7 @@ export function recommend(input: EngineInput): EngineOutput {
   if (ranked.length >= 2) {
     const margin = ranked[0].score - ranked[1].score;
     // margin 0 → ×0.6 (ambiguous); margin ≥0.1 → ×1.0 (decisive).
-    const marginFactor = Math.max(0.6, Math.min(1, 0.6 + margin * 4));
+    const marginFactor = Math.max(MARGIN.floor, Math.min(1, MARGIN.floor + margin * MARGIN.slope));
     for (const r of ranked) r.confidence = Math.round(r.confidence * marginFactor * 100) / 100;
   }
 
@@ -836,7 +840,7 @@ export function recommend(input: EngineInput): EngineOutput {
   if (disagreement) {
     // One ladder step apart is ordinary tension; two or more means the signals
     // are telling genuinely different stories.
-    const agreement = disagreement.distance >= 2 ? 0.65 : 0.8;
+    const agreement = disagreement.distance >= 2 ? AGREEMENT.twoPlusSteps : AGREEMENT.oneStep;
     for (const r of ranked) r.confidence = Math.round(r.confidence * agreement * 100) / 100;
     // Phrased without a verb agreeing with the signal name, so every signal
     // reads correctly ("your measurements" is plural, "a garment you own" isn't).
@@ -852,7 +856,7 @@ export function recommend(input: EngineInput): EngineOutput {
   // size carries its own verdict.
   for (const r of ranked) {
     if (r.verdict === "too small" || r.verdict === "too big") {
-      r.confidence = Math.min(r.confidence, 0.6);
+      r.confidence = Math.min(r.confidence, CONFIDENCE_CAPS.verdictOff);
     }
   }
   if (ranked[0].verdict === "too small" || ranked[0].verdict === "too big") {
@@ -871,7 +875,7 @@ export function recommend(input: EngineInput): EngineOutput {
   // A regional-average body is a prior, not a fact — cap confidence so the number
   // can never imply we know the user's measurements.
   if (profile.chestIsEstimated) {
-    for (const r of ranked) r.confidence = Math.min(r.confidence, 0.4);
+    for (const r of ranked) r.confidence = Math.min(r.confidence, CONFIDENCE_CAPS.estimatedBody);
   }
 
   const best = ranked[0];
@@ -925,12 +929,12 @@ export function recommend(input: EngineInput): EngineOutput {
   const undetermined =
     best.reasons.length === 0 &&
     ranked.length > 1 &&
-    ranked.every((r) => Math.abs(r.score - best.score) < 1e-6);
+    ranked.every((r) => Math.abs(r.score - best.score) < TIE.epsilon);
 
   // Suppress the "alternative" line when everything ties — calling the second
   // rung "close" implies the first was ahead of it, and it wasn't.
   const alt =
-    !undetermined && !edgeNote && ranked[1] && ranked[1].score > best.score - 0.08
+    !undetermined && !edgeNote && ranked[1] && ranked[1].score > best.score - TIE.alternativeWithin
       ? `\nAlternative: ${ranked[1].label} is close — consider it if you prefer ${profile.preferredFit === "slim" ? "extra room" : "a snugger fit"}.`
       : "";
   const explanation = undetermined

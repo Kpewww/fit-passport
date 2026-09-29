@@ -1078,3 +1078,18 @@ door; the URL box is folded and labelled beta.**
   when the Chrome Web Store listing exists; `/extension` already renders both.
 - **`/extension`** is a server component; claims Chrome-tested only.
 - Design record: `docs/design/browser-extension.md`.
+
+**SESSION 78b (2026-09-29).** 556 tests. **Every scoring constant lives in
+`src/lib/scoringConstants.ts` with a provenance** — 83 values: **80 assumed, 1
+measured, 2 cited**. Spec: `docs/design/scoring-system.md` (calibration table
+generated from the registry).
+
+**NEW INVARIANT:**
+**(73)** **No scoring number without a provenance.** A new constant goes into
+`scoringConstants.ts` with `measured` (and its n), `cited` (and the source), or
+`assumed`; an assumed one must also appear in the spec's calibration table.
+`scoringConstants.test.ts` enforces all of it. The registry imports nothing (㉟).
+
+**Measured, pending Phase D:** real curated charts step **8.3 cm** between sizes
+(median, n = 19) vs the **4.5 cm** `LADDER_STEP_CHEST_CM` used to turn a fit feeling
+into centimetres (from 2 demo fixtures).

@@ -19,8 +19,10 @@
 //
 // See docs/design/closet-signal-and-interaction-cost.md for the full argument.
 
-export const DIRECTION_MIN = -10;
-export const DIRECTION_MAX = 10;
+import { DIRECTION } from "./scoringConstants";
+
+export const DIRECTION_MIN: number = DIRECTION.min;
+export const DIRECTION_MAX: number = DIRECTION.max;
 
 export type DirectionOption = {
   key: string;
@@ -49,7 +51,7 @@ export const DIRECTION_OPTIONS: DirectionOption[] = [
 ];
 
 /** The value a new item starts at — the modal answer, so the common case is free. */
-export const DIRECTION_DEFAULT = 0;
+export const DIRECTION_DEFAULT: number = DIRECTION.default;
 
 export type FitScaleMode = "descriptive" | "numeric";
 
@@ -115,7 +117,7 @@ export function directionToLadderShift(n: number | null | undefined): number {
 
 /** True when the value is far enough from centre to be worth mentioning. */
 export function isDirectional(n: number | null | undefined): boolean {
-  return n != null && Math.abs(clampDirection(n)) >= 3;
+  return n != null && Math.abs(clampDirection(n)) >= DIRECTION.directional;
 }
 
 /**

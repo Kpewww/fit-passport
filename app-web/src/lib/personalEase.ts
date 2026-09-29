@@ -30,6 +30,7 @@
 
 import { easeAdjustForCategory, type FitPreference, easeChestCm } from "./sizing";
 import { directionToLadderShift } from "./fitDirection";
+import { PERSONAL_EASE } from "./scoringConstants";
 
 /**
  * Chest centimetres per step of the alpha size ladder.
@@ -40,12 +41,12 @@ import { directionToLadderShift } from "./fitDirection";
  * centimetres, deliberately — `directionToLadderShift` already owns the
  * direction-to-ladder calibration and this must not become a second one.
  */
-export const LADDER_STEP_CHEST_CM = 4.5;
+export const LADDER_STEP_CHEST_CM: number = PERSONAL_EASE.ladderStepChestCm;
 
 /** Fewer than this many usable garments and we do not act at all. */
-export const MIN_EVIDENCE = 2;
+export const MIN_EVIDENCE: number = PERSONAL_EASE.minEvidence;
 /** At this many, the learned target carries its full weight. */
-export const FULL_EVIDENCE = 4;
+export const FULL_EVIDENCE: number = PERSONAL_EASE.fullEvidence;
 
 export type EaseObservation = {
   category: string;
@@ -165,7 +166,7 @@ export function resolveEase(pref: FitPreference, learned: PersonalEase): Resolve
   // Under a fifth of a centimetre is not a difference anyone can wear, and
   // claiming to have personalised something is a claim we should only make when
   // it changed the arithmetic.
-  if (Math.abs(capped - stated) < 0.2) {
+  if (Math.abs(capped - stated) < PERSONAL_EASE.noticeableCm) {
     return { easeCm: stated, personalised: false, reason: null };
   }
 

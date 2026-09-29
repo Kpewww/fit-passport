@@ -15,6 +15,7 @@
 import type { ExtractedProduct } from "./extractor";
 import type { EngineOutput } from "./fitEngine";
 import { SCOREABLE_DOMAINS, domainForCategory, domainLabel } from "./sizeSystems";
+import { CONFIDENCE_CAPS } from "./scoringConstants";
 
 type Source = ExtractedProduct["source"];
 
@@ -149,10 +150,8 @@ export function refusalFor(extracted: ExtractedProduct): Refusal | null {
  * side can resolve, so it is a ceiling rather than a penalty. Page and fixture
  * provenance are uncapped — the engine's own confidence already reflects them.
  */
-export const PROVENANCE_CAP: Readonly<Partial<Record<NonNullable<Source["sizesFrom"]>, number>>> = {
-  estimated: 0.5,
-  "brand-chart": 0.75,
-};
+export const PROVENANCE_CAP: Readonly<Partial<Record<NonNullable<Source["sizesFrom"]>, number>>> =
+  CONFIDENCE_CAPS.provenance;
 
 /** Returns a copy with every size's confidence held under its source's ceiling. */
 export function applyProvenanceCap(result: EngineOutput, sizesFrom: Source["sizesFrom"]): EngineOutput {

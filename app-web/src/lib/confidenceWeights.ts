@@ -18,14 +18,7 @@
 // Anything added here changes what the engine computes AND what the UI promises,
 // in one edit. That is the point.
 
-export const CONFIDENCE_WEIGHTS = {
-  /** Where every answer starts, before any evidence at all. */
-  floor: 0.3,
-  /** Your chest measured against a chart that states its chest. Needs both. */
-  measurements: 0.35,
-  /** One garment of this type that you own and have reported on. */
-  closetAnchor: 0.25,
-  /** The chart happening to state a shoulder / sleeve — not something you control. */
-  chartShoulder: 0.05,
-  chartSleeve: 0.05,
-} as const;
+// The values, and where each came from, now live in `scoringConstants.ts` — the one
+// registry every scoring number declares its provenance in. This file stays so
+// existing imports keep working; it adds nothing of its own.
+export { CONFIDENCE_WEIGHTS } from "./scoringConstants";

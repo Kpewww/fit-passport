@@ -28,6 +28,7 @@
 // docs/design/closet-signal-and-interaction-cost.md §1.2.
 
 import { clampDirection } from "./fitDirection";
+import { CONSISTENCY } from "./scoringConstants";
 
 export type ConsistencyInput = {
   category: string;
@@ -46,15 +47,15 @@ export type Consistency = {
 };
 
 /** Under this many reports we have no basis for an opinion either way. */
-const MIN_REPORTS = 3;
+const MIN_REPORTS = CONSISTENCY.minReports;
 
 /** Spread at or below this reads as a consistent wearer. */
-const TIGHT_SPREAD = 2;
+const TIGHT_SPREAD = CONSISTENCY.tightSpread;
 /** Spread at or above this reads as scattered. */
-const WIDE_SPREAD = 6;
+const WIDE_SPREAD = CONSISTENCY.wideSpread;
 
 /** The most confidence can be reduced for scatter. */
-const MIN_FACTOR = 0.85;
+const MIN_FACTOR = CONSISTENCY.minFactor;
 
 const NEUTRAL: Consistency = { n: 0, spread: 0, factor: 1, note: null };
 

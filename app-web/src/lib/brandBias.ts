@@ -31,6 +31,8 @@
 //
 // Nothing about this depends on the LLM; it's a small deterministic function.
 
+import { BRAND_BIAS, DIRECTION } from "./scoringConstants";
+
 export type OutcomeSignal = {
   productBrand: string | null;
   decision: "keep" | "return" | "exchange";
@@ -94,7 +96,7 @@ function voteFor(o: OutcomeSignal): "big" | "small" | null {
  */
 function closetVote(c: ClosetSignal): "big" | "small" | null {
   const d = c.fitDirection;
-  if (d == null || Math.abs(d) < 3) return null;
+  if (d == null || Math.abs(d) < DIRECTION.directional) return null;
   return d > 0 ? "big" : "small"; // ran loose => brand runs big
 }
 
@@ -131,7 +133,7 @@ export function biasForBrand(
     else if (v === "small") small++;
   }
   const evidence = big + small;
-  const MIN = 2; // volume threshold
+  const MIN = BRAND_BIAS.minEvidence; // volume threshold
   const net = big - small;
 
   if (evidence < MIN || net === 0) {

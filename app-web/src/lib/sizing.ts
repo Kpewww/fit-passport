@@ -3,6 +3,8 @@
 // These are the ONLY place we normalize regional size labels. Every consumer
 // of size strings goes through here so the fit engine stays domain-agnostic.
 
+import { CATEGORY_EASE_CM, EASE_CM } from "./scoringConstants";
+
 export type Category =
   | "tshirt"
   | "shirt"
@@ -98,16 +100,9 @@ export function alphaShift(a: AlphaSize | null, b: AlphaSize | null): number | n
 
 /** Preferred amount of ease (extra room) in cm around the chest by pref. */
 export function easeChestCm(pref: FitPreference): number {
-  switch (pref) {
-    case "slim":
-      return 6;
-    case "regular":
-      return 10;
-    case "relaxed":
-      return 16;
-    case "oversized":
-      return 22;
-  }
+  // Values and their provenance: scoringConstants.EASE_CM (all four are assumed —
+  // no source has been found for them).
+  return EASE_CM[pref];
 }
 
 /**
@@ -121,27 +116,10 @@ export function easeChestCm(pref: FitPreference): number {
  */
 export function easeAdjustForCategory(category?: string | null): number {
   if (!category) return 0;
-  switch (category.toLowerCase()) {
-    // Outerwear: worn over other layers, so more room is "regular".
-    case "coat":
-      return 8;
-    case "jacket":
-    case "parka":
-      return 6;
-    case "hoodie":
-    case "sweatshirt":
-      return 4;
-    case "blazer":
-      return 3;
-    // Base / close layers: less room is "regular".
-    case "tank":
-    case "tanktop":
-    case "base-layer":
-      return -3;
-    // Mid-weight tops — the tuned baseline.
-    default:
-      return 0;
-  }
+  // Mid-weight tops are the tuned baseline and return 0; see
+  // scoringConstants.CATEGORY_EASE_CM for the rest and where each came from.
+  const key = category.toLowerCase() as keyof typeof CATEGORY_EASE_CM;
+  return CATEGORY_EASE_CM[key] ?? 0;
 }
 
 /**
