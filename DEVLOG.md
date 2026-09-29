@@ -31,6 +31,59 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 78d3 — Outcomes say which way they were wrong, and are read that way
+
+Phase D, step 3: the outcome loop — the only place a real "did it fit?" enters the
+system — used the unipolar scale the closet abandoned in Session 45.
+
+**Found at the start of the session, all confirmed in code:** the `/history` form's
+"Overall fit" select **defaulted to 4**, and `scoreOutcome` boosted keeps with
+`overallFit ≥ 4` — so an untouched form was stored and counted as a good fit.
+**Exchanges were ignored entirely**, though "this size was wrong, that one was right"
+is the most informative record there is. **A return penalised both neighbours
+regardless of direction**, so returning an M for being too tight counted against L.
+
+**Fixed:**
+- `FitOutcome.fitDirection Int?` — additive migration
+  `20260929180000_outcome_fit_direction`; `db:push` locally; the migration guard
+  verified red without the file (the Session 46 outage, invariant ㉑).
+- Validation moved to `lib/outcomeInput.ts` (a route may only export framework
+  symbols): **a return or exchange must give a direction** (400 otherwise), an
+  exchange must name the size swapped to; `overallFit` is **derived** (⑮).
+- `/history` uses the closet's signed input; submit stays disabled on a return or
+  exchange until a fit is chosen; a keep may rest on "just right", the modal answer.
+- `scoreOutcome`: exchanges boost the swapped-to size and penalise the original; a
+  directional return penalises the size and the neighbour further in the wrong
+  direction only; a return with no direction penalises only that size; a keep
+  confirms its size only if it actually fit.
+- `brandBias` votes from the signed report and from the direction of an exchange; a
+  dead branch (two paths both returning null) removed.
+
+**Live, end to end:** a return with no direction → **400**; "too tight" → 200 with
+`overallFit` derived as 2; the next check drops M 0.220 → 0.070 and the smaller S
+0.201 → 0.126, while L and XL are untouched.
+
+**One of my tests did not discriminate at first**: "a return with no direction blames
+neither neighbour" passed on the old code, which blamed both equally at half
+strength. Rewritten against a no-outcome baseline; now red on the old code.
+
+**Found, not fixed — `todo/engineering/08`:** the Uniqlo AIRism demo fixture
+recommends **XL** to a 100 cm chest. Its M is `chestCm: 100` in the garment field,
+and the real Uniqlo page (75c) is a body chart with M = 95.9–104.1, midpoint exactly
+100. Likely ㊿ inside our own demo data, on the first product the Try row offers —
+recorded with that evidence rather than changed on a hunch.
+
+**Not a bug, checked:** a screenshot showed two fit options grey at once; it was a
+capture mid-transition. After 600 ms only the chosen option is selected.
+
+**Scope note:** the plan also listed a per-area signed field. The area selects already
+capture direction as words that brand bias reads, so a second encoding would have
+been a column with no reader. Not added.
+
+582 tests + 1 skip, exit 0.
+
+---
+
 ## 2026-09-29 · Session 78d2 — A fit report is an interval, so contradictions are caught
 
 Phase D, step 2. Each closet report used to become one number — `observed ease +

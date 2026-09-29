@@ -32,12 +32,17 @@
 // Nothing about this depends on the LLM; it's a small deterministic function.
 
 import { BRAND_BIAS, DIRECTION } from "./scoringConstants";
+import { alphaIndex, normalizeToAlpha } from "./sizing";
 
 export type OutcomeSignal = {
   productBrand: string | null;
   decision: "keep" | "return" | "exchange";
   overallFit?: number | null;
   areaIssues?: Record<string, string> | null;
+  /** Signed fit (fitDirection.ts): the clearest statement of which way it ran. */
+  fitDirection?: number | null;
+  purchasedSize?: string | null;
+  exchangedForSize?: string | null;
 };
 
 /**
@@ -68,6 +73,16 @@ const SMALL_WORDS = new Set(["tight", "short", "small", "narrow"]);
 
 /** Classify one outcome into a directional vote for this brand. */
 function voteFor(o: OutcomeSignal): "big" | "small" | null {
+  // The signed report says it directly: ran tight → this brand runs small on them.
+  if (o.fitDirection != null && Math.abs(o.fitDirection) >= DIRECTION.directional) {
+    return o.fitDirection < 0 ? "small" : "big";
+  }
+  // An exchange says it by the sizes: swapped UP → it ran small.
+  if (o.decision === "exchange" && o.purchasedSize && o.exchangedForSize) {
+    const from = alphaIndex(normalizeToAlpha(o.purchasedSize));
+    const to = alphaIndex(normalizeToAlpha(o.exchangedForSize));
+    if (from != null && to != null && from !== to) return to > from ? "small" : "big";
+  }
   const areas = o.areaIssues ?? {};
   let big = 0;
   let small = 0;
@@ -76,14 +91,9 @@ function voteFor(o: OutcomeSignal): "big" | "small" | null {
     if (BIG_WORDS.has(w)) big++;
     else if (SMALL_WORDS.has(w)) small++;
   }
-  // Decision-based tie-breakers when no area data.
-  if (big === 0 && small === 0) {
-    if (o.decision === "return" && (o.overallFit ?? 5) <= 2) {
-      // A very poor overall fit without direction — no directional vote.
-      return null;
-    }
-    return null;
-  }
+  // A poor fit with no direction gives no directional vote. (This used to be two
+  // branches that both returned null.)
+  if (big === 0 && small === 0) return null;
   if (big > small) return "big";
   if (small > big) return "small";
   return null;

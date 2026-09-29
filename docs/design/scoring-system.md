@@ -190,6 +190,21 @@ of one person; the old model reported ~19 cm.
 This is also the first line of defence against deliberate nonsense (§9): a few junk
 reports among honest ones fall outside the majority and are excluded by name.
 
+**Outcomes** — what happened after a purchase — use the same signed scale (Session
+78d3). They replaced a 1–5 select that **defaulted to 4**, so an untouched form was
+stored as a good fit and counted as one. Now:
+
+- a **return or exchange must say which way** it was wrong (the API refuses one that
+  does not; the form will not submit); a keep may rest on "just right";
+- the old 1–5 is **derived** from the direction, never asked for (⑮);
+- a return **penalises the size and the neighbour further in the wrong direction** —
+  it used to penalise both neighbours, so returning an M for being too tight counted
+  against L, the size most likely to be right; with no direction, only the size itself;
+- an **exchange** is used as what it is — "this size was wrong, that one was right" —
+  and was previously ignored entirely;
+- brand bias reads the signed report and the direction of an exchange, not only
+  free-text area words.
+
 ## Calibration table
 
 Generated from `scoringConstants.ts` (`PROVENANCE`). Every **assumed** row is a

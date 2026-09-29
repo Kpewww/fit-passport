@@ -8,3 +8,4 @@ visible table). What remains:
 |---|---|---|
 | 03 | Size charts that are not `<table>` | A real capture of such a chart (see the file) |
 | 07 | Closet photos out of the database | A Vercel Blob store the founder creates; needed before a real cohort |
+| 08 | Demo fixtures may hold body numbers in garment fields (Uniqlo recommends XL at chest 100) | Reading the brand pages; small once confirmed |

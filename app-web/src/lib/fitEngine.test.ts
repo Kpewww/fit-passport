@@ -1168,3 +1168,47 @@ describe("waist from a body chart", () => {
     expect(pick(86)).toBe("M");
   });
 });
+
+// Outcome learning, Session 78d3. Exchanges were ignored; a return penalised BOTH
+// neighbours whatever the direction; an untouched old form stored overallFit = 4 and
+// counted as a good fit.
+describe("outcomes read in the direction they were wrong", () => {
+  const sizes = [{ label: "S", chestCm: 104 }, { label: "M", chestCm: 110 }, { label: "L", chestCm: 116 }];
+  const run = (outcomes: any[]) =>
+    recommend(baseInput({
+      product: { brand: "Nike", category: "tshirt" },
+      profile: { preferredFit: "regular" },
+      sizes,
+      outcomes: outcomes.map((o) => ({ productBrand: "Nike", productCategory: "tshirt", ...o })),
+    }), { skipStability: true });
+  const score = (out: ReturnType<typeof run>, l: string) => out.ranked.find((r) => r.label === l)!.score;
+
+  it("counts a return 'too tight' against the size and the smaller one, never the bigger", () => {
+    const out = run([{ purchasedSize: "M", decision: "return", fitDirection: -10 }]);
+    expect(score(out, "L")).toBeGreaterThan(score(out, "M"));
+    expect(score(out, "L")).toBeGreaterThan(score(out, "S"));
+    expect(out.best.label).toBe("L");
+  });
+
+  it("counts a return with no direction against that size only", () => {
+    // Not "S and L blamed equally" — the old code did exactly that, at half strength
+    // each — but neither blamed AT ALL: we do not know which way it was wrong.
+    const none = run([]);
+    const out = run([{ purchasedSize: "M", decision: "return" }]);
+    expect(score(out, "S")).toBeCloseTo(score(none, "S"), 10);
+    expect(score(out, "L")).toBeCloseTo(score(none, "L"), 10);
+    expect(score(out, "M")).toBeLessThan(score(none, "M"));
+  });
+
+  it("uses an exchange as the label it is: the swapped-to size was right", () => {
+    const out = run([{ purchasedSize: "M", decision: "exchange", exchangedForSize: "L", fitDirection: -10 }]);
+    expect(out.best.label).toBe("L");
+    expect(out.best.reasons.some((r) => /exchanged a M for a L/.test(r.message))).toBe(true);
+  });
+
+  it("does not treat a kept-but-tight garment as confirming its size", () => {
+    const tight = run([{ purchasedSize: "M", decision: "keep", fitDirection: -10 }]);
+    const right = run([{ purchasedSize: "M", decision: "keep", fitDirection: 0 }]);
+    expect(score(right, "M")).toBeGreaterThan(score(tight, "M"));
+  });
+});

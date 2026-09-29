@@ -599,7 +599,11 @@ model FitOutcome {
   decision         String // "keep" | "return" | "exchange"
   exchangedForSize String?
 
-  overallFit     Int? // 1-5
+  overallFit     Int? // 1-5 — DERIVED from fitDirection when that is given (⑮)
+  // How it fit, on the signed scale the closet uses (fitDirection.ts): −10 too tight
+  // … 0 just right … +10 too loose. The unipolar 1–5 above cannot say WHICH WAY a
+  // return was wrong, which is the one thing outcome learning needs. Session 78d3.
+  fitDirection   Int?
   // Area-specific issues (JSON)
   // {"shoulders":"tight","chest":"tight","sleeve":"long","length":"short"}
   areaIssuesJson String?

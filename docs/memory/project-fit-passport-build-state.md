@@ -1120,3 +1120,18 @@ nothing learned and the explanation says so.
 **(76)** **A fit report is an interval, and contradictory reports are never averaged.**
 Learn only from a strict majority of mutually consistent reports; name what was left
 out; with no majority, keep the stated preference and say why.
+
+**SESSION 78d3 (2026-09-29).** 582 tests. **Outcomes are signed.**
+`FitOutcome.fitDirection` (migration `20260929180000_outcome_fit_direction`). Returns/
+exchanges must state a direction (validation in `lib/outcomeInput.ts`); `overallFit`
+derived. `scoreOutcome`: exchange boosts the swapped-to size; a return penalises only in
+its direction (no direction → only that size). `brandBias` reads signed outcomes and
+exchange direction.
+
+**NEW INVARIANT:**
+**(77)** **An outcome is read in the direction it was wrong.** Never penalise the
+neighbour on the other side of a directional return; never read a size as confirmed
+by a keep that did not fit; never ignore an exchange.
+
+**Open (todo/engineering/08):** the Uniqlo demo fixture recommends XL at chest 100 —
+likely body numbers in the garment field (real page M = 95.9–104.1, midpoint 100).

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Button, Card, EmptyState, Field, LinkButton, inputClass } from "@/components/ui";
 import { ArrowRight } from "@/components/Icon";
+import { FitDirectionInput } from "@/components/FitDirectionInput";
+import { describeDirection } from "@/lib/fitDirection";
 
 type Outcome = {
   id: string;
@@ -10,6 +12,7 @@ type Outcome = {
   decision: "keep" | "return" | "exchange";
   exchangedForSize: string | null;
   overallFit: number | null;
+  fitDirection: number | null;
   notes: string | null;
   createdAt: string;
   product: { id: string; brand: string | null; productName: string | null; category: string | null };
@@ -22,7 +25,7 @@ export default function HistoryPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [form, setForm] = useState({
     productId: "", purchasedSize: "", decision: "keep" as "keep" | "return" | "exchange",
-    exchangedForSize: "", overallFit: 4, notes: "",
+    exchangedForSize: "", fitDirection: 0, fitChosen: false, notes: "",
     areaShoulders: "", areaChest: "", areaSleeve: "", areaLength: "",
   });
 
@@ -53,12 +56,15 @@ export default function HistoryPage() {
         purchasedSize: form.purchasedSize,
         decision: form.decision,
         exchangedForSize: form.exchangedForSize || null,
-        overallFit: form.overallFit,
+        // A keep may rest on "just right" — kept already implies it fit, and that is
+        // the modal answer (DIRECTION.default). A return or exchange may not: the
+        // form will not submit until they say which way it was wrong.
+        fitDirection: form.decision === "keep" || form.fitChosen ? form.fitDirection : null,
         notes: form.notes || null,
         areaIssuesJson: Object.keys(areaIssues).length > 0 ? JSON.stringify(areaIssues) : null,
       }),
     });
-    setForm({ ...form, purchasedSize: "", notes: "", areaShoulders: "", areaChest: "", areaSleeve: "", areaLength: "" });
+    setForm({ ...form, purchasedSize: "", notes: "", fitDirection: 0, fitChosen: false, areaShoulders: "", areaChest: "", areaSleeve: "", areaLength: "" });
     load();
   }
 
@@ -102,7 +108,7 @@ export default function HistoryPage() {
                 </Field>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="Decision">
                   <select className={inputClass} value={form.decision}
                     onChange={(e) => setForm({ ...form, decision: e.target.value as typeof form.decision })}>
@@ -116,12 +122,23 @@ export default function HistoryPage() {
                     disabled={form.decision !== "exchange"}
                     onChange={(e) => setForm({ ...form, exchangedForSize: e.target.value })} />
                 </Field>
-                <Field label="Overall fit">
-                  <select className={inputClass} value={form.overallFit}
-                    onChange={(e) => setForm({ ...form, overallFit: Number(e.target.value) })}>
-                    {[1, 2, 3, 4, 5].map((n) => <option key={n} value={n}>{n}/5</option>)}
-                  </select>
-                </Field>
+
+              </div>
+
+              {/* How it fit — the signed scale the closet uses. It replaced a 1–5
+                  select that defaulted to 4, so an untouched form was stored as a
+                  good fit and a return never said which way it was wrong. */}
+              <div>
+                <p className="mb-1.5 text-sm font-medium text-ink">
+                  How did it fit?
+                  {form.decision !== "keep" && !form.fitChosen && (
+                    <span className="ml-2 font-normal text-ink-faint">— choose one, so we know which way to adjust</span>
+                  )}
+                </p>
+                <FitDirectionInput
+                  value={form.fitDirection}
+                  onChange={(n) => setForm({ ...form, fitDirection: n, fitChosen: true })}
+                />
               </div>
 
               <fieldset className="rounded-xl border border-line p-3">
@@ -155,7 +172,14 @@ export default function HistoryPage() {
                   placeholder="Anything the size labels can't capture." />
               </Field>
 
-              <Button type="submit" disabled={!form.productId || !form.purchasedSize}>
+              <Button
+                type="submit"
+                disabled={
+                  !form.productId || !form.purchasedSize ||
+                  (form.decision !== "keep" && !form.fitChosen) ||
+                  (form.decision === "exchange" && !form.exchangedForSize.trim())
+                }
+              >
                 Record outcome
               </Button>
             </form>
@@ -182,6 +206,9 @@ export default function HistoryPage() {
                     {o.decision}{o.exchangedForSize ? ` for ${o.exchangedForSize}` : ""}
                   </span>
                 </div>
+                {describeDirection(o.fitDirection) && (
+                  <p className="mt-1 text-sm text-ink-soft">Fit: {describeDirection(o.fitDirection)}</p>
+                )}
                 {o.notes && <p className="mt-1 text-sm text-ink-soft">{o.notes}</p>}
                 <p className="mt-1 text-xs text-ink-faint">
                   {new Date(o.createdAt).toLocaleString()}

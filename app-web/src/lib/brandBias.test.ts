@@ -164,3 +164,21 @@ describe("closet reports as brand evidence", () => {
     expect(withArg).toEqual(without);
   });
 });
+
+describe("signed outcomes and exchanges vote for which way a brand runs", () => {
+  it("reads two 'too tight' returns as the brand running small", () => {
+    const b = biasForBrand("Nike", [
+      { productBrand: "Nike", decision: "return", fitDirection: -10 },
+      { productBrand: "Nike", decision: "return", fitDirection: -5 },
+    ]);
+    expect(b.direction).toBe("small");
+  });
+
+  it("reads swapping up a size as the brand running small, without any area words", () => {
+    const b = biasForBrand("Nike", [
+      { productBrand: "Nike", decision: "exchange", purchasedSize: "M", exchangedForSize: "L" },
+      { productBrand: "Nike", decision: "exchange", purchasedSize: "S", exchangedForSize: "M" },
+    ]);
+    expect(b.direction).toBe("small");
+  });
+});

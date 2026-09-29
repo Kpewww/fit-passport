@@ -1,17 +1,8 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-
-const OutcomeSchema = z.object({
-  productId: z.string().min(1),
-  purchasedSize: z.string().min(1),
-  decision: z.enum(["keep", "return", "exchange"]),
-  exchangedForSize: z.string().optional().nullable(),
-  overallFit: z.coerce.number().int().min(1).max(5).optional().nullable(),
-  areaIssuesJson: z.string().max(2000).optional().nullable(),
-  notes: z.string().max(1000).optional().nullable(),
-});
+import { ratingFromDirection } from "@/lib/fitDirection";
+import { OutcomeSchema } from "@/lib/outcomeInput";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -35,8 +26,14 @@ export async function POST(req: Request) {
     select: { id: true },
   });
   if (!owned) return NextResponse.json({ error: "product not found" }, { status: 404 });
+  const { fitDirection, overallFit, ...rest } = parsed.data;
   const outcome = await prisma.fitOutcome.create({
-    data: { userId: user.id, ...parsed.data },
+    data: {
+      userId: user.id,
+      ...rest,
+      fitDirection: fitDirection ?? null,
+      overallFit: fitDirection != null ? ratingFromDirection(fitDirection) : overallFit ?? null,
+    },
   });
   return NextResponse.json({ outcome });
 }

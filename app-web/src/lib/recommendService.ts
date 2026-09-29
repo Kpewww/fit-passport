@@ -91,6 +91,8 @@ export async function computeRecommendation(
     outcomes: priorOutcomes.map<OutcomeInput>((o) => ({
       purchasedSize: o.purchasedSize,
       decision: o.decision as OutcomeInput["decision"],
+      exchangedForSize: o.exchangedForSize,
+      fitDirection: o.fitDirection,
       overallFit: o.overallFit,
       areaIssues: o.areaIssuesJson ? JSON.parse(o.areaIssuesJson) : null,
       productBrand: o.product.brand,

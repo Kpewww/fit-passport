@@ -45,6 +45,7 @@ import {
   CONFIDENCE_CAPS,
   DEFAULT_WEIGHTS,
   DIMENSIONS,
+  DIRECTION,
   KNOWN_GOOD,
   OUTCOME,
   STABILITY,
@@ -94,6 +95,10 @@ export type KnownGoodInput = {
 export type OutcomeInput = {
   purchasedSize: string;
   decision: "keep" | "return" | "exchange";
+  /** The size swapped TO — on an exchange, the one label that names the right size. */
+  exchangedForSize?: string | null;
+  /** How it fit, signed (fitDirection.ts). Which way a return was wrong. */
+  fitDirection?: number | null;
   overallFit?: number | null;
   areaIssues?: Record<string, string> | null;
   productBrand?: string | null;
@@ -530,32 +535,68 @@ function scoreOutcome(
   W: Weights,
 ): { score: number; reason: Reason | null } {
   if (outcomes.length === 0) return { score: 0, reason: null };
-  const sizeAlpha = normalizeToAlpha(size.label);
-  let bestPenalty = 0; // negative direction
+  const sIdx = alphaIndex(normalizeToAlpha(size.label));
+  if (sIdx == null) return { score: 0, reason: null };
+  let bestPenalty = 0;
   let bestBoost = 0;
   let msg = "";
   for (const o of outcomes) {
-    const oAlpha = normalizeToAlpha(o.purchasedSize);
-    const dist = alphaDistance(sizeAlpha, oAlpha);
-    if (dist === null || dist > 1) continue;
+    const pIdx = alphaIndex(normalizeToAlpha(o.purchasedSize));
+    if (pIdx == null) continue;
     const sameBrand =
       product.brand && o.productBrand?.toLowerCase() === product.brand.toLowerCase();
     const sameCat =
       product.category &&
       o.productCategory?.toLowerCase() === product.category.toLowerCase();
     const mult = sameBrand && sameCat ? OUTCOME.mult.sameBrandCategory : sameCat ? OUTCOME.mult.sameCategory : OUTCOME.mult.other;
+    const where = o.productBrand ?? "similar";
+    const d = o.fitDirection;
+    const directional = d != null && Math.abs(d) >= DIRECTION.directional;
+
+    // EXCHANGE — the most informative record there is: "this size was wrong, THAT
+    // one was right". Ignored entirely before Session 78d3.
+    if (o.decision === "exchange" && o.exchangedForSize) {
+      const eIdx = alphaIndex(normalizeToAlpha(o.exchangedForSize));
+      if (eIdx != null) {
+        const dist = Math.abs(sIdx - eIdx);
+        if (dist <= 1) {
+          const b = (1 - dist * OUTCOME.perStep) * mult;
+          if (b > bestBoost) { bestBoost = b; msg = `You exchanged a ${o.purchasedSize} for a ${o.exchangedForSize} in ${where}`; }
+        }
+      }
+      if (sIdx === pIdx && mult > bestPenalty) {
+        bestPenalty = mult;
+        msg = `You exchanged a ${o.purchasedSize} for a ${o.exchangedForSize} in ${where}`;
+      }
+      continue;
+    }
+
     if (o.decision === "return") {
-      const p = (1 - dist * OUTCOME.perStep) * mult;
-      if (p > bestPenalty) {
-        bestPenalty = p;
-        msg = `You returned a ${o.purchasedSize} in ${o.productBrand ?? "similar"} (${o.areaIssues ? Object.entries(o.areaIssues).map(([k, v]) => `${k}: ${v}`).join(", ") : "fit issue"})`;
+      // Penalise the size that was wrong, and — only when we know which way it was
+      // wrong — the neighbour further in that direction. It used to penalise BOTH
+      // neighbours whatever happened: returning an M for being too tight counted
+      // against L, the size most likely to be right.
+      const dist = Math.abs(sIdx - pIdx);
+      const wrongWay = directional ? (d! < 0 ? sIdx <= pIdx : sIdx >= pIdx) : sIdx === pIdx;
+      if (wrongWay && dist <= 1) {
+        const p = (1 - dist * OUTCOME.perStep) * mult;
+        if (p > bestPenalty) {
+          bestPenalty = p;
+          const how = directional ? (d! < 0 ? "too tight" : "too loose") : "fit issue";
+          msg = `You returned a ${o.purchasedSize} in ${where} (${how})`;
+        }
       }
-    } else if (o.decision === "keep" && (o.overallFit ?? 0) >= OUTCOME.goodFitRating) {
+      continue;
+    }
+
+    // KEEP — confirms the size only if it actually fit. With a signed report that
+    // means "near just right"; the legacy 1–5 is read as before. An untouched old
+    // form stored overallFit = 4, which is why the signed field now decides first.
+    const fitWell = d != null ? !directional : (o.overallFit ?? 0) >= OUTCOME.goodFitRating;
+    const dist = Math.abs(sIdx - pIdx);
+    if (fitWell && dist <= 1) {
       const b = (1 - dist * OUTCOME.perStep) * mult * OUTCOME.keepBoost;
-      if (b > bestBoost) {
-        bestBoost = b;
-        msg = `You kept a ${o.purchasedSize} in ${o.productBrand ?? "similar"} with a good fit`;
-      }
+      if (b > bestBoost) { bestBoost = b; msg = `You kept a ${o.purchasedSize} in ${where} with a good fit`; }
     }
   }
   const net = bestBoost - bestPenalty;
@@ -731,6 +772,9 @@ export function recommend(
           decision: o.decision,
           overallFit: o.overallFit ?? null,
           areaIssues: o.areaIssues ?? null,
+          fitDirection: o.fitDirection ?? null,
+          purchasedSize: o.purchasedSize,
+          exchangedForSize: o.exchangedForSize ?? null,
         })),
         // Closet reports vote too — available on day one, where outcomes need a
         // purchase to have happened. Same-category items are excluded inside
