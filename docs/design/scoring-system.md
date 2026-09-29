@@ -20,13 +20,13 @@ provenances:
 |---|---|---|
 | **measured** | Computed from data we hold, with the n stated | **1** |
 | **cited** | A published source states this value — not just the idea | **2** |
-| **assumed** | A judgement, usually hand-tuned against a handful of cases | **94** |
+| **assumed** | A judgement, usually hand-tuned against a handful of cases | **95** |
 
 `scoringConstants.test.ts` fails if a value has no provenance, if a provenance
 names no value, if a measured entry does not state its n, or if an assumed value
 is missing from the calibration table below.
 
-**Read the counts plainly.** 94 of 97 numbers are judgements. The
+**Read the counts plainly.** 95 of 98 numbers are judgements. The
 literature the engine cites supports the SHAPE of the model — fit as a bipolar
 ordinal (too small … too big), fit as a multi-measurement signal — and not a
 single one of its values. That is normal for a scorer before it has outcome data,
@@ -126,6 +126,14 @@ The assumed numbers become measured in this order, each gated on data:
    band's stated confidence matches its keep rate.
 3. **Real size steps** from every chart captured → `ladderStepChestCm`.
 
+**The instruments are already in place** (Session 78f, `app-web/eval/`): per system,
+the Brier score, mean confidence − hit rate, and the count of *confidently wrong*
+picks (wrong, shown above `EVAL.confidentAbove`) — each with its n, and null at
+n = 0 rather than a number computed from nothing. They read `n = 0` today because
+step 1 has not happened: the harness never grades against its own output
+(invariant 66). What needs no truth is measured now: stability of every pick, and
+guardrail checks on adversarial personas (§9).
+
 ## 7. Small changes must not swing a confident answer (Session 78c)
 
 A scorer built from smooth curves never jumps in score, but the recommended size is
@@ -181,7 +189,12 @@ order never matters):
 - a strict majority agrees → learn from the majority and **say how many were left
   out** ("1 garment left out because its report contradicts the others");
 - no strict majority → **learn nothing**, keep the stated preference, and say so in
-  the explanation ("your fit reports … contradict each other").
+  the explanation ("your fit reports … contradict each other"). *Nothing* means
+  nothing downstream either (Session 78f): those garments do not anchor a size, vote
+  on the brand, or add the closet's confidence weight. Before that fix the sentence
+  was true of the ease alone, and a contradictory closet **raised** confidence
+  46% → 75% on the Patagonia women's case — found by the evaluation's adversarial
+  persona. Unmeasured closet items took no part and keep their say.
 
 Example that used to be averaged into a confident number: "too tight" with 14 cm of
 room (wants ≥ ~20) and "just right" with 16 cm (wants ~16). They cannot both be true
@@ -238,7 +251,7 @@ because honest typos are far more common than trolling.
   honest one, they are removed first (test: `personalEase.test.ts`, which on the
   previous engine learned a preferred ease of 151 cm).
 - **Reports that contradict each other** — §8: the largest consistent set wins; no
-  strict majority → learn nothing and say so.
+  strict majority → learn nothing, anywhere in the engine, and say so.
 - **Outcomes** — a return or exchange must state a direction (§8), so an untouched
   form can no longer register as evidence.
 - **Volume.** Writes are rate-limited per network: closet 120 / 10 min, outcomes
@@ -402,6 +415,7 @@ number we have not yet earned; the test fails if one is missing here.
 | `PLAUSIBILITY.chestOverWaistCm` | 55 | assumed | as above; wide of any chest–waist drop we expect to see (UNVERIFIED — no dataset checked) |
 | `PLAUSIBILITY.shoulderShareMin` | 0.3 | assumed | wide bounds on shoulder breadth ÷ chest circumference (UNVERIFIED — the typical share has not been checked against a dataset) |
 | `PLAUSIBILITY.shoulderShareMax` | 0.65 | assumed | as shoulderShareMin |
+| `EVAL.confidentAbove` | 0.5 | assumed | the display's own meaning, not tuned: a pick shown as over 50% confident claims to be more likely right than wrong — which holds only if confidence is read as a probability, and that is unvalidated (§3) |
 | `CONFIDENCE_CAPS.implausibleBody` | 0.4 | assumed | same ceiling as a regional-average body: we are not sure the numbers are the wearer's |
 | `BRAND_BIAS.minEvidence` | 2 | assumed | two same-direction reports before a brand is said to run big or small |
 | `DIRECTION.directional` | 3 | assumed | between 'just right' (0) and 'a bit snug/roomy' (±5) |

@@ -7,10 +7,14 @@
 // own config (vitest.eval.config.ts) and never runs inside `npm test`.
 
 import { describe, it } from "vitest";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   EVAL_DIR,
+  FRAGILE_BELOW,
+  calibration,
+  guardrails,
+  stabilityOf,
   loadCapture,
   loadCases,
   loadPersonas,
@@ -21,6 +25,7 @@ import {
   runS5,
   scoreRun,
   type CaseScore,
+  type GuardrailResult,
   type SystemName,
   type SystemRun,
 } from "./lib";
@@ -33,6 +38,10 @@ type Row = {
   truth: { verifiedBy: string[]; readOn: string; outcome: string } | null;
   runs: ReturnType<typeof summarise>[];
   scores: Partial<Record<SystemName, CaseScore>> | null;
+  /** Needs no truth: behaviour on adversarial personas, per system. */
+  guardrails: Partial<Record<SystemName, GuardrailResult[]>>;
+  /** Needs no truth: how firmly each ordinary pick holds, per system. */
+  stability: Partial<Record<SystemName, Array<{ persona: string; agreement: number }>>>;
 };
 
 function summarise(r: SystemRun) {
@@ -101,6 +110,26 @@ function aggregate(rows: Row[]) {
       kindRight: count((s) => s.kindRight === true),
       recommendation: recs,
       provenanceRight: count((s) => s.provenanceRight === true),
+      // Threshold-free calibration of graded picks; null at n = 0, never a made-up score.
+      calibration: calibration(scored.flatMap((s) => s.recommendation?.graded ?? [])),
+      stability: (() => {
+        const all = rows.flatMap((r) => r.stability[sys] ?? []);
+        const mean = all.length ? Math.round((all.reduce((a, x) => a + x.agreement, 0) / all.length) * 1000) / 1000 : null;
+        return {
+          picks: all.length,
+          meanAgreement: mean,
+          fragile: all.filter((x) => x.agreement < FRAGILE_BELOW).length,
+          fragileBelow: FRAGILE_BELOW,
+        };
+      })(),
+      guardrails: (() => {
+        const all = rows.flatMap((r) => r.guardrails[sys] ?? []);
+        return {
+          checks: all.length,
+          passed: all.filter((g) => g.passed).length,
+          failures: all.filter((g) => !g.passed).map((g) => `${g.persona}: ${g.check} — ${g.detail}`),
+        };
+      })(),
     };
   }
   return out;
@@ -124,7 +153,8 @@ function markdown(date: string, live: boolean, rows: Row[], summary: Record<stri
       `${rows.length} cases · ${rows.filter((r) => r.capture).length} with a capture · ` +
       `${rows.filter((r) => r.truth).length} with ground truth.`,
     "",
-    "Picks are listed for the case's personas in order (men 92/100/108 cm, women 84/92/100 cm); `?` = undetermined.",
+    "Picks are listed for the case's personas in order (men 92/100/108 cm, women 84/92/100 cm, then the adversarial personas); `?` = undetermined.",
+    "Adversarial personas are never scored for accuracy — only checked for the promised behaviour (guardrails below).",
     "",
   );
   lines.push(`| case | capture | truth | B | S5${live ? " | A" : ""} |`, `|---|---|---|---|---${live ? "|---" : ""}|`);
@@ -139,6 +169,26 @@ function markdown(date: string, live: boolean, rows: Row[], summary: Record<stri
     const by = (sys: SystemName) => cell(r.runs.find((x) => x.system === sys), ids);
     lines.push(`| ${r.id} | ${cap} | ${truth} | ${by("B-brand-chart")} | ${by("S5-extension")}${live ? ` | ${by("A-server")}` : ""} |`);
   }
+  lines.push(
+    "",
+    "## Robustness and calibration",
+    "",
+    "| system | stable picks | fragile | guardrails | graded | Brier | conf − hit rate | confidently wrong |",
+    "|---|---|---|---|---|---|---|---|",
+  );
+  for (const [sys, v] of Object.entries(summary) as Array<[string, any]>) {
+    const c = v.calibration;
+    const st = v.stability;
+    lines.push(
+      `| ${sys} | ${st.picks} (mean agreement ${st.meanAgreement ?? "—"}) | ${st.fragile} below ${st.fragileBelow} | ` +
+        `${v.guardrails.passed}/${v.guardrails.checks} | ${c.n} | ${c.brier ?? "— (n = 0)"} | ${c.gap ?? "—"} | ` +
+        `${c.confidentlyWrong.count} of ${c.n} above ${c.confidentlyWrong.above} |`,
+    );
+  }
+  lines.push(
+    "",
+    "Brier and calibration need ground truth (`eval/truth/`); until two people have read each chart, they are `n = 0` by design — the harness never grades against its own output (invariant 66).",
+  );
   lines.push("", "## Summary", "", "```json", JSON.stringify(summary, null, 2), "```", "");
   return lines.join("\n");
 }
@@ -166,13 +216,19 @@ describe("Sprint 5 evaluation", () => {
         truth: truth ? { verifiedBy: truth.verifiedBy, readOn: truth.readOn, outcome: truth.outcome } : null,
         runs: runs.map(summarise),
         scores,
+        guardrails: Object.fromEntries(runs.map((r) => [r.system, guardrails(r, people)])),
+        stability: Object.fromEntries(runs.map((r) => [r.system, stabilityOf(r, people)])),
       });
     }
     const summary = aggregate(rows);
     const date = new Date().toISOString().slice(0, 10);
     const dir = join(EVAL_DIR, "results");
     mkdirSync(dir, { recursive: true });
-    const stem = join(dir, `${date}${live ? "-live" : ""}`);
+    // Never overwrite a results file: a dated result is a record, and a second run
+    // on the same day (it happened in Session 78) replaced a committed one.
+    const base = join(dir, `${date}${live ? "-live" : ""}`);
+    let stem = base;
+    for (let k = 2; existsSync(`${stem}.json`) || existsSync(`${stem}.md`); k++) stem = `${base}-run${k}`;
     writeFileSync(`${stem}.json`, JSON.stringify({ date, live, personas, summary, rows }, null, 2) + "\n");
     writeFileSync(`${stem}.md`, markdown(date, live, rows, summary));
     console.log(markdown(date, live, rows, summary));

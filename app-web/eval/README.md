@@ -102,6 +102,18 @@ the right answer can be derived from the chart.
   ease reference is chosen and frozen here (open decision #5). Extraction metrics
   still apply to them.
 
+**Adversarial personas** (Session 78f; `scoring-system.md` §9) — an absurd body
+(chest 58 / waist 110, and a women's equivalent) and a closet of two measured
+garments whose reports cannot both be true. They are **never scored for accuracy**:
+there is no right size for a body that doesn't exist. They are checked against
+what the product promises, which needs no ground truth:
+
+- absurd body → confidence at or below `CONFIDENCE_CAPS.implausibleBody`, and the
+  explanation names the measurements;
+- contradictory closet → the explanation says so, **and** confidence is no higher
+  than the same persona with an empty closet. The second half was added after the
+  first half passed on the message alone while confidence rose 46% → 75%.
+
 ## Metrics (per system)
 
 1. **Page acquisition** — A: our fetch returned the page. S5: the capture holds
@@ -122,6 +134,17 @@ the right answer can be derived from the chart.
    the synthesized ladder at all**: those numbers came from no page, so the answer
    is fabricated even if its label happens to match.
 
+9. **Stability** (no truth needed) — for every ordinary pick, the share of the
+   engine's perturbation grid that keeps it (`stability.ts`); reported as the mean
+   and the count below `STABILITY.fragileBelow`.
+10. **Calibration** (needs truth) — over graded picks: the **Brier score**
+    (mean (confidence − right)²; 0.25 is a constant 50%), **mean confidence − hit
+    rate** (positive = over-confident), and **confidently wrong**: wrong picks shown
+    above `EVAL.confidentAbove` (0.5 — a pick over 50% claims to be more likely
+    right than wrong). All three are reported with their n and are **null at
+    n = 0**, never a score computed from nothing.
+11. **Guardrails** (no truth needed) — the adversarial checks above, passed / run.
+
 Also recorded: payload size against the page's size, capture time, and how often
 each reader (table, LLM, vision) produced the numbers.
 
@@ -141,7 +164,13 @@ EVAL_LIVE=1 npm run eval     # also A — contacts each retailer once per case
 ```
 
 Results go to `results/<date>.json` (machine-readable) and `results/<date>.md`
-(the table). Until a case has a `truth/` file, its accuracy columns read "truth
+(the table). **A results file is never overwritten**: a second run on the same day
+writes `<date>-run2`, `-run3`, … (a same-day re-run once replaced a committed
+record).
+
+S5 needs the captures in `local/captures/`, which are git-ignored and do not
+travel with a clone or a machine move; without them only B (and A, live) run.
+Re-capture with `browser-extension/scripts/try-pages.mjs`. Until a case has a `truth/` file, its accuracy columns read "truth
 pending" — observations are still recorded.
 
 `src/lib/evalCases.test.ts` replays every **committed** capture that has a truth

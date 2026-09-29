@@ -222,6 +222,38 @@ describe("fit reports as intervals — contradictions are caught, not averaged",
     } as any);
     expect(out.conflictNote).toMatch(/contradict each other/);
   });
+
+  // Found by the eval's adversarial persona (Session 78f): the explanation said
+  // "we could not learn from these", while the closet still added its full
+  // confidence weight — 46% → 75% for one persona. Reports that cannot all be true
+  // do not tell us who the wearer is, so they earn no confidence.
+  it("earns no confidence for a closet whose reports contradict each other", () => {
+    const input = (knownGood: unknown[]) => ({
+      profile: { chestCm: 100, preferredFit: "regular" },
+      product: { brand: "Nike", category: "tshirt" },
+      sizes: [{ label: "M", chestCm: 110 }, { label: "L", chestCm: 118 }],
+      knownGood,
+      outcomes: [],
+    }) as any;
+    const empty = recommend(input([]));
+    const contradictory = recommend(input([
+      { brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 2, fitDirection: -10, garmentChestCm: 114, garmentMeasuredFrom: "page" },
+      { brand: "Gap", category: "tshirt", size: "M", fitRating: 5, fitDirection: 0, garmentChestCm: 116, garmentMeasuredFrom: "page" },
+    ]));
+    expect(contradictory.best.confidence).toBeLessThanOrEqual(empty.best.confidence);
+    // Not learned from means not learned from anywhere: no anchor, no brand vote.
+    // Every item here is measured, so the ranking is exactly the empty closet's.
+    const scores = (o: typeof empty) => o.ranked.map((r) => [r.label, r.score, r.confidence]);
+    expect(scores(contradictory)).toEqual(scores(empty));
+
+    // Control, so the rule cannot pass by switching the closet off: reports that
+    // agree still earn it.
+    const agreeing = recommend(input([
+      { brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5, fitDirection: 0, garmentChestCm: 110, garmentMeasuredFrom: "page" },
+      { brand: "Gap", category: "tshirt", size: "M", fitRating: 5, fitDirection: 0, garmentChestCm: 111, garmentMeasuredFrom: "page" },
+    ]));
+    expect(agreeing.best.confidence).toBeGreaterThan(empty.best.confidence);
+  });
 });
 
 describe("a report no real preference could produce", () => {

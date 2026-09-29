@@ -1,11 +1,122 @@
 {
   "_note": "Fixed synthetic wearers. Regular fit, empty closet, no outcomes — so the answer depends on the chart alone. Chests sit inside common size ranges; a chest in a gap between two ranges makes both neighbours acceptable.",
   "personas": [
-    { "id": "m92", "sex": "male", "chestCm": 92, "waistCm": 78, "shoulderCm": 44, "preferredFit": "regular" },
-    { "id": "m100", "sex": "male", "chestCm": 100, "waistCm": 86, "shoulderCm": 46, "preferredFit": "regular" },
-    { "id": "m108", "sex": "male", "chestCm": 108, "waistCm": 94, "shoulderCm": 48, "preferredFit": "regular" },
-    { "id": "f84", "sex": "female", "chestCm": 84, "waistCm": 66, "shoulderCm": 38, "preferredFit": "regular" },
-    { "id": "f92", "sex": "female", "chestCm": 92, "waistCm": 74, "shoulderCm": 40, "preferredFit": "regular" },
-    { "id": "f100", "sex": "female", "chestCm": 100, "waistCm": 82, "shoulderCm": 42, "preferredFit": "regular" }
-  ]
+    {
+      "id": "m92",
+      "sex": "male",
+      "chestCm": 92,
+      "waistCm": 78,
+      "shoulderCm": 44,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "m100",
+      "sex": "male",
+      "chestCm": 100,
+      "waistCm": 86,
+      "shoulderCm": 46,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "m108",
+      "sex": "male",
+      "chestCm": 108,
+      "waistCm": 94,
+      "shoulderCm": 48,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "f84",
+      "sex": "female",
+      "chestCm": 84,
+      "waistCm": 66,
+      "shoulderCm": 38,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "f92",
+      "sex": "female",
+      "chestCm": 92,
+      "waistCm": 74,
+      "shoulderCm": 40,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "f100",
+      "sex": "female",
+      "chestCm": 100,
+      "waistCm": 82,
+      "shoulderCm": 42,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "m-absurd",
+      "sex": "male",
+      "chestCm": 58,
+      "waistCm": 110,
+      "shoulderCm": 46,
+      "preferredFit": "regular",
+      "adversarial": "absurd-body"
+    },
+    {
+      "id": "f-absurd",
+      "sex": "female",
+      "chestCm": 60,
+      "waistCm": 115,
+      "shoulderCm": 40,
+      "preferredFit": "regular",
+      "adversarial": "absurd-body"
+    },
+    {
+      "id": "m-contra",
+      "sex": "male",
+      "chestCm": 100,
+      "waistCm": 86,
+      "shoulderCm": 46,
+      "preferredFit": "regular",
+      "adversarial": "contradictory-closet",
+      "closet": [
+        {
+          "brand": "Eval Closet",
+          "category": "tshirt",
+          "size": "M",
+          "fitDirection": -10,
+          "garmentOverChestCm": 14
+        },
+        {
+          "brand": "Eval Closet",
+          "category": "tshirt",
+          "size": "M",
+          "fitDirection": 0,
+          "garmentOverChestCm": 16
+        }
+      ]
+    },
+    {
+      "id": "f-contra",
+      "sex": "female",
+      "chestCm": 92,
+      "waistCm": 74,
+      "shoulderCm": 40,
+      "preferredFit": "regular",
+      "adversarial": "contradictory-closet",
+      "closet": [
+        {
+          "brand": "Eval Closet",
+          "category": "tshirt",
+          "size": "M",
+          "fitDirection": -10,
+          "garmentOverChestCm": 14
+        },
+        {
+          "brand": "Eval Closet",
+          "category": "tshirt",
+          "size": "M",
+          "fitDirection": 0,
+          "garmentOverChestCm": 16
+        }
+      ]
+    }
+  ],
+  "_adversarial": "Adversarial personas (scoring-system.md §9) are never scored for accuracy — there is no right size for a body that does not exist. They are checked for the behaviour the product promises: an implausible body is capped and named; a closet whose reports cannot all be true is not learned from, and the explanation says so. The contradictory pair: 'too tight' with 14 cm of room (wants at least ~20 cm) and 'just right' with 16 cm (wants ~14-18 cm)."
 }

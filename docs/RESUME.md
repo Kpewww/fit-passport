@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 78e · 2026-09-29 — LIVE, 587 tests + 1 honest skip.**
+> **Last updated: Session 78f · 2026-09-29 — LIVE, 588 tests + 1 honest skip.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -36,7 +36,7 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 **技术栈:** Node 24 LTS + **Next.js 14.2.35** App Router + React 18 + TS +
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
 Framer Motion(**Lenis 已移除**);three.js 懒加载:徽章 inspect **以及** 3D 人台/松量壳(`BodyMesh3D.tsx`)。
-命令:`npm run dev`、`npm run typecheck`、`npm test`(**587 个 + 1 个诚实跳过;看退出码,不要只看 Tests 那一行**)、`npm run build`、
+命令:`npm run dev`、`npm run typecheck`、`npm test`(**588 个 + 1 个诚实跳过;看退出码,不要只看 Tests 那一行**)、`npm run build`、
 改 schema 后 `npm run db:push`(**还必须建 migration**,见铁律 10)、生成文档 PDF `npm run docs:pdf`。
 测量工具:`app-web/scripts/mobile-audit.mjs`(移动端布局)、
 `brand/tests/size-test.mjs`(标志尺寸)、`app-web/scripts/capture-chart.mjs`(抄品牌尺码表)、
@@ -149,6 +149,9 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
   非作者的账号;跨用户品牌知识**只写了设计,没有实现**。
 - 首页以插件为主,URL 输入框折叠并标注为 Beta;`/extension` 提供 zip 下载。换成 Chrome
   商店只需改 `extensionDistribution.ts` 一个常量。
+- 内部评估(`npm run eval`)现在报告稳定性、Brier / 过度自信差值 / "自信但错了"
+  (没有真值时 n = 0,显示为 null),以及捣乱人设的防护检查。S5 需要
+  `eval/local/captures`(被 git 忽略,换电脑后不在)。
 - ⚠ 本地 `.env` 的 Upstash 为空,开发环境用的是进程内限流(路由重新编译时会清零)。
 
 **下一步:见 `todo/`(做什么)与 `docs/memory/project-fit-passport-next-steps.md`

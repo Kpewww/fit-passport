@@ -31,6 +31,60 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 78f — The evaluation measures robustness, and caught the engine contradicting itself
+
+Phase F: the internal evaluation (`app-web/eval/`) scored extraction, refusals and
+labels, but nothing about how firmly a pick holds, how confident a wrong one was,
+or how the engine behaves on input that cannot be true.
+
+**Added, per system:**
+- **Stability** of every ordinary pick (mean grid agreement; count below
+  `STABILITY.fragileBelow`). Needs no truth.
+- **Calibration** over graded picks — Brier score, mean confidence − hit rate, and
+  **confidently wrong** (wrong, above `EVAL.confidentAbove` = 0.5; registered as
+  assumed, reason stated: over 50% claims more likely right than wrong). All with n,
+  **null at n = 0** — which is today, because ground truth is still 0 of 11 cases
+  and the harness never grades against its own output (invariant 66).
+- **Adversarial personas** — absurd body, and a closet of two measured garments
+  whose reports cannot both be true. Never scored for accuracy; checked against
+  what §9 promises.
+- A results file is **never overwritten**; a same-day re-run writes `-run2`, …
+  (this session once replaced a committed record).
+
+**What it found — a real defect.** The contradictory-closet check first passed on
+the explanation alone ("…contradict each other — so we used your stated fit instead
+of learning from them") while **confidence rose**: 0.46 → 0.75 (Patagonia women's,
+f92), 0.62 → 0.75, 0.65 → 0.75. The closet still added its confidence weight, and
+its items still anchored sizes and voted on the brand. Fixed in `recommend`: the ease
+learner now runs first, and when its reports contradict with no majority the
+**measured** items are removed from the closet every other path reads (anchor, brand
+bias, anchor-weight switch, confidence). Unmeasured items took no part and keep
+their say. Unit test asserts the ranking is **identical** to an empty closet's; red
+without the filter (0.72 vs 0.65). The guardrail now also requires confidence ≤ the
+same persona with an empty closet. First version of the fix (withholding only the
+confidence weight) still failed the eval on the sweaters (+0.03, +0.13) — the
+anchors made the pick more decisive, which lifted the stability factor.
+
+**Also found, in my own harness:** the fixture closet was labelled
+`garmentMeasuredFrom: "eval"`, which the ease learner (rightly) does not trust — so
+the check was silently testing nothing. Now `"page"`, with a comment saying why.
+
+**Results — `eval/results/2026-09-29-run2`, B only:** guardrails 6/6; 9 stable picks,
+mean agreement 0.877, 2 below 0.75; calibration n = 0. Against the committed
+pre-78 results, 9 B picks changed: confidence rose everywhere (the Session 78a body-
+chart fix), and **Patagonia men's m92 moved XS → S**. Bisected to 951fd04 (78c, the
+body-range edge fix); Patagonia's own chart puts 92 cm inside **S (91.4–97.8)** and
+XS ends at 91.4, so the old pick was wrong by the retailer's rule.
+
+**Not run: S5.** The extension captures live in the git-ignored `eval/local/` and are
+not on this machine; the committed results used them (`committed: false`). Re-capture
+with `try-pages.mjs --save-captures` — noted in `eval/README.md`.
+
+588 tests + 1 skip, exit 0; typecheck and build clean; production-build smoke of
+`/`, `/extension`, `/check`, `/history`, `/ask/[id]`, the zip, and a live check.
+
+---
+
 ## 2026-09-29 · Session 78e — People deliberately messing with it
 
 Phase E. The founder asked that the scoring hold up when people "deliberately mess

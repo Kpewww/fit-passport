@@ -14,6 +14,7 @@ import { applyProvenanceCap, refusalFor } from "../src/lib/checkPolicy";
 import { recommend } from "../src/lib/fitEngine";
 import { engineSizes } from "../src/lib/engineInput";
 import { normalizeToAlpha } from "../src/lib/sizing";
+import { CONFIDENCE_CAPS, EVAL, STABILITY } from "../src/lib/scoringConstants";
 
 export const EVAL_DIR = dirname(fileURLToPath(import.meta.url));
 const CM_PER_INCH = 2.54;
@@ -24,6 +25,27 @@ export const VALUE_TOLERANCE_CM = 1.3;
 // Inputs
 // ---------------------------------------------------------------------------
 
+/**
+ * A garment in an eval persona's closet. The garment chest is given relative to
+ * the persona's chest, so the same closet means the same thing on every body.
+ */
+export type ClosetItem = {
+  brand: string;
+  category: string;
+  size: string;
+  fitDirection: number;
+  garmentOverChestCm: number;
+};
+
+/**
+ * An ADVERSARIAL persona is not scored for accuracy — there is no right size for a
+ * body that doesn't exist. It is checked for BEHAVIOUR the product promises
+ * (scoring-system.md §9): input that cannot be true is detected, capped, and
+ * named, never presented with ordinary confidence. These are properties of our
+ * own output, not a claim about the truth (invariant 66).
+ */
+export type Adversarial = "absurd-body" | "contradictory-closet";
+
 export type Persona = {
   id: string;
   sex: "male" | "female";
@@ -31,6 +53,8 @@ export type Persona = {
   waistCm: number;
   shoulderCm: number;
   preferredFit: "regular";
+  closet?: ClosetItem[];
+  adversarial?: Adversarial;
 };
 
 export type Case = {
@@ -112,7 +136,18 @@ export function loadTruth(id: string): Truth | null {
 
 export type SystemName = "A-server" | "B-brand-chart" | "S5-extension";
 
-export type Pick = { label: string; confidence: number; undetermined: boolean; verdict?: string };
+export type Pick = {
+  label: string;
+  confidence: number;
+  undetermined: boolean;
+  verdict?: string;
+  /** Share of the perturbation grid that keeps this pick (stability.ts). */
+  agreement?: number | null;
+  holdsForChestCm?: [number, number] | null;
+  conflictNote?: string | null;
+  /** For a persona with a closet: the same check with the closet emptied. */
+  emptyClosetConfidence?: number;
+};
 
 export type SystemRun = {
   system: SystemName;
@@ -143,19 +178,36 @@ function decide(system: SystemName, extracted: ExtractedProduct, personas: Perso
   if (refusal) return { ...base, outcome: "refuse", refusal: refusal.error, picks: {} };
   const picks: Record<string, Pick> = {};
   for (const p of personas) {
-    const raw = recommend({
+    const run = (withCloset: boolean) => recommend({
       profile: { chestCm: p.chestCm, waistCm: p.waistCm, shoulderCm: p.shoulderCm, preferredFit: p.preferredFit },
       product: { brand: extracted.brand, category: extracted.category },
       sizes: engineSizes(extracted.sizes),
-      knownGood: [],
+      knownGood: (withCloset ? p.closet ?? [] : []).map((k) => ({
+        brand: k.brand,
+        category: k.category,
+        size: k.size,
+        fitRating: 3,
+        fitDirection: k.fitDirection,
+        garmentChestCm: p.chestCm + k.garmentOverChestCm,
+        // As if added by link with the retailer's garment chart — the only closet
+        // numbers the ease learner trusts (personalEase TRUSTED_PROVENANCE). Any other
+        // label and the reports are silently skipped, which the guardrail would miss.
+        garmentMeasuredFrom: "page",
+      })),
       outcomes: [],
     });
-    const result = applyProvenanceCap(raw, extracted.source.sizesFrom);
+    const result = applyProvenanceCap(run(true), extracted.source.sizesFrom);
     picks[p.id] = {
       label: result.best.label,
       confidence: result.best.confidence,
       undetermined: result.undetermined,
       verdict: result.best.verdict,
+      agreement: result.stability?.agreement ?? null,
+      holdsForChestCm: result.stability?.holdsForChestCm ?? null,
+      conflictNote: result.conflictNote,
+      ...(p.closet?.length
+        ? { emptyClosetConfidence: applyProvenanceCap(run(false), extracted.source.sizesFrom).best.confidence }
+        : {}),
     };
   }
   return { ...base, outcome: "answer", picks };
@@ -223,7 +275,13 @@ export type CaseScore = {
   labelsJaccard?: number;
   values?: { compared: number; within: number };
   kindRight?: boolean;
-  recommendation?: { scored: number; right: number; wrong: string[] };
+  recommendation?: {
+    scored: number;
+    right: number;
+    wrong: string[];
+    /** One entry per scored pick — the input to Brier and the confidently-wrong rate. */
+    graded: Array<{ persona: string; confidence: number; right: boolean }>;
+  };
   provenanceRight?: boolean;
 };
 
@@ -281,13 +339,16 @@ export function scoreRun(truth: Truth, run: SystemRun, personas: Persona[]): Cas
   score.kindRight = gotKind === chart.kind;
 
   // Recommendation, body charts only.
-  const rec = { scored: 0, right: 0, wrong: [] as string[] };
+  const rec = { scored: 0, right: 0, wrong: [] as string[], graded: [] as Array<{ persona: string; confidence: number; right: boolean }> };
   for (const p of personas) {
+    if (p.adversarial) continue; // checked by guardrails(), never scored for accuracy
     const ok = acceptableSizes(truth, p.chestCm);
     const pick = run.picks[p.id];
     if (!ok || !pick || pick.undetermined) continue;
     rec.scored++;
-    if (ok.map(labelKey).includes(labelKey(pick.label))) rec.right++;
+    const right = ok.map(labelKey).includes(labelKey(pick.label));
+    rec.graded.push({ persona: p.id, confidence: pick.confidence, right });
+    if (right) rec.right++;
     else rec.wrong.push(`${p.id}: ${pick.label} (acceptable ${ok.join("/")})`);
   }
   score.recommendation = rec;
@@ -303,3 +364,88 @@ export function scoreRun(truth: Truth, run: SystemRun, personas: Persona[]): Cas
 
   return score;
 }
+
+// ---------------------------------------------------------------------------
+// Behaviour checks that need no truth
+// ---------------------------------------------------------------------------
+
+export type GuardrailResult = { persona: string; check: string; passed: boolean; detail: string };
+
+/**
+ * What the product promises for input that cannot be true (scoring-system.md
+ * §9.1). Checked on every answered case, with or without ground truth, because
+ * none is needed: these are statements about our own output.
+ */
+export function guardrails(run: SystemRun, personas: Persona[]): GuardrailResult[] {
+  if (run.outcome !== "answer") return [];
+  const out: GuardrailResult[] = [];
+  for (const p of personas) {
+    const pick = run.picks[p.id];
+    if (!p.adversarial || !pick) continue;
+    const note = pick.conflictNote ?? "";
+    if (p.adversarial === "absurd-body") {
+      const capped = pick.confidence <= CONFIDENCE_CAPS.implausibleBody + 1e-9;
+      const named = note.includes("look unusual together");
+      out.push({
+        persona: p.id,
+        check: "absurd body is capped and named",
+        passed: capped && named,
+        detail: `confidence ${pick.confidence} (cap ${CONFIDENCE_CAPS.implausibleBody})${named ? "" : "; explanation does not name the measurements"}`,
+      });
+    } else {
+      // Saying so is not enough: the number must not treat the reports as evidence
+      // either. This check first passed on the message alone while confidence rose
+      // 46% → 75% (Session 78f).
+      const named = note.includes("contradict each other");
+      const base = pick.emptyClosetConfidence;
+      const noGain = base != null && pick.confidence <= base + 1e-9;
+      out.push({
+        persona: p.id,
+        check: "contradictory closet is not learned from, adds no confidence, and says so",
+        passed: named && noGain,
+        detail:
+          `confidence ${pick.confidence} vs ${base ?? "?"} with an empty closet` +
+          (named ? "" : "; no contradiction in the explanation"),
+      });
+    }
+  }
+  return out;
+}
+
+/** Stability of every answered, determined pick for ordinary personas. */
+export function stabilityOf(run: SystemRun, personas: Persona[]): Array<{ persona: string; agreement: number }> {
+  if (run.outcome !== "answer") return [];
+  return personas
+    .filter((p) => !p.adversarial)
+    .map((p) => ({ persona: p.id, pick: run.picks[p.id] }))
+    .filter((x) => x.pick && !x.pick.undetermined && x.pick.agreement != null)
+    .map((x) => ({ persona: x.persona, agreement: x.pick!.agreement! }));
+}
+
+/**
+ * Calibration over graded picks. Reported with its n and null at n = 0 — a score
+ * computed from nothing is not a score. Two numbers, both threshold-free:
+ *   • Brier = mean (confidence − right)², 0 is perfect, 0.25 is a constant 50%;
+ *   • gap   = mean confidence − hit rate, positive = over-confident.
+ * Plus the headline guardrail: wrong picks shown above EVAL.confidentAbove.
+ */
+export function calibration(graded: Array<{ confidence: number; right: boolean }>) {
+  const n = graded.length;
+  const wrong = graded.filter((g) => !g.right);
+  const confidentlyWrong = wrong.filter((g) => g.confidence > EVAL.confidentAbove).length;
+  if (!n) return { n, brier: null, meanConfidence: null, hitRate: null, gap: null, confidentlyWrong: { count: 0, of: 0, above: EVAL.confidentAbove } };
+  const mean = (xs: number[]) => xs.reduce((a, b) => a + b, 0) / xs.length;
+  const r3 = (x: number) => Math.round(x * 1000) / 1000;
+  const meanConfidence = mean(graded.map((g) => g.confidence));
+  const hitRate = graded.filter((g) => g.right).length / n;
+  return {
+    n,
+    brier: r3(mean(graded.map((g) => (g.confidence - (g.right ? 1 : 0)) ** 2))),
+    meanConfidence: r3(meanConfidence),
+    hitRate: r3(hitRate),
+    gap: r3(meanConfidence - hitRate),
+    confidentlyWrong: { count: confidentlyWrong, of: n, above: EVAL.confidentAbove },
+  };
+}
+
+export const FRAGILE_BELOW = STABILITY.fragileBelow;

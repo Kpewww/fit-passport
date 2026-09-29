@@ -1147,5 +1147,17 @@ Exclude it before any vote, cap confidence, and name what was excluded.
 **(79)** **A vote that ranks anything counts only from a claimed account that is not
 the author** — and the number shown is the number ranked by.
 
+**Session 78f — eval measures robustness.** `eval/` now reports stability, Brier /
+conf−hit gap / confidently-wrong (null at n = 0), and guardrails on adversarial
+personas; results are never overwritten (`-runN`). S5 needs the git-ignored
+`eval/local/captures` — absent after a machine move. A guardrail must check the
+NUMBER as well as the message: the first version passed on the message while
+confidence rose 46% → 75%.
+
+**NEW INVARIANT:**
+**(80)** **"Not learned from" holds for the whole engine.** When measured closet
+reports contradict with no majority, they are removed from the closet that the
+anchor, brand bias, anchor weights and confidence read — not just from the ease.
+
 **Open (todo/engineering/08):** the Uniqlo demo fixture recommends XL at chest 100 —
 likely body numbers in the garment field (real page M = 95.9–104.1, midpoint 100).

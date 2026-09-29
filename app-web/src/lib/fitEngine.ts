@@ -33,7 +33,7 @@ import { domainForCategory } from "./sizeSystems";
 import { biasForBrand, type BrandBias } from "./brandBias";
 import { directionToLadderShift, describeDirection, isDirectional } from "./fitDirection";
 import { reportConsistency } from "./closetConsistency";
-import { personalEaseTarget, resolveEase, type ResolvedEase } from "./personalEase";
+import { isMeasuredReport, personalEaseTarget, resolveEase, type ResolvedEase } from "./personalEase";
 import { CONFIDENCE_WEIGHTS } from "./confidenceWeights";
 import { measureStability, stabilityFactor, type Stability } from "./stability";
 import { bodyPlausibility } from "./plausibility";
@@ -761,7 +761,38 @@ export function recommend(
   /** skipStability: set by the stability grid's own runs, which need only the pick. */
   opts: { skipStability?: boolean } = {},
 ): EngineOutput {
-  const { profile, product, sizes, knownGood, outcomes } = input;
+  const { profile, product, sizes, outcomes } = input;
+
+  // What ease this wearer actually lives in, learned from closet garments whose
+  // own measurements we captured. Revealed preference beats stated preference —
+  // but only on measured garments, only past a minimum evidence bar, and never
+  // by more than one ladder step. See personalEase.ts for the full discipline.
+  //
+  // Uses the FULL closet, not `usableKnownGood`: that filter exists to stop
+  // cross-domain anchors moving a size, whereas an ease preference is a property
+  // of the person. It moves the target ease, never the ladder directly, so it
+  // cannot double-count with the anchor or with brand bias.
+  const learnedEase = personalEaseTarget(
+    input.knownGood.map((k) => ({
+      category: k.category,
+      garmentChestCm: k.garmentChestCm,
+      garmentMeasuredFrom: k.garmentMeasuredFrom,
+      fitDirection: k.fitDirection,
+    })),
+    profile.chestCm,
+  );
+  const easeUsed = resolveEase(profile.preferredFit, learnedEase);
+
+  // The closet the rest of the engine may learn from. When the measured reports
+  // contradict each other with no consistent majority, the explanation tells the
+  // wearer "we used your stated fit instead of learning from them" — so they must
+  // not anchor a size, vote on the brand, or lend confidence either, or that
+  // sentence is false. Found by the eval's adversarial persona (Session 78f): the
+  // message was right while confidence rose 46% → 75%. Unmeasured closet items took
+  // no part in the contradiction and keep their say.
+  const knownGood = easeUsed.contradiction
+    ? input.knownGood.filter((k) => !isMeasuredReport(k))
+    : input.knownGood;
 
   // ---- Per-user brand bias from outcomes (see brandBias.ts) -------------------
   const brand = product.brand ?? null;
@@ -828,25 +859,6 @@ export function recommend(
     (c) => productDomain == null || domainForCategory(c) === productDomain,
   );
 
-  // What ease this wearer actually lives in, learned from closet garments whose
-  // own measurements we captured. Revealed preference beats stated preference —
-  // but only on measured garments, only past a minimum evidence bar, and never
-  // by more than one ladder step. See personalEase.ts for the full discipline.
-  //
-  // Uses the FULL closet, not `usableKnownGood`: that filter exists to stop
-  // cross-domain anchors moving a size, whereas an ease preference is a property
-  // of the person. It moves the target ease, never the ladder directly, so it
-  // cannot double-count with the anchor or with brand bias.
-  const learnedEase = personalEaseTarget(
-    knownGood.map((k) => ({
-      category: k.category,
-      garmentChestCm: k.garmentChestCm,
-      garmentMeasuredFrom: k.garmentMeasuredFrom,
-      fitDirection: k.fitDirection,
-    })),
-    profile.chestCm,
-  );
-  const easeUsed = resolveEase(profile.preferredFit, learnedEase);
 
   const ranked: SizeScore[] = sizes.map((size) => {
     const reasons: Reason[] = [];

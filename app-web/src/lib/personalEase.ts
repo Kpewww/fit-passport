@@ -76,6 +76,11 @@ export type PersonalEase = {
 
 const TRUSTED_PROVENANCE = new Set(["page", "fixture"]);
 
+/** Whether a closet item takes part in ease learning: a trusted garment chest. */
+export function isMeasuredReport(o: { garmentChestCm?: number | null; garmentMeasuredFrom?: string | null }): boolean {
+  return o.garmentChestCm != null && TRUSTED_PROVENANCE.has(o.garmentMeasuredFrom ?? "");
+}
+
 function median(xs: number[]): number {
   const s = [...xs].sort((a, b) => a - b);
   const mid = Math.floor(s.length / 2);
@@ -115,8 +120,7 @@ export function personalEaseTarget(
   const reports: Array<{ point: number; lo: number; hi: number }> = [];
   let implausible = 0;
   for (const o of observations) {
-    if (o.garmentChestCm == null) continue;
-    if (!TRUSTED_PROVENANCE.has(o.garmentMeasuredFrom ?? "")) continue;
+    if (o.garmentChestCm == null || !isMeasuredReport(o)) continue;
 
     // What this garment actually gave them, with the garment TYPE's own
     // allowance removed so a coat and a tee are comparable.

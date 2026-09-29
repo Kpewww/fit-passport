@@ -238,6 +238,15 @@ export const PLAUSIBILITY = {
 } as const;
 
 /**
+ * The development evaluation (eval/lib.ts) — not used by the product. Lives here so
+ * the number that defines "confidently wrong" has a provenance like every other.
+ */
+export const EVAL = {
+  /** A wrong pick shown above this confidence counts as confidently wrong. */
+  confidentAbove: 0.5,
+} as const;
+
+/**
  * The signed feeling scale. `directional` is the |report| at or above which a
  * garment counts as having run tight or loose at all — ONE value, shared by
  * `isDirectional()` and brand bias's closet vote, which used to carry a copy each.
@@ -365,6 +374,7 @@ export const PROVENANCE: Record<string, ConstantSource> = {
   "PLAUSIBILITY.chestOverWaistCm": A("as above; wide of any chest–waist drop we expect to see (UNVERIFIED — no dataset checked)"),
   "PLAUSIBILITY.shoulderShareMin": A("wide bounds on shoulder breadth ÷ chest circumference (UNVERIFIED — the typical share has not been checked against a dataset)"),
   "PLAUSIBILITY.shoulderShareMax": A("as shoulderShareMin"),
+  "EVAL.confidentAbove": A("the display's own meaning, not tuned: a pick shown as over 50% confident claims to be more likely right than wrong — which holds only if confidence is read as a probability, and that is unvalidated (§3)"),
   "CONFIDENCE_CAPS.implausibleBody": A("same ceiling as a regional-average body: we are not sure the numbers are the wearer's"),
   "BRAND_BIAS.minEvidence": A("two same-direction reports before a brand is said to run big or small"),
   "DIRECTION.directional": A("between 'just right' (0) and 'a bit snug/roomy' (±5)"),
