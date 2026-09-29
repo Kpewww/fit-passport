@@ -102,6 +102,9 @@ intended method anyway.
 
 **507 tests + 1 honest skip; typecheck and build clean.**
 
+*Follow-up push, same session:* the popup's size line read "out of a about 11 KB
+page", which a rendered check caught. It now reads "(11 KB of this 1739 KB page)".
+
 ### Files touched
 ```
 app-web/eval/                          (new: README, personas, cases/ ×11, truth/_template,

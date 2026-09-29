@@ -75,7 +75,7 @@
   }
 
   function kb(chars) {
-    return chars < 1024 ? "under 1 KB" : "about " + Math.round(chars / 1024) + " KB";
+    return chars < 1024 ? "under 1 KB" : Math.round(chars / 1024) + " KB";
   }
 
   // ---- 1. read the page (nothing leaves the browser here) ----
@@ -157,9 +157,9 @@
       el("p", {
         className: "small",
         text:
-          "Only the product is sent — " + kb(cap.stats.payloadChars) + ", out of a " + kb(cap.stats.domChars) + " page" +
-          (cap.stats.masked ? ", with " + cap.stats.masked + " contact detail" + (cap.stats.masked === 1 ? "" : "s") + " masked" : "") +
-          ". Nothing leaves your browser until you press Check.",
+          "Only the product is sent (" + kb(cap.stats.payloadChars) + " of this " + kb(cap.stats.domChars) + " page" +
+          (cap.stats.masked ? ", " + cap.stats.masked + " contact detail" + (cap.stats.masked === 1 ? "" : "s") + " masked" : "") +
+          "). Nothing leaves your browser until you press Check.",
       }),
       el("details", {}, [
         el("summary", { text: "Show exactly what would be sent" }),
