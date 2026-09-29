@@ -99,3 +99,9 @@ export function Account(p: IconProps) { return <Svg data={D.UserCircleLight} {..
 export function Warning(p: IconProps) { return <Svg data={D.WarningLight} {...p} />; }
 export function Alert(p: IconProps) { return <Svg data={D.WarningCircleLight} {...p} />; }
 export function Close(p: IconProps) { return <Svg data={D.XLight} {...p} />; }
+// Section icons for the navigation (Session 76, R2).
+export function Hanger(p: IconProps) { return <Svg data={D.CoatHangerLight} {...p} />; }
+export function IdCard(p: IconProps) { return <Svg data={D.IdentificationCardLight} {...p} />; }
+export function Board(p: IconProps) { return <Svg data={D.SquaresFourLight} {...p} />; }
+export function People(p: IconProps) { return <Svg data={D.UsersThreeLight} {...p} />; }
+export function Question(p: IconProps) { return <Svg data={D.QuestionLight} {...p} />; }

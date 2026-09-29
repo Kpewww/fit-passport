@@ -180,7 +180,7 @@ function RefreshInner() {
           <div className="mb-4 flex items-center justify-between text-sm">
             <Link href="/closet" className="text-ink-faint hover:text-brand">← Closet</Link>
           </div>
-          <h1 className="text-2xl font-bold text-ink">Fit refresh</h1>
+          <h1 className="font-serif text-h1 text-ink">Fit refresh</h1>
           <p className="mt-1 text-sm text-ink-soft">
             Pick what to re-rate. As your body changes, clothes fit differently —
             a quick refresh keeps your recommendations honest.

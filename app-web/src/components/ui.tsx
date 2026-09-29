@@ -124,6 +124,30 @@ export function Card({
   return <div className={`rounded-2xl bg-white p-6 ring-1 ring-line ${className}`}>{children}</div>;
 }
 
+// ---------- Page container ----------
+
+/**
+ * The two page widths. `app` (72rem) is for pages you operate — the closet
+ * gallery, community, outfits; `read` (48rem) for pages you read or fill in —
+ * help, account, a single form. Pages move onto this as they are rebuilt.
+ */
+export function Page({
+  children,
+  width = "app",
+  className = "",
+}: {
+  children: ReactNode;
+  width?: "app" | "read";
+  className?: string;
+}) {
+  const w = width === "app" ? "max-w-6xl" : "max-w-3xl";
+  return (
+    <main className="flex-1">
+      <div className={`mx-auto ${w} px-4 pb-16 pt-10 sm:px-6 sm:pt-14 ${className}`}>{children}</div>
+    </main>
+  );
+}
+
 // ---------- Page + section headers ----------
 
 /**

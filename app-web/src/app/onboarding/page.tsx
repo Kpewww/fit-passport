@@ -126,7 +126,7 @@ export default function OnboardingPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-ink-faint">
           Your passport · {stepIndex + 1} of {ONBOARDING_STEPS.length}
         </p>
-        <h1 className="mt-2 font-serif text-3xl sm:text-4xl text-ink">{STEP_TITLE[step]}</h1>
+        <h1 className="mt-2 font-serif text-h1 text-ink">{STEP_TITLE[step]}</h1>
 
         {status === "saved" ? (
           <Card className="mt-8">

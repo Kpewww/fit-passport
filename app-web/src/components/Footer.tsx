@@ -36,10 +36,10 @@ const COLUMNS: Array<{ title: string; links: Array<{ label: string; href: string
 export function Footer() {
   return (
     <footer className="mt-auto border-t border-line bg-paper">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6 py-16">
-        <div className="grid gap-10 sm:grid-cols-[1.4fr,1fr,1fr,1fr]">
+      <div className="mx-auto max-w-6xl px-4 pb-10 pt-12 sm:px-6 sm:pt-14">
+        <div className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-[1.4fr,1fr,1fr,1fr]">
           {/* wordmark + statement */}
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <Link href="/" className="flex items-center gap-2 text-ink">
               <Logo size={26} />
               <span className="font-serif text-xl italic">Fit Passport</span>
@@ -56,7 +56,7 @@ export function Footer() {
           {COLUMNS.map((c) => (
             <div key={c.title}>
               <p className="eyebrow text-ink-faint">{c.title}</p>
-              <ul className="mt-4 space-y-2 text-sm">
+              <ul className="mt-4 space-y-2.5 text-[13px]">
                 {c.links.map((l) => (
                   <li key={l.href}>
                     <Link href={l.href} className="text-ink-soft transition-colors hover:text-ink">
@@ -70,7 +70,7 @@ export function Footer() {
         </div>
 
         {/* closing line */}
-        <div className="mt-14 flex flex-col gap-3 border-t border-line pt-6 text-xs text-ink-faint sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-3 border-t border-line pt-6 text-xs text-ink-faint sm:flex-row sm:items-center sm:justify-between">
           <p>
             <span className="rounded-full border border-line px-2 py-0.5 font-medium">DEMO</span>
             <span className="ml-2">

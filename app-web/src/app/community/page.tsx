@@ -104,7 +104,7 @@ export default function CommunityPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
-        <h1 className="font-serif text-4xl text-ink">Community</h1>
+        <h1 className="font-serif text-h1 text-ink">Community</h1>
         <p className="mt-2 text-ink-soft">
           Fit is easier to trust when it comes from someone built like you. Browse
           public closets, follow the people whose taste you trust, or enter a

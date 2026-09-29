@@ -127,7 +127,7 @@ export default function OutfitsPage() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-serif text-4xl text-ink">Outfits</h1>
+            <h1 className="font-serif text-h1 text-ink">Outfits</h1>
             <p className="mt-1 text-ink-soft">
               Compose a look, preview it on your body type, and post it to the
               community. Posting earns the top badges.

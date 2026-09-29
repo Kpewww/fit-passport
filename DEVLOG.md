@@ -31,6 +31,61 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-28 · Session 76 (R2) — The shell: navigation, titles, footer
+
+Redesign step R2, the frame every page sits in.
+
+**Navigation** (`components/Nav.tsx`):
+- The same six entries. IA move 3 is still undecided, so nothing was dropped.
+- The container is now `max-w-6xl`, matching the footer; the bar was narrower
+  (`5xl`) than the footer beneath it.
+- Tabs are 13 px with slight tracking. The active underline now sits exactly on
+  the bar's bottom hairline: each tab fills the bar's height, where before a
+  pixel offset had to be guessed.
+- The account entry, once claimed, is the handle's initial in a hairline circle
+  (ink-filled while you are on `/account`), with `@handle` beside it on wide
+  screens. Unclaimed, "Claim account" stays the one ink action in the bar.
+- We did not add an account dropdown: every account action already lives on
+  `/account`, so a menu would be a detour with one entry.
+- The phone panel lists each section with its icon: ruler, hanger, ID card,
+  board, people, question. The current section is marked with a cobalt dot. The
+  hand-drawn hamburger and ✕ are now the icon set's `Menu` and `Close`.
+- `aria-current="page"` on the active link, and `aria-label` on both `<nav>`s.
+
+**Titles.** `text-h1` is now fluid, `clamp(2.125rem, 1.75rem + 1.2vw, 2.75rem)`:
+34 px on a phone, 44 px on a desktop. 17 page titles moved onto it, including
+`/refresh`, whose title was the one bold sans in a serif set. Three are left on
+purpose:
+- a community thread's title, which is content;
+- the Check hero → R4;
+- the homepage hero → R5.
+
+**Containers.** `ui.tsx` gains `Page` with the two widths, `app` (72 rem) and
+`read` (48 rem). Pages move onto it as they are rebuilt (R3–R6). Widening today's
+single-column pages without redesigning them would only stretch their forms.
+
+**Footer:** tighter spacing, and on a phone the link columns sit two to a row
+instead of one long stack.
+
+Checked:
+- rendered at 1440 and 390, claimed and unclaimed, with the menu open;
+- `mobile-audit` shows no overflow, and sub-44 px targets dropped by one more per
+  page, because the wordmark link is now 44 px tall;
+- First Load JS rose about 1 kB for the section icons in the shared layout
+  (/ 164, /login 106);
+- 510 tests pass; typecheck and build are clean.
+
+### Files touched
+```
+app-web/src/components/Nav.tsx, Footer.tsx, Icon.tsx (+5 section icons), icons.generated.ts
+app-web/scripts/gen-icons.mjs          (identification-card, question, squares-four, users-three)
+app-web/src/components/ui.tsx          (Page)
+app-web/tailwind.config.ts             (fluid h1)
+app-web/src/app/*/page.tsx             (17 titles → text-h1)
+```
+
+---
+
 ## 2026-09-28 · Session 76 (R0 + R1) — One icon set, no emoji, and the primitives the redesign builds on
 
 The founder asked for the site to look markedly more premium without losing

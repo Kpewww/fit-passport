@@ -84,7 +84,7 @@ export default function AdminPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
-        <h1 className="font-serif text-4xl text-ink">Review queue</h1>
+        <h1 className="font-serif text-h1 text-ink">Review queue</h1>
         <p className="mt-2 text-ink-soft">
           Signed in as <strong className="text-ink">{data.admin.username}</strong>. Content
           auto-hides at <strong>{data.threshold}</strong> distinct reports — that&apos;s a

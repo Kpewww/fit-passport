@@ -2,18 +2,32 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { Logo } from "@/components/Logo";
+import {
+  Board,
+  Close,
+  Hanger,
+  IdCard,
+  Menu,
+  People,
+  Question,
+  Ruler,
+  Shield,
+  type IconProps,
+} from "@/components/Icon";
 
-const LINKS = [
-  { href: "/check", label: "Check" },
-  { href: "/closet", label: "Closet" },
-  { href: "/passport", label: "Passport" },
-  { href: "/outfits", label: "Outfits" },
+type NavLink = { href: string; label: string; Icon: ComponentType<IconProps>; also?: string[] };
+
+const LINKS: NavLink[] = [
+  { href: "/check", label: "Check", Icon: Ruler },
+  { href: "/closet", label: "Closet", Icon: Hanger },
+  { href: "/passport", label: "Passport", Icon: IdCard },
+  { href: "/outfits", label: "Outfits", Icon: Board },
   // Questions live inside /community, so they get no tab of their own. Thread
   // pages sit at /ask/[id] and don't share the prefix, hence `also`.
-  { href: "/community", label: "Community", also: ["/ask"] },
-  { href: "/help", label: "Help" },
+  { href: "/community", label: "Community", Icon: People, also: ["/ask"] },
+  { href: "/help", label: "Help", Icon: Question },
 ];
 
 type Me = { claimed: boolean; username: string | null; role?: string };
@@ -21,12 +35,9 @@ type Me = { claimed: boolean; username: string | null; role?: string };
 export function Nav() {
   const pathname = usePathname();
   const [me, setMe] = useState<Me | null>(null);
-  // Below `sm` every nav link used to be `hidden` with nothing in its place, so
-  // a phone had NO navigation at all — the only way to reach Check or Closet was
-  // to go back to the homepage and hunt for an in-page link. This panel is that
-  // missing navigation.
+  // Below `sm` every nav link is hidden, and this panel IS the navigation
+  // (build-state ㉔) — before it existed a phone could not get past the homepage.
   const [menuOpen, setMenuOpen] = useState(false);
-  const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -45,57 +56,73 @@ export function Nav() {
     return () => window.removeEventListener("keydown", onKey);
   }, [menuOpen]);
 
-  const links = [...LINKS, ...(me?.role === "ADMIN" ? [{ href: "/admin", label: "Review" }] : [])];
-  const isActive = (href: string, also?: string[]) =>
-    [href, ...(also ?? [])].some((pfx) => pathname === pfx || pathname.startsWith(`${pfx}/`));
+  const links: NavLink[] = [...LINKS, ...(me?.role === "ADMIN" ? [{ href: "/admin", label: "Review", Icon: Shield }] : [])];
+  const isActive = (l: NavLink) =>
+    [l.href, ...(l.also ?? [])].some((pfx) => pathname === pfx || pathname.startsWith(`${pfx}/`));
+  const onAccount = pathname === "/account";
 
   return (
     // z-50: must sit above every in-page layer (converging cards, parallax
     // words) so the bar is always reachable.
-    <header className="sticky top-0 z-50 border-b border-line bg-paper/80 backdrop-blur">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6 sm:py-3.5">
-        <Link href="/" className="group flex items-center gap-2 text-ink">
-          <Logo size={26} className="transition-transform group-hover:-rotate-3" />
+    <header className="sticky top-0 z-50 border-b border-line bg-paper/85 backdrop-blur">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6">
+        <Link href="/" className="group flex min-h-[44px] items-center gap-2 text-ink">
+          <Logo size={26} className="transition-transform duration-200 ease-out group-hover:-rotate-3" />
           <span className="font-serif text-xl italic">Fit Passport</span>
         </Link>
-        <nav className="flex items-center gap-1 text-sm">
+
+        <nav aria-label="Main" className="flex items-center gap-0.5 text-[13px]">
           {/* Desktop tabs. Hidden on a phone, where the panel below takes over. */}
           {links.map((l) => {
-            // startsWith so nested routes keep their tab lit; `also` covers
-            // sections whose detail pages live under a different path.
-            const active = isActive(l.href, "also" in l ? l.also : undefined);
+            const active = isActive(l);
             return (
               <Link
                 key={l.href}
                 href={l.href}
-                className={`relative hidden px-3 py-1.5 transition-colors sm:block ${
+                aria-current={active ? "page" : undefined}
+                className={`relative hidden h-16 items-center px-3 tracking-[0.01em] transition-colors duration-200 sm:flex ${
                   active ? "font-medium text-ink" : "text-ink-soft hover:text-ink"
                 }`}
               >
                 {l.label}
-                {active && <span className="absolute inset-x-3 -bottom-px h-px bg-ink" />}
+                {active && <span className="absolute inset-x-3 -bottom-px h-px bg-ink" aria-hidden />}
               </Link>
             );
           })}
-          {/* Account chip. On a phone it keeps a 44px touch box without growing
-              visually — padding, not size. */}
+
+          <span className="mx-2 hidden h-4 w-px bg-line sm:block" aria-hidden />
+
+          {/* Account. Claimed: an initial in a hairline circle, plus the handle on
+              wide screens. Unclaimed: the one ink action in the bar. Both keep a
+              44px touch box on a phone by height, not by size. */}
           {me?.claimed ? (
             <Link
               href="/account"
-              className={`ml-2 flex min-h-[44px] items-center px-3 transition-colors sm:min-h-0 sm:py-1.5 ${
-                pathname === "/account" ? "font-medium text-ink" : "text-ink-soft hover:text-ink"
+              aria-label={`Your account, @${me.username}`}
+              aria-current={onAccount ? "page" : undefined}
+              className={`flex min-h-[44px] items-center gap-2 rounded-full px-1.5 transition-colors duration-200 sm:min-h-0 sm:py-1 lg:pr-3 ${
+                onAccount ? "text-ink" : "text-ink-soft hover:text-ink"
               }`}
             >
-              @{me.username}
+              <span
+                className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-medium uppercase ${
+                  onAccount ? "bg-ink text-paper" : "bg-white text-ink ring-1 ring-line"
+                }`}
+                aria-hidden
+              >
+                {(me.username ?? "?").slice(0, 1)}
+              </span>
+              <span className="hidden max-w-[10rem] truncate lg:inline">@{me.username}</span>
             </Link>
           ) : (
             <Link
               href="/account"
-              className="ml-2 flex min-h-[44px] items-center rounded-full bg-ink px-4 text-xs font-medium tracking-wide text-paper hover:bg-black sm:min-h-0 sm:py-1.5"
+              className="flex h-11 items-center rounded-full bg-ink px-4 text-xs font-medium tracking-wide text-paper transition-colors duration-200 hover:bg-black sm:h-8"
             >
               Claim account
             </Link>
           )}
+
           {/* Menu button — phones only. */}
           <button
             type="button"
@@ -105,20 +132,7 @@ export function Nav() {
             onClick={() => setMenuOpen((v) => !v)}
             className="-mr-2 ml-1 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-ink/5 sm:hidden"
           >
-            <svg viewBox="0 0 24 24" width={20} height={20} aria-hidden fill="none" stroke="currentColor" strokeWidth={1.75} strokeLinecap="round">
-              {menuOpen ? (
-                <>
-                  <line x1="5" y1="5" x2="19" y2="19" />
-                  <line x1="19" y1="5" x2="5" y2="19" />
-                </>
-              ) : (
-                <>
-                  <line x1="3.5" y1="7" x2="20.5" y2="7" />
-                  <line x1="3.5" y1="12" x2="20.5" y2="12" />
-                  <line x1="3.5" y1="17" x2="20.5" y2="17" />
-                </>
-              )}
-            </svg>
+            {menuOpen ? <Close size={22} /> : <Menu size={22} />}
           </button>
         </nav>
       </div>
@@ -126,30 +140,28 @@ export function Nav() {
       {/* Mobile navigation panel. Rendered inside the sticky header so it inherits
           the backdrop and can never be painted over by an in-page layer. */}
       {menuOpen && (
-        <div
-          id="mobile-nav"
-          ref={panelRef}
-          className="border-t border-line bg-paper sm:hidden"
-        >
-          <ul className="mx-auto max-w-5xl px-4 py-2">
+        <nav id="mobile-nav" aria-label="Main" className="border-t border-line bg-paper sm:hidden">
+          <ul className="mx-auto max-w-6xl px-4 py-3">
             {links.map((l) => {
-              const active = isActive(l.href, "also" in l ? l.also : undefined);
+              const active = isActive(l);
               return (
                 <li key={l.href}>
                   <Link
                     href={l.href}
-                    className={`flex min-h-[48px] items-center rounded-xl px-3 text-base transition-colors ${
-                      active ? "bg-ink/5 font-medium text-ink" : "text-ink-soft active:bg-ink/5"
+                    aria-current={active ? "page" : undefined}
+                    className={`flex min-h-[52px] items-center gap-3.5 px-1 text-base transition-colors ${
+                      active ? "font-medium text-ink" : "text-ink-soft active:text-ink"
                     }`}
                   >
+                    <l.Icon size={22} className={active ? "text-ink" : "text-ink-faint"} />
                     {l.label}
-                    {active && <span className="ml-2 h-1 w-1 rounded-full bg-ink" aria-hidden />}
+                    {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />}
                   </Link>
                 </li>
               );
             })}
           </ul>
-        </div>
+        </nav>
       )}
     </header>
   );

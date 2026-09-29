@@ -164,3 +164,10 @@ green/amber/red-100 as pages are touched. They are never an accent.
 - Button `sm` / `icon` / `arrow` / `loading`, pill-shaped, 44 px tall on phones at
   `md`;
 - `EmptyState` with an icon.
+- `Page` (`width="app"|"read"`) — the two page widths; `text-h1` is fluid
+  (34 px phone → 44 px desktop).
+
+**Shell (R2):** the nav tab underline sits on the bar hairline because each tab fills
+the bar height. Account = initial in a hairline circle (ink when on /account); no
+dropdown (every account action is on /account). The phone panel = section icon +
+label, cobalt dot for current.

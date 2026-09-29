@@ -60,7 +60,7 @@ export default function BadgesPage() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-serif text-4xl text-ink">Badges</h1>
+            <h1 className="font-serif text-h1 text-ink">Badges</h1>
             <p className="mt-1 text-ink-soft">
               Progress through each track; the Rare Honors sit above them. Pin up
               to 3 earned badges to show off on your passport.
