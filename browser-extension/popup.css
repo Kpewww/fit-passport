@@ -1,0 +1,122 @@
+/* Fit Passport popup. Palette from app-web/tailwind.config.ts: ink, cobalt
+   accent, cool porcelain paper. System fonts — an extension page should not fetch
+   remote fonts, and the popup is read in seconds. */
+
+:root {
+  --ink: #17181c;
+  --ink-soft: #4c4e57;
+  --ink-faint: #8a8d97;
+  --brand: #2438d6;
+  --brand-dark: #1a2aa8;
+  --brand-tint: #f2f3fc;
+  --paper: #f3f3f1;
+  --paper-soft: #fbfbfa;
+  --line: #e2e3e7;
+  --ok: #1f7a4a;
+  --warn: #8a5a00;
+  --warn-bg: #fff6e0;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  width: 340px;
+  background: var(--paper);
+  color: var(--ink);
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: var(--ink);
+  color: #fff;
+}
+.brand { font-weight: 600; letter-spacing: 0.01em; }
+
+main { padding: 12px 14px 4px; min-height: 120px; }
+
+.title { margin: 0 0 8px; font-size: 14px; font-weight: 600; line-height: 1.3; }
+.muted { color: var(--ink-soft); }
+.small { font-size: 11.5px; color: var(--ink-faint); }
+
+.card {
+  background: var(--paper-soft);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.found { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.found li { display: flex; gap: 8px; align-items: baseline; }
+.found .mark { width: 14px; flex-shrink: 0; font-weight: 700; }
+.found .yes .mark { color: var(--ok); }
+.found .no .mark { color: var(--ink-faint); }
+
+.hint {
+  background: var(--warn-bg);
+  color: var(--warn);
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin: 0 0 10px;
+}
+
+.size-line { display: flex; align-items: baseline; gap: 10px; margin: 2px 0 6px; }
+.size { font-size: 34px; font-weight: 700; line-height: 1; }
+.conf { font-size: 12px; color: var(--ink-soft); }
+.chip {
+  display: inline-block;
+  border-radius: 999px;
+  background: var(--brand-tint);
+  color: var(--brand-dark);
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.reasons { margin: 6px 0 0; padding-left: 16px; }
+.reasons li { margin: 2px 0; }
+.note { margin: 8px 0 0; color: var(--ink-soft); }
+.source { margin: 8px 0 0; font-size: 11.5px; color: var(--ink-faint); }
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 10px; }
+button {
+  font: inherit;
+  border-radius: 8px;
+  padding: 7px 12px;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+button.primary { background: var(--brand); border-color: var(--brand); color: #fff; font-weight: 600; }
+button.primary:hover { background: var(--brand-dark); }
+button:focus-visible, select:focus-visible, summary:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+button:disabled { opacity: 0.6; cursor: default; }
+
+details { margin: 0 0 10px; }
+summary { cursor: pointer; color: var(--ink-soft); font-size: 12px; }
+pre {
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font: 10.5px/1.4 ui-monospace, Consolas, monospace;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin: 6px 0 0;
+}
+
+.foot { padding: 6px 14px 10px; border-top: 1px solid var(--line); color: var(--ink-faint); font-size: 11px; }
+.foot select { font: inherit; margin-left: 4px; max-width: 220px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  main > * { animation: in 120ms ease-out; }
+  @keyframes in { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: none; } }
+}

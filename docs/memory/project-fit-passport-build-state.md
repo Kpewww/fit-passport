@@ -862,3 +862,49 @@ unmapped and 胸宽 read as chest-in-inches; most-rows table wins regardless of
 visibility; no body/garment detection on the LLM/vision path; the outcome loop
 ignores `exchange`, drops `exchangedForSize`, and penalises both neighbours of a
 return regardless of direction.
+
+**SESSION 75b UPDATE (2026-09-28).** 475 → **499 tests**. The extension exists:
+`browser-extension/` (MV3, no build step, ID pinned by the manifest `key`:
+`odbdhmcfjbhikmlfmgafbkkbknkkaecp`; README has install, permissions, privacy).
+`capture.js` builds an allowlisted reduced document (meta, Product/Breadcrumb
+JSON-LD cut to key allowlist, `<h1>`, measurement tables as text cells + dialog
+context, the body/garment sentence from its own element, size selects, swatch
+values, chart images). Popup: preview → user presses Check → `/api/check` with
+`credentials: "include"` + `x-fp-client`. `/check?product=<id>` reopens a stored
+check via `/api/recommend`. `jsdom` is a devDependency for
+`extensionCapture.test.ts`.
+
+**Measured (fresh logged-out profile, chest 100 cm):** Patagonia (server-blocked)
+→ S/M near-tie, S 21%, page·table·body(brand), 11 KB of 1.78 MB (−99.4%), 16 ms;
+same against **production → 200, so the session cookie reaches the deployed API
+from the extension origin**. Nike → no chart on the PDP (separate size page) →
+curated chart → M 30% (correct). **Uniqlo → L at 65%, WRONG (right: M)** — two
+pre-existing parser bugs the extension is first to reach: (a) mixed-fraction inches
+`31 1/2-34 3/4` parse as range (31, 1) → 16, dragging the column median under 65 so
+the whole chart is "converted" from inches, non-monotone; (b) "Compare all product
+measurements with previous purchases" (site chrome) matched the GARMENT pattern on
+a BODY chart. Fix is 75c.
+
+**NEW INVARIANTS:**
+**(62)** **The extension reads a page only on a click, sends an allowlisted reduced
+document — never the page — shows it before sending, and the server stores what it
+read, never the page.** `activeTab` + `scripting`, no content scripts, no retailer
+host permission. Pinned by `extensionCapture.test.ts` privacy block and the
+stored-prose test. The first design leaked a cart address through a ±100-char
+page-text window; sentences now come from their own element; header/nav/footer/form
+are never read.
+**(63)** **`capture.js` may not drift from `pageParse.ts`.** `KIND_PATTERNS`,
+`SIZE_SELECT_RE`, `CHART_IMG_TOKENS` equal; `MEASURE_RE` ⊇ every `MEASURE_MAP`
+alternative — compared by test (the extension has no build step, so it carries
+copies). Behaviourally: `parsePage(capture(page))` must equal `parsePage(page)` on
+the round-trip fixtures.
+
+**Pre-existing, seen on rendered pages, NOT fixed:** `metaContent` truncates
+`og:title` at an apostrophe (`Men's …` → "Men", probed); the engine's alternative
+line says the BIGGER size suits "a snugger fit"; "What the numbers look like" is an
+empty card for body-range charts.
+
+**Tooling:** `browser-extension/scripts/try-pages.mjs` (real pages → capture → API
+from the extension origin; `--click`, `--shots`, `--save-captures`; measurement
+only, invariant (52)); `make-icons.mjs` (icons from `brand/` masters, favicon glyph
+at 16/32 per ㉖).

@@ -31,6 +31,121 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-28 · Session 75b — The extension exists, and its first real page was confidently wrong
+
+`browser-extension/` is a Manifest V3 extension with no build step. It asks for
+`activeTab` and `scripting`, plus host permission for Fit Passport's own origin
+only. It has no content scripts and no access to any retailer site. Click the icon
+and `capture.js` reads that one tab; the popup shows what it found, and only
+**Check my size** sends anything. The popup computes nothing: size, confidence,
+reasons and refusals all come back from `/api/check`, so there is still exactly one
+engine.
+
+**Allowlist, not denylist.** A logged-in page shows who you are in more places than
+anyone can list, so the capture never tries to delete the private parts of a page.
+It builds a new document from the parts known to be product: meta tags,
+Product/Breadcrumb JSON-LD cut to a key allowlist (reviews dropped), the `<h1>`,
+every table that names a measurement rebuilt as plain-text cells, the body/garment
+sentence, size `<select>` options, swatch values, chart images. **It is the
+document shape the server already parses, so the parser did not change.** Two
+properties are tested in jsdom against `capture.js` itself:
+- **Round trip:** on six page shapes (logged-in with a dialog chart, a Chinese
+  columns chart, the Patagonia modal, cm/inch tabs beside a cart table, image-only,
+  swatches-only), `parsePage(capture)` equals `parsePage(page)`, and so do the kind,
+  labels and chart images.
+- **Privacy:** no greeting, cart, address, form value, review, other script, iframe
+  or footer in the capture, and contact details inside the size guide are masked.
+
+The constants it shares with the parser (`KIND_PATTERNS`, `SIZE_SELECT_RE`,
+`CHART_IMG_TOKENS`, and every `MEASURE_MAP` header) are now exported from
+`pageParse.ts` and compared by test.
+
+**The privacy test caught my own first design.** The body/garment sentence was cut
+as ±100 characters of the flattened page, and on the test page that carried a cart
+drawer's "Deliver to 42 Wallaby Way" along with it: adjacent on the page, so
+adjacent in the text. The sentence now comes from its own element, and header, nav,
+footer and forms are never read.
+
+### Measured on real pages (fresh logged-out profile, chest 100 cm test profile)
+
+| page | what happened | payload |
+|---|---|---|
+| Patagonia Better Sweater — our server is blocked | Size Guide opened; **S (snug 0.639) vs M (relaxed 0.615), S at 21%**, because 100 cm sits in the gap between S 96.5–99.1 and M 101.6–104.1 — Session 74's number exactly. Source: page · table · body (brand convention) · read in your browser | 11 KB of 1.78 MB (−99.4%), 16 ms |
+| Nike Dri-FIT Legend | No size guide on the product page (Nike's is a separate page), so no chart in the DOM; the server fell back to the curated Nike chart: **M at 30%**, and M (95.3–104.1) is right | 1.2 KB of 1.28 MB |
+| **Uniqlo AIRism Cotton T-shirt** | Size Guide opened, 2 of 18 tables kept, **and the answer was wrong: L at 65%.** The right answer off Uniqlo's own body chart is M (100 cm = 39.4 in, inside M's 37¾–41) | 3.7 KB of 1.26 MB |
+
+**The cookie reaches production.** The same Patagonia check against the deployed
+API answered 200, not the 401 the Session 75 guard gives a request with no session.
+Chrome sends the Fit Passport session with an extension's request to a host it
+holds permission for, as its documentation says.
+
+**Why Uniqlo was wrong. The capture sent the right table; the server misread it
+twice**, and both faults predate the extension, which is simply the first thing
+to deliver a Uniqlo page to the parser:
+1. Uniqlo prints inches with fractions: `31 1/2-34 3/4`. `parseNumber` takes the
+   first two numbers as the range ends, so XS became (31 + 1) / 2 = 16. With several
+   rows like that, the column's median fell under 65 and the whole chart went
+   through the inch conversion: XS "40.6 cm", L "108", XXL "61". The ladder is not
+   even monotone, and nothing checked.
+2. The page carries "Compare all product measurements with previous purchases", a
+   site feature. That matched the *garment* pattern, so a body chart was read as
+   garment measurements and the engine added ease on top.
+L won because its garbage number happened to land near 100 cm + regular ease. **A
+confident wrong answer built from a plausible-looking ladder, the exact failure
+this project exists to prevent.** Fixing both is the next commit, with this table
+as the fixture.
+
+### Also seen on the rendered pages (pre-existing, recorded, not fixed here)
+
+- The server reads `og:title="Men's Better Sweater Jacket"` as **"Men"**
+  (`metaContent`'s `[^"']+` stops at the apostrophe; verified by probe). The capture
+  escapes apostrophes, so the extension path gets the full title.
+- The engine's alternative line told a regular-fit user that M suits "a snugger
+  fit", when M is the bigger size.
+- "What the numbers look like" renders an empty card for a body-range chart.
+- A first measurement run's generic click followed Nike's footer "Size Charts" link
+  to a help page, and the server correctly refused it as not-apparel. The
+  measurement script now never follows a link off the product page. The extension
+  itself never clicks anything.
+
+**Also:** `/check?product=<id>` reopens a stored check through `/api/recommend`, with
+the provenance cap. The extension's "Open full explanation" lands there, because
+re-running the check from the URL is impossible for exactly the retailers the
+extension exists for. The badge now reads "Read in your browser from …", and a
+size row says when the numbers were "read by AI" rather than parsed. The popup was
+screenshotted in all four states and `/check?product=` after a real run: looked
+at, not just tested.
+
+**475 → 499 tests**, all green; typecheck and build clean. `jsdom` added as a dev
+dependency for the capture tests.
+
+### New invariants
+
+- **(62) The extension reads a page only on a click, sends an allowlisted reduced
+  document — never the page — shows it before sending, and the server stores what
+  it read, never the page.** `activeTab` + `scripting`, no content scripts, no
+  retailer host permission. Pinned by `extensionCapture.test.ts` (privacy) and the
+  stored-prose test in `extractorLLM.test.ts`.
+- **(63) `capture.js` may not drift from `pageParse.ts`.** Same kind sentences,
+  same size-select rule, same chart-image tokens, and a table-keeping rule that is a
+  superset of every `MEASURE_MAP` header — all compared by test. The round-trip
+  property is the behavioural version of the same promise.
+
+### Files touched
+```
+browser-extension/                      (new: manifest, popup.*, capture.js, config.js,
+                                         README, icons/, scripts/try-pages.mjs,
+                                         scripts/make-icons.mjs)
+app-web/src/lib/extensionCapture.test.ts (new, 24 tests — jsdom)
+app-web/src/lib/pageParse.ts            (export KIND_PATTERNS, SIZE_SELECT_RE,
+                                         CHART_IMG_TOKENS, MEASURE_MAP; no behaviour change)
+app-web/src/app/check/page.tsx          (?product= deep link, "read in your browser",
+                                         AI-read label)
+app-web/package.json, package-lock.json (jsdom devDependency)
+```
+
+---
+
 ## 2026-09-28 · Session 75 — The extension's server side: refuse the invented ladder, stop minting strangers, limit the route that spends money
 
 Sprint 5 is the browser extension: read the product page in the user's own browser

@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Fit Passport",
+  "version": "0.1.0",
+  "description": "Check your size on the product page you are looking at, using your Fit Passport — with the reasons and where every number came from.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "https://fit-passport.vercel.app/*",
+    "http://localhost:3000/*"
+  ],
+  "action": {
+    "default_title": "Check my size with Fit Passport",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "32": "icons/icon32.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtu5uxL46HagL3ki+UsHrD2nASfepZtOUGpkeh16dzZOU3B36cJoRmZgMRXtyJYVvJ3NXENu4qkKjfOLovxwr0Di9wblCmeXRPlrm/mAme3jzZ88eQxoOBKskgbJyJ9mXmFEEX9KVF3nhzKDRM9hbw/mgHnVoHiFOLg1X+1v85EfsuLrTYiq9etUogarXgFvm6lYpXH7aQYoZNepjeXWi6lmIN36uHRK4+PtbLuGLJE7C3irAQaSaMuGiGXEPQ62XKrl/x38g4W0J/UdAGJVtK1jvei9BNNIYTMAbILNBm/kmqtdwP93Zd7izWUzex4SDuGrWB+I/CLQiRwespucvUwIDAQAB"
+}

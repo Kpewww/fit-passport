@@ -614,3 +614,22 @@ truth needs two people per case, independently.
 5. Which external ease reference defines the right size on a GARMENT chart. Body
    charts carry the retailer's own rule; garment charts do not, and using our own
    ease constants would be the engine grading itself.
+
+### Session 75b (2026-09-28) — step 2 done, and the first real failure
+
+**The extension is built and runs end to end** — against localhost and against
+production (the session cookie reaches the deployed API from the extension). Real
+pages: Patagonia → correct near-tie; Nike → correct via the curated chart; **Uniqlo
+→ L at 65%, wrong (M is right)**, from two pre-existing parser faults the extension
+is simply the first to reach (fraction inches, and a garment false-positive on
+site chrome). See build-state 75b and DEVLOG 75b.
+
+**Next, in order:**
+1. **75c — fix the two Uniqlo faults**, red then green, with Uniqlo's real table
+   as the fixture, and re-run to show the after. A confident wrong answer outranks
+   everything else on this list.
+2. **The evaluation (was step 3)** — unchanged; the Uniqlo case is its first
+   ready-made failure, with ground truth from Uniqlo's own body chart.
+3. Try it by hand: load `browser-extension/` unpacked in your own Chrome (README),
+   open Fit Passport once, then check a product page. That is the real test of the
+   click-to-answer path, which automation cannot press.

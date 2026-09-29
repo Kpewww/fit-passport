@@ -153,7 +153,11 @@ export function inferGender(text: string): Gender | undefined {
 
 // Measurement synonyms → our ExtractedSize field. English + common Chinese, since
 // Taobao/Tmall charts are a stated target channel.
-const MEASURE_MAP: Array<{ re: RegExp; field: keyof ExtractedSize }> = [
+//
+// Exported because the browser extension decides which tables to send by
+// measurement words, and must keep every table this can read — see
+// browser-extension/capture.js and extensionCapture.test.ts.
+export const MEASURE_MAP: Array<{ re: RegExp; field: keyof ExtractedSize }> = [
   { re: /chest|bust|胸围|胸/i, field: "chestCm" },
   { re: /waist|腰围|腰/i, field: "waistCm" },
   { re: /shoulder|肩宽|肩/i, field: "shoulderCm" },
@@ -316,27 +320,37 @@ function sizesFromGrid(grid: string[][]): ExtractedSize[] | null {
  */
 export function detectMeasurementKind(html: string): "body" | "garment" | null {
   const text = stripTags(html).replace(/\s+/g, " ");
-
-  const body =
-    /\bbody measurements?\b/i.test(text) ||
-    /measurements?\s+(?:below\s+)?(?:are|is)\s+(?:the\s+)?body\b/i.test(text) ||
-    // NO \b on the CJK patterns — word boundaries are ASCII-defined and never
-    // match at a CJK boundary, so adding one silently disables the whole group.
-    // This is invariant ⑫, and it caught this line in review rather than in
-    // production only because a test covered the Chinese case.
-    /(?:人体|净体)(?:尺寸|测量|围度)/.test(text);
-
-  const garment =
-    /\bgarment measurements?\b/i.test(text) ||
-    /\b(?:measured|laid|lying)\s+flat\b/i.test(text) ||
-    /\bflat measurements?\b/i.test(text) ||
-    /\bproduct measurements?\b/i.test(text) ||
-    /(?:平铺|衣服)(?:尺寸|测量)/.test(text); // no \b — see above
-
+  const body = KIND_PATTERNS.body.some((re) => re.test(text));
+  const garment = KIND_PATTERNS.garment.some((re) => re.test(text));
   if (body && !garment) return "body";
   if (garment && !body) return "garment";
   return null; // said both, or said neither
 }
+
+/**
+ * The sentences that say what a chart measures. Exported because the browser
+ * extension sends only the sentences these match, not the page around them — so
+ * the two lists must be the same list, which extensionCapture.test.ts enforces.
+ * Non-global on purpose: `.test` on a /g regex carries state between calls.
+ */
+export const KIND_PATTERNS: { body: RegExp[]; garment: RegExp[] } = {
+  body: [
+    /\bbody measurements?\b/i,
+    /measurements?\s+(?:below\s+)?(?:are|is)\s+(?:the\s+)?body\b/i,
+    // NO \b on the CJK patterns — word boundaries are ASCII-defined and never
+    // match at a CJK boundary, so adding one silently disables the whole group.
+    // This is invariant ⑫, and it caught this line in review rather than in
+    // production only because a test covered the Chinese case.
+    /(?:人体|净体)(?:尺寸|测量|围度)/,
+  ],
+  garment: [
+    /\bgarment measurements?\b/i,
+    /\b(?:measured|laid|lying)\s+flat\b/i,
+    /\bflat measurements?\b/i,
+    /\bproduct measurements?\b/i,
+    /(?:平铺|衣服)(?:尺寸|测量)/, // no \b — see above
+  ],
+};
 
 /**
  * Collapse rows that share a size label, and re-home the numbers if the chart
@@ -435,6 +449,10 @@ export function parseSizeTables(
 
 const NON_SIZE_OPTION = /^(select|choose|size|please|请选择|选择|尺码|--|—)$/i;
 
+/** Which <select> holds sizes — tested against the whole <select> markup. Shared
+ *  with the browser extension, which sends only the selects this matches. */
+export const SIZE_SELECT_RE = /size|尺码|规格/i;
+
 /** Extract plausible size labels from <select>/<option> and common variant attrs. */
 export function parseSizeLabels(html: string): string[] {
   const labels = new Set<string>();
@@ -442,7 +460,7 @@ export function parseSizeLabels(html: string): string[] {
   // <option> values inside any <select> that looks size-related.
   const selects = html.match(/<select[\s\S]*?<\/select>/gi) ?? [];
   for (const sel of selects) {
-    const isSizeSelect = /size|尺码|规格/i.test(sel);
+    const isSizeSelect = SIZE_SELECT_RE.test(sel);
     const opts = sel.match(/<option[\s\S]*?<\/option>/gi) ?? [];
     for (const o of opts) {
       const txt = stripTags(o);
@@ -503,7 +521,7 @@ export function parseChineseSizeCode(label: string): ChineseSizeCode | null {
 
 // Tokens that mark an <img> as (probably) the size chart, EN + CN. Ordered by
 // strength so the most chart-specific candidates rank first.
-const CHART_IMG_TOKENS = [
+export const CHART_IMG_TOKENS = [
   "size-chart", "sizechart", "size_chart", "size-guide", "sizeguide", "size-table",
   "尺码表", "尺寸表", "尺码", "尺寸", "measurement", "measurements", "规格",
 ];

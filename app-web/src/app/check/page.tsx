@@ -73,6 +73,11 @@ type Source = {
   sizesFrom?: "fixture" | "page" | "brand-chart" | "estimated";
   chart?: { sourceUrl: string; capturedAt: string };
   measurementKind?: "body" | "garment";
+  measurementKindFrom?: "page" | "brand";
+  /** "extension" = the page came from the user's own browser, not our fetch. */
+  fetch?: "ok" | "blocked" | "unreachable" | "skipped" | "extension";
+  /** Which reader produced page sizes — a table, or a model reading text/images. */
+  extractedBy?: "table" | "llm-text" | "llm-vision" | "hao-xing";
 };
 
 type Body = {
@@ -97,7 +102,8 @@ type CheckResponse = {
     conflictNote: string | null;
   };
   effectiveFit: FitPref;
-  recommendationId: string;
+  /** Absent when a stored check is reopened (`?product=`) — that is a recompute. */
+  recommendationId?: string;
 };
 
 type Status = { hasBody: boolean; hasChest: boolean; closetCount: number; accuracy: "low" | "medium" | "high"; claimed?: boolean };
@@ -165,13 +171,51 @@ function CheckInner() {
     }
   }, []);
 
+  // Reopen a check that was already run — the browser extension's "Open full
+  // explanation" lands here. It cannot re-run the check from the URL: the whole
+  // reason the extension exists is that our server cannot read that retailer's
+  // page. So it recomputes from the stored product instead, through the same
+  // route the fit toggle uses, which applies the same provenance ceiling.
+  const openStored = useCallback(async (productId: string) => {
+    setErr(null);
+    setLoading(true);
+    setData(null);
+    try {
+      const r = await fetch("/api/recommend", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ productId }),
+      });
+      const j = await r.json();
+      if (!r.ok || !j.product || !j.result) {
+        throw new Error(
+          r.status === 404
+            ? "We couldn't find that check. It belongs to the Fit Passport session in the browser that ran it."
+            : "We couldn't reopen that check.",
+        );
+      }
+      setData({ product: j.product, source: j.source ?? {}, result: j.result, body: j.body, effectiveFit: j.effectiveFit });
+      setUrl(j.product.url ?? "");
+      setFit(j.effectiveFit as FitPref);
+    } catch (e: unknown) {
+      setErr(e instanceof Error ? e.message : "We couldn't reopen that check.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
+    const stored = params.get("product");
+    if (stored) {
+      openStored(stored);
+      return;
+    }
     const incoming = params.get("url");
     if (incoming) {
       setUrl(incoming);
       runCheck(incoming);
     }
-  }, [params, runCheck]);
+  }, [params, runCheck, openStored]);
 
   // Re-run the engine for a different fit preference (no new product row).
   const rerank = useCallback(
@@ -549,7 +593,10 @@ function Result({
           ) : (
             <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 font-medium text-green-800">
               <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
-              Read from {source.host || "the page"}
+              {/* Who read it matters too: the extension hands us the page from the
+                  user's own browser, which is how we reach retailers our server
+                  is refused by. Saying "read from" alone would imply we fetched it. */}
+              {source.fetch === "extension" ? "Read in your browser from" : "Read from"} {source.host || "the page"}
             </span>
           )}
           {/* Be honest about where the SIZE CHART came from. Three cases, because
@@ -748,6 +795,7 @@ function Result({
               option={product.sizeOptions.find((o) => o.label === s.label)}
               sizesFrom={source.sizesFrom}
               measurementKind={source.measurementKind}
+              extractedBy={source.extractedBy}
             />
           ))}
         </div>
@@ -778,12 +826,19 @@ function Detail({ label, value }: { label: string; value: string | null }) {
 function measurementLabel(
   sizesFrom: Source["sizesFrom"],
   kind: Source["measurementKind"],
+  extractedBy?: Source["extractedBy"],
 ): string {
   if (sizesFrom === "estimated") return "Measurements estimated — not from the page";
   const where = sizesFrom === "brand-chart" ? "the brand's size guide" : "the page";
-  if (kind === "body") return `Body measurements from ${where}`;
-  if (kind === "garment") return `Garment measurements from ${where}`;
-  return `Measurements from ${where} — it didn't say body or flat`;
+  // A model reading prose or an image is a weaker claim than a parsed table, and
+  // the reader deserves to know which one produced the numbers.
+  const reader =
+    extractedBy === "llm-text" ? " (read by AI from its text)"
+      : extractedBy === "llm-vision" ? " (read by AI from a chart image)"
+      : "";
+  if (kind === "body") return `Body measurements from ${where}${reader}`;
+  if (kind === "garment") return `Garment measurements from ${where}${reader}`;
+  return `Measurements from ${where}${reader} — it didn't say body or flat`;
 }
 
 function SizeRow({
@@ -792,6 +847,7 @@ function SizeRow({
   option,
   sizesFrom,
   measurementKind,
+  extractedBy,
 }: {
   score: SizeScore;
   isBest: boolean;
@@ -800,6 +856,8 @@ function SizeRow({
   sizesFrom?: Source["sizesFrom"];
   /** And what they measure. Body and garment numbers are different claims. */
   measurementKind?: Source["measurementKind"];
+  /** And what read them: a parsed table, or a model reading text or an image. */
+  extractedBy?: Source["extractedBy"];
 }) {
   const [open, setOpen] = useState(isBest);
   return (
@@ -878,7 +936,7 @@ function SizeRow({
           {option && (
             <div>
               <p className="mb-1 text-[11px] uppercase tracking-widest text-ink-faint">
-                {measurementLabel(sizesFrom, measurementKind)}
+                {measurementLabel(sizesFrom, measurementKind, extractedBy)}
               </p>
               <div className="flex flex-wrap gap-1.5">
                 {measurementChips(option).length > 0 ? (
