@@ -31,6 +31,57 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 78g — The extension is the front door; the link box is folded
+
+Phase G of the Session 78 plan. The founder's call: pasting a URL is too unstable
+to lead with, so the homepage offers the extension first and keeps the link box,
+folded and labelled beta, until the extension is in the Chrome Web Store.
+
+**The download.** `app-web/scripts/pack-extension.mjs` packs `browser-extension/`
+(minus `scripts/`) into `public/downloads/fit-passport-extension-0.1.0.zip` —
+**deterministically**: sorted entries, fixed 1980 timestamps, stored not
+compressed, no dependency. That is what makes `extensionZip.test.ts` possible: it
+rebuilds the zip in memory and compares bytes with the committed one, and fails
+with "run pack-extension" the moment anything in the extension changes (verified by
+editing one line of `popup.css`). The zip is committed rather than built because
+Vercel builds with `app-web/` as its root and nothing at build time reads outside
+it. **Verified end to end:** unzipped and loaded into Chromium with
+`--load-extension`, it registers under the pinned ID `odbdhmcfjbhikmlfmgafbkkbknkkaecp`,
+the popup renders, and the shipped config defaults to production.
+
+**One constant decides how it's offered** — `extensionDistribution.ts`,
+`{ kind: "zip" }` today, `{ kind: "store", href }` when the listing exists. The
+`/extension` page already renders both branches, so switching is one edit. A test
+pins the constant's version and file name to the manifest and to the file on disk.
+
+**`/extension`** is a server component (175 B of page JS): download, four install
+steps, how to use it, what it reads (11 KB of a 1.78 MB page), why an extension,
+and troubleshooting. It says plainly it is not in the store yet and that it was
+**tested in Chrome only** — other Chromium browsers accept the same steps, but we
+have not tested them, so the page does not claim they work.
+
+**Homepage.** Hero lede no longer says "paste a link"; the primary action is "Add
+Fit Passport to Chrome"; the URL form sits in a closed `<details>` — "Or paste a
+product link · Beta" — with one line on why (many large stores block our servers;
+the extension reads the page in the shopper's own browser). How-it-works step 1 is
+now "Open a product page". Closing CTA's secondary button is "Get the extension".
+Nav and footer gain an Extension link; the bar's one ink action is still "Claim
+account". `/check` carries the same one-line beta note.
+
+**Checked:** screenshots at 390 / 1440 / 1920; `mobile-audit` shows no horizontal
+overflow on `/`, `/extension`, `/check`; the folded link's `<summary>` raised to a
+44 px target (the audit does not check summaries). First Load JS: `/` 160 kB
+(unchanged), `/check` 113 kB (+1), `/extension` 96.2 kB.
+
+**Also:** `docs/design/browser-extension.md` — the durable design record (why an
+extension, measured; the extension decides nothing; allowlist capture; the trust
+boundary; identity; the visible table; distribution; which limits are permanent).
+Held back from 78a so it would not describe a download page that did not exist yet.
+
+550 tests + 1 skip, exit 0.
+
+---
+
 ## 2026-09-29 · Session 78a — The known bugs, and five more the tests turned up
 
 Phase A of the Session 78 plan (`todo/engineering/01, 04, 05, 06`, plus the real part

@@ -1,0 +1,145 @@
+# The browser extension — why it exists and how it is shaped
+
+> **Status: BUILT (Sprint 5, Sessions 75–75d); design record written Session 78.**
+> Operator documentation — install, permissions, what is sent — lives in
+> `browser-extension/README.md`. This file is the reasoning behind it, next to
+> `fetch-strategy.md` and `brand-size-charts.md`, where the other architecture
+> decisions are recorded.
+
+## 1. Why a browser extension at all
+
+Every step of this was measured, and the last step reversed an earlier one, which
+is the most important thing in this section.
+
+| Session | Measured | What it meant |
+|---|---|---|
+| 70 | patagonia.com answers a plain request to a product page with a bare 10-byte `Not found` | Blocked, not unreachable |
+| 72b | Same machine, same IP: headless Chromium **refused**, headed Chromium **200** — and Akamai, Home Depot, REI, The North Face all refused the same client | The gate detects **automation**, not our network |
+| 72c | Even with access: 1 product page in 4 yielded a chart, at 10–15 s each; and the configuration that works (a real window) cannot run on serverless, where the deployable one (headless) is exactly what is refused | Request-time scraping cannot be the product (invariant (53)) |
+| 75d | H&M and REI now refuse automated browsers **even headed**; Patagonia intermittently serves "Hang Tight" | **72b's "headed gets through" no longer holds** |
+
+That last row is why the extension is the durable answer rather than one option
+among several. Anything our code drives — headless, headed, from a server or a
+laptop — is on the wrong side of a detector that keeps improving. **A person's own
+browser, on a page they opened, is not what these systems refuse**, and it is the
+only reader that does not get worse over time.
+
+It also sidesteps the legal question that `fetch-strategy.md` §2 decided: nothing
+is being circumvented. The shopper is looking at the page; the extension reads what
+they can already see.
+
+## 2. The extension decides nothing
+
+Parsing, the body-versus-garment reading, every refusal and the recommendation all
+run on the server, in the same code as the website (`extractorLLM.ts`,
+`pageParse.ts`, `fitEngine.ts`, `checkPolicy.ts`). The extension's only job is to
+**get the page to the server**.
+
+Why this matters more than it looks:
+
+- **One engine, and it is the one with the tests.** A second copy of any rule in
+  the extension would drift from the server's, and the extension has no test
+  harness a real browser can't bypass.
+- **It can be fixed without shipping an extension.** A Chrome Web Store update
+  takes review time; a server deploy takes minutes. Every parser fix since Sprint 5
+  (fraction inches, the column shift, body waist, stated ranges) reached extension
+  users with no extension update.
+
+Where the extension must share a rule with the parser — which tables to keep, the
+body/garment sentences, the visibility attribute — it carries its own copy (there
+is no build step, so it cannot import), and **`extensionCapture.test.ts` fails the
+moment the two copies drift**.
+
+## 3. The capture is an allowlist, not a denylist
+
+A page someone is logged into shows who they are in more places than anyone can
+list: the header greeting, the cart, saved addresses, order history, recently
+viewed items, a review they wrote. Trying to strip the private parts out of such a
+page is a denylist, and a denylist is only as good as the last thing it forgot.
+
+So `capture.js` never edits the page. It **builds a new document** from the few
+parts known to be product: title and product meta, schema.org Product / Breadcrumb
+JSON-LD cut to a short key list, the first `<h1>`, measurement tables rebuilt as
+plain-text cells, the one sentence that says whether the chart is body or garment,
+size options, and chart-image addresses. Emails, phone numbers and card-like
+numbers that appear in kept text are masked before sending.
+
+**Measured on a real Patagonia product page with the size guide open: 11 KB out of
+1.78 MB (−99.4%), in about 16 ms.** The privacy control and the bandwidth control
+are the same act.
+
+## 4. The trust boundary
+
+Markup that arrives from a client is not markup we fetched. It is handled
+accordingly:
+
+- **Recorded as `fetch: "extension"`**, never `"ok"` — `sizesFrom` says where the
+  numbers came from (the retailer's page), `fetch` says who carried them (invariant
+  (54)). Claiming `"ok"` would say our server read a page it never requested.
+- **Capped at 1 MB**, sized against the measurement above rather than a guess.
+- **Never scored against an invented ladder** (invariant (59)): a supplied page with
+  no chart is refused, not answered from `BRAND_TABLE`'s constants.
+- **Rate-limited** on `/api/check`, per session first (a campus network or a demo
+  room puts many people behind one IP), per IP as a backstop.
+
+Someone could send invented markup. The only recommendation they would corrupt is
+their own, nothing they send is learned across users, and every number still
+arrives labelled with where it came from.
+
+## 5. Identity: never mint an account for the extension
+
+`getCurrentUser()` creates an anonymous account for any cookieless request. For the
+website that is the right onboarding. For the extension it would mean a silent
+check against an empty profile, answered with the confidence floor, which looks
+like the product not working.
+
+So an extension request with no session gets **401 `not-connected`**, decided
+before `getCurrentUser()` runs (invariant (60)). Chrome treats an extension's
+request to a site it holds host permission for as same-site, so the `fp_session`
+cookie (SameSite=Lax) does travel — **verified against production** — unless the
+user blocks third-party cookies, in which case they are told to connect first
+rather than being handed an empty account.
+
+## 6. Which table the shopper was looking at
+
+A tabbed size guide keeps several charts in the DOM with all but one hidden —
+men's and women's, tops and bottoms. The parser used to take the chart with the
+most rows, so a hidden one could win. The capture marks each table it keeps with
+`data-fp-visible` (on screen or not), and since Session 78 the parser prefers a
+visible chart over any hidden one, falling back to row count only among equals. A
+server-fetched page carries no marks and behaves exactly as before.
+
+## 7. Distribution
+
+Until the extension is on the Chrome Web Store it ships as a **zip on the website**
+(`/extension`), loaded unpacked in Developer mode. The zip is built
+deterministically from `browser-extension/` and a test rebuilds it and compares
+bytes, so the download can never drift from the source. Where it is offered is
+one constant (`extensionDistribution.ts`): switching to the Web Store is a single
+edit when the listing exists.
+
+The manifest pins a public `key`, so the extension ID is the same for everyone who
+loads it — `odbdhmcfjbhikmlfmgafbkkbknkkaecp` — and the store listing will get the
+store's key instead.
+
+## 8. Limits — which are permanent and which are merely unbuilt
+
+**Permanent** (the platform does not allow it):
+- A chart inside a **cross-origin iframe** or a **closed shadow root** cannot be
+  read. Open shadow roots can.
+
+**Unbuilt** (would take work, no platform obstacle):
+- Size options offered as **radio buttons** rather than a `<select>` or swatch
+  attributes — neither the capture nor the parser reads them yet.
+- Charts that exist only as **non-table markup**. Note the evidence here is thin:
+  Session 75d recorded Gap as a div-built chart, but in Session 78 Gap's product
+  page, with "Size Guide" pressed, held **no measurement chart in the DOM at all** —
+  no table, no ARIA grid, nothing with chest, sizes and numbers together; the only
+  "chest" on the page was the customer-review fit summary. A parser for a
+  structure nobody has observed would be guessing, so it waits for a real capture.
+
+**By design** (the extension will not do it):
+- It never clicks anything on the page for the user. A chart behind a "Size guide"
+  button needs the user to open it and press **Re-scan**.
+- It never runs on a page the user did not click the icon on: `activeTab` +
+  `scripting`, no always-on content scripts, no `<all_urls>`.

@@ -10,7 +10,8 @@ import { OutfitMannequin } from "@/components/OutfitMannequin";
 import { GarmentCover } from "@/components/GarmentCover";
 import { BadgeMedallion } from "@/components/BadgeMedallion";
 import { productLabel } from "@/lib/productLabel";
-import { ArrowRight, Check, Hanger, LinkIcon, Scales } from "@/components/Icon";
+import { ArrowRight, BrowserIcon, CaretRight, Check, Hanger, Scales } from "@/components/Icon";
+import { EXTENSION_DISTRIBUTION } from "@/lib/extensionDistribution";
 
 type Step = {
   key: string;
@@ -247,37 +248,63 @@ function Hero({
               this line only has to say what to do and what makes it different,
               and "we tell you why" is demonstrated on the next screen rather than
               promised on this one. */}
-          Paste a product link. We weigh it against the clothes you already
-          own — and show our working.
+          Check your size on any product page. We weigh it against the clothes
+          you already own — and show our working.
         </p>
 
-        <form
-          onSubmit={goCheck}
-          className="mx-auto mt-10 flex max-w-xl items-center gap-2 rounded-full border border-paper/15 bg-paper/10 p-1.5 backdrop-blur animate-rise focus-within:border-paper/40"
-          style={{ animationDelay: "180ms" }}
-        >
-          <input
-            type="text"
-            inputMode="url"
-            required
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            placeholder="Paste a product URL…"
-            /* min-w-0: without it the input refuses to shrink below its
-               placeholder's intrinsic width and pushes the button off a 360px
-               screen, where overflow-x-clip then hides it entirely. */
-            className="min-w-0 flex-1 bg-transparent px-4 py-3 text-base text-paper placeholder:text-paper/40 focus:outline-none sm:py-2.5 sm:text-sm"
-          />
-          <button
-            type="submit"
-            className="flex min-h-[44px] flex-shrink-0 items-center gap-2 rounded-full bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-dark sm:min-h-0 sm:px-5 sm:py-2.5"
+        {/* The extension is the way in. Pasting a link used to be the hero, and
+            it works on fewer stores than it looks like it should: many large
+            retailers block servers from reading their pages (measured, Sessions
+            70–75d), while the extension reads the page in the shopper's own
+            browser. So the link box is still here, folded, and labelled for what
+            it is — see docs/design/browser-extension.md. */}
+        <div className="mt-10 flex flex-col items-center gap-3 animate-rise" style={{ animationDelay: "180ms" }}>
+          <Link
+            href="/extension"
+            className="inline-flex min-h-[48px] items-center gap-2.5 rounded-full bg-paper px-7 text-sm font-medium text-ink transition-colors hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper"
           >
-            Get my size <ArrowRight size={16} />
-          </button>
-        </form>
-        <p className="mt-4 text-xs text-paper/60 animate-rise" style={{ animationDelay: "220ms" }}>
-          No account needed. Try a demo product on the next screen.
-        </p>
+            <BrowserIcon size={18} /> Add Fit Passport to Chrome
+          </Link>
+          <p className="text-xs text-paper/60">
+            Free · {EXTENSION_DISTRIBUTION.kind === "zip" ? `${EXTENSION_DISTRIBUTION.sizeKb} KB · ` : ""}reads only the page you click it on
+          </p>
+        </div>
+
+        <details className="group mx-auto mt-8 max-w-xl text-left animate-rise" style={{ animationDelay: "220ms" }}>
+          <summary className="mx-auto flex min-h-[44px] w-fit cursor-pointer list-none items-center gap-1.5 rounded-full px-3 text-sm text-paper/70 transition-colors hover:text-paper [&::-webkit-details-marker]:hidden">
+            <CaretRight size={14} className="transition-transform group-open:rotate-90" />
+            Or paste a product link
+            <span className="ml-1 rounded-full border border-paper/25 px-2 py-px text-[10px] uppercase tracking-wider text-paper/60">Beta</span>
+          </summary>
+          <form
+            onSubmit={goCheck}
+            className="mt-3 flex items-center gap-2 rounded-full border border-paper/15 bg-paper/10 p-1.5 backdrop-blur focus-within:border-paper/40"
+          >
+            <input
+              type="text"
+              inputMode="url"
+              required
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              placeholder="Paste a product URL…"
+              aria-label="Product link"
+              /* min-w-0: without it the input refuses to shrink below its
+                 placeholder's intrinsic width and pushes the button off a 360px
+                 screen, where overflow-x-clip then hides it entirely. */
+              className="min-w-0 flex-1 bg-transparent px-4 py-3 text-base text-paper placeholder:text-paper/40 focus:outline-none sm:py-2.5 sm:text-sm"
+            />
+            <button
+              type="submit"
+              className="flex min-h-[44px] flex-shrink-0 items-center gap-2 rounded-full bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-dark sm:min-h-0 sm:px-5 sm:py-2.5"
+            >
+              Get my size <ArrowRight size={16} />
+            </button>
+          </form>
+          <p className="mt-3 text-center text-xs leading-relaxed text-paper/60">
+            Works on some stores. Many large ones block our servers from reading their pages —
+            the extension reads the page in your own browser instead.
+          </p>
+        </details>
 
       </motion.div>
     </section>
@@ -288,10 +315,10 @@ function Hero({
 const HOW_STEPS = [
   {
     n: "01",
-    title: "Paste a product",
-    body: "Any store, any link. We read the brand, garment type, and size chart straight from the page.",
+    title: "Open a product page",
+    body: "Click Fit Passport on any store's product page. It reads the brand, the garment and the size chart from the page you're looking at.",
     tint: "bg-brand text-white",
-    Icon: LinkIcon,
+    Icon: BrowserIcon,
   },
   {
     n: "02",
@@ -506,7 +533,7 @@ function ClosingCTA({ newUser }: { newUser: boolean }) {
       </h2>
       <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
         <LinkButton href="/passport" size="lg">Create your passport</LinkButton>
-        <LinkButton href="/check" variant="secondary" size="lg" arrow>Check a product</LinkButton>
+        <LinkButton href="/extension" variant="secondary" size="lg" icon={<BrowserIcon size={18} />}>Get the extension</LinkButton>
       </div>
       {newUser && (
         <div className="mt-6">

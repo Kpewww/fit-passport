@@ -1064,3 +1064,17 @@ scored on waist). All fixed and pinned.
 **Gap, measured:** with Size Guide pressed, no measurement chart in the DOM at all;
 the only "chest" is the review summary. The 75d "Gap builds charts from divs" note
 is not reproducible — `todo/engineering/03` now waits on a hand capture.
+
+**SESSION 78g (2026-09-29).** 550 tests. **The extension is the homepage's front
+door; the URL box is folded and labelled beta.**
+
+- **Download:** `public/downloads/fit-passport-extension-<version>.zip`, packed
+  deterministically by `app-web/scripts/pack-extension.mjs` (no deps, fixed
+  timestamps). `extensionZip.test.ts` rebuilds it and byte-compares — **after any
+  change in `browser-extension/`, run `node scripts/pack-extension.mjs` in
+  app-web/** or the suite goes red. Committed, not built, because Vercel reads
+  nothing outside `app-web/`.
+- **One constant** `extensionDistribution.ts` — switch `kind: "zip"` → `"store"`
+  when the Chrome Web Store listing exists; `/extension` already renders both.
+- **`/extension`** is a server component; claims Chrome-tested only.
+- Design record: `docs/design/browser-extension.md`.

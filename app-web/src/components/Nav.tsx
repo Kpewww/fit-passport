@@ -6,6 +6,7 @@ import { useEffect, useState, type ComponentType } from "react";
 import { Logo } from "@/components/Logo";
 import {
   Board,
+  BrowserIcon,
   Close,
   Hanger,
   IdCard,
@@ -21,6 +22,7 @@ type NavLink = { href: string; label: string; Icon: ComponentType<IconProps>; al
 
 const LINKS: NavLink[] = [
   { href: "/check", label: "Check", Icon: Ruler },
+  { href: "/extension", label: "Extension", Icon: BrowserIcon },
   { href: "/closet", label: "Closet", Icon: Hanger },
   { href: "/passport", label: "Passport", Icon: IdCard },
   { href: "/outfits", label: "Outfits", Icon: Board },

@@ -10,6 +10,7 @@ const COLUMNS: Array<{ title: string; links: Array<{ label: string; href: string
     title: "Product",
     links: [
       { label: "Check a size", href: "/check" },
+      { label: "Browser extension", href: "/extension" },
       { label: "Your closet", href: "/closet" },
       { label: "Passport", href: "/passport" },
       { label: "Outfits", href: "/outfits" },

@@ -259,6 +259,17 @@ function CheckInner() {
             Paste a product URL. We&apos;ll read the page, extract its sizing, and recommend a
             size — with the reasons, so you can see exactly what it&apos;s based on.
           </p>
+          {/* Said once, plainly: many large retailers refuse our servers (measured,
+              Sessions 70–75d), so a link that fails here is usually not the
+              shopper's mistake. */}
+          <p className="mx-auto mt-2 max-w-lg text-xs text-ink-faint">
+            <span className="mr-1.5 rounded-full border border-line px-1.5 py-px text-[10px] uppercase tracking-wider">Beta</span>
+            Links work on some stores; many large ones block our servers.{" "}
+            <Link href="/extension" className="underline underline-offset-2 hover:text-ink">
+              The browser extension
+            </Link>{" "}
+            reads the page in your own browser instead.
+          </p>
 
           {/* Same pill field family as the homepage hero, in the light palette. */}
           <form
