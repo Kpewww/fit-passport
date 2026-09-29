@@ -77,6 +77,12 @@
   // from every MEASURE_MAP alternative and requires a match here. The extras (hip,
   // inseam, width, 身幅…) are headers the parser cannot read yet; keeping them now
   // means a parser improvement does not also need an extension update.
+  // Marks whether a size table was on screen when captured. The server parser
+  // prefers visible tables when a page holds several (a tabbed size guide keeps
+  // the men's AND women's charts in the DOM, one hidden). Shared with pageParse.ts
+  // — a drift test keeps the two spellings identical.
+  var VISIBLE_ATTR = "data-fp-visible";
+
   var MEASURE_RE =
     /chest|bust|waist|hip|shoulder|sleeve|arm\s*length|length|inseam|width|pit\s*to\s*pit|胸围|胸|腰围|腰|臀|肩宽|肩|袖长|袖|衣长|总长|后中长|身幅|着丈|裄丈|肩幅/i;
 
@@ -447,7 +453,7 @@
       if (!MEASURE_RE.test(flat) || seen[flat]) continue;
       seen[flat] = true;
       biggest = Math.max(biggest, rows.length - 1);
-      var section = '<section data-fp="chart" data-fp-visible="' + (isVisible(tables[t]) ? "1" : "0") + '">';
+      var section = '<section data-fp="chart" ' + VISIBLE_ATTR + '="' + (isVisible(tables[t]) ? "1" : "0") + '">';
       if (withContext) {
         var context = contextFor(tables[t]);
         if (context) section += "<p>" + esc(mask(context)) + "</p>";
@@ -552,6 +558,7 @@
   }
 
   fpCapture.VERSION = VERSION;
+  fpCapture.VISIBLE_ATTR = VISIBLE_ATTR;
   fpCapture.KIND_BODY = KIND_BODY;
   fpCapture.KIND_GARMENT = KIND_GARMENT;
   fpCapture.SIZE_SELECT_RE = SIZE_SELECT_RE;

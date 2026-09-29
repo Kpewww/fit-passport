@@ -1030,3 +1030,37 @@ library or a raw `@phosphor-icons/react` import.
 Session 76 R6 also mapped stock green/amber/red/neutral classes to `ok/warn/bad` +
 paper/line/ink everywhere except where colour is content (badges, metals, mannequin
 garments, closet folder skins).
+
+**SESSION 78a (2026-09-29).** 495 (really 520 — see below) → **545 tests, exit 0.**
+
+**Read the exit code, not the "Tests" line.** After a pull that added `jsdom`,
+node_modules was stale; `extensionCapture.test.ts` (25 tests) never loaded and
+`npm test` exited 1 while the summary line looked green. Fix: `npm ci` (does not
+rewrite the lockfile). Likely the source of the 507-vs-495 discrepancy.
+
+**NEW INVARIANTS:**
+**(70)** **A size "states its chest" in either form** — garment `chestCm` or body
+`bodyChestMin/Max` (`statesChest`). The measurement weight used to require the
+garment form, pinning every body chart near the floor (Nike 0.30 → 0.65 after).
+**(71)** **The category is always one of our keys.** `resolveCategory` runs every
+source — JSON-LD, URL, product name, `<h1>`, the LLM's answer — through
+`detectCategoryStrict`. Raw JSON-LD used to reach `domainForCategory`, whose
+fallback is "top", so "Men's Sneakers" could be sized as a t-shirt past ㉜. A
+garment named only by the page with no chart is refused `no-chart-on-page`, which
+keeps founder decision #3 (invented ladder on server-read pages) undecided.
+**(72)** **Body-range membership has one definition** — `bodyRangeFit`, shared by
+chest and waist. The sign convention inside it was inverted once (51).
+
+**Waist now reaches the engine** as `bodyWaistMin/Max` (body charts) or `waistCm`
+(garment). Schema columns already existed — no migration. **Stated ranges survive
+parsing** (`GridSize.ranges`); `midpointBand` only for single printed values.
+**Visible tables win** (`VISIBLE_CHART_ATTR`, drift-tested against `capture.js`).
+**The LLM path uses the same kind rule** (`applyMeasurementKind`).
+
+**Keyword traps found by tests:** `t-shirt` arrives as "t shirt"; "button-down"
+matched the insulated rule's "down" (→ jacket); "short-sleeve" matched shorts (→
+scored on waist). All fixed and pinned.
+
+**Gap, measured:** with Size Guide pressed, no measurement chart in the DOM at all;
+the only "chest" is the review summary. The 75d "Gap builds charts from divs" note
+is not reproducible — `todo/engineering/03` now waits on a hand capture.

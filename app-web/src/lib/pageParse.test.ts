@@ -467,3 +467,75 @@ describe("a ladder that shrinks as the sizes grow is not a size chart", () => {
     expect(parseSizeTables(descending)?.map((s) => s.label)).toEqual(["XL", "L", "M", "S"]);
   });
 });
+
+// A range written INSIDE a cell ("37.5–41") used to reach the fold already
+// collapsed to its midpoint, so a body chart's range was rebuilt from neighbours'
+// midpoints by `midpointBand` — replacing numbers the retailer had printed.
+describe("a body chart keeps the ranges it printed", () => {
+  // Shape of nike.com's men's tops chart: one row per size, a range per cell, and
+  // the page's own statement of what the numbers are.
+  const NIKE_SHAPE = `<p>The measurements on the size chart are body measurements.</p>
+  <table>
+    <tr><th>Size</th><th>Chest (in)</th><th>Waist (in)</th></tr>
+    <tr><td>S</td><td>35 - 37.5</td><td>29 - 32</td></tr>
+    <tr><td>M</td><td>37.5 - 41</td><td>32 - 35</td></tr>
+    <tr><td>L</td><td>41 - 44</td><td>35 - 38</td></tr>
+  </table>`;
+
+  it("uses the stated chest range exactly, not a band rebuilt from midpoints", () => {
+    const m = parseSizeTables(NIKE_SHAPE)!.find((s) => s.label === "M")!;
+    expect(m.bodyChestMinCm).toBe(95.3); // 37.5 in, as printed
+    expect(m.bodyChestMaxCm).toBe(104.1); // 41 in, as printed
+  });
+
+  it("puts a body chart's waist in the body-waist fields, never in the garment waistCm", () => {
+    // THE ㊿ GUARD, one column over. A body waist in `waistCm` would get the
+    // wearer's ease added on top of their own waist — which is why waist could not
+    // reach the engine at all until it had somewhere body-shaped to go.
+    const sizes = parseSizeTables(NIKE_SHAPE)!;
+    for (const s of sizes) {
+      expect(s.waistCm, `${s.label} must not claim a garment waist`).toBeUndefined();
+      expect(s.bodyWaistMinCm).toBeGreaterThan(0);
+    }
+    const m = sizes.find((s) => s.label === "M")!;
+    expect([m.bodyWaistMinCm, m.bodyWaistMaxCm]).toEqual([81.3, 88.9]); // 32–35 in
+  });
+
+  it("still reads a garment chart's waist as a garment waist", () => {
+    const flat = `<p>Garment measurements, measured flat.</p>
+      <table>
+        <tr><th>Size</th><th>Chest</th><th>Waist</th></tr>
+        <tr><td>S</td><td>96</td><td>84</td></tr>
+        <tr><td>M</td><td>100</td><td>88</td></tr>
+      </table>`;
+    const m = parseSizeTables(flat)!.find((s) => s.label === "M")!;
+    expect(m.waistCm).toBe(88);
+    expect(m.bodyWaistMinCm).toBeUndefined();
+  });
+});
+
+// A tabbed size guide keeps several charts in the DOM with all but one hidden.
+// "Most rows wins" used to pick among them regardless, so a hidden chart could
+// beat the one on screen. The extension marks each kept table's visibility.
+describe("the chart the shopper can see beats a bigger hidden one", () => {
+  const section = (visible: boolean, rows: string) =>
+    `<section data-fp="chart" data-fp-visible="${visible ? "1" : "0"}"><table>
+      <tr><th>Size</th><th>Chest</th></tr>${rows}</table></section>`;
+  const row = (l: string, c: number) => `<tr><td>${l}</td><td>${c}</td></tr>`;
+
+  // Hidden: a women's tab with MORE rows. Visible: the men's tab the user opened.
+  const html =
+    section(false, [row("XXS", 76), row("XS", 80), row("S", 84), row("M", 88), row("L", 92), row("XL", 96)].join("")) +
+    section(true, [row("S", 96), row("M", 100), row("L", 104)].join(""));
+
+  it("takes the visible chart even though the hidden one has more rows", () => {
+    const sizes = parseSizeTables(html)!;
+    expect(sizes.map((s) => s.label)).toEqual(["S", "M", "L"]);
+    expect(sizes.find((s) => s.label === "M")!.chestCm).toBe(100);
+  });
+
+  it("still uses most-rows when nothing is marked (a server-fetched page)", () => {
+    const plain = html.replace(/<section[^>]*>|<\/section>/g, "");
+    expect(parseSizeTables(plain)!.length).toBe(6);
+  });
+});

@@ -1082,3 +1082,89 @@ describe("verdicts off a retailer BODY range point the right way", () => {
     expect(seen).toEqual([...seen].sort((a, b) => a - b));
   });
 });
+
+// Body-range sizes used to be invisible to computeConfidence: the measurement
+// weight was granted only for a GARMENT `chestCm`, so every body chart — what most
+// US retailers publish — sat at the floor, and /check's "up to +35 points" for
+// adding a chest could never pay out on them. Measured before the fix with a real
+// published chart: Nike 0.30 for a wearer squarely inside the M range.
+describe("confidence credits a body-range chart the same as a garment chart", () => {
+  const bodySizes = [
+    { label: "S", bodyChestMinCm: 88.9, bodyChestMaxCm: 95.3 },
+    { label: "M", bodyChestMinCm: 95.3, bodyChestMaxCm: 104.1 },
+    { label: "L", bodyChestMinCm: 104.1, bodyChestMaxCm: 111.8 },
+  ];
+
+  it("earns the measurement weight when the wearer has a chest and the chart states a range", () => {
+    const out = recommend(baseInput({
+      product: { brand: "Nike", category: "tshirt" },
+      profile: { chestCm: 100, preferredFit: "regular" },
+      sizes: bodySizes,
+    }));
+    // Above the floor plus the small chart extras: only the measurement weight can
+    // put it there, since this input has no closet and no shoulder/sleeve.
+    expect(out.best.confidence).toBeGreaterThan(CONFIDENCE_WEIGHTS.floor + 0.1);
+  });
+
+  it("does not earn it without the wearer's chest", () => {
+    // The offer on /check is conditional on the user HAVING a chest; the chart
+    // alone must never be enough.
+    const out = recommend(baseInput({
+      product: { brand: "Nike", category: "tshirt" },
+      profile: { preferredFit: "regular" },
+      sizes: bodySizes,
+    }));
+    expect(out.best.confidence).toBeLessThanOrEqual(CONFIDENCE_WEIGHTS.floor);
+  });
+
+  it("gives a body chart and an equivalent garment chart the same raw credit", () => {
+    const body = recommend(baseInput({
+      product: { brand: "X", category: "tshirt" },
+      profile: { chestCm: 100, preferredFit: "regular" },
+      sizes: bodySizes,
+    }));
+    const garment = recommend(baseInput({
+      product: { brand: "X", category: "tshirt" },
+      profile: { chestCm: 100, preferredFit: "regular" },
+      // A garment ladder whose M sits at the regular-ease target for a 100cm chest.
+      sizes: [{ label: "S", chestCm: 104 }, { label: "M", chestCm: 110 }, { label: "L", chestCm: 116 }],
+    }));
+    // Same evidence, same credit; any remaining difference comes from how decisive
+    // each chart is, which the margin factor is there to express.
+    const bothAbove = [body, garment].every((o) => o.best.confidence > CONFIDENCE_WEIGHTS.floor + 0.1);
+    expect(bothAbove).toBe(true);
+  });
+});
+
+// Waist never reached the engine in production: engineSizes dropped it, correctly,
+// because a body chart's waist sat in the garment field. It now arrives as a body
+// range, scored by the same membership rule as chest.
+describe("waist from a body chart", () => {
+  // Identical chest ranges, so chest cannot tell these sizes apart and ONLY the
+  // waist can decide. L is listed first on purpose: with waist ignored (the old
+  // engine) the tie goes to the first entry, so a test that expects M proves the
+  // waist moved it. The first version of these tests used a chest on the M/L
+  // boundary instead — and passed against the old engine, because that boundary
+  // happens to favour L on chest alone. A test that cannot fail tests nothing.
+  const sizes = [
+    { label: "L", bodyChestMinCm: 96, bodyChestMaxCm: 104, bodyWaistMinCm: 89, bodyWaistMaxCm: 97 },
+    { label: "M", bodyChestMinCm: 96, bodyChestMaxCm: 104, bodyWaistMinCm: 81, bodyWaistMaxCm: 89 },
+  ];
+  const pick = (waistCm: number) =>
+    recommend(baseInput({
+      product: { brand: "Nike", category: "tshirt" },
+      profile: { chestCm: 100, waistCm, preferredFit: "regular" },
+      sizes,
+    })).best.label;
+
+  it("follows the waist when the chest cannot choose", () => {
+    expect(pick(84)).toBe("M"); // inside M's waist range — against list order
+    expect(pick(94)).toBe("L"); // inside L's
+  });
+
+  it("adds no ease to a body waist — the number already describes the wearer", () => {
+    // 86 cm is inside M's 81–89. Read as a GARMENT waist it would get ~8 cm of
+    // regular ease added (target ≈ 94) and land in L. A body waist is the wearer.
+    expect(pick(86)).toBe("M");
+  });
+});

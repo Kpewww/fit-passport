@@ -24,6 +24,11 @@ import type { ExtractedSize, Gender } from "./extractor";
 export type ParsedPage = {
   brand?: string;
   productName?: string;
+  /**
+   * The page's first `<h1>`. The extension sends it on purpose — it is usually the
+   * product's name as the shopper sees it — and until Session 78 nothing read it.
+   */
+  headline?: string;
   category?: string;
   gender?: Gender;
   material?: string;
@@ -160,6 +165,13 @@ export function inferGender(text: string): Gender | undefined {
 // Exported because the browser extension decides which tables to send by
 // measurement words, and must keep every table this can read — see
 // browser-extension/capture.js and extensionCapture.test.ts.
+/**
+ * The attribute the extension's capture sets on each size table it keeps, "1" when
+ * the table was on screen. Shared with `browser-extension/capture.js`, which
+ * cannot import it; `extensionCapture.test.ts` keeps the two spellings identical.
+ */
+export const VISIBLE_CHART_ATTR = "data-fp-visible";
+
 export const MEASURE_MAP: Array<{ re: RegExp; field: keyof ExtractedSize }> = [
   { re: /chest|bust|胸围|胸/i, field: "chestCm" },
   { re: /waist|腰围|腰/i, field: "waistCm" },
@@ -262,11 +274,13 @@ function tableGrid(tableHtml: string): string[][] {
  * Chest values around ~30–50 are almost certainly INCHES (a cm chest is ~80–130).
  * Convert a whole chart from inches when its chest column reads that low.
  */
-function inchesToCm(sizes: ExtractedSize[]): ExtractedSize[] {
+function inchesToCm(sizes: GridSize[]): GridSize[] {
   const chests = sizes.map((s) => s.chestCm).filter((n): n is number => typeof n === "number");
   const median = chests.length ? chests.sort((a, b) => a - b)[Math.floor(chests.length / 2)] : undefined;
   if (median === undefined || median >= 65) return sizes; // already cm
   const conv = (n?: number) => (typeof n === "number" ? Math.round(n * 2.54 * 10) / 10 : n);
+  const convRange = (r?: [number, number]): [number, number] | undefined =>
+    r ? [conv(r[0])!, conv(r[1])!] : undefined;
   return sizes.map((s) => ({
     ...s,
     chestCm: conv(s.chestCm),
@@ -274,6 +288,8 @@ function inchesToCm(sizes: ExtractedSize[]): ExtractedSize[] {
     shoulderCm: conv(s.shoulderCm),
     sleeveCm: conv(s.sleeveCm),
     lengthCm: conv(s.lengthCm),
+    // The stated ranges are in the chart's units too, and must move with the rest.
+    ...(s.ranges ? { ranges: { chestCm: convRange(s.ranges.chestCm), waistCm: convRange(s.ranges.waistCm) } } : {}),
   }));
 }
 
@@ -285,21 +301,48 @@ function inchesToCm(sizes: ExtractedSize[]): ExtractedSize[] {
  * chart: a garment has one chest measurement, while a range says who the size is
  * for ("fits a chest of 38–40in"). See `resolveMeasurementKind`.
  */
-function sizesFromGrid(grid: string[][]): { sizes: ExtractedSize[]; ranged: boolean } | null {
+/**
+ * A parsed row, before folding. Same fields as ExtractedSize, plus the range a
+ * cell STATED, when it stated one ("37.5–41").
+ *
+ * Why the range rides along: `read` collapses a range cell to its midpoint so the
+ * garment path and the monotonicity check keep working on one number — and that
+ * midpoint used to be all that survived. A body chart then had its range REBUILT
+ * from midpoints by `midpointBand`, a derivation replacing numbers the retailer
+ * had printed. The stated range is always the better source; it is kept here and
+ * `foldByLabel` prefers it.
+ */
+type GridSize = ExtractedSize & {
+  ranges?: { chestCm?: [number, number]; waistCm?: [number, number] };
+};
+
+/** Fields whose stated ranges are kept — the two a body chart publishes as ranges. */
+const RANGED_FIELDS = new Set(["chestCm", "waistCm"]);
+
+function sizesFromGrid(grid: string[][]): { sizes: GridSize[]; ranged: boolean } | null {
   if (grid.length < 2) return null;
 
   let numericCells = 0;
   let rangedCells = 0;
-  // First number in a cell; a range collapses to its midpoint, and is counted.
-  const read = (cell: string): number | null => {
+  // First number in a cell; a range collapses to its midpoint, and is counted —
+  // and its endpoints are kept alongside (see GridSize), not thrown away.
+  const read = (cell: string): { v: number; range?: [number, number] } | null => {
     const { values, range } = cellNumbers(cell);
     if (values.length === 0) return null;
     numericCells++;
     if (range) {
       rangedCells++;
-      return (values[0] + values[1]) / 2;
+      const lo = Math.min(values[0], values[1]);
+      const hi = Math.max(values[0], values[1]);
+      return { v: (lo + hi) / 2, range: [lo, hi] };
     }
-    return values[0];
+    return { v: values[0] };
+  };
+  const put = (size: GridSize, f: keyof ExtractedSize, r: { v: number; range?: [number, number] }) => {
+    (size as Record<string, unknown>)[f] = r.v;
+    if (r.range && RANGED_FIELDS.has(f)) {
+      size.ranges = { ...size.ranges, [f]: r.range };
+    }
   };
 
   // Orientation A: sizes are COLUMNS. Header row = [label, S, M, L…]; each later
@@ -317,7 +360,7 @@ function sizesFromGrid(grid: string[][]): { sizes: ExtractedSize[]; ranged: bool
   const scoreB = headerMeasureNames + rowSizeLabels;
   if (Math.max(scoreA, scoreB) < 2) return null; // not a size chart
 
-  const sizes: ExtractedSize[] = [];
+  const sizes: GridSize[] = [];
 
   if (scoreB >= scoreA) {
     // sizes as rows
@@ -325,14 +368,14 @@ function sizesFromGrid(grid: string[][]): { sizes: ExtractedSize[]; ranged: bool
     for (const row of grid.slice(1)) {
       const label = (row[0] ?? "").trim();
       if (!looksLikeSizeLabel(label)) continue;
-      const size: ExtractedSize = { label: label.toUpperCase() };
+      const size: GridSize = { label: label.toUpperCase() };
       let any = false;
       for (let c = 1; c < row.length; c++) {
         const f = fields[c];
         if (!f) continue;
         const n = read(row[c]);
         if (n != null) {
-          (size as Record<string, unknown>)[f] = n;
+          put(size, f, n);
           any = true;
         }
       }
@@ -342,7 +385,7 @@ function sizesFromGrid(grid: string[][]): { sizes: ExtractedSize[]; ranged: bool
     // sizes as columns
     const labels = header.map((c) => c.trim());
     // seed a size object per column that holds a size label
-    const cols: Array<{ idx: number; size: ExtractedSize }> = [];
+    const cols: Array<{ idx: number; size: GridSize }> = [];
     for (let c = 1; c < labels.length; c++) {
       if (looksLikeSizeLabel(labels[c])) cols.push({ idx: c, size: { label: labels[c].toUpperCase() } });
     }
@@ -351,7 +394,7 @@ function sizesFromGrid(grid: string[][]): { sizes: ExtractedSize[]; ranged: bool
       if (!f) continue;
       for (const { idx, size } of cols) {
         const n = read(row[idx] ?? "");
-        if (n != null) (size as Record<string, unknown>)[f] = n;
+        if (n != null) put(size, f, n);
       }
     }
     for (const { size } of cols) {
@@ -455,57 +498,75 @@ export const KIND_PATTERNS: { body: RegExp[]; garment: RegExp[] } = {
  * is looking at. Merged, those repeats become exactly what a body chart wants —
  * a stated range per letter.
  */
-function foldByLabel(sizes: ExtractedSize[], kind: "body" | "garment" | null): ExtractedSize[] {
+function foldByLabel(sizes: GridSize[], kind: "body" | "garment" | null): ExtractedSize[] {
   const order: string[] = [];
-  const groups = new Map<string, ExtractedSize[]>();
+  const groups = new Map<string, GridSize[]>();
   for (const s of sizes) {
     if (!groups.has(s.label)) { groups.set(s.label, []); order.push(s.label); }
     groups.get(s.label)!.push(s);
   }
 
-  const nums = (rows: ExtractedSize[], k: keyof ExtractedSize) =>
+  const nums = (rows: GridSize[], k: keyof ExtractedSize) =>
     rows.map((r) => r[k]).filter((n): n is number => typeof n === "number");
+  const r1 = (n: number) => Math.round(n * 10) / 10;
 
-  // A body chart's chest becomes the retailer's intended body RANGE, which is the
-  // field fitEngine already scores membership in. Anything else keeps the flat
-  // garment reading it has always had.
-  const chestPoints: Array<number | null> = order.map((label) => {
-    const c = nums(groups.get(label)!, "chestCm");
-    return c.length ? (Math.min(...c) + Math.max(...c)) / 2 : null;
-  });
+  // One representative point per label, for the neighbours `midpointBand` reads
+  // when a label states only a single value.
+  const pointsFor = (key: "chestCm" | "waistCm") =>
+    order.map((label) => {
+      const v = nums(groups.get(label)!, key);
+      return v.length ? (Math.min(...v) + Math.max(...v)) / 2 : null;
+    });
+  const points = { chestCm: pointsFor("chestCm"), waistCm: pointsFor("waistCm") };
+
+  /**
+   * The body range a label covers for one measurement, best source first:
+   *   1. what the chart PRINTED — a range in a cell ("37.5–41"), or the same letter
+   *      listed on several rows (Patagonia's XS = sizes 0 and 2);
+   *   2. only for a single printed value, the band at the midpoints to its
+   *      neighbours — the reading such a chart is written for.
+   * Before Session 78 a range in a cell reached this point already collapsed to
+   * its midpoint, so (2) rebuilt a range the retailer had printed.
+   */
+  const bodyRange = (rows: GridSize[], key: "chestCm" | "waistCm", i: number): [number, number] | null => {
+    const lows = rows.map((r) => r.ranges?.[key]?.[0] ?? r[key]).filter((n): n is number => typeof n === "number");
+    const highs = rows.map((r) => r.ranges?.[key]?.[1] ?? r[key]).filter((n): n is number => typeof n === "number");
+    if (!lows.length) return null;
+    const lo = Math.min(...lows);
+    const hi = Math.max(...highs);
+    if (lo !== hi) return [r1(lo), r1(hi)];
+    const band = midpointBand(points[key], i);
+    return band ? [r1(band[0]), r1(band[1])] : [lo, hi];
+  };
 
   return order.map((label, i) => {
     const rows = groups.get(label)!;
     const out: ExtractedSize = { label };
 
-    for (const k of ["waistCm", "shoulderCm", "sleeveCm", "lengthCm"] as const) {
+    for (const k of ["shoulderCm", "sleeveCm", "lengthCm"] as const) {
       const v = nums(rows, k);
       // Repeats of a secondary measurement average; they differ by a size step at
       // most, and none of them is the binding dimension.
-      if (v.length) out[k] = Math.round((v.reduce((a, b) => a + b, 0) / v.length) * 10) / 10;
+      if (v.length) out[k] = r1(v.reduce((a, b) => a + b, 0) / v.length);
     }
 
-    const chests = nums(rows, "chestCm");
-    if (!chests.length) return out;
-
-    if (kind !== "body") {
-      out.chestCm = Math.round((Math.min(...chests) + Math.max(...chests)) / 2 * 10) / 10;
+    if (kind === "body") {
+      // A body chart's waist is the waist a size is cut FOR. It used to stay in the
+      // garment `waistCm`, which is why waist could not reach the engine at all:
+      // passing it would have added the wearer's ease on top of their own waist
+      // (invariant ㊿, one column over). It now lands where chest already did.
+      const w = bodyRange(rows, "waistCm", i);
+      if (w) { out.bodyWaistMinCm = w[0]; out.bodyWaistMaxCm = w[1]; }
+      const c = bodyRange(rows, "chestCm", i);
+      if (c) { out.bodyChestMinCm = c[0]; out.bodyChestMaxCm = c[1]; }
       return out;
     }
 
-    const lo = Math.min(...chests);
-    const hi = Math.max(...chests);
-    if (lo !== hi) {
-      // The chart stated a range for this letter by listing several rows under it.
-      out.bodyChestMinCm = lo;
-      out.bodyChestMaxCm = hi;
-    } else {
-      // One value for this size, so read it the way the chart is meant to be
-      // read: nearest size wins, and the boundary sits midway to the neighbours.
-      const band = midpointBand(chestPoints, i);
-      out.bodyChestMinCm = band ? Math.round(band[0] * 10) / 10 : lo;
-      out.bodyChestMaxCm = band ? Math.round(band[1] * 10) / 10 : hi;
-    }
+    // Garment (or unstated — the long-standing reading, invariant (57)).
+    const waists = nums(rows, "waistCm");
+    if (waists.length) out.waistCm = r1(waists.reduce((a, b) => a + b, 0) / waists.length);
+    const chests = nums(rows, "chestCm");
+    if (chests.length) out.chestCm = r1((Math.min(...chests) + Math.max(...chests)) / 2);
     return out;
   });
 }
@@ -550,16 +611,72 @@ export function resolveMeasurementKind(
  * refused (`risesWithSize`). `kindFallback` is the brand's published convention,
  * used only when neither the page nor the table's shape says.
  */
+/**
+ * Route sizes that some OTHER reader produced — the LLM reading page text, or a
+ * vision read of a chart image — through the same body/garment rule as a table.
+ *
+ * Until Session 78 the LLM path decided the measurement kind by itself, by which
+ * fields it chose to fill, and nothing checked it against what the page said: a
+ * body chart read by the model into `chestCm` would get ease added on top of the
+ * wearer's own chest (invariant ㊿), and the page-level "body measurements"
+ * sentence that settles it on the table path was never consulted. Now one
+ * resolver decides (`resolveMeasurementKind`) and one fold applies it.
+ */
+export function applyMeasurementKind(
+  sizes: ExtractedSize[],
+  html: string,
+  kindFallback?: Kind | null,
+): { sizes: ExtractedSize[]; kind: Kind | null; kindFrom: KindSource | null } {
+  const rows: GridSize[] = sizes.map((s) => {
+    const row: GridSize = { ...s };
+    if (s.bodyChestMinCm != null && s.bodyChestMaxCm != null) {
+      row.chestCm = s.chestCm ?? (s.bodyChestMinCm + s.bodyChestMaxCm) / 2;
+      row.ranges = { ...row.ranges, chestCm: [s.bodyChestMinCm, s.bodyChestMaxCm] };
+    }
+    if (s.bodyWaistMinCm != null && s.bodyWaistMaxCm != null) {
+      row.waistCm = s.waistCm ?? (s.bodyWaistMinCm + s.bodyWaistMaxCm) / 2;
+      row.ranges = { ...row.ranges, waistCm: [s.bodyWaistMinCm, s.bodyWaistMaxCm] };
+    }
+    delete row.bodyChestMinCm; delete row.bodyChestMaxCm;
+    delete row.bodyWaistMinCm; delete row.bodyWaistMaxCm;
+    return row;
+  });
+  const ranged = rows.length > 0 && rows.filter((r) => r.ranges?.chestCm).length / rows.length >= 0.5;
+  const { kind, from } = resolveMeasurementKind(detectMeasurementKind(html), kindFallback, ranged);
+  return { sizes: foldByLabel(rows, kind), kind, kindFrom: from };
+}
+
 export function parseSizeChart(
   html: string,
   kindFallback?: Kind | null,
 ): { sizes: ExtractedSize[]; kind: Kind | null; kindFrom: KindSource | null } | null {
-  const tables = html.match(/<table[\s\S]*?<\/table>/gi) ?? [];
-  let best: { sizes: ExtractedSize[]; ranged: boolean } | null = null;
-  for (const t of tables) {
-    const chart = sizesFromGrid(tableGrid(t));
+  // Which tables were on screen, when the capture says. A tabbed size guide keeps
+  // several charts in the DOM with all but one hidden (men's and women's, tops and
+  // bottoms), and "the table with the most rows" used to win regardless — so a
+  // hidden chart could beat the one the shopper was looking at. The extension
+  // marks each table it keeps (`capture.js`, VISIBLE_ATTR); a server-fetched page
+  // carries no marks, and then nothing changes.
+  const visibleRe = new RegExp(`<section[^>]*${VISIBLE_CHART_ATTR}="([01])"[^>]*>([\\s\\S]*?)<\\/section>`, "gi");
+  const marked: Array<{ table: string; visible: boolean }> = [];
+  for (const m of html.matchAll(visibleRe)) {
+    for (const t of m[2].match(/<table[\s\S]*?<\/table>/gi) ?? []) marked.push({ table: t, visible: m[1] === "1" });
+  }
+  const candidates = marked.length
+    ? marked
+    : (html.match(/<table[\s\S]*?<\/table>/gi) ?? []).map((table) => ({ table, visible: false }));
+  const anyVisible = marked.some((c) => c.visible);
+
+  let best: { sizes: GridSize[]; ranged: boolean; visible: boolean } | null = null;
+  for (const c of candidates) {
+    const chart = sizesFromGrid(tableGrid(c.table));
     if (!chart || !risesWithSize(chart.sizes)) continue;
-    if (!best || chart.sizes.length > best.sizes.length) best = chart;
+    const entry = { ...chart, visible: c.visible };
+    const better =
+      !best ||
+      // A visible chart beats any hidden one; only then do rows decide.
+      (anyVisible && entry.visible && !best.visible) ||
+      (entry.visible === best.visible && entry.sizes.length > best.sizes.length);
+    if (better) best = entry;
   }
   if (!best) return null;
   const { kind, from } = resolveMeasurementKind(detectMeasurementKind(html), kindFallback, best.ranged);
@@ -743,9 +860,13 @@ export function parsePage(html: string, kindFallback?: "body" | "garment"): Pars
   const og = openGraph(html);
   const text = stripTags(html).slice(0, 20_000);
 
+  const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
+  const headline = h1 ? stripTags(h1[1]).replace(/\s+/g, " ").trim().slice(0, 200) || undefined : undefined;
+
   const merged: ParsedPage = {
     brand: ld.brand || og.brand,
-    productName: ld.productName || og.productName,
+    productName: ld.productName || og.productName || headline,
+    headline,
     category: ld.category,
     material: ld.material,
     fitNotes: og.fitNotes,

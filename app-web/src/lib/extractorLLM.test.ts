@@ -355,9 +355,62 @@ describe("extractSmart — provenance of page sizes", () => {
     );
     expect(out.source.sizesFrom).toBe("page");
     expect(out.source.extractedBy).toBe("llm-text");
+    // (56): the stale CREDIT is gone — no link to the brand's guide beside page numbers.
     expect(out.source.chart).toBeUndefined();
-    expect(out.source.measurementKindFrom).toBeUndefined();
+    // CHANGED ON PURPOSE in Session 78. This asserted `measurementKindFrom` was
+    // undefined, which encoded the LLM path never deciding a kind at all. It now
+    // decides exactly as the table path does (invariant (57)): the page said
+    // nothing, the model's single values carry no body/garment information (the
+    // prompt only routes RANGES to the body fields), so the brand's published
+    // convention decides — freshly, with its source recorded, which is what (56)
+    // asks for rather than an absence.
+    expect(out.source.measurementKind).toBe("body");
+    expect(out.source.measurementKindFrom).toBe("brand");
     expect(out.sizes.map((s) => s.label)).toEqual(["S", "M", "L"]);
+  });
+
+  it("lets the page's own words beat the brand's convention on the LLM path too", async () => {
+    // A product page that says its numbers are flat garment measurements must be
+    // read as garment, even for a brand whose size guide publishes body charts.
+    process.env.ANTHROPIC_API_KEY = "test-key";
+    const llmReply = {
+      brand: "Patagonia", productName: "Boulder Fork Rain Jacket", category: "jacket",
+      sizes: [{ label: "S", chestCm: 104 }, { label: "M", chestCm: 110 }, { label: "L", chestCm: 116 }],
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: unknown) => {
+      if (String(input).includes("api.anthropic.com")) {
+        return { ok: true, status: 200, json: async () => ({ content: [{ type: "text", text: JSON.stringify(llmReply) }] }) };
+      }
+      throw new Error("no other network in this test");
+    }));
+    const out = await extractSmart(
+      "https://www.patagonia.com/product/mens-insulated-boulder-fork-rain-jacket/85220.html",
+      { html: `<html><body><h1>Boulder Fork Rain Jacket</h1><p>Garment measurements, measured flat. ${"Waterproof shell. ".repeat(20)}</p></body></html>` },
+    );
+    expect(out.source.measurementKind).toBe("garment");
+    expect(out.source.measurementKindFrom).toBe("page");
+    expect(out.sizes.find((s) => s.label === "M")!.chestCm).toBe(110);
+    expect(out.sizes.every((s) => s.bodyChestMinCm === undefined)).toBe(true);
+  });
+
+  it("keeps a garment named by the page, rather than taking the model's category", async () => {
+    // The model answers from a fixed list that includes "other", which the
+    // domain lookup would quietly read as a top.
+    process.env.ANTHROPIC_API_KEY = "test-key";
+    const llmReply = {
+      brand: "Shop", productName: "Court Classic", category: "other",
+      sizes: [{ label: "S", chestCm: 104 }, { label: "M", chestCm: 110 }],
+    };
+    vi.stubGlobal("fetch", vi.fn(async (input: unknown) => {
+      if (String(input).includes("api.anthropic.com")) {
+        return { ok: true, status: 200, json: async () => ({ content: [{ type: "text", text: JSON.stringify(llmReply) }] }) };
+      }
+      throw new Error("no other network in this test");
+    }));
+    const out = await extractSmart("https://shop.test/p/mens-crew-t-shirt-9", {
+      html: `<html><body><h1>Crew T-Shirt</h1><p>${"Soft jersey. ".repeat(30)}</p></body></html>`,
+    });
+    expect(out.category).toBe("tshirt");
   });
 
   it("answers M for a 100cm chest on Uniqlo's chart, where it used to say L at 65%", async () => {

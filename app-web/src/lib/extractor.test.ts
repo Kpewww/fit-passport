@@ -191,3 +191,43 @@ describe("Patagonia — the brand the chart layer exists for", () => {
     expect(m.bodyChestMaxCm).toBe(95.3); // 37.5in
   });
 });
+
+// "t-shirt" in a URL arrives at the keyword table as "t shirt" (separators become
+// spaces), which the old `t-?shirt` could not match — and the generic shirt rule,
+// which came first, took it.
+describe("t-shirts are t-shirts", () => {
+  const cat = (url: string) => extractFromUrl(url).category;
+  it("reads a hyphenated t-shirt slug as a t-shirt", () => {
+    expect(cat("https://www.nike.com/t/mens-dri-fit-training-t-shirt/AB1")).toBe("tshirt");
+    expect(cat("https://shop.test/p/womens-organic-t-shirts")).toBe("tshirt");
+  });
+  it("leaves real shirts alone", () => {
+    expect(cat("https://www.cos.com/en_usd/men/oxford-shirt")).toBe("shirt");
+    expect(cat("https://shop.test/p/mens-flannel-shirt")).toBe("shirt");
+    expect(cat("https://shop.test/p/mens-button-down-shirt")).toBe("shirt");
+    expect(cat("https://shop.test/p/short-sleeve-shirt")).toBe("shirt");
+  });
+  it("does not let the t-shirt rule swallow a sweatshirt, and reads an overshirt as a shirt", () => {
+    expect(cat("https://shop.test/p/mens-crew-sweatshirt")).toBe("hoodie");
+    // Not recognised at all before, so it fell to the "tshirt" DEFAULT — which an
+    // assertion of "not tshirt" would have caught only by accident.
+    expect(cat("https://shop.test/p/mens-wool-overshirt")).toBe("shirt");
+    expect(extractFromUrl("https://shop.test/p/mens-wool-overshirt").source.categoryGuessed).toBe(false);
+  });
+
+  it("reads a short-sleeve top as a top, while a singular 'short' is still shorts", () => {
+    // Bottoms match first, and the bare word "short" used to classify a
+    // short-sleeve shirt as shorts — scored against the waist, not the chest.
+    expect(cat("https://shop.test/p/short-sleeve-shirt")).toBe("shirt");
+    expect(cat("https://shop.test/p/mens-short-sleeve-tee")).toBe("tshirt");
+    expect(cat("https://www.nike.com/t/mens-7-running-short/AB2")).toBe("shorts");
+    expect(cat("https://shop.test/p/mens-board-shorts")).toBe("shorts");
+  });
+
+  it("reads a button-down as a shirt, not as down-filled outerwear", () => {
+    // The insulated rule's bare "down" used to claim it — outerwear ease, a size up.
+    expect(cat("https://shop.test/p/mens-button-down-shirt")).toBe("shirt");
+    expect(cat("https://shop.test/p/mens-oxford-button-up")).toBe("shirt");
+    expect(cat("https://www.patagonia.com/product/mens-down-sweater/84675.html")).toBe("jacket");
+  });
+});

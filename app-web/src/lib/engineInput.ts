@@ -2,16 +2,12 @@
 // /api/check, /api/recommend, the evaluation harness and the tests all feed the
 // engine the same way. No database import, so tests can use it directly.
 //
-// ⚠ `waistCm` is NOT passed, and that is currently correct, though it looks
-// like a bug (it was recorded as one in Session 75's audit: `scoreMeasurementFit`
-// reads `size.waistCm`, and nothing ever supplies it). The page parser moves a
-// body chart's CHEST into `bodyChestMinCm/MaxCm`, but leaves its WAIST in
-// `waistCm` — the garment field. Uniqlo's, Nike's and Patagonia's charts all
-// carry a body waist column. Passing `waistCm` today would feed those body
-// waists to the engine as garment waists, which then adds the wearer's ease on
-// top: invariant ㊿ again, one column over. Wire waist through only together
-// with a body-waist field on the parser side (the schema already has
-// `bodyWaistMinCm/MaxCm`, unused).
+// Waist travels now, both ways a chart can state it: a GARMENT waist in `waistCm`
+// and a BODY waist range in `bodyWaistMinCm/MaxCm`. Until Session 78 it could not
+// travel at all — the parser left a body chart's waist in the garment field, so
+// passing `waistCm` would have added the wearer's ease on top of their own waist
+// (invariant ㊿, one column over). `foldByLabel` and `chartToSizes` now route a body
+// waist to the body fields, which is what made this safe.
 
 import type { SizeOptionInput } from "./fitEngine";
 
@@ -23,6 +19,9 @@ export type SizeRow = {
   sleeveCm?: number | null;
   bodyChestMinCm?: number | null;
   bodyChestMaxCm?: number | null;
+  waistCm?: number | null;
+  bodyWaistMinCm?: number | null;
+  bodyWaistMaxCm?: number | null;
 };
 
 export function engineSizes(rows: SizeRow[]): SizeOptionInput[] {
@@ -34,5 +33,8 @@ export function engineSizes(rows: SizeRow[]): SizeOptionInput[] {
     sleeveCm: s.sleeveCm ?? null,
     bodyChestMinCm: s.bodyChestMinCm ?? null,
     bodyChestMaxCm: s.bodyChestMaxCm ?? null,
+    waistCm: s.waistCm ?? null,
+    bodyWaistMinCm: s.bodyWaistMinCm ?? null,
+    bodyWaistMaxCm: s.bodyWaistMaxCm ?? null,
   }));
 }

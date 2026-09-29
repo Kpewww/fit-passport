@@ -246,6 +246,8 @@ export type ChartSize = {
   waistCm?: number;
   bodyChestMinCm?: number;
   bodyChestMaxCm?: number;
+  bodyWaistMinCm?: number;
+  bodyWaistMaxCm?: number;
 };
 
 /**
@@ -290,8 +292,19 @@ export function chartToSizes(chart: BrandChart): ChartSize[] {
       }
     }
 
-    if (row.waistMin != null && row.waistMax != null && chart.kind === "garment") {
-      size.waistCm = toCm((row.waistMin + row.waistMax) / 2);
+    if (row.waistMin != null && row.waistMax != null) {
+      if (chart.kind === "body") {
+        // The body waist this size is cut for. Nike and Patagonia women's both
+        // print one; it was simply dropped before, because the engine had nowhere
+        // body-shaped to put a waist (invariant ㊿ kept it out of `waistCm`).
+        size.bodyWaistMinCm = toCm(row.waistMin);
+        size.bodyWaistMaxCm = toCm(row.waistMax);
+      } else {
+        size.waistCm = toCm((row.waistMin + row.waistMax) / 2);
+      }
+    } else if (row.waist != null && chart.kind === "body") {
+      const w = pointRange(chart.rows, i, "waist");
+      if (w) { size.bodyWaistMinCm = toCm(w[0]); size.bodyWaistMaxCm = toCm(w[1]); }
     }
 
     out.push(size);

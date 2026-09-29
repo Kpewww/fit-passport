@@ -34,6 +34,13 @@ export type ExtractedSize = {
   lengthCm?: number;
   bodyChestMinCm?: number;
   bodyChestMaxCm?: number;
+  /**
+   * The BODY waist range a size is cut for — the waist twin of bodyChestMin/Max.
+   * A body chart's waist used to be left in the GARMENT `waistCm`, which is why
+   * waist could not safely reach the engine at all (invariant ㊿, one column over).
+   */
+  bodyWaistMinCm?: number;
+  bodyWaistMaxCm?: number;
 };
 
 export type Gender = "mens" | "womens" | "unisex";
@@ -90,6 +97,13 @@ export type ExtractedProduct = {
      * the honest response is to say so rather than size an unknown object.
      */
     categoryGuessed?: boolean;
+    /**
+     * Which source named the garment, when one did. "url" is the slug; the page
+     * sources come from `resolveCategory`. Recorded because a category the page
+     * named — where the URL named nothing — is exactly the case that used to be
+     * refused as not-apparel, and the refusal policy has to tell it apart.
+     */
+    categoryFrom?: CategorySource;
     /**
      * Present only when `sizesFrom === "brand-chart"`. The page a user can open
      * to check every number we showed them, and the date we read it. A curated
@@ -239,7 +253,11 @@ const BRAND_TABLE: Record<string, BrandProfile> = {
 const CATEGORY_KEYWORDS: Array<{ cat: string; re: RegExp }> = [
   // Bottoms (before tops so "sweatpants" ≠ sweater, "board-shorts" ≠ shirt)
   { cat: "jeans", re: /\b(jeans?|denim)\b/i },
-  { cat: "shorts", re: /\b(shorts?|boardshorts?|trunks)\b/i },
+  // "short" alone is a real garment name ("Men's 7-inch Running Short"), but NOT
+  // when it describes a sleeve. Bottoms are matched before tops, so without the
+  // lookahead a short-sleeve shirt was classified as shorts and scored against the
+  // WAIST instead of the chest. Found by a test in Session 78.
+  { cat: "shorts", re: /\b(shorts|boardshorts?|trunks|short(?![\s-]*sleeves?))\b/i },
   { cat: "skirt", re: /\b(skirts?)\b/i },
   { cat: "pants", re: /\b(pants?|trousers?|chinos?|leggings?|joggers?|sweatpants?|slacks?|cargos?)\b/i },
   // Footwear
@@ -251,14 +269,25 @@ const CATEGORY_KEYWORDS: Array<{ cat: string; re: RegExp }> = [
   { cat: "hat", re: /\b(hat|caps?|beanie|beanies)\b/i },
   { cat: "belt", re: /\b(belts?)\b/i },
   { cat: "scarf", re: /\b(scarf|scarves|muffler)\b/i },
-  // Tops — insulated outerwear first, then hoodie/sweater/jacket/shirt/tee
+  // Tops — insulated outerwear first, then hoodie/sweater/jacket/shirt/tee.
+  //
+  // A button-down is a SHIRT, and it has to be claimed before the insulated rule
+  // below, whose bare "down" (down fill) otherwise matches it: `mens-button-down-
+  // shirt` was classified "jacket", which adds outerwear ease and pushes the
+  // recommendation up a size. Found by a test in Session 78.
+  { cat: "shirt", re: /\bbutton[\s-]?(down|up)\b/i },
   { cat: "jacket", re: /\b(down|puffer|puffy|insulated|parka|anorak|windbreaker|gilet|shell)\b/i },
   { cat: "polo", re: /\bpolo\b/i },
   { cat: "hoodie", re: /\b(hoodie|hoody|hooded|sweatshirt)\b/i },
   { cat: "sweater", re: /\b(sweater|jumper|knit|cardigan|pullover|fleece|turtleneck)\b/i },
   { cat: "jacket", re: /\b(jacket|coat|trucker|blazer|outerwear|vest)\b/i },
-  { cat: "shirt", re: /\b(shirt|oxford|flannel|button-?down|button-?up)\b/i },
-  { cat: "tshirt", re: /\b(t-?shirt|tee|crew-?neck)\b/i },
+  // T-shirt BEFORE shirt, and matching a space as well as a hyphen. The URL text
+  // has its separators turned into spaces before matching, so "t-shirt" arrives as
+  // "t shirt": the old `t-?shirt` could never match it, and the generic `shirt`
+  // rule — which used to come first — caught it instead. Measured:
+  // `.../mens-dri-fit-training-t-shirt` classified as "shirt".
+  { cat: "tshirt", re: /\b(t[\s-]?shirts?|tees?|crew[\s-]?neck)\b/i },
+  { cat: "shirt", re: /\b(shirts?|overshirts?|oxford|flannel)\b/i },
 
   // Chinese garment terms. Needed now that an unrecognised page is REFUSED rather
   // than defaulted to "tshirt" — without these, a Chinese product link would be
@@ -380,6 +409,42 @@ export function detectCategoryStrict(text: string): string | null {
   return null;
 }
 
+/** Where the garment category was read from — see `resolveCategory`. */
+export type CategorySource = "page-structured" | "url" | "page-name";
+
+/**
+ * The garment category, from everything we know, normalised to one of OUR keys.
+ *
+ * Two faults this replaces, both measured:
+ *   • The page was never asked. Only the URL was read, so Gap's "Classic T-Shirt"
+ *     (a URL of product ids) was refused as `not-apparel` with a message telling
+ *     the user to paste a link to a garment — which they had done. The extension
+ *     even sends the page's `<h1>` for exactly this, and nothing read it.
+ *   • JSON-LD's category was used RAW. `domainForCategory` falls back to "top"
+ *     for any string it does not know, so a shoe page whose JSON-LD says "Men's
+ *     Sneakers" would have been sized like a t-shirt, straight past the
+ *     unsupported-category refusal (invariant ㉜).
+ *
+ * Precedence keeps what shipped: the page's structured category first (it
+ * already outranked the URL, raw), then the URL, and only then the product name
+ * and headline — which fill the case where the URL named nothing. Every source
+ * goes through the same keyword table, so the result is always a key we score.
+ */
+export function resolveCategory(input: {
+  structured?: string | null;
+  url: string | null;
+  names: Array<string | null | undefined>;
+}): { category: string; from: CategorySource } | null {
+  const fromStructured = input.structured ? detectCategoryStrict(input.structured) : null;
+  if (fromStructured) return { category: fromStructured, from: "page-structured" };
+  if (input.url) return { category: input.url, from: "url" };
+  for (const n of input.names) {
+    const c = n ? detectCategoryStrict(n) : null;
+    if (c) return { category: c, from: "page-name" };
+  }
+  return null;
+}
+
 function detectCategory(text: string): string {
   return detectCategoryStrict(text) ?? "tshirt"; // caller records that this was a guess
 }
@@ -484,7 +549,7 @@ export function extractFromUrl(url: string): ExtractedProduct {
           derived: true,
           slug,
           sizesFrom: "brand-chart",
-          categoryGuessed: detected == null,
+          categoryGuessed: detected == null, ...(detected ? { categoryFrom: "url" as const } : {}),
           chart: { sourceUrl: chart.sourceUrl, capturedAt: chart.capturedAt },
           measurementKind: chart.kind,
           measurementKindFrom: "brand",
@@ -509,7 +574,7 @@ export function extractFromUrl(url: string): ExtractedProduct {
       sizes: buildSizes(brandProfile, category),
       source: {
         url, host, derived: true, slug, sizesFrom: "estimated",
-        categoryGuessed: detected == null, sizesSynthesized: true,
+        categoryGuessed: detected == null, ...(detected ? { categoryFrom: "url" as const } : {}), sizesSynthesized: true,
       },
     };
   }
@@ -534,7 +599,7 @@ export function extractFromUrl(url: string): ExtractedProduct {
     sizes: buildSizes(genericProfile, category),
     source: {
       url, host, derived: true, slug, sizesFrom: "estimated",
-      categoryGuessed: detected == null, sizesSynthesized: true,
+      categoryGuessed: detected == null, ...(detected ? { categoryFrom: "url" as const } : {}), sizesSynthesized: true,
     },
   };
 }

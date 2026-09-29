@@ -47,6 +47,9 @@ export type SizeOptionInput = {
   sleeveCm?: number | null;
   bodyChestMinCm?: number | null;
   bodyChestMaxCm?: number | null;
+  /** The body waist range this size is cut for — the waist twin of bodyChest. */
+  bodyWaistMinCm?: number | null;
+  bodyWaistMaxCm?: number | null;
 };
 
 export type KnownGoodInput = {
@@ -231,6 +234,32 @@ function verdictFromDelta(delta: number): FitVerdict {
 }
 
 /**
+ * How well a wearer's measurement sits in a BODY range a size is cut for.
+ *
+ * One definition, used by chest and waist alike, because the sign convention in
+ * here has already been wrong once. `verdictFromDelta` reads delta as
+ * GARMENT-relative — negative = this size is smaller than you want — while a body
+ * range describes the WEARER, so it must be negated here. It was not, and every
+ * verdict off a body range came out inverted (invariant (51)): with a 100cm chest
+ * against Nike's chart, L read "too small". Only the verdict was wrong — `sub`
+ * uses the unsigned distance — which is exactly why it survived.
+ */
+function bodyRangeFit(b: number, lo: number, hi: number): { sub: number; delta: number } {
+  if (b >= lo && b <= hi) {
+    // Inside the range: best near the middle, still strong at the edges.
+    const mid = (lo + hi) / 2;
+    return {
+      delta: mid - b, // body above the middle => this size runs snug on you
+      sub: 0.85 + 0.15 * gauss(b - mid, (hi - lo) / 2 || 1),
+    };
+  }
+  const outBy = b < lo ? b - lo : b - hi; // signed cm the body sits outside
+  // Negate to garment-relative, then push past the edge so a size the body does
+  // not fit inside never reads as "true to size".
+  return { delta: outBy > 0 ? -outBy - 4 : -outBy + 4, sub: gauss(outBy, 4) };
+}
+
+/**
  * Score how well one size fits, across EVERY measurement we have (chest, waist,
  * shoulder) — not chest alone. A shirt can match the chest yet fail at the
  * shoulders, and the size literature models fit as a multi-measurement signal.
@@ -268,35 +297,7 @@ function scoreMeasurementFit(
   if (profile.chestCm != null) {
     if (size.bodyChestMinCm != null && size.bodyChestMaxCm != null) {
       // Retailer gives the intended BODY range for this size — score membership.
-      const lo = size.bodyChestMinCm;
-      const hi = size.bodyChestMaxCm;
-      const b = profile.chestCm;
-      let sub: number;
-      let delta: number;
-      // SIGN CONVENTION. `verdictFromDelta` reads delta as GARMENT-relative:
-      // negative = this size is smaller than you want, positive = roomier. The
-      // garment branch below satisfies that naturally (`size.chestCm - target`).
-      // A body range is stated the other way round — it describes the WEARER —
-      // so it must be negated here. It was not, and every verdict off a body
-      // range came out inverted: with a 100cm chest against Nike's own chart, L
-      // was labelled "too small" and S "too big".
-      //
-      // Only the verdict was wrong; `sub` (and therefore the ranking) uses the
-      // unsigned distance and was always right, which is exactly why this
-      // survived — the recommended size was correct and only its neighbours'
-      // labels lied.
-      if (b >= lo && b <= hi) {
-        // Inside the range: best near the middle, still strong at the edges.
-        const mid = (lo + hi) / 2;
-        delta = mid - b; // body above the middle => this size runs snug on you
-        sub = 0.85 + 0.15 * gauss(b - mid, (hi - lo) / 2 || 1);
-      } else {
-        const outBy = b < lo ? b - lo : b - hi; // signed cm your body sits outside
-        // Negate to garment-relative, then push past the edge so a size the body
-        // does not fit inside never reads as "true to size".
-        delta = outBy > 0 ? -outBy - 4 : -outBy + 4;
-        sub = gauss(outBy, 4);
-      }
+      const { sub, delta } = bodyRangeFit(profile.chestCm, size.bodyChestMinCm, size.bodyChestMaxCm);
       chestDelta = delta;
       dims.push({ key: "chest", sub, delta, weight: 0.6, sigma: 4 });
     } else if (size.chestCm != null) {
@@ -308,10 +309,17 @@ function scoreMeasurementFit(
   }
 
   // ---- Waist (secondary) — tracks the body a little more tightly than chest ----
-  if (profile.waistCm != null && size.waistCm != null) {
-    const target = profile.waistCm + ease * 0.8;
-    const delta = size.waistCm - target;
-    dims.push({ key: "waist", sub: gauss(delta, 4), delta, weight: 0.22, sigma: 4 });
+  if (profile.waistCm != null) {
+    if (size.bodyWaistMinCm != null && size.bodyWaistMaxCm != null) {
+      // The body waist this size is cut for — membership, like chest. No ease is
+      // added: the number already describes the wearer, not the garment.
+      const { sub, delta } = bodyRangeFit(profile.waistCm, size.bodyWaistMinCm, size.bodyWaistMaxCm);
+      dims.push({ key: "waist", sub, delta, weight: 0.22, sigma: 4 });
+    } else if (size.waistCm != null) {
+      const target = profile.waistCm + ease * 0.8;
+      const delta = size.waistCm - target;
+      dims.push({ key: "waist", sub: gauss(delta, 4), delta, weight: 0.22, sigma: 4 });
+    }
   }
 
   // ---- Shoulder — the least forgiving dimension, so a tighter sigma ----
@@ -552,9 +560,23 @@ function combine(reasons: Reason[], floor: number): number {
 }
 
 /** Confidence is a function of *how much* data we combined, not the score itself. */
+/**
+ * Whether a size states its chest in a form the scorer can measure a wearer against.
+ *
+ * Two forms count, because charts publish chest two ways: a GARMENT's flat chest
+ * (`chestCm`) or the BODY range the size is cut for (`bodyChestMin/Max`). This used
+ * to recognise only the first, so every body chart — most US retailers publish
+ * those — sat at the confidence floor, and `/check`'s "up to +35 points" for adding
+ * a chest measurement could never pay out on them. Measured before the fix: Nike
+ * 0.30, Uniqlo 0.30, Patagonia 0.19–0.25 for a wearer whose chest the chart covers.
+ */
+export function statesChest(size: SizeOptionInput): boolean {
+  return size.chestCm != null || (size.bodyChestMinCm != null && size.bodyChestMaxCm != null);
+}
+
 function computeConfidence(size: SizeOptionInput, hasKnownGood: boolean, hasChest: boolean): number {
   let c = CONFIDENCE_WEIGHTS.floor;
-  if (hasChest && size.chestCm != null) c += CONFIDENCE_WEIGHTS.measurements;
+  if (hasChest && statesChest(size)) c += CONFIDENCE_WEIGHTS.measurements;
   if (hasKnownGood) c += CONFIDENCE_WEIGHTS.closetAnchor;
   if (size.shoulderCm != null) c += CONFIDENCE_WEIGHTS.chartShoulder;
   if (size.sleeveCm != null) c += CONFIDENCE_WEIGHTS.chartSleeve;

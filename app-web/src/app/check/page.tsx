@@ -53,6 +53,9 @@ type SizeOption = {
   lengthCm: number | null;
   bodyChestMinCm: number | null;
   bodyChestMaxCm: number | null;
+  waistCm?: number | null;
+  bodyWaistMinCm?: number | null;
+  bodyWaistMaxCm?: number | null;
 };
 
 type Product = {
@@ -697,8 +700,11 @@ function Result({
 
       {/* SEE THE GAP — the ease arithmetic the engine already does, drawn. Only
           renders when we have a body chest AND a garment chest to compare; there
-          is nothing honest to draw otherwise. */}
-      {body && (
+          is nothing honest to draw otherwise.
+          The comment always said "AND a garment chest"; the code checked only the
+          body, so every BODY chart (most US retailers — Nike, Patagonia, Uniqlo)
+          rendered this card with a heading and nothing under it. */}
+      {body?.chestCm != null && product.sizeOptions.some((o) => o.chestCm != null) && (
         <Card>
           <h3 className="text-h3 font-semibold text-ink">What the numbers look like</h3>
           <p className="mb-4 mt-0.5 text-xs text-ink-faint">
@@ -986,6 +992,11 @@ function measurementChips(o: SizeOption): string[] {
   if (o.lengthCm != null) chips.push(`length ${o.lengthCm}cm`);
   if (o.bodyChestMinCm != null && o.bodyChestMaxCm != null)
     chips.push(`fits body chest ${o.bodyChestMinCm}–${o.bodyChestMaxCm}cm`);
+  // Waist is scored now (Session 78), so it has to be shown: a number the engine
+  // weighed that the screen never mentions is the Session 69 failure again.
+  if (o.waistCm != null) chips.push(`waist ${o.waistCm}cm`);
+  if (o.bodyWaistMinCm != null && o.bodyWaistMaxCm != null)
+    chips.push(`fits body waist ${o.bodyWaistMinCm}–${o.bodyWaistMaxCm}cm`);
   return chips;
 }
 

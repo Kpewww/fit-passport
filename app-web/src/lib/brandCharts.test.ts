@@ -259,3 +259,12 @@ describe("Patagonia — captured by hand, because its edge refuses every automat
     expect(m.bodyChestMinCm).toBeGreaterThan(w.bodyChestMaxCm!);
   });
 });
+
+describe("a curated body chart carries its waist too", () => {
+  it("emits Nike's printed body waist, which used to be dropped", () => {
+    const nike = BRAND_CHARTS.find((c) => c.brand === "Nike")!;
+    const m = chartToSizes(nike).find((s) => s.label === "M")!;
+    expect([m.bodyWaistMinCm, m.bodyWaistMaxCm]).toEqual([81.3, 88.9]); // 32–35 in
+    expect(m.waistCm).toBeUndefined();
+  });
+});

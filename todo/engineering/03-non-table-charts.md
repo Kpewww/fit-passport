@@ -1,24 +1,35 @@
-# Size charts that are not `<table>`
+# Size charts that are not `<table>` — needs a real capture first
 
-**Wait for the benchmark to rank it. Likely the biggest single win.**
+**Blocked on evidence, not on code.** Do not write a parser until a real page
+shows the structure it would parse.
 
-## The problem
+## What changed in Session 78
 
-Gap builds its chart from `<div>`s; Arc'teryx holds it in framework JSON. Both are
-**invisible to the capture and to the parser**, which look for `<table>`. And
-because the capture is an allowlist, what it sends then contains nothing for the
-LLM path to read either — so the fallback cannot save it.
+The Session 75d evaluation recorded Gap as a chart built from `<div>`s and
+Arc'teryx as one held in framework JSON. In Session 78 Gap's product page
+(`pid=440775082`), with **Size Guide** pressed in a headed browser, held **no
+measurement chart in the DOM at all**: no `<table>`, no ARIA `role=table/grid/row/
+cell`, and no element containing "chest", several size labels and numbers together.
+The only "chest" on the page was the customer-review fit summary ("Chest average
+2.0 of 3, Tight ↔ Loose").
 
-Measured, `results/2026-09-29-live.md`: the server path read a page chart on
-**0 of 11** cases; the extension path on 3.
+Either the guide loads somewhere automation does not reach, or it is not a
+measurement chart. Writing a parser for a structure nobody has observed would be
+guessing at the retailer's markup — exactly what this project refuses to do with
+numbers.
 
-## The fix, smallest first
+## What unblocks it
 
-Send the size-guide dialog's **text** when it holds no table, so the LLM path has
-something to work with. That is a capture change plus a parser entry point, not a
-new extraction strategy.
+A **hand capture** from a real browser (the extension popup → "Show exactly what
+would be sent" → "Save this capture") on a page whose size guide visibly shows a
+chart that is not a `<table>`. Then: a fixture from that capture, red, a parser,
+green.
 
-## Done when
+## Already done around it (Session 78)
 
-At least one non-table case (Gap or Arc'teryx) produces a chart, and the before/
-after appears in the results file. Red-then-green with the real page as fixture.
+- The `<h1>` the capture sends is now read, so Gap's "Classic T-Shirt" is
+  recognised as a t-shirt instead of refused as not-apparel.
+- Sizes read by the LLM path now follow the same body/garment rule as tables.
+- **Worth noticing:** Gap's review summary is a crowd fit signal ("Chest: Tight ↔
+  Loose, average 2.0 of 3"). It is cross-user data about the garment, which this
+  round deliberately does not consume — recorded here for the cross-user decision.

@@ -211,3 +211,82 @@ describe("the extension's session gate", () => {
     expect(sessionGate(false, true)).toBe("proceed");
   });
 });
+
+// The garment used to be read from the URL alone. Gap's "Classic T-Shirt" — a URL
+// of product ids — was refused as not-apparel with a message telling the user to
+// paste a link to a garment, which they had. And JSON-LD's category went in raw,
+// so an unknown string defaulted to the "top" domain.
+describe("category from the page, not only the URL", () => {
+  let savedKey: string | undefined;
+  beforeEach(() => {
+    __clearPageCache();
+    savedKey = process.env.ANTHROPIC_API_KEY;
+    delete process.env.ANTHROPIC_API_KEY;
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    if (savedKey !== undefined) process.env.ANTHROPIC_API_KEY = savedKey;
+  });
+
+  const prose = `<p>${"Soft everyday cotton, cut for layering. ".repeat(12)}</p>`;
+  const offline = () => vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("network is off"); }));
+  const TABLE = `<table><tr><th>Size</th><th>Chest</th></tr>
+    <tr><td>S</td><td>96</td></tr><tr><td>M</td><td>100</td></tr><tr><td>L</td><td>104</td></tr></table>`;
+
+  it("reads the garment off the headline when the URL names nothing", async () => {
+    offline();
+    const out = await extractSmart("https://www.gap.com/browse/product.do?pid=123456002", {
+      html: `<html><body><h1>Classic T-Shirt</h1>${prose}${TABLE}</body></html>`,
+    });
+    expect(out.category).toBe("tshirt");
+    expect(out.source.categoryFrom).toBe("page-name");
+    expect(out.source.categoryGuessed).toBe(false);
+    expect(refusalFor(out)).toBeNull(); // a real chart and a real garment: answer it
+  });
+
+  it("tells the truth when the garment is named but there is no chart", async () => {
+    // Previously `not-apparel` — "paste a link to a specific garment" — to someone
+    // who had. Now the reason is the real one.
+    offline();
+    const out = await extractSmart("https://www.gap.com/browse/product.do?pid=123456003", {
+      html: `<html><body><h1>Classic T-Shirt</h1>${prose}</body></html>`,
+    });
+    expect(refusalFor(out)?.error).toBe("no-chart-on-page");
+  });
+
+  it("does not start serving an invented ladder on a server-read page named only by the page", async () => {
+    // The invented-ladder question on server-read pages is an open founder
+    // decision (todo/decisions/03). Fixing the category must not decide it.
+    vi.stubGlobal("fetch", vi.fn(async () => ({
+      ok: true, status: 200,
+      headers: { get: (k: string) => (k.toLowerCase() === "content-type" ? "text/html" : null) },
+      text: async () => `<html><body><h1>Classic T-Shirt</h1>${prose}</body></html>`,
+      arrayBuffer: async () => new ArrayBuffer(0),
+    })));
+    const out = await extractSmart("https://www.gap.com/browse/product.do?pid=123456004");
+    expect(out.source.fetch).toBe("ok");
+    expect(out.source.sizesSynthesized).toBe(true);
+    expect(refusalFor(out)?.error).toBe("no-chart-on-page");
+  });
+
+  it("normalises JSON-LD's category instead of trusting the raw string", async () => {
+    // Raw, "Men's Sneakers" is not one of our keys, and domainForCategory's
+    // fallback is "top" — a shoe would have been sized like a t-shirt.
+    offline();
+    const ld = `<script type="application/ld+json">{"@type":"Product","name":"Court Classic","category":"Men's Sneakers"}</script>`;
+    const out = await extractSmart("https://shop.test/p/court-classic-7", {
+      html: `<html><head>${ld}</head><body><h1>Court Classic</h1>${prose}${TABLE}</body></html>`,
+    });
+    expect(out.category).toBe("sneakers");
+    expect(out.source.categoryFrom).toBe("page-structured");
+    expect(refusalFor(out)?.error).toBe("unsupported-category");
+  });
+
+  it("still refuses a page that names no garment anywhere", async () => {
+    offline();
+    const out = await extractSmart("https://shop.test/p/item-999", {
+      html: `<html><body><h1>Gift Card</h1>${prose}</body></html>`,
+    });
+    expect(refusalFor(out)?.error).toBe("not-apparel");
+  });
+});

@@ -114,6 +114,28 @@ export function refusalFor(extracted: ExtractedProduct): Refusal | null {
     };
   }
 
+  // Same situation on a page our SERVER read, when only the page — not the URL —
+  // named the garment.
+  //
+  // Those pages used to be refused as `not-apparel`, because category came from
+  // the URL alone, and the message told a user who HAD pasted a garment that they
+  // hadn't. Reading the product name fixes the category; it must not also start
+  // serving the invented ladder on these pages, which nobody decided. Whether the
+  // invented ladder should ever be served on a server-read page is the open
+  // BRAND_TABLE question (todo/decisions/03), and its current scope — URL-named
+  // garments only — is pinned by a test. This keeps that scope exactly where it
+  // was and only makes the reason true.
+  if (source.sizesSynthesized && source.categoryFrom && source.categoryFrom !== "url") {
+    return {
+      error: "no-chart-on-page",
+      message:
+        "We found the garment on this page but no size chart we could read, so any sizes we " +
+        "showed you would be made up rather than the retailer's. Many stores only load the chart " +
+        "when you open their size guide — the Fit Passport browser extension can read it once " +
+        "it's open.",
+    };
+  }
+
   return null;
 }
 

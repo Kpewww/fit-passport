@@ -31,6 +31,100 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 78a — The known bugs, and five more the tests turned up
+
+Phase A of the Session 78 plan (`todo/engineering/01, 04, 05, 06`, plus the real part
+of 03). Every change red-then-green; every new test checked against the old source.
+
+**A correction first.** After pulling the sixteen Sprint 5 / redesign commits I did
+not reinstall dependencies, so `jsdom` was missing and **`extensionCapture.test.ts`
+never loaded** — its 25 privacy, round-trip and drift tests silently absent.
+`npm test` exited **1** the whole time; I was reading only the "Tests" line and
+reported the suite as green. `npm ci` (which does not rewrite the lockfile) fixed
+it, and this is almost certainly the 507-vs-495 gap noted in Session 77. **Read the
+exit code, not the summary line.**
+
+### Fixed
+
+**Body-chart answers could never earn the measurement weight** (`statesChest`).
+`computeConfidence` granted it only for a garment `chestCm`. Measured with the real
+curated charts, before → after: Nike **0.30 → 0.65**; Patagonia men's **0.19–0.25 →
+0.41–0.53** (still lower where 100 cm genuinely sits between sizes). `/check`'s "up
+to +35 points" can now actually pay out on the charts most US retailers publish.
+
+**The garment is read from the page, not only the URL** (`resolveCategory`). The
+`<h1>` the extension sends on purpose was never read; Gap's "Classic T-Shirt" was
+refused `not-apparel` with a message telling the user to paste a garment link they
+had pasted. JSON-LD's category was used **raw**, and `domainForCategory` defaults
+unknown strings to "top" — so "Men's Sneakers" would have been sized like a t-shirt,
+straight past invariant ㉜. **Guarded:** a garment named only by the page, on a
+server-read page with no chart, is refused as `no-chart-on-page` (true) rather than
+served the invented ladder — whether to ever serve that ladder on server-read pages
+is the founder's open decision #3, and this does not decide it.
+
+**Three misclassifications found by writing those tests** — each changes which body
+measurement the engine uses:
+- `t-shirt` became "t shirt" before matching, which `t-?shirt` could never match; the
+  generic `shirt` rule took it.
+- **A button-down shirt was a jacket**: the insulated-outerwear rule's bare "down"
+  claimed it → outerwear ease → a size up.
+- **A short-sleeve shirt was shorts**: bottoms match first and "short" matched →
+  scored against the **waist**, not the chest.
+
+**Waist reaches the engine, as a body range** (`bodyWaistMin/Max`). It never ran in
+production: `engineSizes` dropped it, correctly, because a body chart's waist sat in
+the garment field (㊿, one column over). The fold, the curated charts, the route
+(columns already existed — no migration) and the engine now carry it; body-range
+membership is one helper, `bodyRangeFit`, shared by chest and waist so the sign
+convention that was once inverted (51) has one home. Live: Nike M's reason now reads
+"chest + waist", and `waistCm` is `null` in the stored row.
+
+**Stated ranges survive parsing.** A range in a cell ("37.5–41") was collapsed to its
+midpoint before the fold, which then rebuilt a range from neighbours' midpoints —
+replacing what the retailer printed. Rows now carry the stated range; the midpoint
+band is used only for single printed values.
+
+**The visible table wins.** The capture already marked each table `data-fp-visible`;
+the parser never read it, so a hidden tab with more rows could beat the chart on
+screen. Now visible beats hidden, rows decide among equals; the attribute name is a
+drift-tested constant shared with `capture.js`.
+
+**The LLM path follows the same body/garment rule as tables** (`applyMeasurementKind`).
+The prompt only routes RANGES to body fields, so a single value lands in `chestCm`
+whatever it measures; the page's words and the brand's convention now decide, as
+they do for tables. The model's category ("other" is on its list) no longer
+overrides a garment the page named. **One existing test was changed on purpose:** it
+asserted the LLM path set no measurement kind, which encoded the old absence; it now
+asserts the stale brand-chart *credit* is gone (56) while the kind is re-decided with
+its source recorded (57).
+
+**Empty card on every body chart.** `/check`'s "What the numbers look like" was gated
+on the body alone, though its comment said "body chest AND garment chest" — so Nike,
+Patagonia and Uniqlo pages showed a heading with nothing under it. Found in the
+screenshot, not by any test.
+
+### Not done, with the evidence
+
+**Non-table charts (`todo/03`).** Gap's product page, with Size Guide pressed, held no
+measurement chart in the DOM at all — only the review summary's "Chest: Tight ↔
+Loose". The 75d note that Gap builds its chart from divs is not reproducible here,
+and a parser for an unobserved structure would be guessing. Waits for a hand capture.
+
+### New invariants
+
+- **(70) A size "states its chest" in either form** — garment `chestCm` or a body
+  range. Anything granting credit for a measured chest must accept both.
+- **(71) The category is always one of our keys.** Every source (JSON-LD, URL, name,
+  headline, LLM) goes through `detectCategoryStrict`; a raw string never reaches
+  `domainForCategory`, whose fallback is "top".
+- **(72) Body-range membership has one definition** (`bodyRangeFit`), for every
+  dimension. A second copy of that sign convention is how (51) happened.
+
+**508 → 545 tests** (25 of them the extension file that had not been loading).
+Exit code 0.
+
+---
+
 ## 2026-09-29 · Session 77 — A task board, and a cold-start brief that was two weeks wrong
 
 Housekeeping, no product change.

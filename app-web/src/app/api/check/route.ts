@@ -148,6 +148,8 @@ export async function POST(req: Request) {
           lengthCm: s.lengthCm,
           bodyChestMinCm: s.bodyChestMinCm,
           bodyChestMaxCm: s.bodyChestMaxCm,
+          bodyWaistMinCm: s.bodyWaistMinCm,
+          bodyWaistMaxCm: s.bodyWaistMaxCm,
         })),
       },
     },

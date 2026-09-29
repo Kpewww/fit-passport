@@ -16,10 +16,11 @@
 // `extractFromUrl(url)`.
 
 import { z } from "zod";
-import { extractFromUrl, type ExtractedProduct, type ExtractedSize } from "./extractor";
+import { detectCategoryStrict, extractFromUrl, resolveCategory, type ExtractedProduct, type ExtractedSize } from "./extractor";
 import { chartFor } from "./brandCharts";
 import { checkUrlSafety, resolvesToPrivateAddress } from "./urlSafety";
 import {
+  applyMeasurementKind,
   parsePage,
   parseSizeLabels,
   parseChineseSizeCode,
@@ -459,6 +460,24 @@ function dropBrandChartCredit(out: ExtractedProduct): void {
 }
 
 /**
+ * Settle what the model-read sizes measure, the same way a table's are settled,
+ * and record on whose word. Called AFTER `creditPage`, which clears the kind.
+ */
+function applyKind(
+  out: ExtractedProduct,
+  sizes: ExtractedSize[],
+  html: string,
+  brandKind: "body" | "garment" | undefined,
+): void {
+  const r = applyMeasurementKind(sizes, html, brandKind);
+  out.sizes = r.sizes;
+  if (r.kind) {
+    out.source.measurementKind = r.kind;
+    out.source.measurementKindFrom = r.kindFrom ?? undefined;
+  }
+}
+
+/**
  * Credit the PAGE for the sizes now in `out`, and record which reader got them.
  *
  * One function for every site where page data replaces what `extractFromUrl`
@@ -569,13 +588,26 @@ export async function extractSmart(
     ...deterministic,
     brand: parsed.brand || deterministic.brand,
     productName: parsed.productName || deterministic.productName,
-    category: parsed.category || deterministic.category,
+    category: deterministic.category,
     gender: parsed.gender ?? deterministic.gender,
     material: parsed.material ?? deterministic.material,
     fitNotes: parsed.fitNotes ?? deterministic.fitNotes,
     sizes: deterministic.sizes,
     source: { ...deterministic.source },
   };
+  // The garment, from everything we know — see `resolveCategory` for the two
+  // faults this replaced (the page never asked; JSON-LD's category used raw).
+  const resolved = resolveCategory({
+    structured: parsed.category,
+    url: deterministic.source.categoryGuessed ? null : deterministic.category,
+    names: [parsed.productName, parsed.headline],
+  });
+  if (resolved) {
+    out.category = resolved.category;
+    out.source.categoryGuessed = false;
+    out.source.categoryFrom = resolved.from;
+  }
+
   if (parsed.sizes && parsed.sizes.length >= 2) {
     out.sizes = parsed.sizes;
     creditPage(out, "table");
@@ -594,17 +626,25 @@ export async function extractSmart(
   if (process.env.ANTHROPIC_API_KEY) {
     const llm = await callLLM(url, htmlToLlmText(html));
     if (llm && llm.sizes.length >= 2) {
+      // The LLM's category only fills a gap: a garment the page or URL already
+      // named stays named. The model's answer comes from a fixed list that
+      // includes "other", which `domainForCategory` would quietly read as a top.
+      const llmCategory = detectCategoryStrict(llm.category ?? "");
       out = {
         ...out,
         brand: llm.brand || out.brand,
         productName: llm.productName || out.productName,
-        category: llm.category || out.category,
+        category: out.source.categoryGuessed && llmCategory ? llmCategory : out.category,
         material: llm.material ?? out.material,
         fitNotes: llm.fitNotes ?? out.fitNotes,
-        sizes: mapLlmSizes(llm.sizes),
         source: { ...out.source },
       };
+      if (out.source.categoryGuessed && llmCategory) {
+        out.source.categoryGuessed = false;
+        out.source.categoryFrom = "page-name";
+      }
       creditPage(out, "llm-text");
+      applyKind(out, mapLlmSizes(llm.sizes), html, brandChart?.kind);
       return out;
     }
 
@@ -614,8 +654,8 @@ export async function extractSmart(
     if (chartImgs.length > 0) {
       const vision = await callVisionLLM(chartImgs);
       if (vision && vision.sizes.length >= 2) {
-        out.sizes = mapLlmSizes(vision.sizes);
         creditPage(out, "llm-vision");
+        applyKind(out, mapLlmSizes(vision.sizes), html, brandChart?.kind);
         return out;
       }
     }

@@ -21,6 +21,7 @@ import {
   CHART_IMG_TOKENS,
   KIND_PATTERNS,
   MEASURE_MAP,
+  VISIBLE_CHART_ATTR,
   SIZE_SELECT_RE,
   detectMeasurementKind,
   findSizeChartImages,
@@ -49,6 +50,7 @@ type FpCapture = ((doc: Document, loc: { href: string }) => Capture) & {
   SIZE_SELECT_RE: RegExp;
   CHART_IMG_TOKENS: string[];
   MEASURE_RE: RegExp;
+  VISIBLE_ATTR: string;
 };
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
@@ -332,6 +334,12 @@ describe("drift — the capture agrees with the server parser", () => {
   it("looks for the same body/garment sentences", () => {
     expect(fpCapture.KIND_BODY.map(String)).toEqual(KIND_PATTERNS.body.map(String));
     expect(fpCapture.KIND_GARMENT.map(String)).toEqual(KIND_PATTERNS.garment.map(String));
+  });
+
+  it("marks visible tables with the attribute the parser reads", () => {
+    // If these drift, the parser silently stops preferring the chart the shopper
+    // was looking at and falls back to "most rows wins".
+    expect(fpCapture.VISIBLE_ATTR).toBe(VISIBLE_CHART_ATTR);
   });
 
   it("recognises size selects and chart images the same way", () => {
