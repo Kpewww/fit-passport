@@ -1,18 +1,25 @@
-// Generates src/components/icons.generated.ts from Phosphor's raw SVGs
-// (@phosphor-icons/core, MIT — a devDependency; nothing of it ships at runtime).
+// Generates the icon set from Phosphor's raw SVGs (@phosphor-icons/core, MIT —
+// a devDependency; nothing of it ships at runtime).
 //
 //   npm run icons
 //
-// Why generate instead of importing @phosphor-icons/react: every React icon
-// there carries all six weights, and we draw one (Light, plus Fill for three
-// toggles). Measured in Session 76, 17 UI icons cost 13.6 kB gzipped and 11
-// garment icons 11.4 kB — on every page. Extracting only the weights we use
-// keeps the same geometry at a fraction of the bytes. Same idea as Logo.tsx,
-// which is generated from the master SVG (invariant ㉚).
+// Writes:
+//   src/components/icons/<Name>.tsx   one component per icon, Light (+ Fill for toggles)
+//   src/components/Icon.tsx           the barrel every caller imports from
+//   src/components/icons/garments.ts  path data for GarmentIcon
 //
-// To add an icon: add a line to ICONS below, run `npm run icons`, then export it
-// from components/Icon.tsx (or map it in GarmentIcon.tsx). Names are Phosphor's
-// kebab-case file names — browse phosphoricons.com.
+// Why generate instead of importing @phosphor-icons/react: every React icon
+// there carries all six weights, and we draw one. Measured in Session 76, 17 UI
+// icons cost 13.6 kB gzipped and 11 garment icons 11.4 kB — on every page.
+//
+// Why one file per icon behind a re-export barrel: with package.json
+// `sideEffects` declared, webpack links each importer straight to the icon files
+// it names, so a page carries only its own icons. With all the icons in one
+// module, every page carried every icon the site used anywhere (+10 kB on
+// /login, measured). Same idea as Logo.tsx, generated from the master SVG (㉚).
+//
+// To add an icon: add a line to UI below (our export name → Phosphor's kebab
+// file name; browse phosphoricons.com), then run `npm run icons`.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -20,83 +27,80 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const ASSETS = path.join(ROOT, "node_modules", "@phosphor-icons", "core", "assets");
-const OUT = path.join(ROOT, "src", "components", "icons.generated.ts");
+const DIR = path.join(ROOT, "src", "components", "icons");
 
-// Phosphor name → weights to extract. Light is the product weight (Icon.tsx);
-// Fill only where a control toggles between the two (rating, like, pin).
-const ICONS = {
-  // UI
-  "arrow-down": ["light"],
-  "arrow-left": ["light"],
-  "arrow-right": ["light"],
-  "arrow-up-right": ["light"],
-  "arrows-clockwise": ["light"],
-  "arrows-down-up": ["light"],
-  "basket": ["light"],
-  "browser": ["light"],
-  "camera": ["light"],
-  "caret-down": ["light"],
-  "caret-right": ["light"],
-  "check": ["light"],
-  "check-circle": ["light"],
-  "download-simple": ["light"],
-  "envelope-simple": ["light"],
-  "eye": ["light"],
-  "globe": ["light"],
-  "heart": ["light", "fill"],
-  "identification-card": ["light"],
-  "image-square": ["light"],
-  "info": ["light"],
-  "lightning": ["light"],
-  "link-simple": ["light"],
-  "list": ["light"],
-  "lock-simple": ["light"],
-  "magnifying-glass": ["light"],
-  "note": ["light"],
-  "palette": ["light"],
-  "pencil-simple": ["light"],
-  "plus": ["light"],
-  "push-pin": ["light", "fill"],
-  "question": ["light"],
-  "robot": ["light"],
-  "ruler": ["light"],
-  "scales": ["light"],
-  "seal-check": ["light"],
-  "shield-check": ["light"],
-  "sparkle": ["light"],
-  "squares-four": ["light"],
-  "star": ["light", "fill"],
-  "storefront": ["light"],
-  "trash": ["light"],
-  "upload-simple": ["light"],
-  "user": ["light"],
-  "user-circle": ["light"],
-  "users-three": ["light"],
-  "warning": ["light"],
-  "warning-circle": ["light"],
-  "x": ["light"],
-  // Garments (GarmentIcon.tsx draws the ones Phosphor lacks)
-  "baseball-cap": ["light"],
-  "belt": ["light"],
-  "boot": ["light"],
-  "coat-hanger": ["light"],
-  "dress": ["light"],
-  "hoodie": ["light"],
-  "pants": ["light"],
-  "shirt-folded": ["light"],
-  "sneaker": ["light"],
-  "sock": ["light"],
-  "t-shirt": ["light"],
+// Export name → [Phosphor name, has a Fill state]. Fill only where a control
+// toggles between the two (rating, like, pin); the product weight is Light.
+const UI = {
+  Account: ["user-circle"],
+  Alert: ["warning-circle"],
+  ArrowDown: ["arrow-down"],
+  ArrowLeft: ["arrow-left"],
+  ArrowRight: ["arrow-right"],
+  ArrowUpRight: ["arrow-up-right"],
+  Basket: ["basket"],
+  Board: ["squares-four"],
+  Bolt: ["lightning"],
+  BrowserIcon: ["browser"],
+  Camera: ["camera"],
+  CaretDown: ["caret-down"],
+  CaretRight: ["caret-right"],
+  CaretUp: ["caret-up"],
+  Check: ["check"],
+  CheckCircle: ["check-circle"],
+  Close: ["x"],
+  Download: ["download-simple"],
+  Eye: ["eye"],
+  Globe: ["globe"],
+  Hanger: ["coat-hanger"],
+  Heart: ["heart", true],
+  IdCard: ["identification-card"],
+  Info: ["info"],
+  LinkIcon: ["link-simple"],
+  Lock: ["lock-simple"],
+  Mail: ["envelope-simple"],
+  Menu: ["list"],
+  Note: ["note"],
+  PaletteIcon: ["palette"],
+  Pencil: ["pencil-simple"],
+  People: ["users-three"],
+  Photo: ["image-square"],
+  Pin: ["push-pin", true],
+  Plus: ["plus"],
+  Question: ["question"],
+  Refresh: ["arrows-clockwise"],
+  Reorder: ["arrows-down-up"],
+  Robot: ["robot"],
+  Ruler: ["ruler"],
+  Scales: ["scales"],
+  Seal: ["seal-check"],
+  Search: ["magnifying-glass"],
+  Shield: ["shield-check"],
+  Sparkle: ["sparkle"],
+  Stack: ["stack"],
+  Star: ["star", true],
+  Store: ["storefront"],
+  Trash: ["trash"],
+  Upload: ["upload-simple"],
+  UserIcon: ["user"],
+  Warning: ["warning"],
 };
 
+// Garments Phosphor has; GarmentIcon.tsx draws the six it lacks.
+const GARMENTS = ["baseball-cap", "belt", "boot", "coat-hanger", "dress", "hoodie", "pants", "shirt-folded", "sneaker", "sock", "t-shirt"];
+
 const pascal = (s) => s.split("-").map((w) => w[0].toUpperCase() + w.slice(1)).join("");
+const HEADER = "// GENERATED by scripts/gen-icons.mjs from @phosphor-icons/core (MIT). Do not edit;\n// change the list in the script and run `npm run icons`.\n";
+
 /**
  * An SVG file → the `d` of each of its paths. Phosphor's Light and Fill icons
  * are filled outlines drawn with plain <path d> elements only; anything else
  * (a group, a circle, a stroke attribute) fails the run rather than drawing
  * half an icon.
  */
-function parse(file) {
+function parse(name, weight) {
+  const file = path.join(ASSETS, weight, `${name}-${weight}.svg`);
+  if (!fs.existsSync(file)) throw new Error(`no such Phosphor icon: ${name} (${weight})`);
   const svg = fs.readFileSync(file, "utf8");
   const body = svg.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "");
   const paths = [];
@@ -105,26 +109,43 @@ function parse(file) {
     consumed += m[0];
     paths.push(m[1]);
   }
-  if (consumed.replace(/\s/g, "") !== body.replace(/\s/g, "")) {
-    throw new Error(`unexpected markup in ${file}`);
-  }
-  return paths;
+  if (consumed.replace(/\s/g, "") !== body.replace(/\s/g, "")) throw new Error(`unexpected markup in ${file}`);
+  return JSON.stringify(paths);
 }
 
-const lines = [
-  "// GENERATED by scripts/gen-icons.mjs from @phosphor-icons/core (MIT). Do not edit;",
-  "// change the list in the script and run `npm run icons`.",
-  "",
-  "/** The `d` of each path in a 256×256 icon, drawn with fill=currentColor. */",
-  "export type IconData = readonly string[];",
-  "",
-];
-for (const [name, weights] of Object.entries(ICONS)) {
-  for (const w of weights) {
-    const file = path.join(ASSETS, w, w === "regular" ? `${name}.svg` : `${name}-${w}.svg`);
-    if (!fs.existsSync(file)) throw new Error(`no such Phosphor icon: ${name} (${w})`);
-    lines.push(`export const ${pascal(name)}${pascal(w)}: IconData = ${JSON.stringify(parse(file))};`);
-  }
+// Start clean so a removed icon does not linger as an orphan file.
+fs.mkdirSync(DIR, { recursive: true });
+for (const f of fs.readdirSync(DIR)) if (f !== "Svg.tsx") fs.rmSync(path.join(DIR, f));
+
+for (const [exp, [name, fill]] of Object.entries(UI)) {
+  const light = parse(name, "light");
+  const body = fill
+    ? `const LIGHT = ${light};\nconst FILL = ${parse(name, "fill")};\n\nexport function ${exp}({ weight, ...p }: IconProps) {\n  return <Svg data={weight === "fill" ? FILL : LIGHT} {...p} />;\n}\n`
+    : `const LIGHT = ${light};\n\nexport function ${exp}(p: IconProps) {\n  return <Svg data={LIGHT} {...p} />;\n}\n`;
+  fs.writeFileSync(path.join(DIR, `${exp}.tsx`), `${HEADER}// Phosphor "${name}".\n\nimport { Svg, type IconProps } from "./Svg";\n\n${body}`);
 }
-fs.writeFileSync(OUT, lines.join("\n") + "\n");
-console.log(`wrote ${path.relative(process.cwd(), OUT)}: ${Object.keys(ICONS).length} icons`);
+
+fs.writeFileSync(
+  path.join(DIR, "garments.ts"),
+  `${HEADER}\nimport type { IconData } from "./Svg";\n\n` +
+    GARMENTS.map((n) => `export const ${pascal(n)}: IconData = ${parse(n, "light")};`).join("\n") + "\n",
+);
+
+const barrel = [
+  HEADER,
+  "// The one icon set: Phosphor, Light weight. Every icon in the app comes through",
+  "// this file — one weight and one default size across the product is most of",
+  "// what makes icons read as a system (invariant 68). Emoji are not icons and are",
+  "// not used anywhere (invariant 67, noEmoji.test.ts).",
+  "//",
+  "// Only re-exports: with `sideEffects` declared in package.json, each page links",
+  "// straight to the icon files it uses. Never turn an icon into a top-level call",
+  "// like `make(data)` — that kept every icon on every page.",
+  "",
+  'export { Svg, type IconData, type IconProps } from "./icons/Svg";',
+  ...Object.keys(UI).map((exp) => `export { ${exp} } from "./icons/${exp}";`),
+  "",
+].join("\n");
+fs.writeFileSync(path.join(ROOT, "src", "components", "Icon.tsx"), barrel);
+
+console.log(`wrote ${Object.keys(UI).length} icons, ${GARMENTS.length} garments`);

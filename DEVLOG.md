@@ -31,6 +31,103 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-28 · Session 76 (R3) — The closet is a gallery, and your photo is the cover
+
+Redesign step R3, and the founder's second request: users can put their own photo
+on a closet piece.
+
+**The gallery is the default view** (List and Folders remain, one `Segmented`
+control away; the choice is remembered per browser, with a try/catch so a
+blocked `localStorage` just means the default).
+- **Card:** 4:5, the wearer's photo as the cover, or the garment's colour with its
+  line icon until there is one. Beneath it is the caption row the reference sites
+  use:
+  - brand left, size right;
+  - then a small type or name label with a colour dot, and the fit stars.
+  No card chrome.
+- **"All" is one continuous grid.** The first build kept a section per
+  collection, and the render check showed why that was wrong: a closet with one
+  piece per type spent a whole row on each, mostly empty. The caption already
+  names the type. Sections, with their Refresh / Rename / Delete, come back when a
+  collection chip is chosen, or in reorder mode, which moves pieces within a
+  collection.
+- **Collection chips** narrow the closet and stay stuck under the nav. They sit
+  on a solid ground, not a blur, because one more backdrop filter on a scrolling
+  layer is a cost the performance rules keep off.
+
+**Photos:**
+- **On the card:** a camera control. It is always shown on a piece without a
+  photo, and shown on hover over one that has a photo. `@media (hover: hover)`
+  keeps it visible on touch screens, which cannot hover.
+- **In the detail sheet:** a 4:5 cover at the top that takes a dropped file,
+  plus *Add / Replace photo* and *Remove*.
+- **After adding a piece,** its card says *Add a photo* in ink until it has one.
+  The add confirmation says so too.
+- **The photo is still not a step in the four-question flow (㉙).** It is asked
+  for afterwards, on the thing it belongs to.
+- **Processing** (`lib/imageResize.ts`): a centre crop to 600×750 (the pure
+  `coverCrop`, unit-tested), JPEG at 0.82. If the result is over 90 KB, quality
+  steps down by 0.1 (to 0.52 at the lowest). A transparent PNG gets the paper
+  ground instead of black. Portraits keep their square crop through the same
+  code.
+- **Measured** in the browser, uploading two 3024×4032 JPEGs through the real
+  card control: a 3.2 MB smooth garment photo was stored at **11 KB**. 9.6 MB of
+  pure noise, JPEG's worst case, was stored at **72.5 KB**, under budget after the
+  quality steps. The API's 400 KB cap is untouched as the backstop.
+
+**Less on the page:**
+- The green "3/3 goal met" figure and the green card at the foot of the page
+  said the same thing twice. Both are replaced by the header's one action: a
+  three-segment progress until three pieces, then *Check a product*.
+- The merge bar became a toolbar button.
+- The four "Empty — items file here" boxes became one line: "Empty for now:
+  Bottoms, Footwear…".
+- Once the closet has three pieces, the add flow folds into one *Add a piece*
+  row, so the clothes lead the page. Below three, it stays open, since adding is
+  the page's job then.
+- The line badges (M / W / U) lost their blue and pink.
+- ▲▼⌄✎×＋✓– became icons.
+- Stock red became the semantic `bad` colour.
+
+**Icons, the structural fix R1 left open.** R1's shared chunk grew with every
+icon, because all the icons lived in one module, and webpack keeps whatever the
+whole app uses. Adding R3's icons pushed /closet to 129 kB, 11% over the R0
+baseline and past the R7 budget. Now:
+- **`npm run icons` writes one file per icon** (`components/icons/<Name>.tsx`).
+- **`Icon.tsx` is a generated barrel of re-exports.**
+- **`package.json` declares `"sideEffects": ["*.css"]`,** so webpack links each
+  importer straight to the icon files it names. The only side-effect import in
+  `src/` is `globals.css`, which was checked.
+
+| First Load JS | R0 baseline | after R1 | **now** |
+|---|---|---|---|
+| /login | 98.6 | 106 | **100** |
+| /check | 108 | 115 | **110** |
+| / | 156 | 163 | **158** |
+| /passport | 126 | 133 | **128** |
+| /closet | 116 | 124 | **126** (+ the gallery, sheet and photo code) |
+
+Checked:
+- desktop and phone renders: gallery, sheet, sticky chips, nudge;
+- no page errors;
+- `mobile-audit` shows no overflow. The closet's remaining small targets are the
+  folder colour dots, which R7 will fix;
+- 516 tests pass (+6 for `coverCrop`, the byte count, quality steps and the
+  budget-versus-cap check); typecheck and build are clean.
+
+### Files touched
+```
+app-web/src/app/closet/page.tsx        (ClosetPage, CollectionSection, GalleryCard (new), DetailSheet, AddItemFlow)
+app-web/src/lib/imageResize.ts         (coverCrop, budgeted 4:5 garment photos), imageResize.test.ts (new)
+app-web/scripts/gen-icons.mjs          (one file per icon, barrel, garment data)
+app-web/src/components/icons/          (new: Svg.tsx + generated icons + garments.ts)
+app-web/src/components/Icon.tsx        (now a generated barrel); icons.generated.ts removed
+app-web/src/components/GarmentIcon.tsx (reads icons/garments)
+app-web/package.json                   ("sideEffects": ["*.css"])
+```
+
+---
+
 ## 2026-09-28 · Session 76 (R2) — The shell: navigation, titles, footer
 
 Redesign step R2, the frame every page sits in.

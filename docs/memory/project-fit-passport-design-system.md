@@ -144,6 +144,8 @@ Not borrowed: their scroll-jacking and WebGL.
   (a devDependency) and writes `components/icons.generated.ts`, keeping Light, plus
   Fill only for star, heart and pin.
 - `Icon.tsx` exports each icon as a **plain function**, never a factory call.
+- Icons are generated **one module per icon** behind the `Icon.tsx` barrel, with
+  `sideEffects` in package.json, so each page ships only its own icons.
 - **`@phosphor-icons/react` must not come back:** each icon ships six weights, and
   the barrel import added 30 kB per page.
 - Garments: `GarmentIcon.tsx`. Phosphor has 10; sweater, jacket, shorts, skirt,
@@ -171,3 +173,8 @@ green/amber/red-100 as pages are touched. They are never an accent.
 the bar height. Account = initial in a hairline circle (ink when on /account); no
 dropdown (every account action is on /account). The phone panel = section icon +
 label, cobalt dot for current.
+
+**Closet gallery (R3):** a caption row under each image (brand left, size right;
+a type label with a colour dot, stars). No card chrome. The camera control is
+white/90 on the image; the nudge version is ink with the words *Add a photo*. The
+sticky chip bar sits on solid `bg-paper`, never a blur.

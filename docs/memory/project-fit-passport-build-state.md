@@ -1004,7 +1004,22 @@ word. Arrows and ✓ are typography and are allowed, but R2–R6 convert them to
 **(68)** **One icon set, one weight.** Icons come from `components/Icon.tsx`
 (generated Phosphor Light; Fill only for toggles) or `GarmentIcon`, never a second
 library or a raw `@phosphor-icons/react` import.
-- To add one: list it in `scripts/gen-icons.mjs`, run `npm run icons`, export it as
-  a **plain function**.
-- Why: a top-level `make(...)` factory call, even marked PURE, kept all 59 paths on
-  every page (measured +10 kB).
+- To add one: list it in `UI` in `scripts/gen-icons.mjs` and run `npm run icons`.
+  That writes `components/icons/<Name>.tsx` plus the `Icon.tsx` re-export barrel.
+- **Keep one icon per module, and keep `package.json` `"sideEffects": ["*.css"]`.**
+  This is what lets each page carry only its own icons. Measured: all icons in
+  one module put every used icon on every page (+10 kB on /login), and a
+  top-level `make()` factory kept all 59 paths even marked PURE.
+- **If a module ever needs an import for its side effects, add it to
+  `sideEffects`** or webpack may drop it.
+
+**Session 76 R3 (closet gallery):**
+- **Default view:** gallery (4:5 cards, the user photo as cover, colour field +
+  `GarmentIcon` otherwise). "All" is one flat grid; sections appear when a chip
+  is chosen or in reorder mode. List and Folders remain.
+- **Photos:** `resizeGarmentPhoto` gives a 600×750 centre crop at JPEG 0.82,
+  stepping down to ≤90 KB. Measured: 11 KB for a smooth photo, 72.5 KB for
+  worst-case noise.
+- **Photo entry:** the camera control on the card, and the detail sheet (drop, or
+  replace / remove). The new piece's card carries an *Add a photo* nudge.
+- **The photo is still outside the four-question add flow (㉙).**

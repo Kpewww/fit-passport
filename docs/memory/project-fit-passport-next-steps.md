@@ -683,27 +683,24 @@ open. The redesign runs alongside it.
 - **R2** — shell: nav at `max-w-6xl`, an avatar-initial account entry, an icon + label
   phone panel, fluid `text-h1` on 17 titles, a slimmer footer, and a `Page` container
   (`app` 6xl / `read` 3xl) that pages adopt as they are rebuilt.
+- **R3** — the closet gallery with user photos (see build-state, Session 76 R3). Icons are now
+  one module each behind a barrel, with `sideEffects` declared: First Load JS is back to
+  about baseline (/login 100 vs 98.6, / 158 vs 156; /closet 126 vs 116 with the new
+  features).
 
 **Next, in order (each its own push with a DEVLOG entry):**
-1. **R3 closet photo gallery.**
-   - Layout: 4:5 cards, with the user's photo as cover and a colour field + line
-     `GarmentIcon` when there is none. The list view stays.
-   - Photo entry: an upload on the card and in the detail sheet (`accept="image/*"`
-     opens the phone camera), and a nudge after saving a new item.
-   - **The photo stays OUTSIDE the four-question add flow (㉙).**
-   - Images: `imageResize` gains a 4:5 centre crop, 600×750 JPEG at quality ≈0.82,
-     target ≤90 KB. Measure a real phone photo and log it. The zod cap stays 400 KB.
-2. **R4 Check result:** size and a thin ring → two reasons → a source row with
+1. **R4 Check result:** size and a thin ring → two reasons → a source row with
    icons → the size ranking. A refusal is a calm panel.
-3. **R5 homepage.** **Show the cut list with before/after screenshots and get the
+2. **R5 homepage.** **Show the cut list with before/after screenshots and get the
    founder's OK before deleting** (ParallaxStatement vs ConvergingStack, etc.).
    Open decision #4.
-4. **R6 remaining pages:** passport (`MetalCard` untouched), community, outfits,
+3. **R6 remaining pages:** passport (`MetalCard` untouched), community, outfits,
    badges, help, account, onboarding, history, refresh, `u/[code]`. Convert → ← ↻
    ✓ to icons here.
-5. **R7 audit:** First Load JS ≤ R0 baseline +10% (after R1: / 163 vs 156, /login
+4. **R7 audit:** First Load JS ≤ R0 baseline +10% (after R1: / 163 vs 156, /login
    106 vs 98.6 — the headroom is small), a11y focus and contrast, `mobile-audit`
-   with zero overflow, and a motion audit.
+   with zero overflow, and a motion audit. Enlarge the closet folder-colour dots (20 px
+   tap targets).
 
 **Known wall, recorded by the founder's decision:** closet photos are stored as
 base64 in the database. That is fine for the prototype. **Move them to object

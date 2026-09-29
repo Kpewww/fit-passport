@@ -10,8 +10,8 @@
 // `garmentIcon.test.ts` fails if a category in GARMENTS has no icon.
 
 import type { ReactNode } from "react";
-import { Svg } from "@/components/Icon";
-import * as D from "@/components/icons.generated";
+import { Svg } from "@/components/icons/Svg";
+import * as D from "@/components/icons/garments";
 
 type Props = { category: string | null | undefined; size?: number; className?: string; label?: string };
 
@@ -93,18 +93,18 @@ const DRAWN: Record<string, ReactNode> = {
 };
 
 const LIBRARY = {
-  tshirt: D.TShirtLight,
-  polo: D.TShirtLight,
-  shirt: D.ShirtFoldedLight,
-  hoodie: D.HoodieLight,
-  pants: D.PantsLight,
-  jeans: D.PantsLight,
-  dress: D.DressLight,
-  sneakers: D.SneakerLight,
-  boots: D.BootLight,
-  socks: D.SockLight,
-  hat: D.BaseballCapLight,
-  belt: D.BeltLight,
+  tshirt: D.TShirt,
+  polo: D.TShirt,
+  shirt: D.ShirtFolded,
+  hoodie: D.Hoodie,
+  pants: D.Pants,
+  jeans: D.Pants,
+  dress: D.Dress,
+  sneakers: D.Sneaker,
+  boots: D.Boot,
+  socks: D.Sock,
+  hat: D.BaseballCap,
+  belt: D.Belt,
 } as const;
 
 /** Categories with a dedicated icon; everything else falls back to a hanger. */
@@ -115,6 +115,6 @@ export function GarmentIcon({ category, size = 20, className, label }: Props) {
   if (key in DRAWN) {
     return <Drawn size={size} className={className} label={label}>{DRAWN[key]}</Drawn>;
   }
-  const data = LIBRARY[key as keyof typeof LIBRARY] ?? D.CoatHangerLight;
+  const data = LIBRARY[key as keyof typeof LIBRARY] ?? D.CoatHanger;
   return <Svg data={data} size={size} className={className} label={label} />;
 }

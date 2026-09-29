@@ -2,15 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Button, Card, EmptyState, Field, FitStars, LinkButton, inputClass } from "@/components/ui";
-import { Basket, Note, PaletteIcon } from "@/components/Icon";
+import { Button, Card, Chip, EmptyState, Field, FitStars, LinkButton, Page, PageHeader, Segmented, inputClass } from "@/components/ui";
+import {
+  ArrowLeft, ArrowRight, Basket, Camera, CaretDown, CaretUp, Check, Close, Hanger, Note, PaletteIcon,
+  Pencil, Plus, Refresh, Reorder, Stack, Trash,
+} from "@/components/Icon";
 import { BrandInput } from "@/components/BrandInput";
 import { SizeInput } from "@/components/SizeInput";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { isValidSize } from "@/lib/sizeSystems";
 import { garmentLabel } from "@/lib/garments";
 import { GarmentIcon } from "@/components/GarmentIcon";
-import { resizeImageToDataUrl } from "@/lib/imageResize";
+import { resizeGarmentPhoto } from "@/lib/imageResize";
 import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionInput";
 import { DIRECTION_DEFAULT, ratingFromDirection } from "@/lib/fitDirection";
 import { ADD_STEPS, type AddStep, canSubmit, stepReady } from "@/lib/addFlow";
@@ -64,6 +67,14 @@ const GENDERS = [
 
 const BLANK = { brand: "", displayName: "", category: "tshirt", gender: "", size: "", fitRating: 5, fitDirection: DIRECTION_DEFAULT, areaNotes: "", color: "", onlineAvailable: true, imageDataUrl: "" };
 
+type View = "gallery" | "list" | "folder";
+const VIEW_KEY = "fp.closet.view";
+const VIEWS: Array<{ value: View; label: string }> = [
+  { value: "gallery", label: "Gallery" },
+  { value: "list", label: "List" },
+  { value: "folder", label: "Folders" },
+];
+
 export default function ClosetPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
@@ -73,8 +84,29 @@ export default function ClosetPage() {
   // Merge-select mode
   const [selectMode, setSelectMode] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  // Closet view mode
-  const [view, setView] = useState<"list" | "grid">("list");
+  // Closet view. The gallery is the default (Session 76, R3): a closet is a set
+  // of garments, and a garment is recognised by how it looks before any label.
+  // The choice is remembered per browser — a convenience, so storage failing
+  // (private window, blocked site data) just means the default.
+  const [view, setViewState] = useState<View>("gallery");
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem(VIEW_KEY);
+      if (v === "gallery" || v === "list" || v === "folder") setViewState(v);
+    } catch { /* default view */ }
+  }, []);
+  function setView(v: View) {
+    setViewState(v);
+    try { localStorage.setItem(VIEW_KEY, v); } catch { /* not remembered */ }
+  }
+  // Which collection the chips narrow to ("all", a collection id, or "__uncat__").
+  const [filter, setFilter] = useState("all");
+  // The piece just added — its card asks for a photo until it gets one. The
+  // photo is never a step in the add flow (build-state ㉙); this is the nudge.
+  const [nudgeId, setNudgeId] = useState<string | null>(null);
+  // Once the closet has its three pieces, the add flow folds into one row so the
+  // clothes, not the form, lead the page.
+  const [addOpen, setAddOpen] = useState(false);
   // Folder view: the file "pulled fully out" onto the desk (detail sheet), and
   // the comparison "bucket" — items set aside to view side-by-side, mirroring
   // how you pull a few garments out of a real closet when planning an outfit.
@@ -135,6 +167,13 @@ export default function ClosetPage() {
       body: JSON.stringify({ id, ...data }),
     });
     load();
+  }
+
+  /** Set, replace (a File) or remove (null) an item's cover photo. */
+  async function setPhoto(id: string, file: File | null) {
+    const imageDataUrl = file ? await resizeGarmentPhoto(file) : null;
+    if (id === nudgeId) setNudgeId(null);
+    await patch(id, { imageDataUrl });
   }
 
   async function remove(id: string) {
@@ -199,189 +238,210 @@ export default function ClosetPage() {
   const goalMet = count >= 3;
 
   // Bucket items by collection (plus an Uncategorized bucket).
-  const buckets = collections
-    .slice()
-    .sort((a, b) => a.sortIndex - b.sortIndex)
-    .map((c) => ({ collection: c, items: itemsIn(items, c.id) }));
   const uncategorized = items.filter((it) => !it.collectionId);
+  const buckets = [
+    ...collections
+      .slice()
+      .sort((a, b) => a.sortIndex - b.sortIndex)
+      .map((c, i) => ({ collection: c, items: itemsIn(items, c.id), seed: i })),
+    ...(uncategorized.length > 0
+      ? [{ collection: { id: "__uncat__", name: "Uncategorized", sortIndex: 999, itemCount: uncategorized.length }, items: uncategorized, seed: -1 }]
+      : []),
+  ];
+  const filled = buckets.filter((b) => b.items.length > 0);
+  // A filter pointing at a collection that has since emptied falls back to all.
+  const activeFilter = filter === "all" || filled.some((b) => b.collection.id === filter) ? filter : "all";
+  const inFilter = buckets.filter((b) => activeFilter === "all" || b.collection.id === activeFilter);
+  // The gallery shows only collections with something in them; the empty ones
+  // (four of eight in a new closet) are one line at the end instead of four
+  // "Empty" boxes. List and folder views keep them, since that is where they
+  // are renamed and deleted.
+  const shown = view === "gallery" ? inFilter.filter((b) => b.items.length > 0) : inFilter;
+  const emptyNames = buckets.filter((b) => b.items.length === 0).map((b) => b.collection.name);
+  const realCollections = buckets.filter((b) => b.collection.id !== "__uncat__");
 
   return (
     <FitScaleProvider>
-    <main className="flex-1">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="font-serif text-h1 text-ink">Your closet</h1>
-            <p className="mt-2 max-w-lg text-ink-soft">
-              Add clothes that fit you well, organized into collections. New items
-              auto-file by type — rename, reorder, recolor, and move anything.
-            </p>
-          </div>
-          <div className="flex flex-shrink-0 flex-col items-end gap-2">
-            <div className="text-right">
-              <div className={`text-2xl font-bold ${goalMet ? "text-green-600" : "text-brand"}`}>
-                {Math.min(count, 3)}/3
-              </div>
-              <div className="text-xs text-ink-faint">{goalMet ? "goal met ✓" : "recommended"}</div>
-            </div>
-            {count > 0 && (
-              <LinkButton href="/refresh?collections=all" variant="secondary" size="md">
-                ↻ Refresh fit
-              </LinkButton>
-            )}
-            {count > 0 && (
-              <div className="flex items-center gap-2">
-                {/* Reorder toggle — reveals folder + item reorder controls */}
-                <button
-                  onClick={() => setReorderMode((v) => !v)}
-                  title={reorderMode ? "Done reordering" : "Reorder folders & items"}
-                  className={`inline-flex h-7 items-center gap-1 rounded-lg border px-2 text-xs font-medium ${
-                    reorderMode ? "border-brand bg-brand text-white" : "border-neutral-300 text-ink-soft hover:bg-neutral-100"
-                  }`}
-                >
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 6l-3 3 3 3M5 9h11M16 12l3 3-3 3M19 15H8" /></svg>
-                  {reorderMode ? "Done" : "Reorder"}
-                </button>
-                <div className="inline-flex overflow-hidden rounded-lg border border-neutral-300">
-                  <button onClick={() => setView("list")} title="List view" aria-label="List view"
-                    className={`flex h-7 w-8 items-center justify-center ${view === "list" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16" /></svg>
-                  </button>
-                  <button onClick={() => setView("grid")} title="Folder view" aria-label="Folder view"
-                    className={`flex h-7 w-8 items-center justify-center ${view === "grid" ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"}`}>
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7a1 1 0 0 1 1-1h5l2 2h8a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z" /></svg>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+    <Page>
+      <PageHeader
+        eyebrow="Closet"
+        title="Your closet"
+        lede="Clothes you own that fit well. Each piece teaches the size engine how a brand runs on your body."
+        action={<GoalAction count={count} />}
+      />
 
-        {/* Add an item — one question per screen (see AddItemFlow). */}
-        <AddItemFlow onAdded={load} />
-
-        {/* Merge toolbar */}
-        {count >= 2 && (
-          <div className="mt-6 flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-4 py-2.5">
-            {selectMode ? (
-              <>
-                <span className="text-sm text-ink-soft">
-                  Select items that are the <strong>same garment</strong> (different size/color), then merge.
-                  <span className="ml-2 text-ink-faint">{selected.size} selected</span>
-                </span>
-                <div className="flex gap-2">
-                  <Button size="md" disabled={selected.size < 2} onClick={doMerge}>Merge {selected.size > 0 ? `(${selected.size})` : ""}</Button>
-                  <Button size="md" variant="ghost" onClick={() => { setSelectMode(false); setSelected(new Set()); }}>Cancel</Button>
-                </div>
-              </>
-            ) : (
-              <>
-                <span className="text-sm text-ink-soft">Have the same item in multiple sizes or colors?</span>
-                <Button size="md" variant="secondary" onClick={() => setSelectMode(true)}>Merge duplicates</Button>
-              </>
-            )}
-          </div>
-        )}
-
-        {/* Collection sections */}
-        {count === 0 ? (
-          <div className="mt-6">
-            <EmptyState
-              title="Your closet is empty"
-              body="Add 3 things you own that fit well. Tip: pick different brands so we learn how sizes differ for your body."
-            />
-          </div>
+      {/* Add an item — one question per screen (see AddItemFlow). */}
+      <div className="mt-10 max-w-3xl">
+        {goalMet && !addOpen ? (
+          <button
+            type="button"
+            onClick={() => setAddOpen(true)}
+            className="flex w-full items-center gap-3 rounded-2xl border border-dashed border-line bg-white/60 px-4 py-3.5 text-left text-sm text-ink-soft transition-colors duration-200 hover:border-ink/30 hover:text-ink"
+          >
+            <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white ring-1 ring-line">
+              <Plus size={18} />
+            </span>
+            <span><span className="font-medium text-ink">Add a piece</span> — four quick questions, or paste a link.</span>
+          </button>
         ) : (
-          <div className="mt-6 space-y-6">
-            {reorderMode && (
-              <p className="rounded-lg border border-brand/30 bg-brand-tint/40 px-3 py-2 text-xs text-ink-soft">
-                ⇅ Reorder mode — use the ▲▼ arrows to move folders, and the arrows on each item to reorder pieces. Tap <strong>Done</strong> when finished.
-              </p>
-            )}
-            {buckets.map(({ collection, items: bucketItems }, i) => (
-              <CollectionSection
-                key={collection.id}
-                collection={collection}
-                items={bucketItems}
-                allCollections={collections}
-                editingId={editingId}
-                onEdit={setEditingId}
-                onPatch={patch}
-                onRemove={remove}
-                onReload={load}
-                onMove={move}
-                selectMode={selectMode}
-                selected={selected}
-                onToggleSelect={toggleSelect}
-                view={view}
-                colorSeed={i}
-                onOpenDetail={setDetailGroup}
-                onBucket={toggleBucket}
-                inBucket={inBucket}
-                reorderMode={reorderMode}
-                canFolderUp={i > 0}
-                canFolderDown={i < buckets.length - 1}
-                onMoveFolder={(dir) => moveCollection(collection.id, dir)}
-              />
-            ))}
-            {uncategorized.length > 0 && (
-              <CollectionSection
-                collection={{ id: "__uncat__", name: "Uncategorized", sortIndex: 999, itemCount: uncategorized.length }}
-                items={uncategorized}
-                allCollections={collections}
-                editingId={editingId}
-                onEdit={setEditingId}
-                onPatch={patch}
-                onRemove={remove}
-                onReload={load}
-                onMove={move}
-                selectMode={selectMode}
-                selected={selected}
-                onToggleSelect={toggleSelect}
-                view={view}
-                colorSeed={-1}
-                onOpenDetail={setDetailGroup}
-                onBucket={toggleBucket}
-                inBucket={inBucket}
-                reorderMode={reorderMode}
-                canFolderUp={false}
-                canFolderDown={false}
-                onMoveFolder={() => {}}
-                undeletable
-              />
-            )}
-          </div>
-        )}
-
-        {/* Add collection */}
-        <Card className="mt-6">
-          <form onSubmit={addCollection} className="flex flex-col gap-3 sm:flex-row sm:items-end">
-            <div className="flex-1">
-              <Field label="New collection">
-                <input className={inputClass} placeholder="e.g. Formal, Gym, Winter"
-                  value={newCollectionName} onChange={(e) => setNewCollectionName(e.target.value)} />
-              </Field>
-            </div>
-            <div>
-              <Field label="Folder color" hint="optional">
-                <FolderColorPicker value={newCollectionColor} onPick={setNewCollectionColor} />
-              </Field>
-            </div>
-            <Button variant="secondary" type="submit" disabled={!newCollectionName.trim()}>
-              Add collection
-            </Button>
-          </form>
-        </Card>
-
-        {goalMet && !editingId && (
-          <Card className="mt-6 flex flex-col items-start gap-3 bg-green-50 ring-green-200 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-            <p className="text-sm text-green-900">
-              Nice — your closet is strong enough for accurate sizing.
-            </p>
-            <LinkButton href="/check">Check a product →</LinkButton>
-          </Card>
+          <AddItemFlow
+            onAdded={(id) => { setNudgeId(id); load(); }}
+            onClose={goalMet ? () => setAddOpen(false) : undefined}
+          />
         )}
       </div>
+
+      {count === 0 ? (
+        <div className="mt-10 max-w-3xl">
+          <EmptyState
+            icon={<Hanger size={22} />}
+            title="Your closet is empty"
+            body="Add 3 things you own that fit well. Tip: pick different brands so we learn how sizes differ for your body."
+          />
+        </div>
+      ) : (
+        <>
+          {/* Toolbar: how to look at the closet, and what to do with it. */}
+          <div className="mt-12 flex flex-wrap items-center justify-between gap-3">
+            <Segmented label="Closet view" options={VIEWS} value={view} onChange={setView} />
+            <div className="flex flex-wrap items-center gap-1">
+              <Button size="sm" variant={reorderMode ? "primary" : "ghost"} icon={<Reorder size={16} />} onClick={() => setReorderMode((v) => !v)}>
+                {reorderMode ? "Done" : "Reorder"}
+              </Button>
+              {count >= 2 && !selectMode && (
+                <Button size="sm" variant="ghost" icon={<Stack size={16} />} onClick={() => setSelectMode(true)}>Merge duplicates</Button>
+              )}
+              <LinkButton href="/refresh?collections=all" size="sm" variant="ghost" icon={<Refresh size={16} />}>Refresh fit</LinkButton>
+            </div>
+          </div>
+
+          {/* Collection chips. Sticky under the nav so a long closet can be
+              narrowed from anywhere. A solid ground, not a blur: one more
+              backdrop filter on a scrolling layer is a cost we keep off. */}
+          {filled.length >= 2 && (
+            <div className="sticky top-14 z-30 -mx-4 mt-4 bg-paper px-4 py-2.5 sm:top-16 sm:-mx-6 sm:px-6">
+              <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1">
+                <Chip selected={activeFilter === "all"} onClick={() => setFilter("all")} className="flex-shrink-0">
+                  All <span className="tabular-nums opacity-60">{count}</span>
+                </Chip>
+                {filled.map((b) => (
+                  <Chip key={b.collection.id} selected={activeFilter === b.collection.id} onClick={() => setFilter(b.collection.id)} className="flex-shrink-0">
+                    {b.collection.name} <span className="tabular-nums opacity-60">{b.items.length}</span>
+                  </Chip>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {selectMode && (
+            <div className="mt-4 flex flex-col gap-3 rounded-2xl bg-white px-4 py-3 ring-1 ring-line sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-ink-soft">
+                Select pieces that are the <strong className="font-medium text-ink">same garment</strong> in a different size or colour, then merge.
+                <span className="ml-2 tabular-nums text-ink-faint">{selected.size} selected</span>
+              </p>
+              <div className="flex gap-2">
+                <Button size="sm" disabled={selected.size < 2} onClick={doMerge}>Merge{selected.size > 0 ? ` (${selected.size})` : ""}</Button>
+                <Button size="sm" variant="ghost" onClick={() => { setSelectMode(false); setSelected(new Set()); }}>Cancel</Button>
+              </div>
+            </div>
+          )}
+
+          {reorderMode && (
+            <p className="mt-4 flex items-center gap-2 rounded-xl bg-brand-tint px-3 py-2 text-xs text-ink-soft">
+              <Reorder size={16} className="flex-shrink-0 text-brand" />
+              Move collections with the arrows beside their names, and pieces with the arrows on each one. Tap <strong className="font-medium text-ink">Done</strong> when finished.
+            </p>
+          )}
+
+          {/* "All" in the gallery is one continuous grid, in collection order.
+              Sectioned, a closet of one piece per type spent a full row on each
+              — mostly empty space. The caption already names the type. A
+              chosen collection, or reorder mode (which moves pieces within a
+              collection), brings the sections back with their actions. */}
+          {view === "gallery" && activeFilter === "all" && !reorderMode ? (
+            <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4">
+              {filled.flatMap((b) => buildGroups(b.items)).map((g) => (
+                <GalleryCard
+                  key={g.key}
+                  group={g}
+                  onOpen={setDetailGroup}
+                  onPhoto={setPhoto}
+                  nudge={g.items.some((it) => it.id === nudgeId)}
+                  selectMode={selectMode}
+                  selected={selected.has(g.items[0].id)}
+                  onToggleSelect={toggleSelect}
+                  reorderMode={false}
+                  canMoveUp={false}
+                  canMoveDown={false}
+                  onMove={() => {}}
+                />
+              ))}
+            </div>
+          ) : (
+          <div className={`mt-8 space-y-12 ${view === "gallery" ? "" : "max-w-3xl"}`}>
+            {shown.map(({ collection, items: bucketItems, seed }) => {
+              const pos = realCollections.findIndex((b) => b.collection.id === collection.id);
+              const uncat = collection.id === "__uncat__";
+              return (
+                <CollectionSection
+                  key={collection.id}
+                  collection={collection}
+                  items={bucketItems}
+                  allCollections={collections}
+                  editingId={editingId}
+                  onEdit={setEditingId}
+                  onPatch={patch}
+                  onPhoto={setPhoto}
+                  nudgeId={nudgeId}
+                  onRemove={remove}
+                  onReload={load}
+                  onMove={move}
+                  selectMode={selectMode}
+                  selected={selected}
+                  onToggleSelect={toggleSelect}
+                  view={view}
+                  colorSeed={seed}
+                  onOpenDetail={setDetailGroup}
+                  onBucket={toggleBucket}
+                  inBucket={inBucket}
+                  reorderMode={reorderMode}
+                  canFolderUp={!uncat && pos > 0}
+                  canFolderDown={!uncat && pos < realCollections.length - 1}
+                  onMoveFolder={(dir) => moveCollection(collection.id, dir)}
+                  undeletable={uncat}
+                />
+              );
+            })}
+          </div>
+          )}
+
+          {view === "gallery" && activeFilter === "all" && emptyNames.length > 0 && (
+            <p className="mt-12 max-w-3xl text-xs text-ink-faint">
+              Empty for now: {emptyNames.join(", ")}. New pieces file here by type — rename or delete these in the list view.
+            </p>
+          )}
+        </>
+      )}
+
+      {/* Add collection */}
+      <Card className="mt-12 max-w-3xl">
+        <form onSubmit={addCollection} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <div className="flex-1">
+            <Field label="New collection">
+              <input className={inputClass} placeholder="e.g. Formal, Gym, Winter"
+                value={newCollectionName} onChange={(e) => setNewCollectionName(e.target.value)} />
+            </Field>
+          </div>
+          <div>
+            <Field label="Folder color" hint="optional">
+              <FolderColorPicker value={newCollectionColor} onPick={setNewCollectionColor} />
+            </Field>
+          </div>
+          <Button variant="secondary" type="submit" disabled={!newCollectionName.trim()}>
+            Add collection
+          </Button>
+        </form>
+      </Card>
 
       {/* The file pulled fully out onto the desk */}
       {detailGroup && (
@@ -393,14 +453,36 @@ export default function ClosetPage() {
           onClose={() => setDetailGroup(null)}
           onReload={load}
           onPatch={patch}
+          onPhoto={setPhoto}
           onRemove={(id) => { remove(id); }}
         />
       )}
 
       {/* The comparison bucket — items set aside to look at together */}
       <BucketPanel items={compareItems} onRemove={toggleBucket} onClear={() => setCompareItems([])} onOpen={(it) => setDetailGroup({ key: it.id, label: it.displayName || it.brand, items: [it], isVariant: false })} />
-    </main>
+    </Page>
     </FitScaleProvider>
+  );
+}
+
+/**
+ * The header's one action. Until the closet has its three pieces, progress
+ * toward them; after, the next thing to do with a closet — check a product.
+ * It replaced a green "3/3 goal met" figure and a green card at the foot of the
+ * page that said the same thing twice.
+ */
+function GoalAction({ count }: { count: number }) {
+  if (count >= 3) return <LinkButton href="/check" arrow>Check a product</LinkButton>;
+  return (
+    <div className="sm:text-right">
+      <p className="eyebrow text-ink-faint">Recommended</p>
+      <div className="mt-2 flex gap-1.5 sm:justify-end" role="img" aria-label={`${count} of 3 pieces added`}>
+        {[0, 1, 2].map((i) => (
+          <span key={i} className={`h-1 w-8 rounded-full ${i < count ? "bg-ink" : "bg-line"}`} />
+        ))}
+      </div>
+      <p className="mt-1.5 text-xs tabular-nums text-ink-soft">{count} of 3 pieces</p>
+    </div>
   );
 }
 
@@ -418,6 +500,8 @@ function CollectionSection({
   editingId,
   onEdit,
   onPatch,
+  onPhoto,
+  nudgeId,
   onRemove,
   onReload,
   onMove,
@@ -441,6 +525,8 @@ function CollectionSection({
   editingId: string | null;
   onEdit: (id: string | null) => void;
   onPatch: (id: string, data: Record<string, unknown>) => void;
+  onPhoto: (id: string, file: File | null) => Promise<void>;
+  nudgeId: string | null;
   onRemove: (id: string) => void;
   onReload: () => void;
   onMove: (collectionId: string | null, itemId: string, dir: -1 | 1) => void;
@@ -451,7 +537,7 @@ function CollectionSection({
   onOpenDetail: (g: Group) => void;
   onBucket: (it: Item) => void;
   inBucket: (id: string) => boolean;
-  view: "list" | "grid";
+  view: View;
   reorderMode: boolean;
   canFolderUp: boolean;
   canFolderDown: boolean;
@@ -474,6 +560,7 @@ function CollectionSection({
 
   // Build display groups: variants (shared groupId) collapse into one entry.
   const groups = buildGroups(items);
+  const bucketId = collection.id === "__uncat__" ? null : collection.id;
 
   async function saveName() {
     if (name.trim() && name !== collection.name) {
@@ -494,63 +581,60 @@ function CollectionSection({
   }
 
   return (
-    <div>
-      <div className="mb-2 flex items-center justify-between">
+    <section>
+      <div className="mb-5 flex items-end justify-between gap-4 border-b border-line pb-3">
         {renaming ? (
           <div className="flex items-center gap-2">
-            <input autoFocus className="rounded-lg border border-neutral-300 px-2 py-1 text-sm font-semibold"
+            <input autoFocus className={`${inputClass} !py-1.5 font-medium`}
               value={name} onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && saveName()} />
-            <button onClick={saveName} className="text-xs text-brand hover:underline">Save</button>
-            <button onClick={() => { setName(collection.name); setRenaming(false); }}
-              className="text-xs text-ink-faint hover:underline">Cancel</button>
+            <Button size="sm" onClick={saveName}>Save</Button>
+            <Button size="sm" variant="ghost" onClick={() => { setName(collection.name); setRenaming(false); }}>Cancel</Button>
           </div>
         ) : (
-          <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-ink-soft">
+          <h2 className="flex min-w-0 items-center gap-2 text-h3 font-semibold text-ink">
             {/* Reorder handle for the whole folder — only in reorder mode */}
             {reorderMode && !undeletable && (
-              <span className="flex items-center gap-0.5">
-                <button onClick={() => onMoveFolder(-1)} disabled={!canFolderUp}
-                  className="text-ink-faint hover:text-brand disabled:opacity-30" title="Move folder up">▲</button>
-                <button onClick={() => onMoveFolder(1)} disabled={!canFolderDown}
-                  className="text-ink-faint hover:text-brand disabled:opacity-30" title="Move folder down">▼</button>
+              <span className="-ml-1 flex items-center">
+                <button onClick={() => onMoveFolder(-1)} disabled={!canFolderUp} aria-label="Move collection up"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-ink-soft hover:bg-ink/5 disabled:opacity-30"><CaretUp size={16} /></button>
+                <button onClick={() => onMoveFolder(1)} disabled={!canFolderDown} aria-label="Move collection down"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-ink-soft hover:bg-ink/5 disabled:opacity-30"><CaretDown size={16} /></button>
               </span>
             )}
-            {collection.name}
-            <span className="rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-normal normal-case text-ink-faint">
-              {items.length}
-            </span>
+            <span className="truncate">{collection.name}</span>
+            <span className="text-xs font-normal tabular-nums text-ink-faint">{items.length}</span>
           </h2>
         )}
         {!renaming && (
-          <div className="relative flex items-center gap-3 text-xs">
+          <div className="relative flex flex-shrink-0 items-center gap-3 text-xs">
             {/* Folder color — editable in folder view (not for Uncategorized) */}
-            {view === "grid" && !undeletable && (
-              <button onClick={() => setPickingColor((v) => !v)} title="Folder color"
+            {view === "folder" && !undeletable && (
+              <button onClick={() => setPickingColor((v) => !v)} aria-label="Folder color"
                 className={`h-4 w-4 rounded-full ring-1 ring-black/10 ${folderColorFor(collection.color, colorSeed).swatch}`} />
             )}
             {pickingColor && (
-              <div className="absolute right-0 top-6 z-30 rounded-xl border border-neutral-200 bg-white p-2 shadow-lift">
+              <div className="absolute right-0 top-6 z-30 rounded-xl bg-white p-2 ring-1 ring-line shadow-lift">
                 <FolderColorPicker value={collection.color} onPick={setColor} />
               </div>
             )}
             {items.length > 0 && collection.id !== "__uncat__" && (
-              <Link href={`/refresh?collections=${collection.id}`} className="text-ink-faint hover:text-brand"
+              <Link href={`/refresh?collections=${collection.id}`} className="inline-flex items-center gap-1 text-ink-faint transition-colors hover:text-ink"
                 title="Re-rate how these pieces fit right now — bodies change, so this keeps your fit data current.">
-                ↻ Refresh
+                <Refresh size={14} /> Refresh
               </Link>
             )}
             {!undeletable && (
               <>
-                <button onClick={() => setRenaming(true)} className="text-ink-faint hover:text-brand">Rename</button>
-                <button onClick={deleteCollection} className="text-ink-faint hover:text-red-600">Delete</button>
+                <button onClick={() => setRenaming(true)} className="text-ink-faint transition-colors hover:text-ink">Rename</button>
+                <button onClick={deleteCollection} className="text-ink-faint transition-colors hover:text-bad">Delete</button>
               </>
             )}
           </div>
         )}
       </div>
 
-      {view === "grid" && !selectMode ? (
+      {view === "folder" && !selectMode ? (
         <Folder
           groups={groups}
           colorSeed={colorSeed}
@@ -560,9 +644,28 @@ function CollectionSection({
           inBucket={inBucket}
         />
       ) : items.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-neutral-200 px-4 py-3 text-xs text-ink-faint">
+        <p className="rounded-xl border border-dashed border-line px-4 py-3 text-xs text-ink-faint">
           Empty — items of this type will file here automatically.
         </p>
+      ) : view === "gallery" ? (
+        <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4">
+          {groups.map((g) => (
+            <GalleryCard
+              key={g.key}
+              group={g}
+              onOpen={onOpenDetail}
+              onPhoto={onPhoto}
+              nudge={g.items.some((it) => it.id === nudgeId)}
+              selectMode={selectMode}
+              selected={selected.has(g.items[0].id)}
+              onToggleSelect={onToggleSelect}
+              reorderMode={reorderMode}
+              canMoveUp={standaloneIndex(groups, g) > 0}
+              canMoveDown={standaloneIndex(groups, g) >= 0 && standaloneIndex(groups, g) < standaloneCount(groups) - 1}
+              onMove={(itemId, dir) => onMove(bucketId, itemId, dir)}
+            />
+          ))}
+        </div>
       ) : (
         <div className="space-y-2">
           {groups.map((g) =>
@@ -582,7 +685,7 @@ function CollectionSection({
                 onEdit={onEdit}
                 onPatch={onPatch}
                 onRemove={onRemove}
-                onMove={(itemId, dir) => onMove(collection.id === "__uncat__" ? null : collection.id, itemId, dir)}
+                onMove={(itemId, dir) => onMove(bucketId, itemId, dir)}
                 canMoveUp={standaloneIndex(groups, g) > 0}
                 canMoveDown={standaloneIndex(groups, g) < standaloneCount(groups) - 1 && standaloneIndex(groups, g) >= 0}
                 selectMode={selectMode}
@@ -594,7 +697,144 @@ function CollectionSection({
           )}
         </div>
       )}
-    </div>
+    </section>
+  );
+}
+
+/**
+ * One garment in the gallery: the wearer's own photo as the cover, or — until
+ * there is one — the garment's colour with its line icon. Under it, the caption
+ * row the reference sites use: the brand left, the size right, and beneath them
+ * a small label and the fit rating. No card chrome; the image is the card.
+ *
+ * The photo control is always there on a piece without a photo (that is the
+ * invitation), and on hover for one that has a photo. On a touch screen, which
+ * cannot hover, it stays visible.
+ */
+function GalleryCard({
+  group,
+  onOpen,
+  onPhoto,
+  nudge,
+  selectMode,
+  selected,
+  onToggleSelect,
+  reorderMode,
+  canMoveUp,
+  canMoveDown,
+  onMove,
+}: {
+  group: Group;
+  onOpen: (g: Group) => void;
+  onPhoto: (id: string, file: File | null) => Promise<void>;
+  nudge: boolean;
+  selectMode: boolean;
+  selected: boolean;
+  onToggleSelect: (id: string) => void;
+  reorderMode: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  onMove: (itemId: string, dir: -1 | 1) => void;
+}) {
+  const head = group.items[0];
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const hex = colorHex(head.color);
+  const photo = head.imageDataUrl;
+  const selectable = selectMode && !group.isVariant;
+  const isSel = selectable && selected;
+  const sub = head.displayName || garmentLabel(head.category);
+  const sizeLabel = group.isVariant ? `${group.items.length} sizes` : head.size;
+
+  async function pick(file: File | undefined) {
+    if (!file) return;
+    setBusy(true);
+    setFailed(false);
+    try { await onPhoto(head.id, file); } catch { setFailed(true); } finally { setBusy(false); }
+  }
+
+  const activate = () => (selectMode ? selectable && onToggleSelect(head.id) : onOpen(group));
+  const label = `${selectMode ? (isSel ? "Deselect" : "Select") : "Open"} ${head.brand} ${sub}, size ${sizeLabel}`;
+
+  return (
+    <figure className="group/card min-w-0 animate-fade-in-up">
+      <div
+        className={`relative aspect-[4/5] overflow-hidden rounded-xl transition-shadow duration-200 ${isSel ? "ring-2 ring-brand" : "ring-1 ring-line/70"}`}
+        style={{ backgroundColor: photo ? "#E6E7E9" : hex ?? "#E6E7E9" }}
+      >
+        <button
+          type="button"
+          onClick={activate}
+          aria-label={label}
+          aria-pressed={selectable ? isSel : undefined}
+          className="absolute inset-0 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
+        >
+          {photo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={photo} alt="" className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover/card:scale-[1.02]" />
+          ) : (
+            <GarmentIcon category={head.category} size={56} className={iconToneOn(hex) === "light" ? "text-white/80" : "text-ink/50"} />
+          )}
+        </button>
+
+        {group.isVariant && (
+          <span className="pointer-events-none absolute left-2.5 top-2.5 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-ink">
+            {group.items.length} variants
+          </span>
+        )}
+
+        {selectable && (
+          <span className={`pointer-events-none absolute left-2.5 top-2.5 flex h-6 w-6 items-center justify-center rounded-full ${isSel ? "bg-brand text-white" : "bg-white/90 ring-1 ring-line"}`}>
+            {isSel && <Check size={14} />}
+          </span>
+        )}
+
+        {!selectMode && !group.isVariant && (
+          <label
+            className={`absolute bottom-2.5 right-2.5 flex h-9 cursor-pointer items-center gap-1.5 rounded-full px-2.5 text-xs font-medium ring-1 ring-black/5 transition-[opacity,background-color] duration-200 ${
+              nudge && !photo ? "bg-ink text-paper" : "bg-white/90 text-ink hover:bg-white"
+            } ${photo ? "[@media(hover:hover)]:opacity-0 group-hover/card:opacity-100 focus-within:opacity-100" : ""}`}
+          >
+            {busy ? (
+              <span className="h-3.5 w-3.5 animate-spin rounded-full border-[1.5px] border-current border-r-transparent" aria-hidden />
+            ) : (
+              <Camera size={16} />
+            )}
+            {nudge && !photo ? <span>Add a photo</span> : <span className="sr-only">{photo ? "Replace photo" : "Add a photo"}</span>}
+            <input
+              type="file"
+              accept="image/*"
+              className="sr-only"
+              onChange={(e) => { pick(e.target.files?.[0]); e.target.value = ""; }}
+            />
+          </label>
+        )}
+
+        {reorderMode && !selectMode && !group.isVariant && (
+          <div className="absolute bottom-2.5 left-2.5 flex gap-1">
+            <button type="button" onClick={() => onMove(head.id, -1)} disabled={!canMoveUp} aria-label="Move earlier"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-ink ring-1 ring-black/5 disabled:opacity-30"><ArrowLeft size={16} /></button>
+            <button type="button" onClick={() => onMove(head.id, 1)} disabled={!canMoveDown} aria-label="Move later"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-ink ring-1 ring-black/5 disabled:opacity-30"><ArrowRight size={16} /></button>
+          </div>
+        )}
+      </div>
+
+      <figcaption className="mt-3 px-0.5">
+        <div className="flex items-baseline justify-between gap-3">
+          <span className="truncate text-sm font-medium text-ink">{head.brand}</span>
+          <span className="flex-shrink-0 text-sm tabular-nums text-ink">{sizeLabel}</span>
+        </div>
+        <div className="mt-1 flex items-center justify-between gap-3">
+          <span className="flex min-w-0 items-center gap-1.5 text-xs text-ink-faint">
+            <ColorDot color={head.color} />
+            <span className="truncate">{sub}</span>
+          </span>
+          {!group.isVariant && <FitStars rating={head.fitRating} size={11} className="flex-shrink-0" />}
+        </div>
+        {failed && <p className="mt-1 text-xs text-bad">That photo couldn&apos;t be read. Try a JPEG or PNG.</p>}
+      </figcaption>
+    </figure>
   );
 }
 
@@ -674,7 +914,7 @@ function ItemCard({
               {group.items.length} variants
             </span>
           </div>
-          <span className={`text-ink-faint transition-transform ${expanded ? "rotate-180" : ""}`}>⌄</span>
+          <CaretDown size={16} className={`text-ink-faint transition-transform ${expanded ? "rotate-180" : ""}`} />
         </button>
         {expanded && (
           <div className="mt-3 grid grid-cols-3 gap-2 border-t border-neutral-100 pt-3 sm:grid-cols-4">
@@ -689,7 +929,7 @@ function ItemCard({
                   <div className="mt-1 flex justify-center gap-2 text-[11px]">
                     <button onClick={() => onEdit(it.id)} className="text-ink-faint hover:text-brand">Edit</button>
                     <button onClick={() => onPatch(it.id, { groupId: null, groupName: null })} className="text-ink-faint hover:text-brand">Unmerge</button>
-                    <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-red-600">Remove</button>
+                    <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-bad">Remove</button>
                   </div>
                 </div>
               </div>
@@ -727,14 +967,14 @@ function ItemCard({
               onClick={() => onMove(it.id, -1)}
               disabled={!canMoveUp}
               className="text-ink-faint hover:text-brand disabled:opacity-30"
-              title="Move up"
-            >▲</button>
+              aria-label="Move up"
+            ><CaretUp size={16} /></button>
             <button
               onClick={() => onMove(it.id, 1)}
               disabled={!canMoveDown}
               className="text-ink-faint hover:text-brand disabled:opacity-30"
-              title="Move down"
-            >▼</button>
+              aria-label="Move down"
+            ><CaretDown size={16} /></button>
           </div>
         )}
         <ItemThumb item={it} size={36} />
@@ -762,7 +1002,7 @@ function ItemCard({
             onMove={(cid) => onPatch(it.id, { collectionId: cid })}
           />
           <button onClick={() => onEdit(it.id)} className="text-ink-soft hover:text-brand">Edit</button>
-          <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-red-600">Remove</button>
+          <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-bad">Remove</button>
         </div>
       )}
     </Card>
@@ -834,15 +1074,15 @@ function EditRow({
 
   async function pickImage(file: File | undefined) {
     if (!file) return;
-    try { setF((x) => ({ ...x, imageDataUrl: "" })); const d = await resizeImageToDataUrl(file, 320); setF((x) => ({ ...x, imageDataUrl: d })); } catch { /* ignore */ }
+    try { setF((x) => ({ ...x, imageDataUrl: "" })); const d = await resizeGarmentPhoto(file); setF((x) => ({ ...x, imageDataUrl: d })); } catch { /* ignore */ }
   }
 
   return (
-    <Card className="relative !p-4 ring-brand/30 animate-fade-in-up">
+    <Card className="relative !p-4 animate-fade-in-up">
       {/* small corner save — inside the card, top-right; the Photo row below
           reserves right padding (pr-20) so its helper text never sits under it */}
       <button onClick={save} disabled={saving || !f.brand || !f.size || !isValidSize(f.category, f.size)}
-        className="absolute right-3 top-3 z-10 rounded-lg bg-brand px-3 py-1 text-xs font-semibold text-white shadow-card hover:bg-brand-dark disabled:opacity-50">
+        className="absolute right-3 top-3 z-10 h-8 rounded-full bg-ink px-3.5 text-xs font-medium text-paper hover:bg-black disabled:opacity-45">
         {saving ? "…" : "Save"}
       </button>
       <div className="grid gap-3 sm:grid-cols-6">
@@ -856,7 +1096,7 @@ function EditRow({
                 ) : <GarmentIcon category={f.category} size={24} />}
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => pickImage(e.target.files?.[0])} />
               </label>
-              {f.imageDataUrl && <button type="button" onClick={() => setF({ ...f, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-red-600">remove</button>}
+              {f.imageDataUrl && <button type="button" onClick={() => setF({ ...f, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-bad">remove</button>}
             </div>
           </Field>
         </div>
@@ -962,9 +1202,10 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
 
 function GenderBadge({ gender }: { gender: string }) {
   const map: Record<string, { label: string; cls: string }> = {
-    mens: { label: "M", cls: "bg-blue-100 text-blue-700" },
-    womens: { label: "W", cls: "bg-pink-100 text-pink-700" },
-    unisex: { label: "U", cls: "bg-neutral-100 text-neutral-600" },
+    // One neutral treatment: the line is information, not a colour code.
+    mens: { label: "M", cls: "text-ink-soft ring-1 ring-line" },
+    womens: { label: "W", cls: "text-ink-soft ring-1 ring-line" },
+    unisex: { label: "U", cls: "text-ink-soft ring-1 ring-line" },
   };
   const m = map[gender];
   if (!m) return null;
@@ -980,7 +1221,7 @@ function ColorDot({ color }: { color: string | null }) {
   if (!hex) return null;
   return (
     <span
-      className="inline-block h-3 w-3 flex-shrink-0 rounded-full border border-neutral-300"
+      className="inline-block h-2.5 w-2.5 flex-shrink-0 rounded-full ring-1 ring-black/10"
       style={{ backgroundColor: hex }}
       title={color ?? undefined}
     />
@@ -1198,7 +1439,7 @@ function FileCard({
               }`}
               title="Set aside to compare"
             >
-              {bucketed ? "✓ Bucket" : "＋ Bucket"}
+              {bucketed ? <><Check size={12} className="-mt-px mr-0.5 inline" />Bucket</> : <><Plus size={12} className="-mt-px mr-0.5 inline" />Bucket</>}
             </button>
           </div>
         </div>
@@ -1224,6 +1465,7 @@ function DetailSheet({
   onClose,
   onReload,
   onPatch,
+  onPhoto,
   onRemove,
 }: {
   group: Group;
@@ -1233,6 +1475,7 @@ function DetailSheet({
   onClose: () => void;
   onReload: () => void;
   onPatch: (id: string, data: Record<string, unknown>) => void;
+  onPhoto: (id: string, file: File | null) => Promise<void>;
   onRemove: (id: string) => void;
 }) {
   const head = group.items[0];
@@ -1240,6 +1483,24 @@ function DetailSheet({
   // Which item (if any) is being edited inline, right here in the sheet.
   const [editId, setEditId] = useState<string | null>(null);
   const editItem = editId ? group.items.find((it) => it.id === editId) ?? null : null;
+  const [dragging, setDragging] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const hex = colorHex(head.color);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  async function photo(file: File | null | undefined) {
+    if (file === undefined) return;
+    if (file && !file.type.startsWith("image/")) { setFailed(true); return; }
+    setBusy(true);
+    setFailed(false);
+    try { await onPhoto(head.id, file); } catch { setFailed(true); } finally { setBusy(false); }
+  }
 
   const history = (() => {
     try {
@@ -1253,17 +1514,22 @@ function DetailSheet({
 
   return (
     <div className="fixed inset-0 z-50 flex justify-end" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
+      <div className="absolute inset-0 bg-ink/30" />
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label={name}
         onClick={(e) => e.stopPropagation()}
-        className="animate-fade-in-up relative z-10 flex h-full w-full max-w-sm flex-col overflow-y-auto bg-white shadow-2xl"
+        className="animate-fade-in-up relative z-10 flex h-full w-full max-w-md flex-col overflow-y-auto bg-white"
       >
-        <div className="flex items-start justify-between border-b border-neutral-200 px-5 py-4">
+        <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
           <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">On the desk</p>
-            <h3 className="truncate text-lg font-semibold text-ink">{name}</h3>
+            <p className="eyebrow text-ink-faint">{garmentLabel(head.category)}</p>
+            <h3 className="mt-1 truncate text-h3 font-semibold text-ink">{name}</h3>
           </div>
-          <button onClick={onClose} className="ml-3 flex-shrink-0 text-2xl leading-none text-ink-faint hover:text-ink" aria-label="Close">×</button>
+          <button onClick={onClose} className="-mr-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-ink-soft hover:bg-ink/5 hover:text-ink" aria-label="Close">
+            <Close size={20} />
+          </button>
         </div>
 
         {/* Inline editor lives right inside the file — no bouncing to the list */}
@@ -1278,56 +1544,91 @@ function DetailSheet({
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-4 px-5 py-5">
-              <ItemThumb item={head} size={72} />
+            {/* The cover. Drop a photo on it, or use the button. Only the
+                wearer's own photos — never a retailer's image (principle ③). */}
+            <div className="px-5 pt-5">
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={(e) => { e.preventDefault(); setDragging(false); photo(e.dataTransfer.files?.[0]); }}
+                className={`relative flex aspect-[4/5] items-center justify-center overflow-hidden rounded-xl transition-shadow ${dragging ? "ring-2 ring-brand" : "ring-1 ring-line"}`}
+                style={{ backgroundColor: head.imageDataUrl ? "#E6E7E9" : hex ?? "#E6E7E9" }}
+              >
+                {head.imageDataUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={head.imageDataUrl} alt={`${name}, your photo`} className="h-full w-full object-cover" />
+                ) : (
+                  <GarmentIcon category={head.category} size={80} className={iconToneOn(hex) === "light" ? "text-white/80" : "text-ink/45"} />
+                )}
+                {busy && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/60">
+                    <span className="h-6 w-6 animate-spin rounded-full border-2 border-ink border-r-transparent" aria-label="Saving photo" />
+                  </div>
+                )}
+              </div>
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-line bg-white px-3.5 text-xs font-medium text-ink transition-colors hover:border-ink/40 focus-within:ring-2 focus-within:ring-brand/40">
+                  <Camera size={16} />
+                  {head.imageDataUrl ? "Replace photo" : "Add a photo"}
+                  <input type="file" accept="image/*" className="sr-only" onChange={(e) => { photo(e.target.files?.[0]); e.target.value = ""; }} />
+                </label>
+                {head.imageDataUrl && (
+                  <Button size="sm" variant="ghost" icon={<Trash size={16} />} onClick={() => photo(null)}>Remove</Button>
+                )}
+              </div>
+              <p className="mt-2 text-xs text-ink-faint">
+                {failed ? <span className="text-bad">That file couldn&apos;t be read as a photo. Try a JPEG or PNG.</span> : "Your own photo. It's cropped to 4:5 and kept small."}
+              </p>
+            </div>
+
+            <div className="flex items-start gap-4 px-5 py-5">
               <div className="min-w-0 space-y-1 text-sm">
                 <p className="font-medium text-ink">{head.brand}</p>
                 <p className="text-ink-soft">{garmentLabel(head.category)}{head.gender ? ` · ${head.gender}` : ""}</p>
                 <FitStars rating={head.fitRating} size={14} />
               </div>
               {!group.isVariant && (
-                <button onClick={() => setEditId(head.id)} className="ml-auto self-start rounded-lg border border-neutral-200 px-3 py-1.5 text-sm font-medium text-ink-soft hover:border-brand hover:text-brand">
-                  ✎ Edit
-                </button>
+                <Button size="sm" variant="secondary" icon={<Pencil size={16} />} className="ml-auto" onClick={() => setEditId(head.id)}>Edit</Button>
               )}
             </div>
 
             {/* variants OR single size */}
-            <div className="border-t border-neutral-100 px-5 py-4">
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
+            <div className="border-t border-line px-5 py-4">
+              <p className="eyebrow mb-2 text-ink-faint">
                 {group.isVariant ? `${group.items.length} variants` : "Details"}
               </p>
               <div className="space-y-1.5">
                 {group.items.map((v) => (
-                  <div key={v.id} className="flex items-center justify-between rounded-lg border border-neutral-100 px-3 py-2 text-sm">
+                  <div key={v.id} className="flex items-center justify-between rounded-lg px-3 py-2 text-sm ring-1 ring-line">
                     <span className="flex items-center gap-2">
                       <ColorDot color={v.color} />
                       <span className="font-medium text-ink">size {v.size}</span>
                       {v.color && <span className="text-ink-faint">· {v.color}</span>}
                     </span>
                     <span className="flex items-center gap-3 text-xs">
-                      <button onClick={() => setEditId(v.id)} className="text-ink-soft hover:text-brand">Edit</button>
-                      <button onClick={() => onRemove(v.id)} className="text-ink-faint hover:text-red-600">Remove</button>
+                      <button onClick={() => setEditId(v.id)} className="text-ink-soft hover:text-ink">Edit</button>
+                      <button onClick={() => onRemove(v.id)} className="text-ink-faint hover:text-bad">Remove</button>
                     </span>
                   </div>
                 ))}
               </div>
+              <GarmentMeasurements item={head} />
               {head.areaNotesJson && safeNotes(head.areaNotesJson) && (
-                <p className="mt-3 rounded-lg bg-neutral-50 px-3 py-2 text-xs text-ink-soft"><Note size={14} className="mr-1.5 inline -mt-0.5" />{safeNotes(head.areaNotesJson)}</p>
+                <p className="mt-3 flex items-start gap-1.5 rounded-lg bg-paper-soft px-3 py-2 text-xs text-ink-soft"><Note size={14} className="mt-px flex-shrink-0" />{safeNotes(head.areaNotesJson)}</p>
               )}
             </div>
 
             {/* timestamps: created · last modified · edit history */}
-            <div className="border-t border-neutral-100 px-5 py-4 text-xs">
-              <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">History</p>
+            <div className="border-t border-line px-5 py-4 text-xs">
+              <p className="eyebrow mb-2 text-ink-faint">History</p>
               <dl className="space-y-1 text-ink-soft">
                 <div className="flex justify-between"><dt className="text-ink-faint">Created</dt><dd>{fmtWhen(head.createdAt)}</dd></div>
                 <div className="flex justify-between"><dt className="text-ink-faint">Last modified</dt><dd>{lastEdited ? fmtWhen(lastEdited) : "never"}</dd></div>
               </dl>
               {history.length > 1 && (
                 <details className="mt-2">
-                  <summary className="cursor-pointer text-ink-faint hover:text-brand">{history.length} recorded edits</summary>
-                  <ul className="mt-1 space-y-0.5 border-l border-neutral-200 pl-3 text-ink-faint">
+                  <summary className="cursor-pointer text-ink-faint hover:text-ink">{history.length} recorded edits</summary>
+                  <ul className="mt-1 space-y-0.5 border-l border-line pl-3 text-ink-faint">
                     {history.slice().reverse().map((t, i) => (
                       <li key={i}>{fmtWhen(t)}</li>
                     ))}
@@ -1337,17 +1638,18 @@ function DetailSheet({
             </div>
 
             {/* actions */}
-            <div className="mt-auto space-y-3 border-t border-neutral-200 px-5 py-4">
-              <div className="flex items-center gap-2">
+            <div className="mt-auto space-y-3 border-t border-line px-5 py-4">
+              <div className="flex flex-wrap items-center gap-2">
                 <MoveMenu collections={collections} currentId={head.collectionId} onMove={(cid) => onPatch(head.id, { collectionId: cid })} />
-                <button
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon={inBucket(head.id) ? <Check size={16} /> : <Basket size={16} />}
+                  className={inBucket(head.id) ? "!border-brand !text-brand" : ""}
                   onClick={() => onBucket(head)}
-                  className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition-colors ${
-                    inBucket(head.id) ? "border-brand bg-brand-tint text-brand" : "border-neutral-200 text-ink-soft hover:border-brand hover:text-brand"
-                  }`}
                 >
-                  {inBucket(head.id) ? "✓ In bucket" : "＋ Add to bucket"}
-                </button>
+                  {inBucket(head.id) ? "In bucket" : "Add to bucket"}
+                </Button>
               </div>
               <p className="text-[11px] text-ink-faint">Precise measurements stay private — never shared by code.</p>
             </div>
@@ -1375,12 +1677,12 @@ function BucketPanel({
   return (
     <div className="fixed bottom-4 right-4 z-40">
       {open ? (
-        <div className="w-72 rounded-2xl border border-neutral-200 bg-white p-3 shadow-2xl">
+        <div className="w-72 rounded-2xl bg-white p-3 ring-1 ring-line shadow-lift">
           <div className="mb-2 flex items-center justify-between">
             <p className="flex items-center gap-1.5 text-sm font-semibold text-ink"><Basket size={16} /> Comparison bucket <span className="text-ink-faint">({items.length})</span></p>
             <div className="flex items-center gap-2 text-xs">
-              <button onClick={onClear} className="text-ink-faint hover:text-red-600">Clear</button>
-              <button onClick={() => setOpen(false)} className="text-ink-faint hover:text-ink" aria-label="Collapse">–</button>
+              <button onClick={onClear} className="text-ink-faint hover:text-bad">Clear</button>
+              <button onClick={() => setOpen(false)} className="flex h-6 w-6 items-center justify-center rounded-full text-ink-faint hover:bg-ink/5 hover:text-ink" aria-label="Collapse"><CaretDown size={14} /></button>
             </div>
           </div>
           <div className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto">
@@ -1388,9 +1690,9 @@ function BucketPanel({
               <div key={it.id} className="relative rounded-lg border border-neutral-100 p-2">
                 <button
                   onClick={() => onRemove(it)}
-                  className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-200 text-[10px] leading-none text-ink-soft hover:bg-red-100 hover:text-red-600"
+                  className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-200 text-[10px] leading-none text-ink-soft hover:bg-bad-tint hover:text-bad"
                   aria-label="Remove from bucket"
-                >×</button>
+                ><Close size={10} /></button>
                 <button onClick={() => onOpen(it)} className="flex w-full flex-col items-center gap-1 text-center">
                   <ItemThumb item={it} size={44} />
                   <span className="w-full truncate text-[11px] font-medium text-ink">{itemName(it)}</span>
@@ -1404,7 +1706,7 @@ function BucketPanel({
       ) : (
         <button
           onClick={() => setOpen(true)}
-          className="flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-lift"
+          className="flex h-11 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper shadow-lift"
         >
           <Basket size={16} /> Bucket <span className="rounded-full bg-white/25 px-1.5">{items.length}</span>
         </button>
@@ -1450,7 +1752,7 @@ const STEP_WHY: Record<AddStep, string> = {
   fit: "This is what moves a recommendation up or down a size for this brand.",
 };
 
-function AddItemFlow({ onAdded }: { onAdded: () => void }) {
+function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => void; onClose?: () => void }) {
   const [form, setForm] = useState({ ...BLANK });
   const [stepIndex, setStepIndex] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -1519,7 +1821,7 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
   async function onPickImage(file: File | undefined) {
     if (!file) return;
     try {
-      const dataUrl = await resizeImageToDataUrl(file, 320);
+      const dataUrl = await resizeGarmentPhoto(file);
       setForm((f) => ({ ...f, imageDataUrl: dataUrl }));
     } catch { /* ignore */ }
   }
@@ -1552,7 +1854,7 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
     }
     if (!canAdd || saving) return;
     setSaving(true);
-    await fetch("/api/closet", {
+    const res = await fetch("/api/closet", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -1572,14 +1874,16 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
     setPasteUrl(""); setExtractNote(null);
     setSizeRows([]); setMeasuredFrom(null);
     setSaving(false);
-    onAdded();
+    const created = await res.json().catch(() => null);
+    onAdded(typeof created?.item?.id === "string" ? created.item.id : null);
   }
 
   return (
-    <Card className="mt-6">
+    <Card>
       {justAdded && (
-        <p className="mb-4 rounded-lg bg-brand/10 px-3 py-2 text-sm text-brand-dark">
-          Added <span className="font-semibold">{justAdded}</span>. Add another below.
+        <p className="mb-4 flex items-center gap-2 rounded-lg bg-ok-tint px-3 py-2 text-sm text-ok">
+          <Check size={16} className="flex-shrink-0" />
+          <span>Added <span className="font-medium">{justAdded}</span>. Add a photo on its card, or another piece below.</span>
         </p>
       )}
 
@@ -1590,8 +1894,13 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
             Add an item · {stepIndex + 1} of {ADD_STEPS.length}
           </p>
           {trail && <p className="min-w-0 truncate text-[11px] text-ink-soft">{trail}</p>}
+          {onClose && !trail && (
+            <button type="button" onClick={onClose} className="-my-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-ink/5 hover:text-ink" aria-label="Close">
+              <Close size={16} />
+            </button>
+          )}
         </div>
-        <div className="h-1 w-full overflow-hidden rounded-full bg-neutral-200">
+        <div className="h-1 w-full overflow-hidden rounded-full bg-line">
           <div
             className="h-full rounded-full bg-brand transition-[width] duration-300"
             style={{ width: `${((stepIndex + 1) / ADD_STEPS.length) * 100}%` }}
@@ -1661,9 +1970,10 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
             <button
               type="button"
               onClick={() => setShowDetails(!showDetails)}
-              className="text-xs font-semibold text-ink-soft hover:text-brand"
+              className="inline-flex items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink"
             >
-              {showDetails ? "− Hide details" : "+ Add details (optional)"}
+              <CaretDown size={14} className={`transition-transform ${showDetails ? "rotate-180" : ""}`} />
+              {showDetails ? "Hide details" : "Add details (optional)"}
             </button>
             <p className="mt-1 text-[11px] text-ink-faint">
               Photo, name, colour, notes. The fit engine doesn&apos;t read these — you can add them any time by editing the item.
@@ -1682,7 +1992,7 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => onPickImage(e.target.files?.[0])} />
                       </label>
                       {form.imageDataUrl
-                        ? <button type="button" onClick={() => setForm({ ...form, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-red-600">remove photo</button>
+                        ? <button type="button" onClick={() => setForm({ ...form, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-bad">remove photo</button>
                         : <span className="min-w-0 text-xs text-ink-faint">Click to upload a picture of this item.</span>}
                     </div>
                   </Field>
