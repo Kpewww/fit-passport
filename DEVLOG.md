@@ -31,6 +31,52 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 77 — A task board, and a cold-start brief that was two weeks wrong
+
+Housekeeping, no product change.
+
+**`docs/RESUME.md` was stale and actively misleading.** It said "Session 72 · 419
+tests" while the repo stood at Session 76 and 495. It is the first file a new
+session or a new teammate reads, so being wrong there costs more than being wrong
+anywhere else. Now current, with Sessions 73–76 summarised: the extension transport,
+the body-versus-garment reading, Sprint 5, and the R0–R7 redesign. Also fixed a
+literal `\n\n` left in the prose by an earlier scripted edit, and pointed the
+tooling line at `capture-chart.mjs`, `try-pages.mjs` and `npm run eval`.
+
+**New `todo/`** — one file per task, grouped by **who can move it** rather than by
+area, because that is the question someone opening the folder actually has:
+`people/` (needs a human, nothing blocking), `decisions/` (founder's call, no work
+needed first), `engineering/` (code, ordered, with the reason for the order).
+
+**The rule that keeps it from becoming a second source of truth:** `todo/` says
+what to do, `next-steps.md` says why. Every task links back rather than restating
+the argument — two copies of a rationale drift, and the copy people read is usually
+the stale one. This project has already paid for that with the four-copy colour
+palette (invariant ㉛). `next-steps.md` now carries a banner pointing at the board.
+
+Tasks close by **deleting the file** in the same commit as the work. An empty
+folder is a true statement; a file marked "done" is one more thing to keep in sync.
+
+**Nothing on the board is invented.** Every item is an existing measured finding —
+ground truth at 0 of 11, H&M and REI refusing automated browsers even headed,
+body-chart answers stuck at floor confidence because `computeConfidence` only pays
+the +35 on a garment `chestCm`, non-table charts invisible to both capture and
+parser, waist never reaching the engine, closet photos in Postgres — each pointing
+at where it was recorded.
+
+**Verified, not assumed:** 494 passing + 1 honest skip, typecheck clean, manifest
+is MV3 with `activeTab` + `scripting` and host permission for our own two origins
+only, popup offers production and localhost.
+
+### Files touched
+```
+docs/RESUME.md                                  (brought to Session 76)
+docs/memory/project-fit-passport-next-steps.md  (banner pointing at todo/)
+todo/                                           (created — 16 files)
+```
+
+---
+
 ## 2026-09-29 · Session 76 (R7) — Audit: contrast, focus, motion, weight, wide screens
 
 The redesign's closing step: measure everything R0 measured, and fix what fails.

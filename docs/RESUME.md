@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 72 · 2026-09-08 — LIVE, 419 tests.**
+> **Last updated: Session 76 · 2026-09-29 — LIVE, 495 tests (494 + 1 honest skip).**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -36,26 +36,34 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 **技术栈:** Node 24 LTS + **Next.js 14.2.35** App Router + React 18 + TS +
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
 Framer Motion(**Lenis 已移除**);three.js 懒加载:徽章 inspect **以及** 3D 人台/松量壳(`BodyMesh3D.tsx`)。
-命令:`npm run dev`、`npm run typecheck`、`npm test`(**419 个**)、`npm run build`、
+命令:`npm run dev`、`npm run typecheck`、`npm test`(**495 个**:494 通过 + 1 个诚实跳过)、`npm run build`、
 改 schema 后 `npm run db:push`(**还必须建 migration**,见铁律 10)、生成文档 PDF `npm run docs:pdf`。
 测量工具:`app-web/scripts/mobile-audit.mjs`(移动端布局)、
-`brand/tests/size-test.mjs`(标志尺寸)。两者都需 `npx playwright install chromium`。
+`brand/tests/size-test.mjs`(标志尺寸)、`app-web/scripts/capture-chart.mjs`(抄品牌尺码表)、
+`browser-extension/scripts/try-pages.mjs`(真实页面跑全链路)。均需 `npx playwright install chromium`。
+评估:`npm run eval`(离线 B+S5)、`EVAL_LIVE=1 npm run eval`(加上服务器路径 A)。
 **每轮结束务必:tsc + test + build + live smoke 全过 → commit & push → 更新
 DEVLOG + memory。**
 
-**课程分工:** `coursework/technical/` = 技术实现/可行性/作业；`coursework/startup/` = 市场/商业/产品交付。核心代码仍只有 `app-web/` 一份。\n\n**动手前必读**:`docs/memory/README.md` 是索引,其中
+**课程分工:** `coursework/technical/` = 技术实现/可行性/作业；`coursework/startup/` = 市场/商业/产品交付。核心代码仍只有 `app-web/` 一份。
+
+**动手前必读**:`docs/memory/README.md` 是索引,其中
 `project-fit-passport-build-state`(架构 + 铁律,**必读**)、
 `project-fit-passport-performance`(性能陷阱)、
 `project-fit-passport-deployment`(**含一次生产事故的教训**)、
 `project-fit-passport-design-system`(视觉 + **移动端规则**)、
 `project-fit-passport-closet-signal-design`(合身信号)、
 `project-fit-passport-logo`(标志资产 + 尺寸下限)、
-`project-fit-passport-next-steps`(**待办,当前清单在文件底部**);
+`project-fit-passport-next-steps`(**为什么这么排 —— 推理与历史,当前清单在文件底部**);
 以及 `docs/design/*.md`(研究)、`DEVLOG.md`(逐次记录)。
+
+**要动手做什么,看 `todo/`** —— 那是可领取的任务板,按"谁能推动它"分组
+(`people/` 需要人工、`decisions/` 等创始人拍板、`engineering/` 编码)。
+`todo/` 说做什么,`next-steps.md` 说为什么。
 
 ---
 
-## 现状(Session 71 · 2026-09-01)
+## 现状(Session 76 · 2026-09-29)
 
 **已上线:https://fit-passport.vercel.app** — Vercel + Neon Postgres + Upstash
 Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密码在 Session 41
@@ -103,8 +111,36 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
   `/check` 对着一个从没读过的页面写"measurements from the page"。两个都通过了
   全部单元测试和 API 检查。**这是 Session 69 那条教训隔一轮又复现了一次。**
 
-**下一步:见 `docs/memory/project-fit-passport-next-steps.md` 底部的当前清单。**
-(客户访谈**已由创始人推迟**;信息架构第 2、3 步是接下来的事。)
+**Session 73–74(插件接口 + 人体/平铺之分):**
+- `/api/check` 除 `{url}` 外接受 `{html}` —— 页面由浏览器递过来。`sizesFrom` 与
+  `fetch` 分开记(铁律 54):数字仍来自零售商页面,但服务器什么都没抓。
+- **实测:每次直接爬 URL 不可行**(铁律 53)—— 能过检测的配置需要真实窗口,
+  serverless 没有;能部署的 headless 恰好是被检测的那个。
+- 页面解析学会区分**人体围度 vs 平铺尺寸**(铁律 57):页面自己的原话优先,
+  其次品牌已记录的惯例。重复尺码标签合并成区间(铁律 58)。
+
+**Session 75–75d(Sprint 5:浏览器插件 + 评估):**
+- **插件已建好并跑通**:`browser-extension/`(MV3,无构建步骤)。真实页面实测
+  Patagonia **1.78 MB → 11 KB(−99.4%)**,16 ms;production 的 session cookie
+  确实能从插件送达线上 API。
+- 服务端先加固:`checkPolicy.ts`;插件无 session **401 而非偷偷建账号**(铁律 60);
+  `/api/check` 限流;**绝不对浏览器递来的页面打分编造的尺码梯**(铁律 59)。
+- **Uniqlo 曾返回 L(应为 M)** —— 插件第一个碰到的既有解析 bug(分数英寸、
+  页面边角料误判平铺),75c 已修 → 现在 **M, true to size**。
+- **评估框架 `app-web/eval/`**:11 个真实案例、三套系统(A 服务器 / B 仅策展表 /
+  S5 插件)。**ground truth 目前 0/11 —— 所有数字都卡在这里,只有人能做。**
+- ⚠️ **"有头浏览器能过"已不再可靠**:H&M、REI 现在连有头也拒绝,Patagonia
+  间歇性挡。评估抓取改为人工点插件的 **Save this capture**。
+
+**Session 76(redesign R0–R7,已完成):**
+- "Editorial Atelier":emoji 全换成生成的 Phosphor 图标集(铁律 67/68)、新 shell
+  与导航、衣橱改成用户自己照片的画廊、Check 结果**以答案开头**、首页删掉两个
+  重复段落、无障碍审计(对比度 AA、焦点环、reduced-motion)。
+- **教训:宽屏要在 1920 看,不只是 1440** —— 那轮三个布局问题全是宽屏才有。
+
+**下一步:见 `todo/`(做什么)与 `docs/memory/project-fit-passport-next-steps.md`
+底部(为什么)。** 客户访谈**已由创始人推迟**;插件**已不再受访谈证据门槛限制**
+(Session 73 创始人拍板)。
 
 ---
 

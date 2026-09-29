@@ -8,6 +8,12 @@ metadata:
   modified: 2026-08-20T22:33:47.428Z
 ---
 
+> 🗂️ **The ACTIONABLE queue now lives in `todo/`** (Session 76, 2026-09-29) —
+> one file per task, grouped by who can move it: `people/`, `decisions/`,
+> `engineering/`. **`todo/` says what to do; this file says why.** Each task there
+> links back here rather than restating the argument, because two copies of a
+> rationale drift and the one people read is usually the stale one.
+>
 > ⚠️ **The authoritative list is at the BOTTOM of this file (Session 48).**
 > Everything above it is kept as history — it records why priorities changed, which
 > is often the useful part, but it is not what to do next.
