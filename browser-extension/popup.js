@@ -238,6 +238,7 @@
       }[source.extractedBy] || "from this page";
       parts.push(kind + " " + reader);
       if (!source.measurementKind) parts.push("the page didn't say body or garment");
+      else if (source.measurementKindFrom === "table") parts.push("a range for each size, which is how body charts are written");
       else if (source.measurementKindFrom === "brand") parts.push("body/garment as the brand's own guide states it");
     } else if (source.sizesFrom === "brand-chart") {
       parts.push((brand || "The brand") + "'s published size guide, not this product's own chart" +

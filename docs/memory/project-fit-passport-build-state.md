@@ -908,3 +908,40 @@ empty card for body-range charts.
 from the extension origin; `--click`, `--shots`, `--save-captures`; measurement
 only, invariant (52)); `make-icons.mjs` (icons from `brand/` masters, favicon glyph
 at 16/32 per ㉖).
+
+**SESSION 75c UPDATE (2026-09-28).** 499 → **507 tests**. Uniqlo fixed: the real
+page through the extension now returns **M, true to size** (was L at 65%); M band
+96.1–104.0 cm vs stated 95.9–104.1. Patagonia/Nike unchanged.
+
+`pageParse.ts`: **`cellNumbers`** reads `31 1/2`, `31-1/2`, `31½` as one number
+(fraction only for denominators 2/3/4/8/16, so `32/34` stays two numbers);
+**`resolveMeasurementKind(stated, brandFallback, ranged)`** is the ONE place the
+body/garment precedence lives — page-body > table-range > page-garment > brand >
+unstated; **`parseSizeChart`** returns `{sizes, kind, kindFrom}` and `parsePage`
+exposes `measurementKind` / `measurementKindFrom`, which `extractorLLM` now takes
+instead of re-deciding; **`risesWithSize`** refuses a table whose chest (else waist)
+falls by >1 cm in ladder order. `measurementKindFrom` gains `"table"`.
+`engineInput.ts` → `engineSizes()`: the one size mapping for routes, tests and the
+harness.
+
+**NEW INVARIANTS:**
+**(64)** **A range per size is body measurements, recorded as
+`measurementKindFrom: "table"`.** Outranks a page-wide "garment" (read off the whole
+page — on uniqlo.com it was site chrome), never a page-wide "body", and can never
+argue for garment. (57)'s rule stands: "otherwise" needs a source; the table's own
+shape is one. One old test that read an unstated range chart as garment midpoints
+was changed on purpose.
+**(65)** **A chart whose numbers fall as the sizes rise is refused.** Would have
+refused the Uniqlo garbage on its own; catches misreads not yet met.
+
+**CORRECTION to the Session 75 audit list:** "`recommendService` drops `waistCm`" is
+currently CORRECT behaviour, not a bug to fix alone. The parser moves a body chart's
+chest into `bodyChestMin/Max` but leaves its waist in the garment `waistCm`; Uniqlo,
+Nike and Patagonia all carry body waist columns. Passing waist before a body-waist
+field exists would repeat ㊿ one column over. `engineInput.ts` says so in place.
+
+**NEW FINDING, not fixed:** `computeConfidence` grants the +35 measurement weight
+only for a size with a garment `chestCm`; body-range sizes never qualify, so every
+body-chart answer sits near the floor (Uniqlo 30%, Nike 30%, Patagonia near-tie
+21%) and `/check`'s "+35 points" offer cannot pay out on them. Touches ㊱/㊴'s
+promise — decide together.

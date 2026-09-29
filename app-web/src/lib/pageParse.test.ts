@@ -78,15 +78,20 @@ describe("pageParse — size tables", () => {
     expect(sizes[2].chestCm).toBeCloseTo(106.7, 0);
   });
 
-  it("collapses a measurement range to its midpoint", () => {
+  it("reads a range per size as a body chart, not as a garment's midpoint", () => {
+    // This test used to assert chestCm 98 and 102 — a garment reading of a range.
+    // A garment has ONE chest measurement; a range per size says who the size is
+    // for, which is a body chart (Session 75c). Read as a garment, the engine adds
+    // the wearer's ease on top and lands a size too big — the Session 73 bug again.
     const html = `<table>
       <tr><th>Size</th><th>Chest</th></tr>
       <tr><td>S</td><td>96-100</td></tr>
       <tr><td>M</td><td>100-104</td></tr>
     </table>`;
     const sizes = parseSizeTables(html)!;
-    expect(sizes[0].chestCm).toBe(98);
-    expect(sizes[1].chestCm).toBe(102);
+    expect(sizes.map((s) => s.chestCm)).toEqual([undefined, undefined]);
+    expect(sizes[0]).toMatchObject({ bodyChestMinCm: 96, bodyChestMaxCm: 100 });
+    expect(sizes[1]).toMatchObject({ bodyChestMinCm: 100, bodyChestMaxCm: 104 });
   });
 
   it("reads a Chinese-language chart (胸围/腰围/肩宽)", () => {
@@ -356,6 +361,14 @@ describe("a body chart read off a page", () => {
     expect(sizes.find((s) => s.label === "M")!.chestCm).toBe(100);
   });
 
+  it("keeps the page's word as the source when it agrees with the table's shape", () => {
+    const html = `<p>These are body measurements.</p><table>
+      <tr><th>Size</th><th>Chest</th></tr>
+      <tr><td>S</td><td>96-100</td></tr><tr><td>M</td><td>100-104</td></tr><tr><td>L</td><td>104-108</td></tr>
+    </table>`;
+    expect(parsePage(html)).toMatchObject({ measurementKind: "body", measurementKindFrom: "page" });
+  });
+
   it("gives a one-value-per-size body chart a band, not a zero-width range", () => {
     const points = `<p>These are body measurements.</p>
       <table>
@@ -368,5 +381,89 @@ describe("a body chart read off a page", () => {
     const m = sizes.find((s) => s.label === "M")!;
     expect(m.bodyChestMinCm).toBe(97); // midway to S
     expect(m.bodyChestMaxCm).toBe(103); // midway to L
+  });
+});
+
+// uniqlo.com's size guide, as the browser extension captured it on 2026-09-28:
+// body measurements in inches, with fractions, and a line of site chrome that
+// mentions "product measurements". It came back **L at 65% for a 100cm chest**;
+// Uniqlo's own chart says M (100cm = 39.4in, inside M's 37 3/4–41). Two faults,
+// both predating the extension, which was simply the first to deliver the page.
+describe("an inch chart written with fractions (uniqlo.com, 2026-09-28)", () => {
+  const UNIQLO = `<p>Compare all product measurements with previous purchases</p>
+  <table>
+    <tr><th>Size</th><th>Chest</th><th>Waist</th></tr>
+    <tr><td>XS</td><td>31 1/2-34 3/4</td><td>26-28 1/4</td></tr>
+    <tr><td>S</td><td>34 3/4-37 3/4</td><td>26 3/4-30</td></tr>
+    <tr><td>M</td><td>37 3/4-41</td><td>30-33</td></tr>
+    <tr><td>L</td><td>41-44</td><td>33-36 1/4</td></tr>
+    <tr><td>XL</td><td>44-47 1/4</td><td>36 1/4-39 1/4</td></tr>
+    <tr><td>XXL</td><td>47 1/4-50 1/2</td><td>39 1/4-42 1/2</td></tr>
+    <tr><td>3XL</td><td>50 1/2-53 1/2</td><td>42 1/2-45 3/4</td></tr>
+  </table>`;
+
+  it("reads '31 1/2' as one number — so the ladder rises, and 100cm lands in M", () => {
+    // Fault 1: the parser took "31" and "1" as the ends of the range, so XS was
+    // (31 + 1) / 2 = 16 — and a column median that low sent the whole chart
+    // through the inch conversion: XS "40.6cm", L "108", XXL "61".
+    const sizes = parseSizeTables(UNIQLO)!;
+    expect(sizes.map((s) => s.label)).toEqual(["XS", "S", "M", "L", "XL", "XXL", "3XL"]);
+    const mins = sizes.map((s) => s.bodyChestMinCm!);
+    for (let i = 1; i < mins.length; i++) expect(mins[i]).toBeGreaterThan(mins[i - 1]);
+    const m = sizes.find((s) => s.label === "M")!;
+    expect(m.bodyChestMinCm!).toBeLessThanOrEqual(100);
+    expect(m.bodyChestMaxCm!).toBeGreaterThanOrEqual(100);
+    expect(sizes.find((s) => s.label === "S")!.bodyChestMaxCm!).toBeLessThan(100);
+    expect(sizes.find((s) => s.label === "L")!.bodyChestMinCm!).toBeGreaterThan(100);
+    expect(sizes[0].bodyChestMinCm!).toBeCloseTo(80, 0); // 31 1/2 in
+  });
+
+  it("reads a range per size as body measurements, whatever the page's chrome says", () => {
+    // Fault 2: "Compare all product measurements with previous purchases" is a
+    // site feature, and it matched the garment pattern. The table's own shape —
+    // a range for every size — is the stronger evidence, and it is recorded as
+    // the source so the reader can see which one we relied on.
+    const page = parsePage(UNIQLO);
+    expect(page.measurementKind).toBe("body");
+    expect(page.measurementKindFrom).toBe("table");
+    for (const s of page.sizes!) expect(s.chestCm, `${s.label} is not a garment chest`).toBeUndefined();
+  });
+
+  it("reads the other ways charts write fractions", () => {
+    const at = (cell: string) =>
+      parseSizeTables(`<p>Garment measurements, measured flat.</p><table><tr><th>Size</th><th>Chest</th></tr>
+        <tr><td>S</td><td>${cell}</td></tr><tr><td>M</td><td>40</td></tr><tr><td>L</td><td>42</td></tr></table>`)![0].chestCm;
+    expect(at("38½")).toBeCloseTo(97.8, 1); // a Unicode fraction
+    expect(at("38 1/2")).toBeCloseTo(97.8, 1);
+    expect(at("38-1/2")).toBeCloseTo(97.8, 1); // hyphenated mixed number: one value, not a range
+  });
+
+  it("does not read a slash between two numbers as a fraction", () => {
+    // "32/34" is a waist/inseam pair, or two sizes — never 0.94.
+    const sizes = parseSizeTables(`<table><tr><th>Size</th><th>Chest</th><th>Waist</th></tr>
+      <tr><td>S</td><td>96</td><td>30/32</td></tr><tr><td>M</td><td>100</td><td>32/34</td></tr>
+      <tr><td>L</td><td>104</td><td>34/36</td></tr></table>`)!;
+    expect(sizes.map((s) => s.waistCm)).toEqual([30, 32, 34]);
+  });
+});
+
+describe("a ladder that shrinks as the sizes grow is not a size chart", () => {
+  // Fail closed. The Uniqlo misread produced XS 40.6 · S 47 · M 50.8 · L 108 ·
+  // XL 115.6 · XXL 61 · 3XL 64.8, and nothing noticed that the numbers went DOWN
+  // as the sizes went up. A bigger size is never smaller (the monotonicity check
+  // the size-recommendation literature uses as a sanity test); a chart that says
+  // otherwise was misread, and no answer beats one built on it.
+  it("rejects a chart whose measurements fall as the sizes rise", () => {
+    const garbled = `<table><tr><th>Size</th><th>Chest</th></tr>
+      <tr><td>S</td><td>96</td></tr><tr><td>M</td><td>100</td></tr><tr><td>L</td><td>104</td></tr>
+      <tr><td>XL</td><td>90</td></tr><tr><td>XXL</td><td>112</td></tr></table>`;
+    expect(parseSizeTables(garbled)).toBeNull();
+  });
+
+  it("accepts a chart printed largest-first, since the sizes still rise", () => {
+    const descending = `<table><tr><th>Size</th><th>Chest</th></tr>
+      <tr><td>XL</td><td>112</td></tr><tr><td>L</td><td>106</td></tr>
+      <tr><td>M</td><td>100</td></tr><tr><td>S</td><td>94</td></tr></table>`;
+    expect(parseSizeTables(descending)?.map((s) => s.label)).toEqual(["XL", "L", "M", "S"]);
   });
 });

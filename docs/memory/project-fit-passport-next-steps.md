@@ -633,3 +633,18 @@ site chrome). See build-state 75b and DEVLOG 75b.
 3. Try it by hand: load `browser-extension/` unpacked in your own Chrome (README),
    open Fit Passport once, then check a product page. That is the real test of the
    click-to-answer path, which automation cannot press.
+
+### Session 75c (2026-09-28) — the Uniqlo failure is fixed
+
+Real Uniqlo page → **M** now (was L at 65%). Fraction inches read correctly; a
+range per size is read as a body chart (sourced "table"); a ladder that falls as
+sizes rise is refused. See build-state 75c.
+
+**Queue now:**
+1. **The evaluation** (Sprint 5 step 3): `app-web/eval/` + two-person ground truth.
+   It now has three real pages already run through the extension, with before/after
+   for one of them.
+2. Then, from the benchmark: body-chart confidence stuck at the floor (decide with
+   ㊱/㊴'s copy), body-waist field (then waist can reach the engine), stated ranges
+   instead of midpoint bands, visible-table preference, LLM-path body/garment.
+3. Try the extension by hand in your own Chrome (README) — the click path.

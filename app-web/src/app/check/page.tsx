@@ -73,7 +73,7 @@ type Source = {
   sizesFrom?: "fixture" | "page" | "brand-chart" | "estimated";
   chart?: { sourceUrl: string; capturedAt: string };
   measurementKind?: "body" | "garment";
-  measurementKindFrom?: "page" | "brand";
+  measurementKindFrom?: "page" | "table" | "brand";
   /** "extension" = the page came from the user's own browser, not our fetch. */
   fetch?: "ok" | "blocked" | "unreachable" | "skipped" | "extension";
   /** Which reader produced page sizes — a table, or a model reading text/images. */

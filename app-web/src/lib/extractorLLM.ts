@@ -21,7 +21,6 @@ import { chartFor } from "./brandCharts";
 import { checkUrlSafety, resolvesToPrivateAddress } from "./urlSafety";
 import {
   parsePage,
-  detectMeasurementKind,
   parseSizeLabels,
   parseChineseSizeCode,
   findSizeChartImages,
@@ -580,15 +579,13 @@ export async function extractSmart(
   if (parsed.sizes && parsed.sizes.length >= 2) {
     out.sizes = parsed.sizes;
     creditPage(out, "table");
-    // What the page itself said these numbers are. Undefined when it said
-    // nothing, which the UI reports as unstated rather than guessing.
-    const stated = detectMeasurementKind(html);
-    const kind = stated ?? brandChart?.kind;
-    if (kind) {
-      out.source.measurementKind = kind;
-      // Which of the two we are relying on. A reader deserves to know whether the
-      // page said this or whether we carried it over from the brand's guide.
-      out.source.measurementKindFrom = stated ? "page" : "brand";
+    // What these numbers measure, and on whose word — the page's own sentence,
+    // the table's shape (a range per size), or the brand's published convention.
+    // Settled once, by the parser that folded the sizes accordingly; undefined
+    // when nothing said, which the UI reports as unstated rather than guessing.
+    if (parsed.measurementKind) {
+      out.source.measurementKind = parsed.measurementKind;
+      out.source.measurementKindFrom = parsed.measurementKindFrom;
     }
     return out; // real chart in hand — no need to spend an LLM call
   }

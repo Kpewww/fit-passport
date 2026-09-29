@@ -8,6 +8,8 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { extractSmart, htmlToLlmText, __clearPageCache } from "./extractorLLM";
+import { recommend } from "./fitEngine";
+import { engineSizes } from "./engineInput";
 
 // Build a fetch Response-like object for the stub.
 function resp(
@@ -356,6 +358,34 @@ describe("extractSmart — provenance of page sizes", () => {
     expect(out.source.chart).toBeUndefined();
     expect(out.source.measurementKindFrom).toBeUndefined();
     expect(out.sizes.map((s) => s.label)).toEqual(["S", "M", "L"]);
+  });
+
+  it("answers M for a 100cm chest on Uniqlo's chart, where it used to say L at 65%", async () => {
+    // The browser extension's first real Uniqlo page (2026-09-28): the table as
+    // captured, and the line of site chrome that sits beside it. End to end
+    // through the extractor and the engine, fed the way /api/check feeds it.
+    UNREACHABLE();
+    const html = `<html><body><h1>Men's AIRism Cotton T-Shirt</h1>
+      <p>Compare all product measurements with previous purchases</p>
+      <table><tr><th>Size</th><th>Chest</th><th>Waist</th></tr>
+      <tr><td>XS</td><td>31 1/2-34 3/4</td><td>26-28 1/4</td></tr>
+      <tr><td>S</td><td>34 3/4-37 3/4</td><td>26 3/4-30</td></tr>
+      <tr><td>M</td><td>37 3/4-41</td><td>30-33</td></tr>
+      <tr><td>L</td><td>41-44</td><td>33-36 1/4</td></tr>
+      <tr><td>XL</td><td>44-47 1/4</td><td>36 1/4-39 1/4</td></tr>
+      <tr><td>XXL</td><td>47 1/4-50 1/2</td><td>39 1/4-42 1/2</td></tr>
+      <tr><td>3XL</td><td>50 1/2-53 1/2</td><td>42 1/2-45 3/4</td></tr></table></body></html>`;
+    const out = await extractSmart("https://www.uniqlo.com/us/en/products/E474244-000/00", { html });
+    expect(out.source).toMatchObject({ sizesFrom: "page", measurementKind: "body", measurementKindFrom: "table" });
+    const result = recommend({
+      profile: { chestCm: 100, waistCm: 86, shoulderCm: 46, preferredFit: "regular" },
+      product: { brand: out.brand, category: out.category },
+      sizes: engineSizes(out.sizes),
+      knownGood: [],
+      outcomes: [],
+    });
+    expect(result.best.label).toBe("M");
+    expect(result.best.verdict).toBe("true to size");
   });
 
   it("keeps none of the supplied page's prose in what gets stored", async () => {

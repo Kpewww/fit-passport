@@ -31,6 +31,93 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-28 · Session 75c — Uniqlo says M now, and a falling ladder is refused
+
+75b's Uniqlo check answered **L at 65%** for a 100 cm chest, on a chart that says
+M. Same page, same capture, after this commit: **M, "true to size"**, with M's body
+band read as 96.1–104.0 cm against the chart's stated 37¾–41 in (95.9–104.1 cm).
+Patagonia and Nike give the same answers as before. Re-measured on the live pages
+through the extension, not only in tests.
+
+**1. Numbers written with fractions are one number.** `cellNumbers` replaces
+"every run of digits is a number". Now `31 1/2`, `31-1/2` and `31½` each read as
+31.5. `32/34` stays two numbers — only tape-measure denominators (2, 3, 4, 8, 16)
+make a fraction — so a waist/inseam pair never becomes 0.94.
+
+**2. A range per size is a body chart**, recorded as `measurementKindFrom: "table"`.
+A garment has one chest measurement; a range says who the size is for, which is
+how most US brands publish (`brand-size-charts.md` §4), and the LLM prompt already
+maps ranges to the body fields. Precedence now lives in one function,
+`resolveMeasurementKind`, strongest first:
+1. the page says body
+2. the table gives a range per size
+3. the page says garment
+4. the brand's convention
+5. nothing (unstated)
+
+The table's shape outranks a page-wide "garment" because that phrase is read off
+the WHOLE page. On uniqlo.com it was site chrome ("Compare all product
+measurements…") next to a body chart. The shape can only ever argue for body; a
+one-value-per-size chart is left to the page and the brand exactly as before.
+**One existing test changed on purpose:** it asserted that an unstated range chart
+reads as garment midpoints (chest 98, 102). That is the Session 73 bug in
+miniature, and it now reads as body bands 96–100 and 100–104.
+
+**3. A ladder that falls as the sizes rise is refused, not served.** The misread
+produced XS 40.6 · S 47 · M 50.8 · L 108 · XL 115.6 · XXL 61 · 3XL 64.8, and nothing
+noticed. `risesWithSize` puts sizes in ladder order (so a chart printed
+largest-first passes) and rejects any drop of more than a centimetre, the
+monotonicity sanity check from the size-recommendation literature. **This would
+have refused the Uniqlo garbage even without fixes 1 and 2**, and it will catch
+misreads nobody has met yet. For a parser reading pages it has never seen, no
+answer beats one built on a broken chart.
+
+**Refactor with a finding in it.** The size-row mapping moved out of
+`recommendService` into `engineInput.ts` (`engineSizes`, no database import), so the
+routes, the tests and the coming evaluation harness feed the engine the same way.
+Writing its comment settled the Session 75 audit item "waist never reaches the
+engine": **that is currently the right behaviour.** The parser moves a body chart's
+chest into the body fields but leaves its waist in the garment `waistCm`, and
+Uniqlo's, Nike's and Patagonia's charts all have a body waist column. Wiring waist
+through as it stands would repeat invariant ㊿ one column over. It needs a
+body-waist field first; the schema already has `bodyWaistMinCm/MaxCm`, unused.
+
+### Found on this run, not fixed
+
+**Confidence for a body-range chart never rises off the floor.** All three
+re-measured answers sit near 30%: Uniqlo M 30%, Nike M 30%, Patagonia's near-tie
+21%. The cause is that `computeConfidence` grants the +35 measurement weight only
+when a size has a garment `chestCm`, and body-range sizes never do. So the most
+common chart type understates its own certainty, and `/check`'s "add your chest,
++35 points" offer can never pay out on one. Invariants ㊱ and ㊴ pin that copy to
+the arithmetic, so the fix is a decision about both. Queued behind the benchmark.
+
+**507 tests** (499 + 8; the seven that encode the Uniqlo faults verified red before
+the fix). Typecheck and build clean.
+
+### New invariants
+
+- **(64) A range per size is body measurements, and says so.** `measurementKindFrom:
+  "table"`. The shape outranks a page-wide "garment" but never a page-wide "body",
+  and it cannot argue for garment. (57) still holds: "otherwise" needs a source, and
+  the table's own shape is one.
+- **(65) A chart whose numbers fall as the sizes rise is refused.** Fail closed; the
+  parser does not get to serve a ladder it misread.
+
+### Files touched
+```
+app-web/src/lib/pageParse.ts          (cellNumbers, risesWithSize, resolveMeasurementKind,
+                                       parseSizeChart; parsePage returns the kind + source)
+app-web/src/lib/pageParse.test.ts     (+7 tests, one rewritten on purpose)
+app-web/src/lib/extractorLLM.ts       (takes the parser's settled kind)
+app-web/src/lib/extractorLLM.test.ts  (+1: Uniqlo end to end → M)
+app-web/src/lib/engineInput.ts        (new: one size mapping, and why waist is not in it)
+app-web/src/lib/recommendService.ts   (uses engineSizes)
+app-web/src/lib/extractor.ts, app/check/page.tsx, browser-extension/popup.js  ("table" source)
+```
+
+---
+
 ## 2026-09-28 · Session 75b — The extension exists, and its first real page was confidently wrong
 
 `browser-extension/` is a Manifest V3 extension with no build step. It asks for

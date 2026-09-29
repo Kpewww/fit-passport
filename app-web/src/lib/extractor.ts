@@ -109,11 +109,13 @@ export type ExtractedProduct = {
     measurementKind?: "body" | "garment";
     /**
      * Where that kind came from. "page" = the page said so in as many words;
-     * "brand" = the page said nothing and we carried over the convention from
-     * this brand's own published size guide, which is a sourced fact rather than
-     * a guess — but a weaker claim than the page stating it, so it is labelled.
+     * "table" = the chart gives a RANGE for each size, which is how a body chart
+     * is written (a garment has one measurement) — Session 75c; "brand" = neither
+     * said, and we carried over the convention from this brand's own published
+     * size guide, which is a sourced fact rather than a guess — but a weaker claim,
+     * so it is labelled. Precedence lives in `pageParse.resolveMeasurementKind`.
      */
-    measurementKindFrom?: "page" | "brand";
+    measurementKindFrom?: "page" | "table" | "brand";
     /**
      * True when `sizes` is the ladder `buildSizes()` synthesized from two
      * constants — numbers NO source ever stated. Cleared the moment anything real

@@ -18,7 +18,7 @@
 // Everything here is a PURE function over an HTML string, so it unit-tests without
 // a network. No body measurements are involved; this only ever reads the product.
 
-import { midpointBand } from "./sizing";
+import { alphaIndex, midpointBand, normalizeToAlpha } from "./sizing";
 import type { ExtractedSize, Gender } from "./extractor";
 
 export type ParsedPage = {
@@ -30,6 +30,9 @@ export type ParsedPage = {
   fitNotes?: string;
   /** Sizes parsed from an on-page table, if one was found and understood. */
   sizes?: ExtractedSize[];
+  /** What those sizes measure, and on whose word (see `resolveMeasurementKind`). */
+  measurementKind?: "body" | "garment";
+  measurementKindFrom?: KindSource;
 };
 
 // ---------------------------------------------------------------------------
@@ -179,15 +182,58 @@ function looksLikeSizeLabel(cell: string): boolean {
   return SIZE_LABEL_RE.test(c);
 }
 
-/** First number in a cell; ranges ("96-100", "96–100") collapse to their midpoint. */
-function parseNumber(cell: string): number | null {
-  const nums = cell.replace(/,/g, "").match(/\d+(?:\.\d+)?/g);
-  if (!nums || nums.length === 0) return null;
-  const vals = nums.map(Number).filter((n) => Number.isFinite(n));
-  if (vals.length === 0) return null;
-  if (vals.length >= 2 && /[-–~]/.test(cell)) return (vals[0] + vals[1]) / 2;
-  return vals[0];
+const UNICODE_FRACTIONS: Record<string, string> = {
+  "¼": " 1/4", "½": " 1/2", "¾": " 3/4", "⅛": " 1/8", "⅜": " 3/8", "⅝": " 5/8", "⅞": " 7/8", "⅓": " 1/3", "⅔": " 2/3",
+};
+// Denominators a tape measure uses. "32/34" is a waist/inseam pair, not 0.94.
+const FRACTION_DENOMINATORS = new Set([2, 3, 4, 8, 16]);
+
+/**
+ * The numbers a cell states, reading "31 1/2", "31-1/2" and "31½" as ONE number
+ * each, and whether the first two form a range ("96-100", "96–100", "96 to 100").
+ *
+ * The first version took every run of digits as a number, so uniqlo.com's
+ * "31 1/2-34 3/4" read as a range from 31 to 1 — XS came out as 16, and a column
+ * median that low sent the whole chart through the inch conversion: XS "40.6cm",
+ * L "108", XXL "61". Measured end to end: L at 65% confidence for a 100cm chest,
+ * on a chart that plainly says M.
+ */
+function cellNumbers(cell: string): { values: number[]; range: boolean } {
+  const text = cell.replace(/,/g, "").replace(/[¼½¾⅛⅜⅝⅞⅓⅔]/g, (f) => UNICODE_FRACTIONS[f] ?? f);
+  const tokens = Array.from(text.matchAll(/\d+(?:\.\d+)?/g), (m) => ({
+    v: Number(m[0]),
+    start: m.index ?? 0,
+    end: (m.index ?? 0) + m[0].length,
+  }));
+  const out: Array<{ v: number; start: number; end: number; mixed: boolean }> = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i];
+    const d = tokens[i + 1];
+    const fraction =
+      !!d && text.slice(t.end, d.start) === "/" && Number.isInteger(t.v) && Number.isInteger(d.v) &&
+      FRACTION_DENOMINATORS.has(d.v) && t.v > 0 && t.v < d.v;
+    if (fraction) {
+      const prev = out[out.length - 1];
+      // A whole number followed by a space or a single hyphen, then a fraction, is
+      // one mixed number: "31 1/2", "31-1/2". A range never ends in a bare
+      // fraction smaller than one.
+      const joins = prev && !prev.mixed && Number.isInteger(prev.v) && /^(?:\s+|-)$/.test(text.slice(prev.end, t.start));
+      if (joins) {
+        prev.v += t.v / d.v;
+        prev.end = d.end;
+        prev.mixed = true;
+      } else {
+        out.push({ v: t.v / d.v, start: t.start, end: d.end, mixed: true });
+      }
+      i++; // the denominator is consumed
+      continue;
+    }
+    out.push({ v: t.v, start: t.start, end: t.end, mixed: false });
+  }
+  const range = out.length >= 2 && /[-–~]|\bto\b/i.test(text.slice(out[0].end, out[1].start));
+  return { values: out.map((o) => o.v).filter((n) => Number.isFinite(n)), range };
 }
+
 
 /** Split raw <table> HTML into a grid of trimmed cell strings. */
 function tableGrid(tableHtml: string): string[][] {
@@ -231,9 +277,30 @@ function inchesToCm(sizes: ExtractedSize[]): ExtractedSize[] {
   }));
 }
 
-/** Parse one grid into sizes, trying both orientations; null if it isn't a chart. */
-function sizesFromGrid(grid: string[][]): ExtractedSize[] | null {
+/**
+ * Parse one grid into sizes, trying both orientations; null if it isn't a chart.
+ *
+ * `ranged` says whether the chart gives a RANGE for each size — at least half of
+ * its measurement cells are ranges. That shape is itself evidence of a body
+ * chart: a garment has one chest measurement, while a range says who the size is
+ * for ("fits a chest of 38–40in"). See `resolveMeasurementKind`.
+ */
+function sizesFromGrid(grid: string[][]): { sizes: ExtractedSize[]; ranged: boolean } | null {
   if (grid.length < 2) return null;
+
+  let numericCells = 0;
+  let rangedCells = 0;
+  // First number in a cell; a range collapses to its midpoint, and is counted.
+  const read = (cell: string): number | null => {
+    const { values, range } = cellNumbers(cell);
+    if (values.length === 0) return null;
+    numericCells++;
+    if (range) {
+      rangedCells++;
+      return (values[0] + values[1]) / 2;
+    }
+    return values[0];
+  };
 
   // Orientation A: sizes are COLUMNS. Header row = [label, S, M, L…]; each later
   // row starts with a measurement name.
@@ -263,7 +330,7 @@ function sizesFromGrid(grid: string[][]): ExtractedSize[] | null {
       for (let c = 1; c < row.length; c++) {
         const f = fields[c];
         if (!f) continue;
-        const n = parseNumber(row[c]);
+        const n = read(row[c]);
         if (n != null) {
           (size as Record<string, unknown>)[f] = n;
           any = true;
@@ -283,7 +350,7 @@ function sizesFromGrid(grid: string[][]): ExtractedSize[] | null {
       const f = fieldFor(row[0] ?? "");
       if (!f) continue;
       for (const { idx, size } of cols) {
-        const n = parseNumber(row[idx] ?? "");
+        const n = read(row[idx] ?? "");
         if (n != null) (size as Record<string, unknown>)[f] = n;
       }
     }
@@ -295,7 +362,32 @@ function sizesFromGrid(grid: string[][]): ExtractedSize[] | null {
   }
 
   if (sizes.length < 2) return null; // one row is not a chart
-  return inchesToCm(sizes);
+  return { sizes: inchesToCm(sizes), ranged: numericCells > 0 && rangedCells / numericCells >= 0.5 };
+}
+
+/**
+ * A bigger size is never smaller. If the chest (or, lacking one, the waist) falls
+ * as the sizes rise, the chart was misread — the Uniqlo misread produced XS 40.6 ·
+ * S 47 · M 50.8 · L 108 · XL 115.6 · XXL 61 · 3XL 64.8 and nothing noticed — so
+ * the table is refused rather than served. Monotonicity is the sanity check the
+ * size-recommendation literature uses (docs/design/fit-algorithm-research.md §3).
+ *
+ * Sizes are put in ladder order when every label is on the alpha ladder, so a
+ * chart printed largest-first is not mistaken for a falling one; otherwise the
+ * table's own order is used. A centimetre of slack absorbs rounding.
+ */
+function risesWithSize(sizes: ExtractedSize[]): boolean {
+  const rows = sizes
+    .map((s, i) => ({ v: s.chestCm ?? s.waistCm, k: alphaIndex(normalizeToAlpha(s.label)), i }))
+    .filter((r): r is { v: number; k: number | null; i: number } => typeof r.v === "number");
+  if (rows.length < 3) return true;
+  const ordered = rows.every((r) => r.k != null)
+    ? [...rows].sort((a, b) => a.k! - b.k! || a.i - b.i)
+    : rows;
+  for (let j = 1; j < ordered.length; j++) {
+    if (ordered[j].v < ordered[j - 1].v - 1) return false;
+  }
+  return true;
 }
 
 /** Find the best size-chart table on the page, if any. */
@@ -418,24 +510,65 @@ function foldByLabel(sizes: ExtractedSize[], kind: "body" | "garment" | null): E
   });
 }
 
+type Kind = "body" | "garment";
+/** Whose word a chart's body-or-garment reading rests on. */
+export type KindSource = "page" | "table" | "brand";
+
 /**
- * Find the best size-chart table on the page, if any.
+ * What a chart's numbers measure, and on whose word — strongest first:
+ *   1. the page says they are BODY measurements          → body, "page"
+ *   2. the table gives a RANGE for each size             → body, "table"
+ *   3. the page says they are GARMENT measurements       → garment, "page"
+ *   4. the brand's own published guide states its habit  → that, "brand"
+ *   5. nothing says                                       → null (read as garment, labelled unstated)
  *
- * `kind` comes from `detectMeasurementKind` by default; pass it explicitly only
- * when the caller knows better than the page does.
+ * Why the table's shape outranks the page's "garment": a garment has ONE chest
+ * measurement, and a range per size is how a chart says who the size is for.
+ * The page's word is read off the WHOLE page, and on uniqlo.com it was site
+ * chrome — "Compare all product measurements with previous purchases" — beside a
+ * body chart in ranges. Read as garment, the engine added ease on top of body
+ * numbers and answered a size too big. The shape can only ever argue for body; a
+ * one-value-per-size chart is left to the page and the brand, as before.
  */
-export function parseSizeTables(
+export function resolveMeasurementKind(
+  stated: Kind | null,
+  fallback: Kind | null | undefined,
+  ranged: boolean,
+): { kind: Kind | null; from: KindSource | null } {
+  if (stated === "body") return { kind: "body", from: "page" };
+  if (ranged) return { kind: "body", from: "table" };
+  if (stated) return { kind: stated, from: "page" };
+  if (fallback) return { kind: fallback, from: "brand" };
+  return { kind: null, from: null };
+}
+
+/**
+ * Find the best size-chart table on the page, and settle what it measures.
+ *
+ * Prefers the chart that yields the most sizes (usually THE size chart), among
+ * those whose numbers rise with the sizes — a falling ladder was misread and is
+ * refused (`risesWithSize`). `kindFallback` is the brand's published convention,
+ * used only when neither the page nor the table's shape says.
+ */
+export function parseSizeChart(
   html: string,
-  kind: "body" | "garment" | null = detectMeasurementKind(html),
-): ExtractedSize[] | null {
+  kindFallback?: Kind | null,
+): { sizes: ExtractedSize[]; kind: Kind | null; kindFrom: KindSource | null } | null {
   const tables = html.match(/<table[\s\S]*?<\/table>/gi) ?? [];
-  let best: ExtractedSize[] | null = null;
+  let best: { sizes: ExtractedSize[]; ranged: boolean } | null = null;
   for (const t of tables) {
-    const sizes = sizesFromGrid(tableGrid(t));
-    // Prefer the chart that yields the most sizes (usually THE size chart).
-    if (sizes && (!best || sizes.length > best.length)) best = sizes;
+    const chart = sizesFromGrid(tableGrid(t));
+    if (!chart || !risesWithSize(chart.sizes)) continue;
+    if (!best || chart.sizes.length > best.sizes.length) best = chart;
   }
-  return best ? foldByLabel(best, kind) : null;
+  if (!best) return null;
+  const { kind, from } = resolveMeasurementKind(detectMeasurementKind(html), kindFallback, best.ranged);
+  return { sizes: foldByLabel(best.sizes, kind), kind, kindFrom: from };
+}
+
+/** The sizes of the best chart on the page, or null. See `parseSizeChart`. */
+export function parseSizeTables(html: string, kindFallback?: Kind | null): ExtractedSize[] | null {
+  return parseSizeChart(html, kindFallback)?.sizes ?? null;
 }
 
 // ---------------------------------------------------------------------------
@@ -619,8 +752,14 @@ export function parsePage(html: string, kindFallback?: "body" | "garment"): Pars
     gender: inferGender(`${ld.productName ?? ""} ${og.productName ?? ""} ${text}`),
   };
 
-  const sizes = parseSizeTables(html, detectMeasurementKind(html) ?? kindFallback ?? null);
-  if (sizes && sizes.length >= 2) merged.sizes = sizes;
+  const chart = parseSizeChart(html, kindFallback);
+  if (chart && chart.sizes.length >= 2) {
+    merged.sizes = chart.sizes;
+    if (chart.kind) {
+      merged.measurementKind = chart.kind;
+      merged.measurementKindFrom = chart.kindFrom ?? undefined;
+    }
+  }
 
   // Drop empty keys so callers can `??`-merge cleanly.
   (Object.keys(merged) as (keyof ParsedPage)[]).forEach((k) => merged[k] === undefined && delete merged[k]);

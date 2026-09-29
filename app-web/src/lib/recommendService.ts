@@ -6,6 +6,7 @@ import { prisma } from "./db";
 import { recommend, type EngineInput, type EngineOutput, type OutcomeInput } from "./fitEngine";
 import type { FitPreference } from "./sizing";
 import { regionBodyPrior } from "./populationPrior";
+import { engineSizes } from "./engineInput";
 
 type ProductWithSizes = {
   id: string;
@@ -73,15 +74,8 @@ export async function computeRecommendation(
       chestIsEstimated: !hasOwnChest && prior != null,
     },
     product: { brand: product.brand, category: product.category },
-    sizes: product.sizeOptions.map((s) => ({
-      label: s.label,
-      region: s.region,
-      chestCm: s.chestCm,
-      shoulderCm: s.shoulderCm,
-      sleeveCm: s.sleeveCm,
-      bodyChestMinCm: s.bodyChestMinCm,
-      bodyChestMaxCm: s.bodyChestMaxCm,
-    })),
+    // One mapping for every caller — see engineInput.ts for why waist is not in it.
+    sizes: engineSizes(product.sizeOptions),
     knownGood: knownGood.map((k) => ({
       brand: k.brand,
       category: k.category,
