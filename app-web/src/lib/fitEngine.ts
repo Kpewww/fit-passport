@@ -862,6 +862,7 @@ export function recommend(
   const ladder = new Map(sizes.map((s, i) => [s.label, i] as const));
   const disagreement = signalDisagreement(ranked, ladder);
   const conflictParts: string[] = [];
+  if (easeUsed.contradiction) conflictParts.push(easeUsed.contradiction);
   // A pick that the wearer's own tape-measure error could flip must say so: the
   // confidence already fell (stabilityFactor), and a lower number with no reason
   // would break the explainability invariant.

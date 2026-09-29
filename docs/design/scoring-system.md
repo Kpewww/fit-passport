@@ -20,13 +20,13 @@ provenances:
 |---|---|---|
 | **measured** | Computed from data we hold, with the n stated | **1** |
 | **cited** | A published source states this value — not just the idea | **2** |
-| **assumed** | A judgement, usually hand-tuned against a handful of cases | **86** |
+| **assumed** | A judgement, usually hand-tuned against a handful of cases | **88** |
 
 `scoringConstants.test.ts` fails if a value has no provenance, if a provenance
 names no value, if a measured entry does not state its n, or if an assumed value
 is missing from the calibration table below.
 
-**Read the counts plainly.** 86 of 89 numbers are judgements. The
+**Read the counts plainly.** 88 of 91 numbers are judgements. The
 literature the engine cites supports the SHAPE of the model — fit as a bipolar
 ordinal (too small … too big), fit as a multi-measurement signal — and not a
 single one of its values. That is normal for a scorer before it has outcome data,
@@ -155,6 +155,41 @@ change moves no score by more than a small bound), monotonicity (a bigger chest 
 picks a smaller size, all else equal), order and duplicate-row invariance, and that a
 boundary pick is always less confident than a centred one.
 
+## 8. Quantifying a fit feeling (Session 78d)
+
+A wearer's report on a garment — too tight … just right … too loose, a signed −10…+10
+— is turned into centimetres in exactly one place (`personalEase.ts`), against the
+garment's own measured chest:
+
+```
+observed ease  = garment chest − wearer's chest − the garment type's own allowance
+reported shift = −report / 10 size steps          (full "too tight" = +1 step wanted)
+preferred ease ≈ observed + shift × 8.3 cm         (the measured step, §5)
+```
+
+**Each report is an interval, not a point.** A point cannot be wrong, so it cannot be
+caught contradicting anything. The interval's width is the resolution of the report
+itself: the descriptive options sit half a step apart, so choosing one says "nearer
+this than its neighbours" — ± a quarter step (≈ 2.1 cm). The two extremes are
+open-ended: "too tight" means *at least* this much more, with no upper bound.
+
+The closet's reports are then combined as the **largest set that can all be true at
+once** (the point covered by the most intervals; ties toward the median, so input
+order never matters):
+
+- every report agrees → learn from them, as before;
+- a strict majority agrees → learn from the majority and **say how many were left
+  out** ("1 garment left out because its report contradicts the others");
+- no strict majority → **learn nothing**, keep the stated preference, and say so in
+  the explanation ("your fit reports … contradict each other").
+
+Example that used to be averaged into a confident number: "too tight" with 14 cm of
+room (wants ≥ ~20) and "just right" with 16 cm (wants ~16). They cannot both be true
+of one person; the old model reported ~19 cm.
+
+This is also the first line of defence against deliberate nonsense (§9): a few junk
+reports among honest ones fall outside the majority and are excluded by name.
+
 ## Calibration table
 
 Generated from `scoringConstants.ts` (`PROVENANCE`). Every **assumed** row is a
@@ -246,6 +281,8 @@ number we have not yet earned; the test fails if one is missing here.
 | `PERSONAL_EASE.minEvidence` | 2 | assumed | two garments before learning anything |
 | `PERSONAL_EASE.fullEvidence` | 4 | assumed | four for full weight |
 | `PERSONAL_EASE.noticeableCm` | 0.2 | assumed | a fifth of a centimetre is not a wearable difference |
+| `PERSONAL_EASE.feelingResolution` | 0.25 | assumed | derived from the scale's design — options half a step apart, so a choice means within a quarter step — not from data |
+| `PERSONAL_EASE.majority` | 0.5 | assumed | learn only from a strict majority of mutually consistent reports |
 | `BRAND_BIAS.minEvidence` | 2 | assumed | two same-direction reports before a brand is said to run big or small |
 | `DIRECTION.directional` | 3 | assumed | between 'just right' (0) and 'a bit snug/roomy' (±5) |
 | `DIRECTION.min` | -10 | assumed | the scale's end; its MEANING (one ladder step) is cited — see DIRECTION.max |

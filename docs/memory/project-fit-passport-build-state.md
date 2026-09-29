@@ -1109,3 +1109,14 @@ pick always says so.
 
 **After changing any constant:** `node scripts/scoring-table.mjs` in app-web/ —
 `scoringConstants.test.ts` now also fails on a stale VALUE in the spec's table.
+
+**SESSION 78d (2026-09-29).** Size step recalibrated **4.5 → 8.3 cm** (median of 19
+steps across the curated charts; a test recomputes it). **Fit reports are intervals**
+(± a quarter step; extremes open-ended); the closet is read as the largest set of
+reports that can all be true — majority learned with exclusions named, no majority →
+nothing learned and the explanation says so.
+
+**NEW INVARIANT:**
+**(76)** **A fit report is an interval, and contradictory reports are never averaged.**
+Learn only from a strict majority of mutually consistent reports; name what was left
+out; with no majority, keep the stated preference and say why.

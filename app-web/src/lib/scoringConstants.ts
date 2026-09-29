@@ -205,6 +205,14 @@ export const PERSONAL_EASE = {
   fullEvidence: 4,
   /** Below this, a learned target is not a difference anyone can wear. */
   noticeableCm: 0.2,
+  /**
+   * How precisely one fit report pins the wearer's preferred ease, as a fraction of
+   * a size step either way. The descriptive options sit half a step apart, so
+   * choosing one says "nearer this than its neighbours": ± a quarter step.
+   */
+  feelingResolution: 0.25,
+  /** Learn only when MORE than this share of the reports agree with each other. */
+  majority: 0.5,
 } as const;
 
 /**
@@ -328,6 +336,8 @@ export const PROVENANCE: Record<string, ConstantSource> = {
   "PERSONAL_EASE.minEvidence": A("two garments before learning anything"),
   "PERSONAL_EASE.fullEvidence": A("four for full weight"),
   "PERSONAL_EASE.noticeableCm": A("a fifth of a centimetre is not a wearable difference"),
+  "PERSONAL_EASE.feelingResolution": A("derived from the scale's design — options half a step apart, so a choice means within a quarter step — not from data"),
+  "PERSONAL_EASE.majority": A("learn only from a strict majority of mutually consistent reports"),
   "BRAND_BIAS.minEvidence": A("two same-direction reports before a brand is said to run big or small"),
   "DIRECTION.directional": A("between 'just right' (0) and 'a bit snug/roomy' (±5)"),
 

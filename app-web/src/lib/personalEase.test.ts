@@ -1,3 +1,4 @@
+import { recommend } from "./fitEngine";
 import { describe, it, expect } from "vitest";
 import {
   FULL_EVIDENCE,
@@ -160,5 +161,65 @@ describe("resolveEase — what the engine actually scores with", () => {
     expect(r.reason).toBeTruthy();
     expect(r.reason).toMatch(/more room/);
     expect(r.reason).toMatch(/closet/);
+  });
+});
+
+// Each report is an interval of preferred ease, so reports that cannot all be true
+// of one person are caught instead of averaged. Body chest 100 cm throughout;
+// "observed" = garment chest − 100 for a tee.
+describe("fit reports as intervals — contradictions are caught, not averaged", () => {
+  const tee = (garmentChestCm: number, fitDirection: number) => ({
+    category: "tshirt", garmentChestCm, garmentMeasuredFrom: "page", fitDirection,
+  });
+
+  it("refuses to learn from two reports that cannot both be true", () => {
+    // "Too tight" with 14 cm of room means they want at least ~20; "just right"
+    // with 16 cm means they want ~16. Averaged, that was a confident ~19.
+    const learned = personalEaseTarget([tee(114, -10), tee(116, 0)], 100);
+    expect(learned.contradiction).toBe(true);
+    expect(learned.targetCm).toBeNull();
+    const r = resolveEase("regular", learned);
+    expect(r.easeCm).toBe(10); // the stated preference, unchanged
+    expect(r.contradiction).toMatch(/contradict each other/);
+  });
+
+  it("leaves out the one report that contradicts a consistent majority, and says so", () => {
+    const learned = personalEaseTarget(
+      [tee(112, 0), tee(113, 0), tee(111, 0), tee(102, 10)], // the last: "too loose" on 2 cm of room
+      100,
+    );
+    expect(learned.contradiction).toBe(false);
+    expect(learned.excluded).toBe(1);
+    expect(learned.evidence).toBe(3);
+    expect(learned.targetCm!).toBeGreaterThan(10.5); // ~12, the three agreeing tees
+    expect(resolveEase("regular", learned).reason).toMatch(/1 garment left out/);
+  });
+
+  it("treats the extremes as open-ended, so 'too tight' agrees with a milder report above it", () => {
+    // "Too tight" at +8 says "at least a step more"; "a bit snug" at +12 says
+    // "a little more than 12". Both hold for ~16: no contradiction.
+    const learned = personalEaseTarget([tee(108, -10), tee(112, -5)], 100);
+    expect(learned.contradiction).toBe(false);
+    expect(learned.excluded).toBe(0);
+  });
+
+  it("chooses the same consistent set whatever order the closet lists them in", () => {
+    const a = [tee(112, 0), tee(113, 0), tee(111, 0), tee(102, 10)];
+    const b = [a[3], a[1], a[0], a[2]];
+    expect(personalEaseTarget(b, 100)).toEqual(personalEaseTarget(a, 100));
+  });
+
+  it("puts the contradiction in the recommendation's explanation", () => {
+    const out = recommend({
+      profile: { chestCm: 100, preferredFit: "regular" },
+      product: { brand: "Nike", category: "tshirt" },
+      sizes: [{ label: "M", chestCm: 110 }, { label: "L", chestCm: 118 }],
+      knownGood: [
+        { brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 2, fitDirection: -10, garmentChestCm: 114, garmentMeasuredFrom: "page" },
+        { brand: "Gap", category: "tshirt", size: "M", fitRating: 5, fitDirection: 0, garmentChestCm: 116, garmentMeasuredFrom: "page" },
+      ],
+      outcomes: [],
+    } as any);
+    expect(out.conflictNote).toMatch(/contradict each other/);
   });
 });

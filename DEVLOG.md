@@ -31,6 +31,35 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 78d2 — A fit report is an interval, so contradictions are caught
+
+Phase D, step 2. Each closet report used to become one number — `observed ease +
+feeling × one size step` — and the numbers were medianed. A point cannot be wrong, so
+two reports that cannot both be true of one person were simply averaged: "too tight"
+with 14 cm of room (wants at least ~20) and "just right" with 16 cm (wants ~16) came out
+as a confident ~19.
+
+Now each report is an **interval** of preferred ease: ± a quarter size step (the
+descriptive options sit half a step apart, so a choice means "nearer this than its
+neighbours"), and open-ended at the extremes ("too tight" = at least this much more).
+The closet is read as the **largest set of reports that can all be true at once**:
+- all agree → learn, as before;
+- a strict majority agrees → learn from it and **say how many were left out**;
+- no majority → **learn nothing**, keep the stated preference, and the confidence
+  panel says the reports contradict each other and re-rating one or two would settle it.
+
+Order-independent (ties go toward the median). Consistent closets behave exactly as
+before — every existing ease test passed untouched. Four of the five new tests fail on
+the point model; the fifth (order independence) is a guard.
+
+This is also the first defence against deliberate nonsense: a few junk reports among
+honest ones fall outside the majority and are excluded by name.
+
+New constants, both assumed: `feelingResolution` 0.25 (derived from the scale's
+design, not from data) and `majority` 0.5. 572 tests + 1 skip, exit 0.
+
+---
+
 ## 2026-09-29 · Session 78d1 — A fit feeling is read as the room it actually describes
 
 Phase D, step 1. `PERSONAL_EASE.ladderStepChestCm` — the ONE conversion from a fit

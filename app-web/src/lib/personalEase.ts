@@ -29,7 +29,7 @@
 //   • EXPLAINABILITY. Every applied target carries a plain-language reason.
 
 import { easeAdjustForCategory, type FitPreference, easeChestCm } from "./sizing";
-import { directionToLadderShift } from "./fitDirection";
+import { DIRECTION_MAX, clampDirection, directionToLadderShift } from "./fitDirection";
 import { PERSONAL_EASE } from "./scoringConstants";
 
 /**
@@ -68,6 +68,10 @@ export type PersonalEase = {
   /** 0..1 — how far to blend the learned target over the stated preference. */
   weight: number;
   reason: string | null;
+  /** Reports left out because they contradict the consistent majority. */
+  excluded: number;
+  /** True when no strict majority of reports agree — nothing is learned. */
+  contradiction: boolean;
 };
 
 const TRUSTED_PROVENANCE = new Set(["page", "fixture"]);
@@ -92,11 +96,23 @@ export function personalEaseTarget(
   bodyChestCm: number | null | undefined,
 ): PersonalEase {
   const none: PersonalEase = {
-    targetCm: null, evidence: 0, spreadCm: null, weight: 0, reason: null,
+    targetCm: null, evidence: 0, spreadCm: null, weight: 0, reason: null, excluded: 0, contradiction: false,
   };
   if (bodyChestCm == null) return none;
 
-  const implied: number[] = [];
+  // Each report is an INTERVAL of preferred ease, not a point (Session 78d2).
+  //
+  // A point — "their target is observed + shift" — cannot be wrong, so it cannot
+  // be caught contradicting anything: a garment called "too tight" at +14 cm of
+  // room and another called "just right" at +16 cm were simply averaged, though
+  // they cannot both be true of one person. As intervals they visibly do not
+  // overlap. The width is the resolution of the report itself: descriptive options
+  // sit half a size step apart, so a choice pins the preference to within a
+  // quarter step either way; the two extremes are open-ended ("too tight" says
+  // "at least this much more", with no upper bound).
+  const step = LADDER_STEP_CHEST_CM;
+  const r = PERSONAL_EASE.feelingResolution * step;
+  const reports: Array<{ point: number; lo: number; hi: number }> = [];
   for (const o of observations) {
     if (o.garmentChestCm == null) continue;
     if (!TRUSTED_PROVENANCE.has(o.garmentMeasuredFrom ?? "")) continue;
@@ -104,34 +120,66 @@ export function personalEaseTarget(
     // What this garment actually gave them, with the garment TYPE's own
     // allowance removed so a coat and a tee are comparable.
     const observed = o.garmentChestCm - bodyChestCm - easeAdjustForCategory(o.category);
-
-    // …and corrected by their verdict on it. `directionToLadderShift` returns
-    // ladder steps and is already the calibration of record for the scale; this
-    // only converts steps to centimetres.
-    const correction = directionToLadderShift(o.fitDirection) * LADDER_STEP_CHEST_CM;
-    implied.push(observed + correction);
+    // …corrected by their verdict on it. `directionToLadderShift` is the
+    // calibration of record for the scale; this only converts steps to cm.
+    const shift = directionToLadderShift(o.fitDirection);
+    const point = observed + shift * step;
+    const extreme = o.fitDirection != null && Math.abs(clampDirection(o.fitDirection)) >= DIRECTION_MAX;
+    reports.push({
+      point,
+      lo: extreme && shift < 0 ? -Infinity : point - r,
+      hi: extreme && shift > 0 ? Infinity : point + r,
+    });
   }
 
-  if (implied.length < MIN_EVIDENCE) {
-    return { ...none, evidence: implied.length };
+  if (reports.length < MIN_EVIDENCE) {
+    return { ...none, evidence: reports.length };
   }
 
-  const target = median(implied);
-  const spread = median(implied.map((v) => Math.abs(v - target)));
+  // The largest set of reports that can all be true at once: the point covered by
+  // the most intervals (ties broken toward the median of all reports, so the
+  // choice does not depend on input order). Reports outside it are left out and
+  // counted — one mis-entered garment should not steer the rest, and should not
+  // be silently discarded either.
+  const allMedian = median(reports.map((x) => x.point));
+  let best = { count: 0, at: allMedian };
+  const candidates = reports.flatMap((x) => [x.lo, x.hi, x.point]).filter(Number.isFinite);
+  for (const at of candidates) {
+    const count = reports.filter((x) => x.lo <= at && at <= x.hi).length;
+    if (count > best.count || (count === best.count && Math.abs(at - allMedian) < Math.abs(best.at - allMedian))) {
+      best = { count, at };
+    }
+  }
+  const consistent = reports.filter((x) => x.lo <= best.at && best.at <= x.hi);
+  const excluded = reports.length - consistent.length;
+
+  // No strict majority agrees: the reports describe more than one person, or the
+  // measurements behind them are wrong. Learning a number from that would be
+  // inventing one, so nothing is learned and the wearer is told why.
+  if (consistent.length <= reports.length * PERSONAL_EASE.majority || consistent.length < MIN_EVIDENCE) {
+    return { ...none, evidence: reports.length, excluded, contradiction: excluded > 0 };
+  }
+
+  const lo = Math.max(...consistent.map((x) => x.lo));
+  const hi = Math.min(...consistent.map((x) => x.hi));
+  const target = Math.min(hi, Math.max(lo, median(consistent.map((x) => x.point))));
+  const spread = median(consistent.map((x) => Math.abs(x.point - target)));
 
   // Evidence raises the weight; disagreement lowers it. A spread of a whole
   // ladder step means these garments do not describe one preference, and the
   // number should not be trusted as though they did.
-  const byCount = Math.min(1, (implied.length - 1) / (FULL_EVIDENCE - 1));
+  const byCount = Math.min(1, (consistent.length - 1) / (FULL_EVIDENCE - 1));
   const byAgreement = Math.max(0, 1 - spread / LADDER_STEP_CHEST_CM);
   const weight = byCount * byAgreement;
 
   return {
     targetCm: target,
-    evidence: implied.length,
+    evidence: consistent.length,
     spreadCm: spread,
     weight,
     reason: null, // filled in by resolveEase, which knows what it replaced
+    excluded,
+    contradiction: false,
   };
 }
 
@@ -141,6 +189,12 @@ export type ResolvedEase = {
   /** True when the closet moved it off the stated preference. */
   personalised: boolean;
   reason: string | null;
+  /**
+   * Set when the wearer's own reports contradict each other so that nothing could
+   * be learned. The engine puts it in the explanation: a closet that was IGNORED
+   * must say so as plainly as one that was used.
+   */
+  contradiction: string | null;
 };
 
 /**
@@ -153,8 +207,19 @@ export type ResolvedEase = {
  */
 export function resolveEase(pref: FitPreference, learned: PersonalEase): ResolvedEase {
   const stated = easeChestCm(pref);
+  if (learned.contradiction) {
+    return {
+      easeCm: stated,
+      personalised: false,
+      reason: null,
+      contradiction:
+        `Your fit reports on ${learned.evidence} measured garments contradict each other — ` +
+        `some say you want more room than others give you — so we used your stated ` +
+        `${pref} fit instead of learning from them. Re-rating one or two would settle it.`,
+    };
+  }
   if (learned.targetCm == null || learned.weight <= 0) {
-    return { easeCm: stated, personalised: false, reason: null };
+    return { easeCm: stated, personalised: false, reason: null, contradiction: null };
   }
 
   const blended = stated + (learned.targetCm - stated) * learned.weight;
@@ -167,7 +232,7 @@ export function resolveEase(pref: FitPreference, learned: PersonalEase): Resolve
   // claiming to have personalised something is a claim we should only make when
   // it changed the arithmetic.
   if (Math.abs(capped - stated) < PERSONAL_EASE.noticeableCm) {
-    return { easeCm: stated, personalised: false, reason: null };
+    return { easeCm: stated, personalised: false, reason: null, contradiction: null };
   }
 
   const dir = capped > stated ? "more room" : "less room";
@@ -177,6 +242,11 @@ export function resolveEase(pref: FitPreference, learned: PersonalEase): Resolve
     reason:
       `Adjusted to the ${dir} you actually wear — from ${learned.evidence} ` +
       `garment${learned.evidence === 1 ? "" : "s"} in your closet whose own ` +
-      `measurements we have (${capped.toFixed(1)}cm target vs ${stated}cm for ${pref}).`,
+      `measurements we have (${capped.toFixed(1)}cm target vs ${stated}cm for ${pref})` +
+      (learned.excluded > 0
+        ? `; ${learned.excluded} garment${learned.excluded === 1 ? "" : "s"} left out because ` +
+          `${learned.excluded === 1 ? "its report contradicts" : "their reports contradict"} the others.`
+        : "."),
+    contradiction: null,
   };
 }
