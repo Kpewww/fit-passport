@@ -1,0 +1,20 @@
+{
+  "_how": "Copy to <case id>.json. Two people, independently, from the retailer's page in their own browser — never from the capture or our output. Numbers exactly as printed, in the chart's own units; do not convert. See eval/README.md.",
+  "id": "patagonia-better-sweater-mens",
+  "verifiedBy": ["Name One", "Name Two"],
+  "readOn": "2026-10-01",
+  "outcome": "answer",
+  "refusal": null,
+  "chart": {
+    "where": "page-table",
+    "kind": "body",
+    "kindEvidence": "the words on the page that decided body or garment, verbatim",
+    "units": "in",
+    "sizes": [
+      { "label": "S", "chestMin": 38, "chestMax": 39 },
+      { "label": "M", "chestMin": 40, "chestMax": 41 },
+      { "label": "L", "chest": 42 },
+      { "label": "XL", "chestFlat": 23 }
+    ]
+  }
+}

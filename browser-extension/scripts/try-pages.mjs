@@ -43,6 +43,10 @@ const outFile = value("--out", null);
 const saveDir = value("--save-captures", null);
 // Screenshot /check?product=<id> — the extension's "Open full explanation" — per page.
 const shotsDir = value("--shots", null);
+// Evaluation captures: name each saved capture after its case (comma list, in URL
+// order), and skip the API when only capturing (no dev server needed).
+const ids = (value("--ids", "") || "").split(",").filter(Boolean);
+const captureOnly = flag("--capture-only");
 const urls = args.filter((a, i) => /^https?:\/\//.test(a) && args[i - 1] !== "--api");
 if (!urls.length) {
   console.error("usage: node try-pages.mjs [--api URL] [--click] [--out file] [--save-captures dir] <url>...");
@@ -58,21 +62,26 @@ const context = await chromium.launchPersistentContext(profile, {
 
 const results = [];
 try {
-  // A Fit Passport session for this browser, and a fixed test profile on it.
-  const site = await context.newPage();
-  await site.goto(api + "/", { waitUntil: "domcontentloaded" });
-  const profileSet = await site.evaluate(async () => {
-    const r = await fetch("/api/profile", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ sex: "male", chestCm: 100, waistCm: 86, shoulderCm: 46, preferredFit: "regular", region: "US" }),
+  // A Fit Passport session for this browser, and a fixed test profile on it —
+  // not needed when only capturing.
+  let site = null;
+  let ext = null;
+  let profileSet = null;
+  if (!captureOnly) {
+    site = await context.newPage();
+    await site.goto(api + "/", { waitUntil: "domcontentloaded" });
+    profileSet = await site.evaluate(async () => {
+      const r = await fetch("/api/profile", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ sex: "male", chestCm: 100, waistCm: 86, shoulderCm: 46, preferredFit: "regular", region: "US" }),
+      });
+      return r.status;
     });
-    return r.status;
-  });
-
-  // The extension's own page: requests from here are the popup's requests.
-  const ext = await context.newPage();
-  await ext.goto(`chrome-extension://${EXT_ID}/popup.html`);
+    // The extension's own page: requests from here are the popup's requests.
+    ext = await context.newPage();
+    await ext.goto(`chrome-extension://${EXT_ID}/popup.html`);
+  }
 
   for (const url of urls) {
     const row = { url, capturedAt: new Date().toISOString() };
@@ -122,10 +131,11 @@ try {
         row.capture = { ok: true, url: cap.url, found: cap.found, stats: cap.stats };
         if (saveDir) {
           mkdirSync(saveDir, { recursive: true });
-          const name = new URL(url).hostname.replace(/^www\./, "").split(".")[0] + "-" + results.length + ".capture.json";
+          const name = (ids[results.length] || new URL(url).hostname.replace(/^www\./, "").split(".")[0] + "-" + results.length) + ".capture.json";
           writeFileSync(join(saveDir, name), JSON.stringify({ url: cap.url, capturedAt: row.capturedAt, extensionVersion: version, loggedIn: false, html: cap.html, stats: cap.stats }, null, 2));
           row.savedAs = name;
         }
+        if (captureOnly) throw new Error("__capture_only__");
         const answer = await ext.evaluate(
           async ({ api, url, html, version }) => {
             const r = await fetch(api + "/api/check", {
@@ -167,7 +177,7 @@ try {
         }
       }
     } catch (e) {
-      row.failure = String(e?.message || e).slice(0, 200);
+      if (String(e?.message) !== "__capture_only__") row.failure = String(e?.message || e).slice(0, 200);
     } finally {
       await page.close();
     }

@@ -945,3 +945,30 @@ only for a size with a garment `chestCm`; body-range sizes never qualify, so eve
 body-chart answer sits near the floor (Uniqlo 30%, Nike 30%, Patagonia near-tie
 21%) and `/check`'s "+35 points" offer cannot pay out on them. Touches ㊱/㊴'s
 promise — decide together.
+
+**SESSION 75d UPDATE (2026-09-28).** 507 tests + 1 honest skip. **The evaluation
+harness exists:** `app-web/eval/` — README (the method), `personas.json`, `cases/`
+(11 real pages), `truth/_template.json`, `lib.ts` (systems A/B/S5 + scoring, all on
+the product's own code), `run.eval.ts` → `results/<date>.{json,md}`. `npm run eval`
+(offline B + S5); `EVAL_LIVE=1 npm run eval` adds A. `vitest.eval.config.ts` keeps it
+out of `npm test`; `src/lib/evalCases.test.ts` replays COMMITTED captures with truth
+(none yet — skips, and says why). Captures live in git-ignored
+`app-web/eval/local/captures/` until the founder decides (#2).
+
+**NEW INVARIANT:**
+**(66)** **Fit Passport never defines its own ground truth.** Truth = two people
+from the retailer's page; acceptable sizes = the retailer's rule (body range holds
+the chest; both neighbours in a gap), computed by the harness; garment charts
+unscored until an external ease reference; an answer from a synthesized ladder is
+scored WRONG.
+
+**First run (truth pending):** A read a page chart on 0/11, S5 on 3/9 captured;
+A answered Everlane from the invented ladder (decision #3 now counted). Found:
+charts not written as `<table>` (Gap divs, Arc'teryx framework JSON) are invisible
+to capture AND parser, and the reduced capture then leaves the LLM path nothing;
+category is taken only from URL + JSON-LD, so Gap's "Classic T-Shirt" and Uniqlo
+(A) were refused not-apparel with a false message. **Automated browsers are now
+refused even headed** (H&M, REI "Access Denied"; Patagonia "Hang Tight"
+intermittently) — Session 72b's "headed gets through" no longer holds reliably;
+evaluation captures of such sites are made by hand via the popup's **Save this
+capture**.

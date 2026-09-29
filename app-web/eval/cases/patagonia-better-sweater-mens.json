@@ -1,0 +1,8 @@
+{
+  "id": "patagonia-better-sweater-mens",
+  "url": "https://www.patagonia.com/product/mens-better-sweater-fleece-jacket/25528.html",
+  "retailer": "Patagonia",
+  "category": "jacket",
+  "gender": "mens",
+  "capture": "Open \"Size Guide\" on the product page (modal). Server-side fetch is blocked (bare 404)."
+}

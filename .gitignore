@@ -31,6 +31,10 @@ app-web/prisma/schema.postgres.prisma
 *.log
 /tmp/*.log
 
+# Evaluation captures of retailer pages stay local until the founder decides
+# they may be committed (eval/README.md, "Captures").
+app-web/eval/local/
+
 # Vercel CLI link metadata (project/org ids)
 app-web/.vercel
 .vercel

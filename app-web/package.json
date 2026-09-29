@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "test": "vitest run",
+    "eval": "vitest run --config vitest.eval.config.ts",
     "typecheck": "tsc --noEmit",
     "db:push": "prisma db push --skip-generate && prisma generate",
     "docs:pdf": "node scripts/md-to-pdf.mjs --all",

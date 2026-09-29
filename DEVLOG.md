@@ -31,6 +31,90 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-28 · Session 75d — The evaluation exists, and waits on two people for ground truth
+
+`app-web/eval/` runs every case through three systems that share one engine,
+one refusal policy and one input mapping:
+- **A** — the server URL path, as production runs it.
+- **B** — the curated brand chart alone.
+- **S5** — the extension's capture.
+
+Any difference between them is what each one could read, which is the thing being
+measured. `eval/README.md` is the method:
+- **Ground truth is typed by two people from the retailer's own page, never
+  produced by our parser.**
+- Fixed personas with an empty closet, so the answer follows from the chart alone.
+- The right answer for a body chart is the retailer's own rule (the range holding
+  the chest; both neighbours in a gap). Garment charts are not scored until an
+  external ease reference is chosen, because our own ease constants would be the
+  engine grading itself.
+- Eight metrics, with a freeze rule against tuning to the benchmark.
+
+`npm run eval` runs B and S5 offline. `EVAL_LIVE=1` adds A, contacting each
+retailer once. `src/lib/evalCases.test.ts` replays committed captures that have
+truth inside `npm test`. There are none yet, and it says so instead of passing
+silently.
+
+### First run — observations; accuracy is pending ground truth
+
+11 cases across Patagonia (men's, women's), Uniqlo, Nike, H&M, REI, Everlane, Gap
+and Arc'teryx, plus two refusal cases by design: a shoe, and a help page.
+
+| | A — server | B — curated chart | S5 — extension |
+|---|---|---|---|
+| read a chart off the product page | **0 of 11** | — | **3 of 9 captured** (Patagonia ×2, Uniqlo) |
+| answered | 5 (3 curated chart, Nike, **1 from the invented ladder**) | 3 | 4 |
+| refusal cases (shoe, help page) | both right | — | both right |
+
+**Automated browsers are now refused even with a window.** H&M and REI answered
+"Access Denied" to the Playwright-driven Chromium, and Patagonia served a "Hang
+Tight" interstitial it had not served an hour before. Session 72b's "headed gets
+through" no longer holds reliably. A person's own Chrome is not refused, so those
+cases are captured by hand. The popup now has **Save this capture (for the
+evaluation)**, and the README gives the steps. Capturing by hand was the plan's
+intended method anyway.
+
+**What the first run found:**
+1. **Size charts that are not `<table>`s.** Gap's size guide is `div`s and `span`s;
+   Arc'teryx's numbers sit in framework JSON behind a fit-illustration GIF. Neither
+   the capture nor the parser reads them. And because the capture sends only the
+   product parts, the server's LLM reader then has no text to fall back on. That is
+   a Phase 2 design item, now backed by evidence.
+2. **Category comes only from the URL and the JSON-LD.** Gap's "Classic T-Shirt"
+   (`/browse/product.do?pid=…`) was refused as **not-apparel** by S5 and A, and
+   Uniqlo by A. It fails closed, but the message ("we couldn't find a clothing
+   item") is false.
+3. **A answered Everlane from the invented `BRAND_TABLE` ladder:** the page was
+   readable, held no chart, and was served at a 50% cap. That is open decision #3,
+   now counted in 1 of 11 cases. **The scorer counts any answer built on the
+   synthesized ladder as a wrong answer, whatever label it lands on.**
+4. Everlane's page has no size-guide control and no measurement text at all.
+5. Patagonia men's: the product page's chart says S for 100 cm (it falls in the S/M
+   gap), the curated guide chart says M. They are different charts, and ground truth
+   decides (under the gap rule, both may be acceptable).
+
+### New invariant
+
+- **(66) Fit Passport never defines its own ground truth.** Evaluation truth is typed
+  from the retailer's page by two people. Acceptable sizes follow the retailer's own
+  rule, computed by the harness. Garment charts are not scored until an external
+  ease reference exists. An answer from a synthesized ladder is scored wrong.
+
+**507 tests + 1 honest skip; typecheck and build clean.**
+
+### Files touched
+```
+app-web/eval/                          (new: README, personas, cases/ ×11, truth/_template,
+                                        lib.ts, run.eval.ts, results/2026-09-29{,-live}.{json,md})
+app-web/vitest.eval.config.ts          (new), package.json ("eval" script)
+app-web/src/lib/evalCases.test.ts      (new: offline replay of committed cases)
+browser-extension/popup.js             (Save this capture)
+browser-extension/scripts/try-pages.mjs (--ids, --capture-only)
+.gitignore                              (app-web/eval/local/ — captures stay local until decided)
+```
+
+---
+
 ## 2026-09-28 · Session 75c — Uniqlo says M now, and a falling ladder is refused
 
 75b's Uniqlo check answered **L at 65%** for a 100 cm chest, on a chart that says

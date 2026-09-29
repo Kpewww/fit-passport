@@ -161,8 +161,37 @@
           (cap.stats.masked ? ", with " + cap.stats.masked + " contact detail" + (cap.stats.masked === 1 ? "" : "s") + " masked" : "") +
           ". Nothing leaves your browser until you press Check.",
       }),
-      el("details", {}, [el("summary", { text: "Show exactly what would be sent" }), what])
+      el("details", {}, [
+        el("summary", { text: "Show exactly what would be sent" }),
+        what,
+        el("div", { className: "actions" }, [
+          button("Save this capture (for the evaluation)", function () { saveCapture(cap); }),
+        ]),
+      ])
     );
+  }
+
+  // For the evaluation (app-web/eval/README.md): save exactly what would be sent,
+  // as a capture file. Sites that block automated browsers (H&M, REI) have to be
+  // captured by a person, in their own browser, and this is how. Nothing is sent.
+  function saveCapture(cap) {
+    var slug = String(cap.found.title || "capture").toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60) || "capture";
+    var payload = {
+      url: cap.url,
+      capturedAt: new Date().toISOString(),
+      extensionVersion: CFG.version,
+      loggedIn: null, // the person capturing confirms a logged-out profile (README)
+      capturedBy: "extension popup",
+      html: cap.html,
+      stats: cap.stats,
+    };
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" }));
+    a.download = slug + ".capture.json";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
 
   // ---- 3. send, and render whatever the API says ----

@@ -648,3 +648,24 @@ sizes rise is refused. See build-state 75c.
    ㊱/㊴'s copy), body-waist field (then waist can reach the engine), stated ranges
    instead of midpoint bands, visible-table preference, LLM-path body/garment.
 3. Try the extension by hand in your own Chrome (README) — the click path.
+
+### Session 75d (2026-09-28) — the evaluation runs; it needs people now
+
+`npm run eval` works on 11 real cases (see `app-web/eval/README.md` and
+`results/2026-09-29*.md`). **What only people can do, and what unblocks the
+Sprint 5 numbers:**
+1. **Two teammates type ground truth** for each case into `app-web/eval/truth/<id>.json`
+   from the retailer's page (template + rules in the README). Independently; both
+   names recorded.
+2. **Hand-capture H&M and REI** (they refuse automated browsers): popup → "Show
+   exactly what would be sent" → Save this capture.
+3. **Founder decisions:** #2 commit reduced captures? (then `evalCases.test.ts`
+   starts replaying real pages in `npm test`); #5 which external ease reference
+   scores garment charts; #3 retire the invented ladder on readable pages (the
+   evaluation now counts it — Everlane).
+
+**Engineering queue after truth lands** (order by the numbers): non-table size
+charts (send the size-guide dialog's text when it holds no table, so the LLM path
+has something); category from the product name, not only the URL; body-chart
+confidence at the floor; body-waist field (then waist can reach the engine); stated
+ranges instead of midpoint bands; visible-table preference.
