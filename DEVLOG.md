@@ -31,6 +31,84 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 76 (R7) — Audit: contrast, focus, motion, weight, wide screens
+
+The redesign's closing step: measure everything R0 measured, and fix what fails.
+
+**Contrast, the one real failure.** `ink-faint` (#8a8d97) measured **2.98:1** on
+porcelain. It is the colour of most small print: sizes, sources, helper text,
+captions. That is below WCAG AA's 4.5:1 for text at that size.
+- It is now **#6b6d77: 4.63:1** on porcelain, 5.15:1 on white. This is the
+  lightest grey that clears AA with a margin, and it still sits clearly below
+  `ink-soft` (1.61:1 between the two).
+- One token in `tailwind.config.ts` changed it everywhere.
+- The hero's two small lines on black were at 40–45% paper (about 3.6:1) and are
+  now 60%.
+- Measured and fine: every other text colour. `ink-soft` is 7.5:1, cobalt 7.2:1,
+  and `ok` / `warn` / `bad` are 5.3–6.8:1, on their tints as well.
+
+**Keyboard focus.** Plain links, buttons, disclosures and radios had no visible
+focus at all. Only the `ui.tsx` components drew a ring.
+- `globals.css` now outlines every `:focus-visible` in cobalt, 2 px with a 2 px
+  offset. Mouse clicks never show it.
+- Verified by tabbing through /check: the focused demo pill shows
+  `outline: 2px solid rgb(36, 56, 214)`.
+
+**Reduced motion.** Only the metal card honoured `prefers-reduced-motion` in
+CSS. The entrance fades, the metal glint and the skeleton shimmer now stop too.
+Spinners stay, because they carry state. Verified: with reduced motion emulated,
+`.animate-rise` computes `animation-name: none`. The motion inventory is also
+smaller than at R0:
+- the homepage's infinite "Scroll" bounce is gone (R5);
+- the `ConvergingStack` scroll-linked section is gone (R5);
+- no new scroll-linked motion was added anywhere.
+
+**Weight: First Load JS against R0, every page within +10%:**
+
+| page | R0 | R7 | | page | R0 | R7 |
+|---|---|---|---|---|---|---|
+| / | 156 | 160 | | /community | 122 | 124 |
+| /check | 108 | 113 | | /outfits | 116 | 122 |
+| /closet | 116 | 126 (+8.6%, the gallery and photos) | | /badges | 109 | 112 |
+| /passport | 126 | 128 | | /refresh | 104 | 109 |
+| /login | 98.6 | 100 | | /account | 101 | 104 |
+
+The icon system ended at about 1–2 kB per page, down from 30 kB at its first
+attempt (R1 → R3).
+
+**Wide screens,** where the founder found the F-round faults:
+- every main page was checked at 1920;
+- a script flags any content block that stops within 40 px of the window edge
+  without being full-bleed on purpose;
+- it found none, and the screenshots agree.
+
+**Mobile:** `mobile-audit` shows no sideways overflow on any page at 390 or 360.
+Sub-44 px tap targets, R0 → R7:
+
+| page | R0 | R7 |
+|---|---|---|
+| / | 6 | 4 |
+| /check | 9 | 7 |
+| /closet | 14 | 4 |
+| /passport | 13 | 10 |
+| /community | 18 | 16 |
+| /outfits | 11 | 9 |
+| /refresh | 5 | 3 |
+
+**Also:** refresh said "1 items". It now pluralises.
+
+518 tests pass. Typecheck and build are clean.
+
+### Files touched
+```
+app-web/tailwind.config.ts      (ink-faint #8a8d97 → #6b6d77)
+app-web/src/app/globals.css     (global :focus-visible; reduced-motion for decorative animations)
+app-web/src/app/page.tsx        (hero small text contrast)
+app-web/src/app/refresh/page.tsx (plural)
+```
+
+---
+
 ## 2026-09-29 · Session 76 (R6) — Every other page speaks the same visual language
 
 Redesign step R6: a mechanical pass over the pages R1–R5 did not rebuild

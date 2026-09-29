@@ -200,7 +200,7 @@ function RefreshInner() {
                   }`}
                 >
                   <span className="font-medium text-ink">Everything</span>
-                  <span className="text-xs text-ink-faint">{totalAll} items</span>
+                  <span className="text-xs text-ink-faint">{totalAll} {totalAll === 1 ? "item" : "items"}</span>
                 </button>
 
                 {collections.filter((c) => c.itemCount > 0).map((c) => {
@@ -227,7 +227,7 @@ function RefreshInner() {
                         </span>
                         {c.name}
                       </span>
-                      <span className="text-xs text-ink-faint">{c.itemCount} items</span>
+                      <span className="text-xs text-ink-faint">{c.itemCount} {c.itemCount === 1 ? "item" : "items"}</span>
                     </button>
                   );
                 })}

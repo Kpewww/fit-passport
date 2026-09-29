@@ -236,7 +236,7 @@ function Hero({
         style={{ y, opacity, ...GPU_LAYER }}
         className="mx-auto max-w-5xl px-4 pb-20 pt-20 text-center sm:px-6 sm:pb-28 sm:pt-28"
       >
-        <p className="eyebrow text-paper/45 animate-rise">One body · one fit identity · any store</p>
+        <p className="eyebrow text-paper/60 animate-rise">One body · one fit identity · any store</p>
         <h1 className="mx-auto mt-7 max-w-4xl font-serif text-6xl font-semibold leading-[0.95] tracking-tight animate-rise sm:text-8xl" style={{ animationDelay: "60ms" }}>
           Know what fits,
           <br />
@@ -275,7 +275,7 @@ function Hero({
             Get my size <ArrowRight size={16} />
           </button>
         </form>
-        <p className="mt-4 text-xs text-paper/40 animate-rise" style={{ animationDelay: "220ms" }}>
+        <p className="mt-4 text-xs text-paper/60 animate-rise" style={{ animationDelay: "220ms" }}>
           No account needed. Try a demo product on the next screen.
         </p>
 

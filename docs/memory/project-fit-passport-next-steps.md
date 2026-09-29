@@ -702,14 +702,16 @@ open. The redesign runs alongside it.
 - **R6** — every other page: arrows → icons (invariant 69, guard test), stock colours →
   semantic tokens, cobalt primary buttons → ink, card shadows off, community on
   `PageHeader` + `Segmented`, section h2s → `text-h3`.
+- **R7** — audit done: ink-faint darkened to pass AA, global focus ring, reduced-motion for
+  decorative animation, every page ≤ R0 +10% First Load JS, no wide-screen strays,
+  no mobile overflow. **The R0–R7 redesign is complete.**
 - **Homepage cut list decided (open decision #4 CLOSED):** remove `ConvergingStack` and
   `NewUserGuide` (its demo button moves into the closing CTA); keep the Parallax statement.
 
 **Next, in order (each its own push with a DEVLOG entry):**
-1. **R7 audit:** First Load JS ≤ R0 baseline +10% (after R1: / 163 vs 156, /login
-   106 vs 98.6 — the headroom is small), a11y focus and contrast, `mobile-audit`
-   with zero overflow, and a motion audit. Enlarge the closet folder-colour dots (20 px
-   tap targets).
+Nothing left in the redesign queue. Possible follow-ups, none started:
+- Move the remaining single-column pages onto `Page` / `PageHeader` when each is next touched.
+- Remaining sub-44px targets are mostly inline text links (community 16, passport 10).
 
 **Known wall, recorded by the founder's decision:** closet photos are stored as
 base64 in the database. That is fine for the prototype. **Move them to object

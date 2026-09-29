@@ -30,7 +30,9 @@ const config: Config = {
         ink: {
           DEFAULT: "#17181c",
           soft: "#4c4e57",
-          faint: "#8a8d97",
+          // #8a8d97 until Session 76 R7: it measured 2.98:1 on porcelain, below WCAG AA
+          // (4.5:1) for the small print it is used for. #6b6d77 is 4.63:1.
+          faint: "#6b6d77",
         },
         line: "#E2E3E7", // hairline rules
         // Semantic states, desaturated to sit on porcelain beside ink and cobalt.

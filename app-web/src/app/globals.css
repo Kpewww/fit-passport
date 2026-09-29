@@ -82,6 +82,32 @@ body {
   }
 }
 
+/* Keyboard focus, everywhere (Session 76, R7). Components that draw their own
+ * ring (ui.tsx Button, Chip, Segmented) set `focus:outline-none`, so this is the
+ * fallback for every plain link, button and disclosure — which had none. Only
+ * :focus-visible, so a mouse click never shows it. */
+a:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[role="button"]:focus-visible,
+[role="radio"]:focus-visible {
+  outline: 2px solid #2438d6;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Reduced motion: the decorative animations stop (entrance fades, the metal
+ * glint, the skeleton shimmer). Spinners stay — they carry state, not
+ * decoration. Scroll-linked motion already reads `useReducedMotion`. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-fade-in-up,
+  .animate-glint,
+  .animate-shimmer {
+    animation: none !important;
+  }
+}
+
 /* Skip rendering work for content that is scrolled off screen.
  *
  * This matters here far more than on an ordinary page. Every badge is a

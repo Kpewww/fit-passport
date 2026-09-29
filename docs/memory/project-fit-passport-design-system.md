@@ -13,7 +13,7 @@ Visual/aesthetic system for the [[project-fit-passport]] web app. The founder ch
 **Direction context:** an early question was whether the hosting choice affects how a site looks. It does not: AWS = hosting layer, Node.js = server runtime, React/Next = framework, and **CSS/typography/motion (GSAP/WebGL) is what makes a site look good** — hosting/runtime are irrelevant to visuals. Our stack IS a Node.js site (Next.js). Design candidates were pulled from awwwards.com/websites/design-agencies (real list fetched via WebFetch, but those sites are WebGL-heavy so their visuals weren't verifiable from text).
 
 **Tokens (current — Session 25 re-grounded the palette to BLACK-LED + COBALT; `tailwind.config.ts`):**
-- **Black is the primary/statement color** (evidence-backed premium cue). `ink` = cool near-black: DEFAULT `#17181c`, `soft #4c4e57`, `faint #8a8d97`.
+- **Black is the primary/statement color** (evidence-backed premium cue). `ink` = cool near-black: DEFAULT `#17181c`, `soft #4c4e57`, `faint #6b6d77` (was `#8a8d97` until Session 76 R7 — 2.98:1 on porcelain failed WCAG AA; #6b6d77 is 4.63:1).
 - `paper` = cool **porcelain** working surface: DEFAULT `#F3F3F1`, `soft #FBFBFA`, `dim #E6E7E9`. Body is `bg-paper`. **Dual-surface rule: black = statement (hero/brand), porcelain = where you read/use the tool.**
 - `brand` token = **cobalt `#2438d6`** (dark `#1a2aa8`, light `#e9ebfb`, tint `#f2f3fc`) — the single RARE accent. Named `brand` on purpose so every `text-brand`/`bg-brand` app-wide is cobalt via one edit. **The old institutional red is fully retired** (was `#A6192E`).
 - `line` = `#E2E3E7` hairline. `letterSpacing.editorial` = 0.24em; `rise` reveal animation (`animate-rise`, ~0.7s ease-out).
@@ -190,3 +190,9 @@ sticky chip bar sits on solid `bg-paper`, never a blur.
   are not shown on a phone when the nav already carries the same action.
 - `GarmentCover` is the one drawing of a garment (photo, or colour + icon), shared by
   the closet and the homepage.
+
+**Accessibility rules (Session 76 R7):**
+- Every text colour must clear 4.5:1 on its ground. Check before adding a new grey.
+- `globals.css` outlines every `:focus-visible` in cobalt. Never add `outline: none`
+  without drawing a ring of your own.
+- Decorative animations stop under `prefers-reduced-motion`; spinners stay.
