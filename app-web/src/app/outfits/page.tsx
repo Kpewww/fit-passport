@@ -4,13 +4,15 @@
 // then post them to the community. Posting drives the top prestige badges.
 
 import { useCallback, useEffect, useState } from "react";
+import { Refresh, Sparkle } from "@/components/Icon";
 import Link from "next/link";
 import { Button, Card, EmptyState, Field, inputClass } from "@/components/ui";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { OutfitMannequin, type OutfitLayer } from "@/components/OutfitMannequin";
 import { OutfitCard, type OutfitView } from "@/components/OutfitCard";
 import { deriveBodyType } from "@/lib/bodyType";
-import { garmentGlyph, garmentLabel } from "@/lib/garments";
+import { garmentLabel } from "@/lib/garments";
+import { GarmentIcon } from "@/components/GarmentIcon";
 
 type Item = { brand: string; category: string; color: string; size: string; onlineAvailable: boolean };
 type Outfit = OutfitView;
@@ -188,7 +190,7 @@ export default function OutfitsPage() {
                           {c.imageDataUrl
                             ? // eslint-disable-next-line @next/next/no-img-element
                               <img src={c.imageDataUrl} alt="" className="h-7 w-7 flex-shrink-0 rounded object-cover" />
-                            : <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded bg-neutral-100">{garmentGlyph(c.category)}</span>}
+                            : <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded bg-neutral-100"><GarmentIcon category={c.category} size={18} className="text-ink-soft" /></span>}
                           <span className="min-w-0">
                             <span className="block truncate font-medium text-ink">{c.displayName || c.brand}</span>
                             <span className="block truncate text-ink-faint">{garmentLabel(c.category)} · {c.size}</span>
@@ -219,7 +221,7 @@ export default function OutfitsPage() {
                 disabled={genning || layers.length === 0}
                 className="rounded-lg border border-neutral-300 px-2.5 py-1 text-[11px] font-medium text-ink-soft hover:border-brand hover:text-brand disabled:opacity-50"
               >
-                {genning ? "Generating…" : photo ? "↻ Regenerate" : "✨ Photoreal preview"}
+                {genning ? "Generating…" : photo ? <><Refresh size={16} /> Regenerate</> : <><Sparkle size={16} /> Photoreal preview</>}
               </button>
               {photo && (
                 <button

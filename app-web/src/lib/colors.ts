@@ -60,3 +60,21 @@ export function colorHex(color: string | null | undefined): string | null {
 export function colorHexOr(color: string | null | undefined, fallback: string): string {
   return colorHex(color) ?? fallback;
 }
+
+/**
+ * Whether a line icon drawn on this colour should be light or dark, by WCAG
+ * relative luminance. A garment swatch can be anything from white to black, and
+ * an ink icon on a black jacket's swatch simply disappears. The 0.4 threshold is
+ * the rounded crossover where white and near-black text have equal contrast.
+ */
+export function iconToneOn(hex: string | null | undefined): "light" | "dark" {
+  if (!hex || !HEX.test(hex)) return "dark";
+  let h = hex.slice(1);
+  if (h.length === 3 || h.length === 4) h = h.slice(0, 3).split("").map((c) => c + c).join("");
+  const channel = (i: number) => {
+    const v = parseInt(h.slice(i, i + 2), 16) / 255;
+    return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance = 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
+  return luminance < 0.4 ? "light" : "dark";
+}

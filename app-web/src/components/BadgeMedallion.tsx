@@ -464,7 +464,12 @@ export function BadgeMedallion({
       {locked && (
         <g>
           <circle cx={size * 0.8} cy={size * 0.8} r={size * 0.15} fill="#fff" stroke={p.rim} strokeWidth="1" />
-          <text x={size * 0.8} y={size * 0.84} textAnchor="middle" fontSize={size * 0.16}>🔒</text>
+          {/* A drawn padlock (it was an emoji, which rendered differently on
+              every platform): body plus shackle, in the rim colour. */}
+          <g fill="none" stroke={p.rim} strokeWidth={size * 0.018} strokeLinecap="round" strokeLinejoin="round">
+            <rect x={size * 0.745} y={size * 0.79} width={size * 0.11} height={size * 0.085} rx={size * 0.015} />
+            <path d={`M${size * 0.77},${size * 0.79} v${-size * 0.03} a${size * 0.03},${size * 0.03} 0 0 1 ${size * 0.06},0 v${size * 0.03}`} />
+          </g>
         </g>
       )}
     </svg>

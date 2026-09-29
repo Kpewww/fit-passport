@@ -46,7 +46,7 @@ export default function HelpPage() {
           <HelpRow q="Posting outfits"
             a="Compose a look from garment types + colors on the Outfits page, preview it on a body-typed mannequin, then post it to the community feed." />
           <HelpRow q="In-store only pieces"
-            a="If a piece isn't sold online, tick 'in-store only' — the post shows a 🏬 tag so others know it's a local/thrift/tailor find." />
+            a="If a piece isn't sold online, tick 'in-store only' — the post shows an In-store tag so others know it's a local/thrift/tailor find." />
           <HelpRow q="Likes"
             a="Anyone can like an outfit once. Likes drive the top prestige badges." />
         </Section>

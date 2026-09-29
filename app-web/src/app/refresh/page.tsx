@@ -18,10 +18,11 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, EmptyState, LinkButton } from "@/components/ui";
-import { garmentGlyph, garmentLabel } from "@/lib/garments";
+import { garmentLabel } from "@/lib/garments";
+import { GarmentIcon } from "@/components/GarmentIcon";
 import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionInput";
 import { DIRECTION_DEFAULT, DIRECTION_OPTIONS, nearestOption } from "@/lib/fitDirection";
-import { colorHex } from "@/lib/colors";
+import { colorHex, iconToneOn } from "@/lib/colors";
 
 type Item = {
   id: string;
@@ -381,14 +382,13 @@ function RefreshInner() {
 // image / web lookup can slot in here later without changing the card layout.
 function GarmentThumb({ item }: { item: Item }) {
   const hex = colorHex(item.color);
-  const glyph = garmentGlyph(item.category);
   return (
     <div
-      className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl border border-neutral-200 text-2xl"
+      className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl border border-line ${iconToneOn(hex) === "light" ? "text-white/90" : "text-ink-soft"}`}
       style={{ backgroundColor: hex ?? "#f5f5f5" }}
       title={item.color ?? undefined}
     >
-      {glyph}
+      <GarmentIcon category={item.category} size={28} />
     </div>
   );
 }

@@ -4,6 +4,7 @@
 // locked/coming-soon), and lets you pin up to 3 earned ones to your passport.
 
 import { useEffect, useState } from "react";
+import { Pin } from "@/components/Icon";
 import Link from "next/link";
 import { Card } from "@/components/ui";
 import { BadgeSeal } from "@/components/Badges";
@@ -153,7 +154,7 @@ function BadgeCard({
                   : "cursor-not-allowed border-line text-ink-faint"
             }`}
           >
-            {pinned ? "📌 Pinned — click to unpin" : canPin ? "Pin to passport" : "3 pinned already"}
+            {pinned ? <><Pin size={14} weight="fill" className="mr-1 inline -mt-0.5" />Pinned — click to unpin</> : canPin ? "Pin to passport" : "3 pinned already"}
           </button>
         )}
       </div>

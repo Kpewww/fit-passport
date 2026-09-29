@@ -669,3 +669,44 @@ charts (send the size-guide dialog's text when it holds no table, so the LLM pat
 has something); category from the product name, not only the URL; body-chart
 confidence at the floor; body-waist field (then waist can reach the engine); stated
 ranges instead of midpoint bands; visible-table preference.
+
+## UPDATE — Session 76 (2026-09-28). The redesign ("Editorial Atelier"), R0–R7
+
+The founder asked for a markedly more premium site without losing function; see
+[[project-fit-passport-design-system]]. Sprint 5's people-work above is still
+open. The redesign runs alongside it.
+
+**Done:**
+- **R0** — references, and baselines: First Load JS, `mobile-audit`, screenshots.
+- **R1** — generated Phosphor Light icons, no emoji (invariant 67), one icon set
+  (68), `ui.tsx` primitives, type scale, semantic colours.
+
+**Next, in order (each its own push with a DEVLOG entry):**
+1. **R2 shell.** Nav refinement: keep the six entries (IA move 3 is undecided);
+   the account entry becomes an avatar menu; the phone panel gets icon + label.
+   Also a shared `PageHeader` on every page, containers (`max-w-6xl` for app pages,
+   `max-w-3xl` for reading pages), and a slimmer footer.
+2. **R3 closet photo gallery.**
+   - Layout: 4:5 cards, with the user's photo as cover and a colour field + line
+     `GarmentIcon` when there is none. The list view stays.
+   - Photo entry: an upload on the card and in the detail sheet (`accept="image/*"`
+     opens the phone camera), and a nudge after saving a new item.
+   - **The photo stays OUTSIDE the four-question add flow (㉙).**
+   - Images: `imageResize` gains a 4:5 centre crop, 600×750 JPEG at quality ≈0.82,
+     target ≤90 KB. Measure a real phone photo and log it. The zod cap stays 400 KB.
+3. **R4 Check result:** size and a thin ring → two reasons → a source row with
+   icons → the size ranking. A refusal is a calm panel.
+4. **R5 homepage.** **Show the cut list with before/after screenshots and get the
+   founder's OK before deleting** (ParallaxStatement vs ConvergingStack, etc.).
+   Open decision #4.
+5. **R6 remaining pages:** passport (`MetalCard` untouched), community, outfits,
+   badges, help, account, onboarding, history, refresh, `u/[code]`. Convert → ← ↻
+   ✓ to icons here.
+6. **R7 audit:** First Load JS ≤ R0 baseline +10% (after R1: / 163 vs 156, /login
+   106 vs 98.6 — the headroom is small), a11y focus and contrast, `mobile-audit`
+   with zero overflow, and a motion audit.
+
+**Known wall, recorded by the founder's decision:** closet photos are stored as
+base64 in the database. That is fine for the prototype. **Move them to object
+storage (e.g. Vercel Blob or S3) before inviting a real cohort.** Each photo is
+~90 KB in a Postgres row, and the closet API returns them inline.

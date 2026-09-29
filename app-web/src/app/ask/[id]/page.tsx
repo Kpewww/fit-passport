@@ -5,6 +5,7 @@
 // attached as evidence.
 
 import { useCallback, useEffect, useState } from "react";
+import { ArrowUpRight } from "@/components/Icon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Card, EmptyState, Field, LinkButton, inputClass } from "@/components/ui";
@@ -161,7 +162,7 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
               rel="noopener noreferrer nofollow"
               className="text-brand hover:underline"
             >
-              The product in question ↗
+              The product in question <ArrowUpRight size={14} className="inline -mt-0.5" />
             </a>
           </p>
         )}

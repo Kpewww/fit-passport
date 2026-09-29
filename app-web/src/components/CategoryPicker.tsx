@@ -21,7 +21,7 @@ export function CategoryPicker({
         <optgroup key={section} label={section}>
           {items.map((g) => (
             <option key={g.category} value={g.category}>
-              {g.glyph} {g.label}
+              {g.label}
             </option>
           ))}
         </optgroup>

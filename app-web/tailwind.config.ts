@@ -33,9 +33,28 @@ const config: Config = {
           faint: "#8a8d97",
         },
         line: "#E2E3E7", // hairline rules
+        // Semantic states, desaturated to sit on porcelain beside ink and cobalt.
+        // They replace stock green-100/amber-100/red-100 so a warning reads as part
+        // of the palette rather than a sticker on it. Never used as an accent.
+        ok: { DEFAULT: "#2f6b4f", tint: "#edf3ef" },
+        warn: { DEFAULT: "#8a5a12", tint: "#f7f1e5" },
+        bad: { DEFAULT: "#9b2c2c", tint: "#f7eded" },
+      },
+      // One type scale for the whole product (Session 76). The serif is for
+      // `display` and `h1` only; `meta` is the small tracked label for sizes,
+      // centimetres and sources.
+      fontSize: {
+        display: ["clamp(2.75rem, 6vw, 5.5rem)", { lineHeight: "0.98", letterSpacing: "-0.02em" }],
+        h1: ["2.5rem", { lineHeight: "1.08", letterSpacing: "-0.015em" }],
+        h2: ["1.625rem", { lineHeight: "1.18", letterSpacing: "-0.01em" }],
+        h3: ["1.0625rem", { lineHeight: "1.35" }],
+        meta: ["0.6875rem", { lineHeight: "1.25", letterSpacing: "0.14em" }],
       },
       letterSpacing: {
         editorial: "0.24em",
+      },
+      transitionTimingFunction: {
+        out: "cubic-bezier(0.16, 1, 0.3, 1)",
       },
       borderRadius: {
         xl: "0.875rem",

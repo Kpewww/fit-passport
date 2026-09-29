@@ -16,7 +16,8 @@
     "db:pg:migrate": "npm run db:pg:schema && prisma migrate deploy --schema prisma/schema.postgres.prisma",
     "db:pg:generate": "npm run db:pg:schema && prisma generate --schema prisma/schema.postgres.prisma",
     "vercel-build": "npm run db:pg:generate && prisma migrate deploy --schema prisma/schema.postgres.prisma && next build",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "icons": "node scripts/gen-icons.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -31,6 +32,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@phosphor-icons/core": "^2.1.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^18.3.1",

@@ -8,6 +8,7 @@ import { Card, LinkButton, AccuracyBadge, Skeleton } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
 import { OutfitMannequin } from "@/components/OutfitMannequin";
 import { productLabel } from "@/lib/productLabel";
+import { Check, LinkIcon, Scales } from "@/components/Icon";
 
 type Step = {
   key: string;
@@ -311,21 +312,21 @@ const HOW_STEPS = [
     title: "Paste a product",
     body: "Any store, any link. We read the brand, garment type, and size chart straight from the page.",
     tint: "bg-brand text-white",
-    glyph: "🔗",
+    Icon: LinkIcon,
   },
   {
     n: "02",
     title: "We weigh it against you",
     body: "Your measurements, your preferred fit, and the clothes you already own and love — all considered.",
     tint: "bg-ink text-paper",
-    glyph: "⚖",
+    Icon: Scales,
   },
   {
     n: "03",
     title: "A size, and the reason",
     body: "Not a guess. Every recommendation shows its work, so you can trust it — or overrule it.",
     tint: "bg-paper-dim text-ink",
-    glyph: "✓",
+    Icon: Check,
   },
 ];
 
@@ -363,7 +364,7 @@ function StickyHowItWorks() {
             >
               <div className="flex items-start justify-between">
                 <span className="font-serif text-5xl italic opacity-70">{s.n}</span>
-                <span className="text-3xl opacity-80">{s.glyph}</span>
+                <s.Icon size={32} className="opacity-80" />
               </div>
               <div>
                 <h3 className="font-serif text-2xl">{s.title}</h3>

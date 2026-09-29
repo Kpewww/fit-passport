@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Warning } from "@/components/Icon";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Field, inputClass, LinkButton } from "@/components/ui";
@@ -104,7 +105,7 @@ export default function AccountPage() {
     return (
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
-          <h1 className="font-serif text-4xl text-ink">Your account is ready 🎉</h1>
+          <h1 className="font-serif text-4xl text-ink">Your account is ready</h1>
           <p className="mt-2 text-ink-soft">
             You can log in later with your <strong>username</strong> or your
             <strong> account code</strong>, plus your password.
@@ -135,7 +136,7 @@ export default function AccountPage() {
           {!claimResult.hasEmail && (
             <Card className="mt-4 border-l-4 border-l-amber-400 bg-amber-50">
               <p className="text-sm font-semibold text-amber-900">
-                ⚠️ You didn&apos;t add a recovery email
+                <Warning size={16} className="mr-1.5 inline -mt-0.5" />You didn&apos;t add a recovery email
               </p>
               <p className="mt-1 text-sm text-amber-800">
                 Without one, there&apos;s <strong>no way</strong> to reset your password

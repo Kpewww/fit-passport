@@ -6,6 +6,7 @@
 // inline: click a field, change it, blur/Enter saves. All fields optional.
 
 import { Suspense, lazy, useEffect, useState } from "react";
+import { Heart } from "@/components/Icon";
 import Link from "next/link";
 import { Button, Card, LinkButton } from "@/components/ui";
 import { BodyFigure } from "@/components/BodyFigure";
@@ -662,7 +663,7 @@ function ViewBook({
                   <p className="mt-0.5 text-xs text-ink-faint">
                     {signature.items.map((it) => garmentLabel(it.category)).join(" · ")}
                   </p>
-                  <p className="mt-0.5 text-xs text-ink-faint">♥ {signature.likeCount}</p>
+                  <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-faint"><Heart size={12} weight="fill" /> {signature.likeCount}</p>
                 </div>
               </div>
             ) : outfits.length > 0 ? (

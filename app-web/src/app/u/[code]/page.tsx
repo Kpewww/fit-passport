@@ -1,6 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { Download } from "@/components/Icon";
+import { FitStars } from "@/components/ui";
 import Link from "next/link";
 import { Card, EmptyState, LinkButton } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
@@ -178,7 +180,7 @@ export default function ViewByCodePage({
          ((data.sex === "male" && data.shopsFor.includes("womens")) ||
           (data.sex === "female" && data.shopsFor.includes("mens"))) && (
           <p className="mt-1 text-xs text-brand">
-            ⚡ Cross-department shopper — useful reference for anyone doing the same.
+            Cross-department shopper — useful reference for anyone doing the same.
           </p>
         )}
 
@@ -210,8 +212,7 @@ export default function ViewByCodePage({
                           {it.color && <span className="text-xs text-ink-faint">· {it.color}</span>}
                         </div>
                         <span className="inline-flex gap-0.5 text-xs">
-                          <span className="text-amber-500">{"★".repeat(it.fitRating)}</span>
-                          <span className="text-neutral-300">{"★".repeat(5 - it.fitRating)}</span>
+                          <FitStars rating={it.fitRating} size={11} />
                         </span>
                       </div>
                       {it.areaNotesJson && (
@@ -234,7 +235,7 @@ export default function ViewByCodePage({
               href={`/api/view/${encodeURIComponent(code)}/export`}
               className="whitespace-nowrap rounded-lg border border-neutral-300 px-3 py-1.5 text-sm font-medium text-ink-soft hover:border-brand hover:text-brand"
             >
-              ⬇ Export as JSON
+              <Download size={14} className="mr-1 inline -mt-0.5" />Export as JSON
             </a>
           </div>
         )}

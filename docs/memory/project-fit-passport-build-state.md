@@ -972,3 +972,39 @@ refused even headed** (H&M, REI "Access Denied"; Patagonia "Hang Tight"
 intermittently) — Session 72b's "headed gets through" no longer holds reliably;
 evaluation captures of such sites are made by hand via the popup's **Save this
 capture**.
+
+---
+
+## Session 76 (2026-09-28) — redesign R0 + R1: icons, no emoji, primitives
+
+See [[project-fit-passport-design-system]] (the "Editorial Atelier" section) for
+the design rules.
+
+Code:
+- `components/Icon.tsx` + generated `icons.generated.ts` (`npm run icons`);
+- `GarmentIcon.tsx`;
+- `ui.tsx` primitives;
+- tailwind type scale and semantic colours;
+- `garments.ts` / `badges.ts` lost their `glyph` fields;
+- `vitest.config.ts` has the JSX runtime and the `@/` alias, so tests can import
+  components.
+
+First Load JS after R1 is within +10% of the R0 baseline on every page:
+- / 163 (baseline 156);
+- /check 115 (108);
+- /closet 124 (116);
+- /login 106 (98.6).
+
+**NEW INVARIANTS:**
+
+**(67)** **No emoji in the product.** `src/lib/noEmoji.test.ts` scans non-comment
+source for `\p{Extended_Pictographic}` (except © ® ™) and ★ ☆. Use an icon or a
+word. Arrows and ✓ are typography and are allowed, but R2–R6 convert them to icons.
+
+**(68)** **One icon set, one weight.** Icons come from `components/Icon.tsx`
+(generated Phosphor Light; Fill only for toggles) or `GarmentIcon`, never a second
+library or a raw `@phosphor-icons/react` import.
+- To add one: list it in `scripts/gen-icons.mjs`, run `npm run icons`, export it as
+  a **plain function**.
+- Why: a top-level `make(...)` factory call, even marked PURE, kept all 59 paths on
+  every page (measured +10 kB).

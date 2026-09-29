@@ -2,17 +2,19 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Button, Card, EmptyState, Field, LinkButton, inputClass } from "@/components/ui";
+import { Button, Card, EmptyState, Field, FitStars, LinkButton, inputClass } from "@/components/ui";
+import { Basket, Note, PaletteIcon } from "@/components/Icon";
 import { BrandInput } from "@/components/BrandInput";
 import { SizeInput } from "@/components/SizeInput";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { isValidSize } from "@/lib/sizeSystems";
-import { garmentLabel, garmentGlyph } from "@/lib/garments";
+import { garmentLabel } from "@/lib/garments";
+import { GarmentIcon } from "@/components/GarmentIcon";
 import { resizeImageToDataUrl } from "@/lib/imageResize";
 import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionInput";
 import { DIRECTION_DEFAULT, ratingFromDirection } from "@/lib/fitDirection";
 import { ADD_STEPS, type AddStep, canSubmit, stepReady } from "@/lib/addFlow";
-import { COLOR_PRESETS, colorHex } from "@/lib/colors";
+import { COLOR_PRESETS, colorHex, iconToneOn } from "@/lib/colors";
 
 type Item = {
   id: string;
@@ -683,7 +685,7 @@ function ItemCard({
                 {/* hover popover with the description + actions */}
                 <div className="pointer-events-none absolute -top-1 left-1/2 z-20 w-36 -translate-x-1/2 -translate-y-full rounded-lg border border-neutral-200 bg-white p-2 text-center opacity-0 shadow-lift transition-opacity group-hover/var:pointer-events-auto group-hover/var:opacity-100">
                   <p className="text-xs font-medium text-ink">size {it.size}{it.color ? ` · ${it.color}` : ""}</p>
-                  <p className="text-[11px] text-amber-500">{"★".repeat(it.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - it.fitRating)}</span></p>
+                  <FitStars rating={it.fitRating} size={11} />
                   <div className="mt-1 flex justify-center gap-2 text-[11px]">
                     <button onClick={() => onEdit(it.id)} className="text-ink-faint hover:text-brand">Edit</button>
                     <button onClick={() => onPatch(it.id, { groupId: null, groupName: null })} className="text-ink-faint hover:text-brand">Unmerge</button>
@@ -745,7 +747,7 @@ function ItemCard({
             {it.gender && <GenderBadge gender={it.gender} />}
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-ink-faint">
-            <span className="text-amber-500">{"★".repeat(it.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - it.fitRating)}</span></span>
+            <FitStars rating={it.fitRating} />
             {it.color && <span>· {it.color}</span>}
             {it.areaNotesJson && <span>· {safeNotes(it.areaNotesJson)}</span>}
           </div>
@@ -851,7 +853,7 @@ function EditRow({
                 {f.imageDataUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={f.imageDataUrl} alt="" className="h-full w-full object-cover" />
-                ) : garmentGlyph(f.category)}
+                ) : <GarmentIcon category={f.category} size={24} />}
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => pickImage(e.target.files?.[0])} />
               </label>
               {f.imageDataUrl && <button type="button" onClick={() => setF({ ...f, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-red-600">remove</button>}
@@ -951,7 +953,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
             onChange={(e) => onChange(e.target.value)}
             className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
           />
-          <span className="pointer-events-none text-xs mix-blend-difference text-white">🎨</span>
+          <PaletteIcon size={14} className="pointer-events-none mix-blend-difference text-white" />
         </label>
       </div>
     </div>
@@ -1002,9 +1004,9 @@ function ItemThumb({ item, size }: { item: Item; size: number }) {
     );
   }
   return (
-    <div className="flex flex-shrink-0 items-center justify-center rounded-lg border border-neutral-200"
-      style={{ width: size, height: size, backgroundColor: hex ?? "#f5f5f5", fontSize: size * 0.5 }}>
-      {garmentGlyph(item.category)}
+    <div className={`flex flex-shrink-0 items-center justify-center rounded-lg border border-line ${iconToneOn(hex) === "light" ? "text-white/90" : "text-ink-soft"}`}
+      style={{ width: size, height: size, backgroundColor: hex ?? "#f5f5f5" }}>
+      <GarmentIcon category={item.category} size={Math.round(size * 0.55)} />
     </div>
   );
 }
@@ -1160,7 +1162,7 @@ function FileCard({
       >
         {/* key-info row — always visible */}
         <div className="flex items-center gap-2">
-          <span className="text-base leading-none">{garmentGlyph(head.category)}</span>
+          <GarmentIcon category={head.category} size={18} className="flex-shrink-0 text-ink-soft" />
           <ColorDot color={head.color} />
           <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{name}</span>
           {group.isVariant && (
@@ -1184,9 +1186,7 @@ function FileCard({
                 {head.brand}
                 {head.gender ? <span className="ml-1"><GenderBadge gender={head.gender} /></span> : null}
               </p>
-              <p className="text-[11px] text-amber-500">
-                {"★".repeat(head.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - head.fitRating)}</span>
-              </p>
+              <FitStars rating={head.fitRating} size={11} />
               {head.color && <p className="text-[11px] text-ink-faint">{head.color}</p>}
             </div>
             <button
@@ -1283,7 +1283,7 @@ function DetailSheet({
               <div className="min-w-0 space-y-1 text-sm">
                 <p className="font-medium text-ink">{head.brand}</p>
                 <p className="text-ink-soft">{garmentLabel(head.category)}{head.gender ? ` · ${head.gender}` : ""}</p>
-                <p className="text-amber-500">{"★".repeat(head.fitRating)}<span className="text-neutral-300">{"★".repeat(5 - head.fitRating)}</span></p>
+                <FitStars rating={head.fitRating} size={14} />
               </div>
               {!group.isVariant && (
                 <button onClick={() => setEditId(head.id)} className="ml-auto self-start rounded-lg border border-neutral-200 px-3 py-1.5 text-sm font-medium text-ink-soft hover:border-brand hover:text-brand">
@@ -1313,7 +1313,7 @@ function DetailSheet({
                 ))}
               </div>
               {head.areaNotesJson && safeNotes(head.areaNotesJson) && (
-                <p className="mt-3 rounded-lg bg-neutral-50 px-3 py-2 text-xs text-ink-soft">📝 {safeNotes(head.areaNotesJson)}</p>
+                <p className="mt-3 rounded-lg bg-neutral-50 px-3 py-2 text-xs text-ink-soft"><Note size={14} className="mr-1.5 inline -mt-0.5" />{safeNotes(head.areaNotesJson)}</p>
               )}
             </div>
 
@@ -1377,7 +1377,7 @@ function BucketPanel({
       {open ? (
         <div className="w-72 rounded-2xl border border-neutral-200 bg-white p-3 shadow-2xl">
           <div className="mb-2 flex items-center justify-between">
-            <p className="text-sm font-semibold text-ink">🧺 Comparison bucket <span className="text-ink-faint">({items.length})</span></p>
+            <p className="flex items-center gap-1.5 text-sm font-semibold text-ink"><Basket size={16} /> Comparison bucket <span className="text-ink-faint">({items.length})</span></p>
             <div className="flex items-center gap-2 text-xs">
               <button onClick={onClear} className="text-ink-faint hover:text-red-600">Clear</button>
               <button onClick={() => setOpen(false)} className="text-ink-faint hover:text-ink" aria-label="Collapse">–</button>
@@ -1406,7 +1406,7 @@ function BucketPanel({
           onClick={() => setOpen(true)}
           className="flex items-center gap-2 rounded-full bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-lift"
         >
-          🧺 Bucket <span className="rounded-full bg-white/25 px-1.5">{items.length}</span>
+          <Basket size={16} /> Bucket <span className="rounded-full bg-white/25 px-1.5">{items.length}</span>
         </button>
       )}
     </div>
@@ -1678,7 +1678,7 @@ function AddItemFlow({ onAdded }: { onAdded: () => void }) {
                         {form.imageDataUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={form.imageDataUrl} alt="" className="h-full w-full object-cover" />
-                        ) : (garmentGlyph(form.category))}
+                        ) : <GarmentIcon category={form.category} size={28} />}
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => onPickImage(e.target.files?.[0])} />
                       </label>
                       {form.imageDataUrl

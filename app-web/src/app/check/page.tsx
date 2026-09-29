@@ -1,6 +1,7 @@
 "use client";
 
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
+import { Warning, Scales } from "@/components/Icon";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -615,7 +616,7 @@ function Result({
               className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-900"
               title="We couldn't find a real size chart on the page, so these measurements are estimated from the brand and category. Check them against the retailer's chart, or add the real numbers."
             >
-              ⚠ sizes estimated — confirm the chart
+              <Warning size={12} className="mr-1 inline -mt-0.5" />sizes estimated — confirm the chart
             </span>
           ) : (
             <span className="rounded-full bg-green-50 px-2 py-0.5 font-medium text-green-700">
@@ -664,7 +665,7 @@ function Result({
       {/* CROSS-DOMAIN DISCLAIMER — closet evidence is a different garment type */}
       {result.domainNote && (
         <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm">
-          <span className="mt-0.5 text-lg text-amber-600">⚠️</span>
+          <Warning size={20} className="mt-0.5 flex-shrink-0 text-amber-600" />
           <div className="text-amber-900">
             <p className="font-semibold">Low-confidence recommendation</p>
             <p className="mt-0.5 text-amber-800">{result.domainNote}</p>
@@ -678,7 +679,7 @@ function Result({
           warning: a conflict lowers certainty, it doesn't invalidate the answer. */}
       {result.conflictNote && (
         <div className="flex items-start gap-3 rounded-xl border border-line bg-paper-soft px-4 py-3 text-sm">
-          <span className="mt-0.5 text-lg text-ink-faint">⚖️</span>
+          <Scales size={20} className="mt-0.5 flex-shrink-0 text-ink-faint" />
           <div className="text-ink-soft">
             <p className="font-semibold text-ink">Why confidence is lower here</p>
             <p className="mt-0.5">{result.conflictNote}</p>

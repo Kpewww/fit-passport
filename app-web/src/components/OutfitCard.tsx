@@ -4,6 +4,7 @@
 // stylized mannequin preview, metadata, in-store-only tags, and a like toggle.
 
 import { useState, type ReactNode } from "react";
+import { Heart, Store } from "@/components/Icon";
 import Link from "next/link";
 import { Card } from "@/components/ui";
 import { OutfitMannequin, type OutfitLayer } from "@/components/OutfitMannequin";
@@ -100,7 +101,7 @@ export function OutfitCard({
           </p>
           {!outfit.onlineAvailable && (
             <p className="mt-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
-              🏬 In-store only
+              <Store size={12} className="mr-1 inline -mt-0.5" />In-store only
             </p>
           )}
           {outfit.onlineAvailable && offlinePieces.length > 0 && (
@@ -132,7 +133,7 @@ export function OutfitCard({
                 liked ? "border-red-300 bg-red-50 text-red-600" : "border-neutral-300 text-ink-soft hover:border-red-300 hover:text-red-500"
               }`}
             >
-              {liked ? "♥" : "♡"} {count}
+              <Heart size={14} weight={liked ? "fill" : "light"} /> {count}
             </button>
           </div>
         </div>

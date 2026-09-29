@@ -7,6 +7,7 @@
 // retention argument, so the copy says it out loud.
 
 import { useEffect, useState } from "react";
+import { Heart } from "@/components/Icon";
 import Link from "next/link";
 import { Card } from "@/components/ui";
 import { Avatar } from "@/components/Badges";
@@ -119,7 +120,7 @@ export function TodayBoard() {
                     </p>
                   </div>
                   <span className="flex-shrink-0 text-xs font-medium text-ink-soft">
-                    ♥ {l.likesInWindow}
+                    <Heart size={12} weight="fill" className="mr-0.5 inline -mt-0.5" />{l.likesInWindow}
                   </span>
                 </li>
               ))}

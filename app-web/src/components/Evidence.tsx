@@ -10,6 +10,7 @@
 // owner's coarse body type. Precise measurements are never part of this payload.
 
 import { useMemo, useState } from "react";
+import { FitStars } from "@/components/ui";
 import Link from "next/link";
 import { garmentLabel } from "@/lib/garments";
 import { inputClass } from "@/components/ui";
@@ -48,8 +49,7 @@ export function EvidenceCard({ ev, label = "Receipt" }: { ev: EvidenceView; labe
       </p>
       <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-ink-faint">
         <span>
-          <span className="text-amber-500">{"★".repeat(ev.fitRating)}</span>
-          <span className="text-neutral-300">{"★".repeat(5 - ev.fitRating)}</span>
+          <FitStars rating={ev.fitRating} size={11} />
           <span className="ml-1">fit</span>
         </span>
         {ev.color && <span>· {ev.color}</span>}

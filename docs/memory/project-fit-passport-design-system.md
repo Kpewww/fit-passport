@@ -1,6 +1,6 @@
 ---
 name: project-fit-passport-design-system
-description: "Fit Passport visual design system — black-led + cobalt accent + porcelain, Fraunces serif (as of Session 25)"
+description: "Fit Passport visual design system — black-led + cobalt accent + porcelain, Fraunces serif; Session 76 Editorial Atelier redesign rules, generated Phosphor Light icons, no emoji"
 metadata: 
   node_type: memory
   type: project
@@ -91,3 +91,76 @@ A card 402px wide in a 390px viewport had a Report button nobody could reach.
   as designed. Do not sweep font sizes across it.
 
 Verified: 26 page × viewport combinations plus 12 logged-in ones, zero overflow.
+
+---
+
+**REDESIGN "Editorial Atelier" (Session 76, 2026-09-28 — IN PROGRESS, R0–R7).**
+The founder asked for a markedly more premium site without losing function or
+getting busy. Rules:
+- no emoji;
+- a better icon set;
+- users can put their own photo on a closet item;
+- keep the palette and fonts.
+
+The plan runs R0 → R7, and each step ships alone:
+- R0 baselines;
+- R1 foundation;
+- R2 shell;
+- R3 closet photo gallery;
+- R4 Check result;
+- R5 homepage (its cut list is shown with screenshots **before** anything is
+  deleted — open decision #4);
+- R6 remaining pages;
+- R7 audit.
+
+R0 and R1 shipped in Session 76.
+
+Six principles. Check new UI against them:
+1. **One focal point and one primary action per screen.** The primary action is
+   ink; cobalt is for selection, links and the single highlight. The `accent`
+   Button variant (cobalt) is for the homepage hero band only.
+2. **Hairlines and whitespace instead of shadows.** `Card` is `ring-1 ring-line`
+   with no shadow. Never re-add `shadow-card` to generic blocks.
+3. **A fixed type scale** in `tailwind.config.ts`: `text-display`, `text-h1` (serif,
+   page titles), `text-h2`, `text-h3` (sans, section titles), `text-meta` (tracked
+   small label). Serif for display and h1 only.
+4. **One icon set at one weight:** Phosphor Light via `components/Icon.tsx`, sizes
+   16 / 20 / 24.
+5. **Restrained motion:** `animate-rise` on entry and 200 ms hovers (`ease-out`
+   token). No scroll-jacking, loaders or new WebGL.
+6. **An image-led closet:** 4:5 cards, the user's photo as cover, a colour field
+   with a line garment icon when there is none (R3).
+
+Reference sites (Awwwards E-commerce Honors 2026): OUTFIT (++hellohello), Drop
+Edition (Square43), Aardvark Book Club (FUTURE THREE). Borrowed:
+- images without card chrome, with a caption row (name left, value right);
+- small tracked nav labels with thin line icons;
+- a hairline under display type.
+
+Not borrowed: their scroll-jacking and WebGL.
+
+**Icons — how they work (R1):**
+- `scripts/gen-icons.mjs` (`npm run icons`) reads `@phosphor-icons/core` raw SVGs
+  (a devDependency) and writes `components/icons.generated.ts`, keeping Light, plus
+  Fill only for star, heart and pin.
+- `Icon.tsx` exports each icon as a **plain function**, never a factory call.
+- **`@phosphor-icons/react` must not come back:** each icon ships six weights, and
+  the barrel import added 30 kB per page.
+- Garments: `GarmentIcon.tsx`. Phosphor has 10; sweater, jacket, shorts, skirt,
+  shoes and scarf are hand-drawn on the 256 grid with a 12-unit round stroke
+  (= Phosphor Light).
+- A colour swatch picks white or ink for its line via `iconToneOn()` in
+  `lib/colors.ts`.
+
+**Semantic colours:** `ok` #2f6b4f, `warn` #8a5a12, `bad` #9b2c2c, each with a
+`-tint`, desaturated to sit beside ink and cobalt. They replace stock
+green/amber/red-100 as pages are touched. They are never an accent.
+
+**New `ui.tsx` primitives:**
+- `PageHeader` (eyebrow + serif title + lede + one action);
+- `SectionHeader` (title + hairline + action);
+- `Chip`, `Segmented`;
+- `FitStars` (ink stars, not amber);
+- Button `sm` / `icon` / `arrow` / `loading`, pill-shaped, 44 px tall on phones at
+  `md`;
+- `EmptyState` with an icon.

@@ -31,6 +31,156 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-28 · Session 76 (R0 + R1) — One icon set, no emoji, and the primitives the redesign builds on
+
+The founder asked for the site to look markedly more premium without losing
+function or getting busy, with no emoji and better icons, and for users to be
+able to put their own photo on a closet item. The plan runs in eight steps (R0–R7),
+and each ships on its own. This push is R0 (measure first) and R1 (the
+foundation). No page layout changed yet; that starts with R2, the shell.
+
+**Decisions, confirmed by the founder:**
+- **Photos:** stay in the database (base64) for now, at 600×750 JPEG, about 90 KB.
+  Move them to object storage before inviting a cohort.
+- **Scope:** the whole site, in order R0 → R7.
+- **Fonts:** keep Fraunces and Inter, with a tighter type scale and the serif for
+  display type only.
+- **Homepage cuts** (open decision #4): shown with screenshots before R5.
+
+### R0 — references and baselines
+
+**References.** Three sites from Awwwards' E-commerce winners list
+(`awwwards.com/websites/winner_category_ecommerce/`), screenshotted and read:
+- **OUTFIT** by ++hellohello (E-commerce Honors Apr 2026, Site of the Day May 11
+  2026);
+- **Drop Edition** by Square43 Studio (E-commerce Honors Mar 2026);
+- **Aardvark Book Club** by FUTURE THREE (E-commerce Honors Jul 2026, Site of the
+  Day Aug 30 2026).
+
+What we take, one line each:
+- images without card chrome, and a caption row under them: name left, value
+  right, a tiny category label (→ R3 closet gallery);
+- small tracked navigation labels with thin line icons (→ R2);
+- a hairline rule under display type instead of a boxed panel (→ SectionHeader);
+- wide, quiet layouts where one thing on the screen leads.
+
+What we do not take: scroll-jacking, WebGL, cursor effects, or loading
+animations. Each of those conflicts with the performance rules (no Lenis, no
+per-pointermove state) or with being a tool people operate.
+
+**Baselines**, recorded so R7 can compare against them:
+- First Load JS: / 156 kB, /passport 126, /community 122, /closet 116, /outfits
+  116, /check 108, shared 87.4.
+- `mobile-audit.mjs`: no sideways overflow on any page.
+- Desktop (1440) and phone (390) screenshots of the six main pages.
+
+### R1 — the foundation
+
+**Emoji are gone, and a test keeps them out.** `src/lib/noEmoji.test.ts` scans
+every non-comment line in `src/` for `\p{Extended_Pictographic}` (minus © ® ™)
+and for ★ ☆. It was written first, failed on 50 emoji, and passes now:
+- garment emoji in `garments.ts` → `GarmentIcon`;
+- the unused badge glyphs in `badges.ts` → removed;
+- ★-strings → `FitStars`;
+- 🔒 in `BadgeMedallion` → a drawn padlock;
+- the rest → icons or plain words.
+
+Arrows (→ ← ↻) and ✓ are typography, not emoji. They stay for now and turn into
+icons page by page in R2–R6.
+
+**One icon set: Phosphor Light.** `components/Icon.tsx` is the only place icons
+come from. It covers 45 UI icons and sets one weight and one default size.
+
+The path data is generated. `npm run icons` (`scripts/gen-icons.mjs`) reads
+Phosphor's raw SVGs from `@phosphor-icons/core` (MIT, a devDependency) and writes
+`components/icons.generated.ts` with only the weights we draw: Light everywhere,
+plus Fill for the three toggles (star, heart, pin). The script fails on any markup
+it does not understand.
+
+We first used `@phosphor-icons/react` directly. It got there in three measured
+steps:
+
+| Approach | / | /check | /closet | /login |
+|---|---|---|---|---|
+| baseline, before icons | 156 | 108 | 116 | 98.6 |
+| `@phosphor-icons/react/ssr` barrel | 186 | 139 | 159 | — |
+| per-icon file imports | 171 | 123 | 143 | — |
+| generated data, `make()` factory marked PURE | 167 | 119 | 128 | 109 |
+| **generated data, plain `function` per icon** | **163** | **115** | **124** | **106** |
+
+What each step found:
+- **Every Phosphor React icon carries all six weights**, 13.6 kB gzipped for 17
+  icons.
+- **A top-level `make(D.Star)` call kept every icon on every page**, even marked
+  PURE. The build carried all 59 paths, ArrowDown included, which nothing renders.
+  A plain function declaration is dropped when unused.
+
+What remains, about +7 kB, is the icons the site actually uses. Webpack prunes
+exports across the whole app, not per page, so they share one chunk. Every page is
+within the R7 budget of +10% over baseline: /login +7.5%, /check +6.5%, /closet
++7%, / +4.5%. The inline SVGs R2–R6 replace with these icons should take some of it
+back.
+
+**Garment icons.** Phosphor has ten of the garments: t-shirt, folded shirt,
+hoodie, pants, dress, sneaker, boot, sock, cap, belt. It has no sweater, jacket,
+shorts, skirt, shoe or scarf. Those six are drawn in `GarmentIcon.tsx` on
+Phosphor's grid: 256 units, a 12-unit round stroke, which is its Light weight. They
+were checked beside the library glyphs at 64, 32 and 20 px. A swatch picks white
+or ink for its line by WCAG luminance (`iconToneOn` in `lib/colors.ts`, so colour
+keeps one home, ㉛). `garmentIcon.test.ts` fails if a category in `GARMENTS` has no
+icon.
+
+**Tokens** (`tailwind.config.ts`):
+- one type scale: `display`, `h1`, `h2`, `h3`, `meta`;
+- semantic `ok`, `warn` and `bad`, desaturated to sit beside ink and cobalt,
+  replacing stock green-100 / amber-100 / red-100 as pages are touched;
+- an `ease-out` curve.
+
+**Primitives** (`components/ui.tsx`):
+- **Button:** pill-shaped and flat. It gains an `sm` size, an `icon` slot, an
+  `arrow`, and a `loading` state (spinner, `aria-busy`). On phones the `md` size is
+  44 px tall.
+- **Card:** a hairline and no shadow. Every block used to be a shadowed card, so
+  none read as more important than the next.
+- **New:** `PageHeader` and `SectionHeader`, `Chip`, `Segmented`, `FitStars`.
+- **EmptyState** takes an icon.
+- **ConfidenceRing:** thinner, in `ok` / cobalt / `warn`.
+- **AccuracyBadge:** uses the semantic tints.
+
+`mobile-audit.mjs` after R1: still no sideways overflow on any page. Tap targets
+under 44 px dropped by 0–2 per page, because buttons are now 44 px tall on phones.
+A rendered look at the closet, check and badges pages found icons crisp at 3×.
+The phone closet row is still cramped (brand names truncate). That is the old
+layout, and R3 replaces it.
+
+### New invariants
+
+- **(67) No emoji in the product.** `noEmoji.test.ts` enforces it. Use an icon or a
+  word.
+- **(68) One icon set, one weight.** Icons come from `components/Icon.tsx`
+  (generated Phosphor Light) or `GarmentIcon`, never a second library. To add an
+  icon, add it to `scripts/gen-icons.mjs`, run `npm run icons`, and export it as a
+  plain function; a top-level factory call puts every icon on every page.
+
+**510 tests + 1 honest skip; typecheck and build clean.**
+
+### Files touched
+```
+app-web/src/components/Icon.tsx, icons.generated.ts, GarmentIcon.tsx   (new)
+app-web/scripts/gen-icons.mjs                                          (new; "icons" script)
+app-web/src/lib/noEmoji.test.ts, garmentIcon.test.ts                   (new)
+app-web/vitest.config.ts                                               (new: JSX runtime, @/ alias)
+app-web/src/components/ui.tsx                                          (primitives)
+app-web/tailwind.config.ts                                             (type scale, semantic colours, easing)
+app-web/src/lib/garments.ts, badges.ts                                 (glyph fields removed)
+app-web/src/lib/colors.ts                                              (iconToneOn)
+app-web/src/app/{page,account,ask/[id],badges,check,closet,help,outfits,passport,recover,refresh,u/[code]}
+app-web/src/components/{BadgeMedallion,CategoryPicker,Evidence,OutfitCard,TodayBoard}.tsx
+app-web/package.json                                                   (@phosphor-icons/core devDependency)
+```
+
+---
+
 ## 2026-09-28 · Session 75d — The evaluation exists, and waits on two people for ground truth
 
 `app-web/eval/` runs every case through three systems that share one engine,
