@@ -30,7 +30,7 @@
 
 import { easeAdjustForCategory, type FitPreference, easeChestCm } from "./sizing";
 import { DIRECTION_MAX, clampDirection, directionToLadderShift } from "./fitDirection";
-import { PERSONAL_EASE } from "./scoringConstants";
+import { EASE_CM, PERSONAL_EASE } from "./scoringConstants";
 
 /**
  * Chest centimetres per step of the alpha size ladder.
@@ -113,6 +113,7 @@ export function personalEaseTarget(
   const step = LADDER_STEP_CHEST_CM;
   const r = PERSONAL_EASE.feelingResolution * step;
   const reports: Array<{ point: number; lo: number; hi: number }> = [];
+  let implausible = 0;
   for (const o of observations) {
     if (o.garmentChestCm == null) continue;
     if (!TRUSTED_PROVENANCE.has(o.garmentMeasuredFrom ?? "")) continue;
@@ -124,6 +125,14 @@ export function personalEaseTarget(
     // calibration of record for the scale; this only converts steps to cm.
     const shift = directionToLadderShift(o.fitDirection);
     const point = observed + shift * step;
+    // A report implying an ease far outside anything anyone wears is not a
+    // preference — the garment's or the body's number is wrong (or invented). Left
+    // out and counted, like a contradicting report, rather than learned from.
+    const margin = PERSONAL_EASE.plausibleMarginSteps * step;
+    if (point < EASE_CM.slim - margin || point > EASE_CM.oversized + margin) {
+      implausible++;
+      continue;
+    }
     const extreme = o.fitDirection != null && Math.abs(clampDirection(o.fitDirection)) >= DIRECTION_MAX;
     reports.push({
       point,
@@ -133,7 +142,7 @@ export function personalEaseTarget(
   }
 
   if (reports.length < MIN_EVIDENCE) {
-    return { ...none, evidence: reports.length };
+    return { ...none, evidence: reports.length, excluded: implausible };
   }
 
   // The largest set of reports that can all be true at once: the point covered by
@@ -151,7 +160,7 @@ export function personalEaseTarget(
     }
   }
   const consistent = reports.filter((x) => x.lo <= best.at && best.at <= x.hi);
-  const excluded = reports.length - consistent.length;
+  const excluded = reports.length - consistent.length + implausible;
 
   // No strict majority agrees: the reports describe more than one person, or the
   // measurements behind them are wrong. Learning a number from that would be
@@ -245,7 +254,8 @@ export function resolveEase(pref: FitPreference, learned: PersonalEase): Resolve
       `measurements we have (${capped.toFixed(1)}cm target vs ${stated}cm for ${pref})` +
       (learned.excluded > 0
         ? `; ${learned.excluded} garment${learned.excluded === 1 ? "" : "s"} left out because ` +
-          `${learned.excluded === 1 ? "its report contradicts" : "their reports contradict"} the others.`
+          `${learned.excluded === 1 ? "its report contradicts" : "their reports contradict"} the others ` +
+          `or ${learned.excluded === 1 ? "its measurements look" : "their measurements look"} wrong.`
         : "."),
     contradiction: null,
   };

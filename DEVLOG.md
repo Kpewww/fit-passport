@@ -31,6 +31,62 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 78e — People deliberately messing with it
+
+Phase E. The founder asked that the scoring hold up when people "deliberately mess
+with it". The useful question is **whose answers their nonsense can reach**, and that
+decides the defence (`docs/design/scoring-system.md` §9, new):
+
+**1. Own data: a troll can only hurt their own answer** (all fit learning is
+per-user, decided in 78). Goal: detect it, don't learn from it, say so.
+- `lib/plausibility.ts` — cross-field body check (waist vs chest, shoulder vs chest).
+  Each field was already bounded alone; chest 58 + waist 110 passed every bound.
+  Never refuses and never changes a number: confidence capped at
+  `CONFIDENCE_CAPS.implausibleBody` (0.4, the regional-average ceiling) and the
+  explanation names the pair. The cap test is **red without the cap** (0.44).
+- `personalEase` excludes a report whose implied ease is outside `EASE_CM` by more
+  than `plausibleMarginSteps` size steps, **before** the consistency vote — so three
+  absurd reports are not able to outvote one honest one. On the previous engine that
+  test learned a preferred ease of **151 cm**.
+- Write rate limits: closet 120 / 10 min, outcomes 30 / 10 min (working values).
+
+**2. Community: votes that confer status.** Leaderboard, badges and **the order
+answers are shown in** counted every vote, and an anonymous account is one cleared
+cookie away. `lib/countedVotes.ts`: a vote counts only from a **claimed account that
+is not the author**. Self-likes refused (400). Claims limited to 5 per network per
+hour; likes and votes 60 / 10 min.
+- Found mid-phase, in my own work: the leaderboard was fixed but `rankAnswers` still
+  ranked answers by all votes. Fixed; the vote route now returns the counted number
+  and `counts: false` for an anonymous voter, and the thread says "Saved. Votes rank
+  answers once you claim an account" instead of a number that silently doesn't move.
+
+**Live, local dev:** own like → 400; anonymous like → saved, look not on the board;
+claimed like → on the board, 1. Answer: anonymous vote → `helpfulCount 0, counts
+false`; claimed vote → 1; self vote → refused. Note renders at 390 px, no overflow.
+
+**A discrepancy I did not wave through:** the claim limit is 5, but a live run
+showed **6** succeed. Cause: `UPSTASH_REDIS_REST_*` is **empty in the local `.env`**
+(I had said earlier that Redis was configured locally — wrong), so dev uses the
+per-process counter, and Next dev re-instantiates a route module when it recompiles
+it, resetting the counter between the setup claim and the next five. The limiter
+admits exactly 5 when checked directly. ⚠ That Redis is configured in production was
+not re-checked this session.
+
+**3. Cross-user brand knowledge — spec only** (decided in 78): §9.4 lists the
+defences it would need before one person's reports may move another's size —
+claimed + minimum account age, one net vote per account per brand × category, a
+minimum count of distinct accounts, median-of-means / trimmed aggregation, capped
+below personal evidence, separately labelled on screen.
+
+**Evidence rule applied to my own constants:** two plausibility "sources" stated
+anthropometric figures I had not checked (a ~45 cm chest–waist drop; shoulder ≈
+0.4–0.53 of chest). Replaced with an explicit UNVERIFIED label. (The ⚠ glyph first
+used there tripped invariant 67 — source strings are product text.)
+
+587 tests + 1 skip, exit 0; typecheck clean.
+
+---
+
 ## 2026-09-29 · Session 78d3 — Outcomes say which way they were wrong, and are read that way
 
 Phase D, step 3: the outcome loop — the only place a real "did it fit?" enters the

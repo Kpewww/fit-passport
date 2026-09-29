@@ -223,3 +223,25 @@ describe("fit reports as intervals — contradictions are caught, not averaged",
     expect(out.conflictNote).toMatch(/contradict each other/);
   });
 });
+
+describe("a report no real preference could produce", () => {
+  it("is left out and counted, instead of dragging the target", () => {
+    // Garment chest 250 on a 100 cm body: 150 cm of "room". A wrong number, or a
+    // deliberate one — either way not a preference to learn from.
+    const tee = (g: number, d: number) => ({ category: "tshirt", garmentChestCm: g, garmentMeasuredFrom: "page", fitDirection: d });
+    const learned = personalEaseTarget([tee(111, 0), tee(112, 0), tee(113, 0), tee(250, 0)], 100);
+    expect(learned.excluded).toBe(1);
+    expect(learned.targetCm!).toBeLessThan(14);
+  });
+
+  it("learns nothing when the absurd reports are the majority", () => {
+    // Two garments entered at 250 cm agree with EACH OTHER, so without a
+    // plausibility bound they would form the consistent majority and the learned
+    // target would be ~150 cm of room — the deliberate-nonsense case.
+    const tee = (g: number, d: number) => ({ category: "tshirt", garmentChestCm: g, garmentMeasuredFrom: "page", fitDirection: d });
+    const learned = personalEaseTarget([tee(250, 0), tee(252, 0), tee(112, 0)], 100);
+    expect(learned.targetCm).toBeNull();
+    expect(learned.excluded).toBe(2);
+    expect(resolveEase("regular", learned).easeCm).toBe(10);
+  });
+});

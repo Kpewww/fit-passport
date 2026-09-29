@@ -7,6 +7,7 @@
 // told plainly that a lost password means a lost account.
 
 import { NextResponse } from "next/server";
+import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, setSession } from "@/lib/session";
@@ -30,6 +31,11 @@ const Body = z.object({
 });
 
 export async function POST(req: Request) {
+  // Claiming is what makes a vote COUNT toward rankings and badges (countedVotes.ts),
+  // so an unlimited claim endpoint would just move vote-farming one step along.
+  // Five accounts per network per hour: generous for a household or a demo room.
+  const rl = await rateLimit(clientKey(req, "claim"), 5, 60 * 60_000);
+  if (!rl.ok) return tooMany(rl.retryAfterSec);
   const user = await getCurrentUser();
   if (user.claimed) {
     return NextResponse.json({ error: "account already claimed" }, { status: 409 });

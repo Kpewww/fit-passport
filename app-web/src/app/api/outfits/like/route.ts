@@ -4,6 +4,7 @@
 // claimed or not — can like once per outfit. Toggling `like:false` removes it.
 
 import { NextResponse } from "next/server";
+import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
@@ -14,6 +15,9 @@ const Body = z.object({
 });
 
 export async function POST(req: Request) {
+  // Bounds scripted liking. Working value, not a measurement.
+  const rl = await rateLimit(clientKey(req, "like"), 60, 10 * 60_000);
+  if (!rl.ok) return tooMany(rl.retryAfterSec);
   const user = await getCurrentUser();
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) {
@@ -21,8 +25,13 @@ export async function POST(req: Request) {
   }
   const { outfitId, like } = parsed.data;
 
-  const outfit = await prisma.outfit.findUnique({ where: { id: outfitId }, select: { id: true } });
+  const outfit = await prisma.outfit.findUnique({ where: { id: outfitId }, select: { id: true, userId: true } });
   if (!outfit) return NextResponse.json({ error: "not found" }, { status: 404 });
+  // The answer-vote route has always refused self-votes; likes did not, so a
+  // claimed user could like their own looks up the daily board.
+  if (like && outfit.userId === user.id) {
+    return NextResponse.json({ error: "you can't like your own look" }, { status: 400 });
+  }
 
   if (like) {
     // Idempotent create — unique(outfitId, voterKey) prevents doubles.

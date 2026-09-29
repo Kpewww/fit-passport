@@ -1133,5 +1133,19 @@ exchange direction.
 neighbour on the other side of a directional return; never read a size as confirmed
 by a keep that did not fit; never ignore an exchange.
 
+**Session 78e — deliberate abuse (spec §9).** Own data can only hurt its owner:
+`plausibility.ts` caps confidence at `CONFIDENCE_CAPS.implausibleBody` and names the
+odd pair; `personalEase` drops reports whose implied ease is outside `EASE_CM` ±
+`plausibleMarginSteps` steps BEFORE the consistency vote. Status (leaderboard, badges,
+answer order) counts only claimed, non-author votes (`countedVotes.ts`). Local dev has
+NO Upstash (empty env) — the in-memory limiter resets when Next recompiles a route, so
+a live limit test can over-admit by one reload's worth.
+
+**NEW INVARIANTS:**
+**(78)** **Implausible input is detected, never learned from, never silently altered.**
+Exclude it before any vote, cap confidence, and name what was excluded.
+**(79)** **A vote that ranks anything counts only from a claimed account that is not
+the author** — and the number shown is the number ranked by.
+
 **Open (todo/engineering/08):** the Uniqlo demo fixture recommends XL at chest 100 —
 likely body numbers in the garment field (real page M = 95.9–104.1, midpoint 100).

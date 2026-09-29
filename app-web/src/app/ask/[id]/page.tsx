@@ -213,11 +213,13 @@ function AnswerCard({
 }) {
   const [voted, setVoted] = useState(answer.votedByMe);
   const [count, setCount] = useState(answer.helpfulCount);
+  // Set when the server kept a vote that does not rank the answer (anonymous voter).
+  const [uncounted, setUncounted] = useState(false);
 
   async function vote() {
     const next = !voted;
     setVoted(next);
-    setCount((c) => c + (next ? 1 : -1));
+    // The count waits for the server: an anonymous vote does not change it.
     const r = await fetch("/api/answers/vote", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -227,11 +229,11 @@ function AnswerCard({
       .catch(() => null);
     if (!r || r.error) {
       setVoted(!next);
-      setCount((c) => c + (next ? -1 : 1));
       return;
     }
     setCount(r.helpfulCount);
     setVoted(!!r.votedByMe);
+    setUncounted(!!r.votedByMe && r.counts === false);
   }
 
   async function remove() {
@@ -298,6 +300,12 @@ function AnswerCard({
           {answer.mine && count > 0 && <span>{count} found this helpful</span>}
         </span>
       </div>
+      {uncounted && (
+        <p className="mt-2 text-right text-xs text-ink-faint">
+          Saved. Votes rank answers once you{" "}
+          <Link href="/account" className="underline underline-offset-2 hover:text-ink">claim an account</Link>.
+        </p>
+      )}
     </Card>
   );
 }

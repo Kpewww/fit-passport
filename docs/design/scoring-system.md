@@ -20,13 +20,13 @@ provenances:
 |---|---|---|
 | **measured** | Computed from data we hold, with the n stated | **1** |
 | **cited** | A published source states this value — not just the idea | **2** |
-| **assumed** | A judgement, usually hand-tuned against a handful of cases | **88** |
+| **assumed** | A judgement, usually hand-tuned against a handful of cases | **94** |
 
 `scoringConstants.test.ts` fails if a value has no provenance, if a provenance
 names no value, if a measured entry does not state its n, or if an assumed value
 is missing from the calibration table below.
 
-**Read the counts plainly.** 88 of 91 numbers are judgements. The
+**Read the counts plainly.** 94 of 97 numbers are judgements. The
 literature the engine cites supports the SHAPE of the model — fit as a bipolar
 ordinal (too small … too big), fit as a multi-measurement signal — and not a
 single one of its values. That is normal for a scorer before it has outcome data,
@@ -205,6 +205,105 @@ stored as a good fit and counted as one. Now:
 - brand bias reads the signed report and the direction of an exchange, not only
   free-text area words.
 
+## 9. People deliberately messing with it (Session 78e)
+
+The question is not "can someone enter nonsense" — they always can — but **whose
+answers can their nonsense reach**. That decides the defence.
+
+| Who can be affected | Through | Defence | Where |
+|---|---|---|---|
+| **Only themselves** | profile, closet reports, purchase outcomes | detect, don't learn from it, say so | `plausibility.ts`, `personalEase.ts` |
+| **Other people's status** | likes, helpful votes | only claimed, non-author votes count | `countedVotes.ts` |
+| **Other people's size answers** | nothing today | — (cross-user learning not built; design below) | — |
+
+### 9.1 Own data: a troll can only hurt their own answer
+
+All fit learning is **per user** (decided in Session 78). So the aim here is not to
+stop anyone — it is to keep the engine from presenting a confident answer built on
+numbers that describe nobody, and to tell the wearer which numbers look wrong,
+because honest typos are far more common than trolling.
+
+- **Body that doesn't hang together.** Each field is bounded alone by the profile API,
+  but chest 58 with waist 110 passes every bound. `bodyPlausibility` checks the fields
+  *against each other* (waist vs chest, shoulder vs chest), with bounds deliberately
+  wide — a real body can be unusual, and telling someone their true measurements are
+  wrong is its own failure. It never refuses and never alters a number: confidence is
+  capped at `CONFIDENCE_CAPS.implausibleBody` (the regional-average ceiling) and the
+  explanation names the pair that looks odd.
+- **Reports that can't be true.** A closet report whose implied ease is far outside
+  anything a fit preference means (beyond `EASE_CM` by `PERSONAL_EASE.plausibleMarginSteps`
+  size steps — e.g. "too tight" on a garment 40 cm bigger than the chest) is excluded
+  before the consistency vote and named in the explanation. This matters even when
+  such reports are the **majority**: three absurd reports are not outvoted by one
+  honest one, they are removed first (test: `personalEase.test.ts`, which on the
+  previous engine learned a preferred ease of 151 cm).
+- **Reports that contradict each other** — §8: the largest consistent set wins; no
+  strict majority → learn nothing and say so.
+- **Outcomes** — a return or exchange must state a direction (§8), so an untouched
+  form can no longer register as evidence.
+- **Volume.** Writes are rate-limited per network: closet 120 / 10 min, outcomes
+  30 / 10 min. These are working values chosen to be far above honest use, not
+  measurements.
+
+### 9.2 Community: votes that confer status
+
+Anyone with a session can like a look or mark an answer helpful — that is feedback
+and stays open. But the **daily leaderboard, badges, and the order answers are shown
+in** are status other people read, and before Session 78 they counted every vote. An
+anonymous account is one cleared cookie away, so one person could add votes without
+limit.
+
+Now a vote **counts** only when cast by a **claimed** account that is **not the
+author** (`countedVotes.ts`). Self-likes on looks are refused (400); self-votes on
+answers already were. An anonymous vote is still saved, and the voter is told it
+counts once they claim. Claiming costs a username and password and is limited to
+**5 per network per hour**; votes 60 / 10 min, likes 60 / 10 min.
+
+Verified live (Session 78e, local dev): own like → 400; anonymous like → saved, look
+not on the board; claimed like → on the board with 1. The claim limit admits exactly
+5 (in-memory limiter, unit-checked). ⚠ Locally `UPSTASH_REDIS_REST_*` is empty, so dev
+uses the per-process counter, which resets when Next recompiles the route — a live
+run once showed 6 claims succeed across such a reload. Production runs the Redis
+limiter; that it is configured there has not been re-checked this session.
+
+### 9.3 What still gets through (residual risk, stated)
+
+- **Several claimed accounts.** Five claims per network per hour is a cost, not a
+  wall: a person with patience, or several networks, can build a handful of voting
+  accounts. The leaderboard is a daily ranking of looks; the damage ceiling is a
+  look ranking higher than it should. Accepted for now.
+- **Shared networks.** The limit is per IP, so a campus or office NAT shares one
+  budget of 5 claims per hour. ⚠ Not observed yet; if it happens the limit is one
+  number in the claim route.
+- **Lying about one's own body** is undetectable when the lie is plausible. It
+  only changes that person's own answers.
+
+### 9.4 Cross-user brand knowledge — the defences it would need (design only)
+
+Decided in Session 78: **not built**. Learning "this brand runs small" from
+*everyone's* reports is the first feature where one person's input changes
+another person's size, so it is the first place a troll could hurt someone else.
+If it is built later, it should start from this, not from a blank page:
+
+1. **Only claimed accounts contribute**, and only accounts older than a minimum
+   age — the same rule as §9.2, plus time, because time is the one cost a script
+   cannot parallelise.
+2. **One vote per account per brand × category**, the account's own *net*
+   direction (after §8's consistency filter and §9.1's plausibility filter), not
+   one per report — so an account cannot outvote others by filing many.
+3. **A minimum number of distinct accounts** before any shift is applied, and the
+   shift is shown with that count ("12 people report …").
+4. **Robust aggregation**: median-of-means over account votes, or a trimmed mean
+   that drops the extreme tail — a few coordinated accounts move a median far less
+   than a mean.
+5. **Capped and ranked below personal evidence**: at most one half-step, and never
+   applied when the wearer's own closet already speaks for that brand.
+6. **Separate from the engine's per-user path**, with its own provenance label on
+   screen, so a wrong crowd prior is visible and attributable.
+
+Every threshold above would enter `scoringConstants.ts` as `assumed` until data
+exists to measure it.
+
 ## Calibration table
 
 Generated from `scoringConstants.ts` (`PROVENANCE`). Every **assumed** row is a
@@ -298,6 +397,12 @@ number we have not yet earned; the test fails if one is missing here.
 | `PERSONAL_EASE.noticeableCm` | 0.2 | assumed | a fifth of a centimetre is not a wearable difference |
 | `PERSONAL_EASE.feelingResolution` | 0.25 | assumed | derived from the scale's design — options half a step apart, so a choice means within a quarter step — not from data |
 | `PERSONAL_EASE.majority` | 0.5 | assumed | learn only from a strict majority of mutually consistent reports |
+| `PERSONAL_EASE.plausibleMarginSteps` | 2 | assumed | wide on purpose: only a wrong garment or body number falls outside |
+| `PLAUSIBILITY.waistOverChestCm` | 35 | assumed | wide bound meant to catch typos; not fitted to anthropometric data — ANSUR II would be the source to fit it to |
+| `PLAUSIBILITY.chestOverWaistCm` | 55 | assumed | as above; wide of any chest–waist drop we expect to see (UNVERIFIED — no dataset checked) |
+| `PLAUSIBILITY.shoulderShareMin` | 0.3 | assumed | wide bounds on shoulder breadth ÷ chest circumference (UNVERIFIED — the typical share has not been checked against a dataset) |
+| `PLAUSIBILITY.shoulderShareMax` | 0.65 | assumed | as shoulderShareMin |
+| `CONFIDENCE_CAPS.implausibleBody` | 0.4 | assumed | same ceiling as a regional-average body: we are not sure the numbers are the wearer's |
 | `BRAND_BIAS.minEvidence` | 2 | assumed | two same-direction reports before a brand is said to run big or small |
 | `DIRECTION.directional` | 3 | assumed | between 'just right' (0) and 'a bit snug/roomy' (±5) |
 | `DIRECTION.min` | -10 | assumed | the scale's end; its MEANING (one ladder step) is cited — see DIRECTION.max |

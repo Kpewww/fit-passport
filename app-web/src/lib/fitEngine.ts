@@ -36,6 +36,7 @@ import { reportConsistency } from "./closetConsistency";
 import { personalEaseTarget, resolveEase, type ResolvedEase } from "./personalEase";
 import { CONFIDENCE_WEIGHTS } from "./confidenceWeights";
 import { measureStability, stabilityFactor, type Stability } from "./stability";
+import { bodyPlausibility } from "./plausibility";
 import {
   AGREEMENT,
   ANCHOR_WEIGHTS,
@@ -907,6 +908,13 @@ export function recommend(
   const disagreement = signalDisagreement(ranked, ladder);
   const conflictParts: string[] = [];
   if (easeUsed.contradiction) conflictParts.push(easeUsed.contradiction);
+  const implausible = bodyPlausibility(profile);
+  if (implausible.length) {
+    conflictParts.push(
+      `Your measurements look unusual together (${implausible.join("; ")}). If one is a ` +
+        `typo, fixing it on your passport will sharpen this.`,
+    );
+  }
   // A pick that the wearer's own tape-measure error could flip must say so: the
   // confidence already fell (stabilityFactor), and a lower number with no reason
   // would break the explainability invariant.
@@ -957,6 +965,11 @@ export function recommend(
   // can never imply we know the user's measurements.
   if (profile.chestIsEstimated) {
     for (const r of ranked) r.confidence = Math.min(r.confidence, CONFIDENCE_CAPS.estimatedBody);
+  }
+  // Measurements that describe no plausible body get the same ceiling as a guessed
+  // one (plausibility.ts); the reason is in conflictNote above.
+  if (implausible.length) {
+    for (const r of ranked) r.confidence = Math.min(r.confidence, CONFIDENCE_CAPS.implausibleBody);
   }
 
   const best = ranked[0];

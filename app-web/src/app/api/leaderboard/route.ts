@@ -10,6 +10,7 @@
 // here exposes anything a feed row doesn't.
 
 import { NextResponse } from "next/server";
+import { COUNTED_VOTE } from "@/lib/countedVotes";
 import { prisma } from "@/lib/db";
 import { invisibleUserIds } from "@/lib/blocks";
 import { readSession } from "@/lib/session";
@@ -35,18 +36,20 @@ export async function GET(req: Request) {
     // the feed where the author can still see their own.
     where: {
       createdAt: { gte: since },
+      ...COUNTED_VOTE,
       outfit: { hidden: false, user: { deactivated: false }, ...notBlockedUser },
     },
-    select: { outfitId: true, outfit: { select: { userId: true } } },
+    select: { outfitId: true, userId: true, outfit: { select: { userId: true } } },
   });
 
   // --- helpful votes cast inside the window, with the answer's author ---
   const windowVotes = await prisma.answerVote.findMany({
     where: {
       createdAt: { gte: since },
+      ...COUNTED_VOTE,
       answer: { hidden: false, user: { deactivated: false }, ...notBlockedUser },
     },
-    select: { answer: { select: { userId: true } } },
+    select: { userId: true, answer: { select: { userId: true } } },
   });
 
   // Tally in JS rather than groupBy: we need to attribute a like to the OUTFIT'S
@@ -55,12 +58,14 @@ export async function GET(req: Request) {
   // `Leaderboard` sketch — derived, never stored as truth).
   const likesByOutfit = new Map<string, number>();
   const likesByAuthor = new Map<string, number>();
-  for (const l of windowLikes) {
+  // An author's own like never counts (countedVotes.ts); Prisma cannot compare two
+  // columns in a where, so the self-votes are dropped here.
+  for (const l of windowLikes.filter((x) => x.userId !== x.outfit.userId)) {
     likesByOutfit.set(l.outfitId, (likesByOutfit.get(l.outfitId) ?? 0) + 1);
     likesByAuthor.set(l.outfit.userId, (likesByAuthor.get(l.outfit.userId) ?? 0) + 1);
   }
   const helpfulByAuthor = new Map<string, number>();
-  for (const v of windowVotes) {
+  for (const v of windowVotes.filter((x) => x.userId !== x.answer.userId)) {
     helpfulByAuthor.set(v.answer.userId, (helpfulByAuthor.get(v.answer.userId) ?? 0) + 1);
   }
 
@@ -74,7 +79,8 @@ export async function GET(req: Request) {
           title: true,
           occasion: true,
           createdAt: true,
-          _count: { select: { likes: true } },
+          // The displayed total counts the same likes the ranking does (countedVotes.ts).
+          _count: { select: { likes: { where: COUNTED_VOTE } } },
           items: { orderBy: { sortIndex: "asc" }, select: { category: true, color: true } },
           user: {
             select: {

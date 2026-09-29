@@ -6,6 +6,7 @@
 
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { COUNTED_VOTE } from "@/lib/countedVotes";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { rankAnswers } from "@/lib/posts";
@@ -62,7 +63,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
               fitProfile: { select: { avatarDataUrl: true } },
             },
           },
-          _count: { select: { votes: true } },
+          // Ranked by votes that COUNT (countedVotes.ts): the order decides which fit
+          // advice is read first, so a cleared cookie must not buy a place in it.
+          _count: { select: { votes: { where: COUNTED_VOTE } } },
           votes: { where: { voterKey: user.id }, select: { id: true } },
         },
       },

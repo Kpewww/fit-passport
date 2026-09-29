@@ -3,10 +3,13 @@
 // "Helpful" votes on answers. Same anonymous-friendly shape as outfit likes:
 // keyed by the session id and deduped by unique(answerId, voterKey), so a
 // first-time visitor who got a genuinely useful answer can still say so.
-// You can't vote for your own answer.
+// You can't vote for your own answer. Only votes from claimed accounts rank an
+// answer (countedVotes.ts).
 
 import { NextResponse } from "next/server";
+import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import { z } from "zod";
+import { COUNTED_VOTE } from "@/lib/countedVotes";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 
@@ -16,6 +19,9 @@ const Body = z.object({
 });
 
 export async function POST(req: Request) {
+  // Bounds scripted voting. Working value, not a measurement.
+  const rl = await rateLimit(clientKey(req, "vote"), 60, 10 * 60_000);
+  if (!rl.ok) return tooMany(rl.retryAfterSec);
   const user = await getCurrentUser();
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
@@ -42,6 +48,8 @@ export async function POST(req: Request) {
     await prisma.answerVote.deleteMany({ where: { answerId, voterKey: user.id } });
   }
 
-  const helpfulCount = await prisma.answerVote.count({ where: { answerId } });
-  return NextResponse.json({ helpfulCount, votedByMe: helpful });
+  // The same count the thread ranks by. An anonymous vote is kept — it is still
+  // feedback — and `counts` tells the voter it joins the ranking once they claim.
+  const helpfulCount = await prisma.answerVote.count({ where: { answerId, ...COUNTED_VOTE } });
+  return NextResponse.json({ helpfulCount, votedByMe: helpful, counts: user.claimed });
 }

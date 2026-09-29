@@ -130,6 +130,8 @@ export const CONFIDENCE_CAPS = {
   verdictOff: 0.6,
   /** The body is a regional average, not the wearer's own. */
   estimatedBody: 0.4,
+  /** The wearer's own measurements are implausible together (PLAUSIBILITY). */
+  implausibleBody: 0.4,
   /** By where the size chart came from (applied at the route). */
   provenance: { estimated: 0.5, "brand-chart": 0.75 },
 } as const;
@@ -213,6 +215,26 @@ export const PERSONAL_EASE = {
   feelingResolution: 0.25,
   /** Learn only when MORE than this share of the reports agree with each other. */
   majority: 0.5,
+  /**
+   * A report implying a preferred ease further than this many size steps beyond the
+   * slim…oversized range is not a preference — it is a wrong garment or body number.
+   */
+  plausibleMarginSteps: 2,
+} as const;
+
+/**
+ * Body measurements that are implausible TOGETHER — deliberately wide, because a real
+ * body can be unusual; these catch typos (chest 58 with waist 110) and nonsense, not
+ * shapes. Each only lowers confidence and asks; nothing is refused or changed.
+ */
+export const PLAUSIBILITY = {
+  /** Waist this much above chest. */
+  waistOverChestCm: 35,
+  /** Chest this much above waist. */
+  chestOverWaistCm: 55,
+  /** Shoulder breadth as a share of chest circumference. */
+  shoulderShareMin: 0.3,
+  shoulderShareMax: 0.65,
 } as const;
 
 /**
@@ -338,6 +360,12 @@ export const PROVENANCE: Record<string, ConstantSource> = {
   "PERSONAL_EASE.noticeableCm": A("a fifth of a centimetre is not a wearable difference"),
   "PERSONAL_EASE.feelingResolution": A("derived from the scale's design — options half a step apart, so a choice means within a quarter step — not from data"),
   "PERSONAL_EASE.majority": A("learn only from a strict majority of mutually consistent reports"),
+  "PERSONAL_EASE.plausibleMarginSteps": A("wide on purpose: only a wrong garment or body number falls outside"),
+  "PLAUSIBILITY.waistOverChestCm": A("wide bound meant to catch typos; not fitted to anthropometric data — ANSUR II would be the source to fit it to"),
+  "PLAUSIBILITY.chestOverWaistCm": A("as above; wide of any chest–waist drop we expect to see (UNVERIFIED — no dataset checked)"),
+  "PLAUSIBILITY.shoulderShareMin": A("wide bounds on shoulder breadth ÷ chest circumference (UNVERIFIED — the typical share has not been checked against a dataset)"),
+  "PLAUSIBILITY.shoulderShareMax": A("as shoulderShareMin"),
+  "CONFIDENCE_CAPS.implausibleBody": A("same ceiling as a regional-average body: we are not sure the numbers are the wearer's"),
   "BRAND_BIAS.minEvidence": A("two same-direction reports before a brand is said to run big or small"),
   "DIRECTION.directional": A("between 'just right' (0) and 'a bit snug/roomy' (±5)"),
 

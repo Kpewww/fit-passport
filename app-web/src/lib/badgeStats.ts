@@ -4,6 +4,7 @@
 
 import { prisma } from "./db";
 import type { BadgeStats } from "./badges";
+import { countedVoteWhere } from "./countedVotes";
 
 export async function computeBadgeStats(userId: string, communityListed: boolean): Promise<BadgeStats> {
   const [items, outcomeCount, refreshCount, outfits, answers] = await Promise.all([
@@ -17,11 +18,13 @@ export async function computeBadgeStats(userId: string, communityListed: boolean
     // valued the work, and hidden work by definition didn't survive review.
     prisma.outfit.findMany({
       where: { userId, hidden: false },
-      select: { _count: { select: { likes: true } } },
+      // Only likes from OTHER, claimed accounts (countedVotes.ts) — a badge is status
+      // other people see, and anonymous or self likes were free to farm.
+      select: { _count: { select: { likes: { where: countedVoteWhere(userId) } } } },
     }),
     prisma.answer.findMany({
       where: { userId, hidden: false },
-      select: { id: true, _count: { select: { votes: true } } },
+      select: { id: true, _count: { select: { votes: { where: countedVoteWhere(userId) } } } },
     }),
   ]);
 

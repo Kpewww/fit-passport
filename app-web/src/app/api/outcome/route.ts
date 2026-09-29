@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { ratingFromDirection } from "@/lib/fitDirection";
@@ -15,6 +16,10 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  // Outcomes are learned from; a script posting hundreds would steer the wearer's own
+  // learning and fill the table. Nobody returns thirty things in ten minutes.
+  const rl = await rateLimit(clientKey(req, "outcome"), 30, 10 * 60_000);
+  if (!rl.ok) return tooMany(rl.retryAfterSec);
   const user = await getCurrentUser();
   const parsed = OutcomeSchema.safeParse(await req.json());
   if (!parsed.success) {

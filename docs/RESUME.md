@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 78d · 2026-09-29 — LIVE, 582 tests + 1 honest skip.**
+> **Last updated: Session 78e · 2026-09-29 — LIVE, 587 tests + 1 honest skip.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -36,7 +36,7 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 **技术栈:** Node 24 LTS + **Next.js 14.2.35** App Router + React 18 + TS +
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
 Framer Motion(**Lenis 已移除**);three.js 懒加载:徽章 inspect **以及** 3D 人台/松量壳(`BodyMesh3D.tsx`)。
-命令:`npm run dev`、`npm run typecheck`、`npm test`(**582 个 + 1 个诚实跳过;看退出码,不要只看 Tests 那一行**)、`npm run build`、
+命令:`npm run dev`、`npm run typecheck`、`npm test`(**587 个 + 1 个诚实跳过;看退出码,不要只看 Tests 那一行**)、`npm run build`、
 改 schema 后 `npm run db:push`(**还必须建 migration**,见铁律 10)、生成文档 PDF `npm run docs:pdf`。
 测量工具:`app-web/scripts/mobile-audit.mjs`(移动端布局)、
 `brand/tests/size-test.mjs`(标志尺寸)、`app-web/scripts/capture-chart.mjs`(抄品牌尺码表)、
@@ -137,6 +137,19 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
   与导航、衣橱改成用户自己照片的画廊、Check 结果**以答案开头**、首页删掉两个
   重复段落、无障碍审计(对比度 AA、焦点环、reduced-motion)。
 - **教训:宽屏要在 1920 看,不只是 1440** —— 那轮三个布局问题全是宽屏才有。
+
+**Session 78(评分系统 + 插件下载,分阶段推送 78a–78e):**
+- 规格书 `docs/design/scoring-system.md` 是评分的唯一说明:每个数字都在
+  `scoringConstants.ts` 登记来源(measured / cited / assumed),测试会校验文档与代码一致;
+  改常数后运行 `node scripts/scoring-table.mjs`。
+- 稳定性(`stability.ts`)取代原来的前两名差距:按体测 ±2 cm、尺码表 ±1 cm 做网格,
+  页面上显示"胸围在 X–Y cm 之间都选这个"。
+- 合身感受按区间处理,互相矛盾的反馈不会被平均;购买结果(outcome)必须说明往哪个方向不合身。
+- 防捣乱(§9):自己的数据只影响自己 → 检测、不学习、说明原因;社区投票只计已认领、
+  非作者的账号;跨用户品牌知识**只写了设计,没有实现**。
+- 首页以插件为主,URL 输入框折叠并标注为 Beta;`/extension` 提供 zip 下载。换成 Chrome
+  商店只需改 `extensionDistribution.ts` 一个常量。
+- ⚠ 本地 `.env` 的 Upstash 为空,开发环境用的是进程内限流(路由重新编译时会清零)。
 
 **下一步:见 `todo/`(做什么)与 `docs/memory/project-fit-passport-next-steps.md`
 底部(为什么)。** 客户访谈**已由创始人推迟**;插件**已不再受访谈证据门槛限制**
