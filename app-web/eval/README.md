@@ -170,7 +170,7 @@ record).
 
 S5 needs the captures in `local/captures/`, which are git-ignored and do not
 travel with a clone or a machine move; without them only B (and A, live) run.
-Re-capture with `browser-extension/scripts/try-pages.mjs`. Until a case has a `truth/` file, its accuracy columns read "truth
+Re-capture with `browser-extension/scripts/try-pages.mjs --save-captures local/captures --ids <case ids>` (see `todo/engineering/09`). Until a case has a `truth/` file, its accuracy columns read "truth
 pending" — observations are still recorded.
 
 `src/lib/evalCases.test.ts` replays every **committed** capture that has a truth

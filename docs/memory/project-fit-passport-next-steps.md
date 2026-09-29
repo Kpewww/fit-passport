@@ -723,3 +723,23 @@ Nothing left in the redesign queue. Possible follow-ups, none started:
 base64 in the database. That is fine for the prototype. **Move them to object
 storage (e.g. Vercel Blob or S3) before inviting a real cohort.** Each photo is
 ~90 KB in a Postgres row, and the closet API returns them inline.
+
+## Session 78 (2026-09-29) — scoring system + extension download, DONE (78a–78f)
+
+Founder's request: fix the known bugs, a detailed scoring system that cannot
+hallucinate, holds up against deliberate abuse, where small changes don't swing the
+answer and "feeling" is quantified; upgrade the engine and the internal eval; lead
+the homepage with a downloadable extension, URL box folded as beta.
+**All shipped.** Spec: `docs/design/scoring-system.md` (§1–9). Decisions recorded:
+cross-user brand knowledge = **per-user only, spec'd not built** (§9.4); closet
+photos to object storage = **later**; hero = **extension first, URL folded**.
+
+**Next, by who can move it** (the board is `todo/`):
+- **People:** ground truth for the 11 eval cases (`todo/people/01`) — every
+  calibration number (Brier, confidently-wrong) reads n = 0 until this exists;
+  confirm production has the Upstash variables (`todo/people/03`).
+- **Engineering:** re-capture eval pages so S5 runs (`09`, needs `--ids`); demo
+  fixture units (`08`); non-table charts (`03`, needs a real capture); closet photos
+  (`07`, needs a Blob store).
+- **When the Chrome Web Store listing exists:** change the one constant in
+  `extensionDistribution.ts` to `{ kind: "store", href }`.

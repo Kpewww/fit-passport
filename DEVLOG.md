@@ -31,6 +31,26 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 78h — Close out Session 78
+
+Board and memory only; no code.
+
+- `todo/engineering/09` — re-capture the eval pages so S5 runs again. Includes the
+  `--ids` flag: without it `try-pages.mjs` names a capture after the host and the
+  eval silently skips it (caught while writing the instruction, not after).
+- `todo/people/03` — confirm the Upstash variables exist in Vercel production. The
+  claim limit (78e) is only real with Redis; locally they are empty, and it was not
+  re-checked for production. No Vercel CLI on this machine.
+- Next-steps memory records Session 78 as done, with the three decisions the
+  founder made in plan mode.
+
+Session 78 in one line per push: 78a bugs · 78g homepage + extension download ·
+78b spec + constants registry · 78c stability · 78d feeling as intervals, signed
+outcomes · 78e deliberate abuse · 78f eval robustness (and the contradictory-closet
+defect it found).
+
+---
+
 ## 2026-09-29 · Session 78f — The evaluation measures robustness, and caught the engine contradicting itself
 
 Phase F: the internal evaluation (`app-web/eval/`) scored extraction, refusals and
