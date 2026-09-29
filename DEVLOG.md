@@ -31,6 +31,89 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 76 (R6) — Every other page speaks the same visual language
+
+Redesign step R6: a mechanical pass over the pages R1–R5 did not rebuild
+(passport's surrounding panels (`MetalCard` untouched), community, outfits,
+badges, help, account, onboarding, history, refresh, login, recover, reset,
+admin, `u/[code]`, `ask/[id]`) and the components they share.
+
+**Typographic arrows → icons, with a guard.**
+- `src/lib/noGlyphArrows.test.ts` strips comments (including JSX `{/* */}`), then
+  fails on → ← ↻ ✓ ✕ ✦ ↓ ⌄ ▲ ▼ ✎ ＋ in any `.tsx`. It was written first and failed
+  on 63 lines; it passes now.
+  - ≈, –, — and × are allowed: punctuation and mathematics, not icons.
+  - `.ts` files are not scanned: the only hits there were an LLM prompt
+    ("inches → ×2.54"), which no one sees.
+- Most replacements were generic: "Text →" became the text plus `ArrowRight`,
+  and "← Text" became `ArrowLeft` plus the text.
+- **The contextual ones:**
+  - "Copied ✓" → a check icon;
+  - "Password updated ✓", whose ✓ the page also tested for, → "Password
+    updated.", tested by equality;
+  - ⌄ → `CaretDown`;
+  - ✕ → `Close`, as 40–44 px buttons;
+  - ↻ / ↓ / ✎ → `Refresh` / `Download` / `Pencil`;
+  - "Save →" / "← Skip" → the Button's `arrow` / `icon` props.
+- **Arrows that meant something became words:** the exchange in history ("M for
+  L"), a fit change on refresh ("tight to loose"), and keyboard instructions
+  ("the arrow keys" instead of "← →").
+
+**Stock colours → semantic tokens.** One scripted pass over 24 files:
+- green, amber and red at every shade and utility map to `ok`, `warn` and `bad`
+  and their tints;
+- `neutral-*` maps to `paper` / `line` / `ink`;
+- blue and pink "M/W" tags on the public profile got the closet's neutral
+  treatment.
+- Files where colour *is* the content were skipped: badges, metals, the
+  mannequin's garment colours, the figures, and the closet's folder skins.
+
+**Also changed:**
+- **Buttons:** six cobalt primary buttons (community "Claim account" ×2,
+  passport "Refresh" and "Save — claim account", `AskSection`, a thread's post
+  button) became ink pills. Cobalt remains for selection, progress, links and
+  the homepage hero.
+- **Shadows:** `shadow-card` came off passport's three panels and community's
+  member cards. It stays where it means depth: refresh's card stack and the
+  folder skins.
+- **Community:**
+  - a `PageHeader` ("Dress with people built like you", eyebrow "Community");
+  - both hand-built toggles, board window and whose looks, are now `Segmented`,
+    with the proper radiogroup semantics;
+  - *Report* on a look waits for hover on screens that can hover, and is always
+    shown on touch.
+- **Section titles:** the eight remaining uppercase-tracked `h2`s across
+  ask/badges/community/help/history/outfits/profile became `text-h3`, the same
+  as the closet and Check.
+- **Outfits:** the header link no longer wraps.
+
+**Not done, deliberately:** a wholesale move of every page onto `PageHeader` /
+`Page`. Their headers already use the same serif `text-h1` and lede, so the
+visible gain was nil, and the risk was in pages with bespoke header content.
+
+Checked:
+- renders of community, passport, account, outfits, badges, refresh, help,
+  history and login at 1440 with the demo closet, with no page errors;
+- `mobile-audit` shows no overflow on any page;
+- First Load JS is within R0 +10% everywhere: /community 124 (122), /passport
+  128 (126), /badges 112 (109), /account 104;
+- 518 tests pass (+2 for the guard); typecheck and build are clean.
+
+### New invariant
+- **(69) No typographic arrows or ticks standing in for icons.**
+  `noGlyphArrows.test.ts` enforces it on rendered code. Use `components/Icon.tsx`,
+  or a word when the arrow meant "to" or "for".
+
+### Files touched
+```
+app-web/src/lib/noGlyphArrows.test.ts                      (new guard)
+app-web/src/app/{account,admin,ask/[id],badges,community,help,history,login,onboarding,outfits,passport,recover,refresh,reset,u/[code]}/page.tsx
+app-web/src/components/{AskSection,BrandInput,Evidence,FitDirectionInput,OutfitCard,ReportButton,SizeConverter,SizeInput,TodayBoard}.tsx
+app-web/src/app/closet/page.tsx                            (remaining neutral/red classes)
+```
+
+---
+
 ## 2026-09-28 · Session 76 (R5) — The homepage says each thing once
 
 Redesign step R5. Open decision #4 is closed: the founder chose the cut list on

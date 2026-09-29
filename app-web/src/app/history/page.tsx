@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button, Card, EmptyState, Field, LinkButton, inputClass } from "@/components/ui";
+import { ArrowRight } from "@/components/Icon";
 
 type Outcome = {
   id: string;
@@ -77,7 +78,7 @@ export default function HistoryPage() {
             <EmptyState
               title="Nothing to record yet"
               body="Check a product first — then come back here to log whether the recommended size actually fit."
-              action={<LinkButton href="/check">Check a product →</LinkButton>}
+              action={<LinkButton href="/check">Check a product <ArrowRight size={14} className="-mt-px inline" /></LinkButton>}
             />
           </div>
         ) : (
@@ -123,7 +124,7 @@ export default function HistoryPage() {
                 </Field>
               </div>
 
-              <fieldset className="rounded-xl border border-neutral-200 p-3">
+              <fieldset className="rounded-xl border border-line p-3">
                 <legend className="px-1 text-xs uppercase tracking-widest text-ink-faint">
                   Area issues (optional)
                 </legend>
@@ -164,7 +165,7 @@ export default function HistoryPage() {
         {/* Timeline */}
         {outcomes.length > 0 && (
           <div className="mt-8 space-y-2">
-            <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-faint">
+            <h2 className="text-h3 font-semibold text-ink">
               Recorded outcomes
             </h2>
             {outcomes.map((o) => (
@@ -174,11 +175,11 @@ export default function HistoryPage() {
                     {o.product.brand} · {o.product.productName} · size {o.purchasedSize}
                   </div>
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    o.decision === "keep" ? "bg-green-100 text-green-800"
-                      : o.decision === "return" ? "bg-red-100 text-red-800"
-                        : "bg-amber-100 text-amber-800"
+                    o.decision === "keep" ? "bg-ok-tint text-ok"
+                      : o.decision === "return" ? "bg-bad-tint text-bad"
+                        : "bg-warn-tint text-warn"
                   }`}>
-                    {o.decision}{o.exchangedForSize ? ` → ${o.exchangedForSize}` : ""}
+                    {o.decision}{o.exchangedForSize ? ` for ${o.exchangedForSize}` : ""}
                   </span>
                 </div>
                 {o.notes && <p className="mt-1 text-sm text-ink-soft">{o.notes}</p>}

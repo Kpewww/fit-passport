@@ -947,13 +947,13 @@ function ItemCard({
           <CaretDown size={16} className={`text-ink-faint transition-transform ${expanded ? "rotate-180" : ""}`} />
         </button>
         {expanded && (
-          <div className="mt-3 grid grid-cols-3 gap-2 border-t border-neutral-100 pt-3 sm:grid-cols-4">
+          <div className="mt-3 grid grid-cols-3 gap-2 border-t border-line pt-3 sm:grid-cols-4">
             {group.items.map((it) => (
-              <div key={it.id} className="group/var relative flex flex-col items-center gap-1 rounded-lg border border-neutral-200 bg-white p-2">
+              <div key={it.id} className="group/var relative flex flex-col items-center gap-1 rounded-lg border border-line bg-white p-2">
                 <ItemThumb item={it} size={40} />
                 <span className="text-[11px] font-medium text-ink">{it.size}</span>
                 {/* hover popover with the description + actions */}
-                <div className="pointer-events-none absolute -top-1 left-1/2 z-20 w-36 -translate-x-1/2 -translate-y-full rounded-lg border border-neutral-200 bg-white p-2 text-center opacity-0 shadow-lift transition-opacity group-hover/var:pointer-events-auto group-hover/var:opacity-100">
+                <div className="pointer-events-none absolute -top-1 left-1/2 z-20 w-36 -translate-x-1/2 -translate-y-full rounded-lg border border-line bg-white p-2 text-center opacity-0 shadow-lift transition-opacity group-hover/var:pointer-events-auto group-hover/var:opacity-100">
                   <p className="text-xs font-medium text-ink">size {it.size}{it.color ? ` · ${it.color}` : ""}</p>
                   <FitStars rating={it.fitRating} size={11} />
                   <div className="mt-1 flex justify-center gap-2 text-[11px]">
@@ -1052,7 +1052,7 @@ function MoveMenu({
     <select
       value={currentId ?? ""}
       onChange={(e) => onMove(e.target.value)}
-      className="rounded-lg border border-neutral-300 px-2 py-1 text-xs text-ink-soft"
+      className="rounded-lg border border-line px-2 py-1 text-xs text-ink-soft"
       title="Move to collection"
     >
       {collections.map((c) => (
@@ -1119,7 +1119,7 @@ function EditRow({
         <div className="sm:col-span-6 pr-20">
           <Field label="Photo" hint="optional">
             <div className="flex items-center gap-3">
-              <label className="flex h-14 w-14 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-neutral-300 bg-white text-lg text-ink-faint hover:border-brand">
+              <label className="flex h-14 w-14 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-lg text-ink-faint hover:border-brand">
                 {f.imageDataUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={f.imageDataUrl} alt="" className="h-full w-full object-cover" />
@@ -1198,7 +1198,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
             title={c.name}
             onClick={() => onChange(value === c.name ? "" : c.name)}
             className={`h-6 w-6 rounded-full border transition-transform hover:scale-110 ${
-              value === c.name ? "scale-110 border-brand ring-2 ring-brand/40" : "border-neutral-300"
+              value === c.name ? "scale-110 border-brand ring-2 ring-brand/40" : "border-line"
             }`}
             style={{ backgroundColor: c.hex }}
           />
@@ -1213,7 +1213,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
           onChange={(e) => onChange(e.target.value)}
         />
         <label
-          className="relative flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-neutral-300"
+          className="relative flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-line"
           title="Pick any color"
           style={{ backgroundColor: wheelValue }}
         >
@@ -1300,7 +1300,7 @@ function itemName(it: Item): string {
 // the white file cards inside. Keyed by name so a user's pick can be stored.
 type FolderColor = { tab: string; body: string; edge: string; swatch: string };
 const FOLDER_COLORS: Record<string, FolderColor> = {
-  amber: { tab: "bg-amber-300", body: "from-amber-100 to-amber-200/80", edge: "border-amber-400/60", swatch: "bg-amber-300" },
+  amber: { tab: "bg-warn", body: "from-amber-100 to-amber-200/80", edge: "border-warn/60", swatch: "bg-warn" },
   sky: { tab: "bg-sky-300", body: "from-sky-100 to-sky-200/80", edge: "border-sky-400/60", swatch: "bg-sky-300" },
   emerald: { tab: "bg-emerald-300", body: "from-emerald-100 to-emerald-200/80", edge: "border-emerald-400/60", swatch: "bg-emerald-300" },
   rose: { tab: "bg-rose-300", body: "from-rose-100 to-rose-200/80", edge: "border-rose-400/60", swatch: "bg-rose-300" },
@@ -1437,7 +1437,7 @@ function FileCard({
         tabIndex={0}
         onClick={() => onOpen(group)}
         onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen(group))}
-        className="cursor-pointer rounded-lg border border-neutral-200 bg-white px-3 py-2 shadow-sm transition-all duration-200 hover:z-30 hover:border-neutral-300 hover:shadow-lift"
+        className="cursor-pointer rounded-lg border border-line bg-white px-3 py-2 shadow-sm transition-all duration-200 hover:z-30 hover:border-line hover:shadow-lift"
       >
         {/* key-info row — always visible */}
         <div className="flex items-center gap-2">
@@ -1458,7 +1458,7 @@ function FileCard({
             front ? "mt-2 max-h-40 opacity-100" : "max-h-0 opacity-0 group-hover/file:mt-2 group-hover/file:max-h-40 group-hover/file:opacity-100"
           }`}
         >
-          <div className="flex items-center gap-3 border-t border-neutral-100 pt-2">
+          <div className="flex items-center gap-3 border-t border-line pt-2">
             <ItemThumb item={head} size={40} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-xs text-ink-soft">
@@ -1473,7 +1473,7 @@ function FileCard({
               className={`flex-shrink-0 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors ${
                 bucketed
                   ? "border-brand bg-brand-tint text-brand"
-                  : "border-neutral-200 text-ink-soft hover:border-brand hover:text-brand"
+                  : "border-line text-ink-soft hover:border-brand hover:text-brand"
               }`}
               title="Set aside to compare"
             >
@@ -1725,10 +1725,10 @@ function BucketPanel({
           </div>
           <div className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto">
             {items.map((it) => (
-              <div key={it.id} className="relative rounded-lg border border-neutral-100 p-2">
+              <div key={it.id} className="relative rounded-lg border border-line p-2">
                 <button
                   onClick={() => onRemove(it)}
-                  className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-200 text-[10px] leading-none text-ink-soft hover:bg-bad-tint hover:text-bad"
+                  className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-paper-dim text-[10px] leading-none text-ink-soft hover:bg-bad-tint hover:text-bad"
                   aria-label="Remove from bucket"
                 ><Close size={10} /></button>
                 <button onClick={() => onOpen(it)} className="flex w-full flex-col items-center gap-1 text-center">
@@ -1949,7 +1949,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
       {/* The shortcut sits on the first step only — it answers the first
           questions, so offering it later would be offering to redo them. */}
       {step === "brand" && (
-        <div className="mb-4 rounded-xl border border-dashed border-neutral-300 bg-neutral-50 p-3">
+        <div className="mb-4 rounded-xl border border-dashed border-line bg-paper-soft p-3">
           <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
             Have a link? Skip ahead
           </p>
@@ -2004,7 +2004,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
 
         {/* Everything the engine does not read. Reachable, not in the way. */}
         {isLast && (
-          <div className="mt-5 border-t border-neutral-200 pt-3">
+          <div className="mt-5 border-t border-line pt-3">
             <button
               type="button"
               onClick={() => setShowDetails(!showDetails)}
@@ -2022,7 +2022,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
                 <div className="sm:col-span-6">
                   <Field label="Photo" hint="optional · your own photo">
                     <div className="flex items-center gap-3">
-                      <label className="flex h-16 w-16 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-neutral-300 bg-white text-xl text-ink-faint hover:border-brand">
+                      <label className="flex h-16 w-16 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-xl text-ink-faint hover:border-brand">
                         {form.imageDataUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={form.imageDataUrl} alt="" className="h-full w-full object-cover" />

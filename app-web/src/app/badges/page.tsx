@@ -4,7 +4,7 @@
 // locked/coming-soon), and lets you pin up to 3 earned ones to your passport.
 
 import { useEffect, useState } from "react";
-import { Pin } from "@/components/Icon";
+import { ArrowLeft, Check, Pin } from "@/components/Icon";
 import Link from "next/link";
 import { Card } from "@/components/ui";
 import { BadgeSeal } from "@/components/Badges";
@@ -66,7 +66,7 @@ export default function BadgesPage() {
               to 3 earned badges to show off on your passport.
             </p>
           </div>
-          <Link href="/passport" className="text-sm text-ink-faint hover:text-brand">← Passport</Link>
+          <Link href="/passport" className="text-sm text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> Passport</Link>
         </div>
 
         <p className="mt-4 text-sm text-ink-soft">
@@ -98,7 +98,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     // an expensive object (see the comment on .defer-offscreen in globals.css).
     // Off-screen tracks should not sit in GPU memory.
     <div className="defer-offscreen mt-8">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-ink-soft">{title}</h2>
+      <h2 className="mb-3 text-h3 font-semibold text-ink">{title}</h2>
       {children}
     </div>
   );
@@ -135,7 +135,7 @@ function BadgeCard({
           <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${st.bg} ${st.text}`}>
             {st.label}
           </span>
-          {badge.earnedNow && <span className="text-[10px] text-green-600">✓ earned</span>}
+          {badge.earnedNow && <span className="inline-flex items-center gap-0.5 text-[10px] text-ok"><Check size={10} />earned</span>}
         </div>
         <p className="mt-0.5 text-xs text-ink-soft">{badge.blurb}</p>
         <p className="mt-0.5 text-[11px] italic text-ink-faint">{badge.lore}</p>

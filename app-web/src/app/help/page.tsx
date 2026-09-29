@@ -8,6 +8,7 @@ import { Card } from "@/components/ui";
 import { BadgeSeal } from "@/components/Badges";
 import { BADGES, METAL_STYLE } from "@/lib/badges";
 import { Logo } from "@/components/Logo";
+import { ArrowLeft, ArrowRight } from "@/components/Icon";
 
 // Earn conditions come straight from each badge's own `blurb` in badges.ts —
 // a single source of truth, so this table can never drift from the real rules.
@@ -55,7 +56,7 @@ export default function HelpPage() {
         <Section title="Badges — how to earn each">
           <div className="space-y-2">
             {BADGES.map((b) => (
-              <div key={b.id} className="flex items-center gap-3 rounded-xl border border-neutral-200 bg-white px-3 py-2.5">
+              <div key={b.id} className="flex items-center gap-3 rounded-xl border border-line bg-white px-3 py-2.5">
                 <BadgeSeal id={b.id} metal={b.metal} size={42} title={b.title} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
@@ -185,8 +186,8 @@ export default function HelpPage() {
         </Section>
 
         <div className="mt-8 flex gap-3 text-sm">
-          <Link href="/passport" className="text-brand hover:underline">← My passport</Link>
-          <Link href="/badges" className="text-brand hover:underline">Badge library →</Link>
+          <Link href="/passport" className="text-brand hover:underline"><ArrowLeft size={14} className="-mt-px inline" /> My passport</Link>
+          <Link href="/badges" className="text-brand hover:underline">Badge library <ArrowRight size={14} className="-mt-px inline" /></Link>
         </div>
       </div>
     </main>
@@ -196,7 +197,7 @@ export default function HelpPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mt-8">
-      <h2 className="mb-3 text-sm font-semibold uppercase tracking-widest text-ink-soft">{title}</h2>
+      <h2 className="mb-3 text-h3 font-semibold text-ink">{title}</h2>
       {children}
     </div>
   );

@@ -14,6 +14,7 @@ import { FitStars } from "@/components/ui";
 import Link from "next/link";
 import { garmentLabel } from "@/lib/garments";
 import { inputClass } from "@/components/ui";
+import { ArrowRight } from "@/components/Icon";
 
 export type EvidenceView = {
   id: string;
@@ -107,7 +108,7 @@ export function ClosetAttachPicker({
         </span>
         <button
           onClick={() => { onChange(null); setOpen(false); }}
-          className="text-xs font-medium text-ink-faint hover:text-red-600"
+          className="text-xs font-medium text-ink-faint hover:text-bad"
         >
           Remove
         </button>
@@ -135,7 +136,7 @@ export function ClosetAttachPicker({
             {closet.length === 0 ? (
               <p className="px-1 py-2 text-xs text-ink-faint">
                 Your closet is empty.{" "}
-                <Link href="/closet" className="text-brand hover:underline">Add items →</Link>
+                <Link href="/closet" className="text-brand hover:underline">Add items <ArrowRight size={14} className="-mt-px inline" /></Link>
               </p>
             ) : shown.length === 0 ? (
               <p className="px-1 py-2 text-xs text-ink-faint">Nothing matches “{q}”.</p>

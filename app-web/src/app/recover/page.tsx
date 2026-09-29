@@ -46,9 +46,9 @@ export default function RecoverPage() {
             email on file. It expires in 30 minutes.
           </p>
           {devLink && (
-            <Card className="mt-6 bg-amber-50 ring-amber-200">
-              <p className="text-xs font-semibold text-amber-900">Email isn&apos;t configured (dev/beta)</p>
-              <p className="mt-1 text-xs text-amber-800">Use this link to reset directly:</p>
+            <Card className="mt-6 bg-warn-tint ring-warn/30">
+              <p className="text-xs font-semibold text-warn">Email isn&apos;t configured (dev/beta)</p>
+              <p className="mt-1 text-xs text-warn">Use this link to reset directly:</p>
               <Link href={devLink.replace(/^https?:\/\/[^/]+/, "")} className="mt-1 block break-all text-xs text-brand hover:underline">
                 {devLink}
               </Link>
@@ -77,7 +77,7 @@ export default function RecoverPage() {
                 onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="alex_fits · you@example.com · FP-XXXX-XXXX-XXXXX" />
             </Field>
-            {err && <p className="text-sm text-red-700">{err}</p>}
+            {err && <p className="text-sm text-bad">{err}</p>}
             <Button type="submit" size="lg" disabled={busy || identifier.trim().length < 2}>
               {busy ? "Sending…" : "Send reset link"}
             </Button>

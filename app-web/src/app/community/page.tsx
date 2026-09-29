@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button, Card, Field, inputClass } from "@/components/ui";
+import { Button, Card, Field, PageHeader, Segmented, inputClass } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
 import { OutfitCard } from "@/components/OutfitCard";
 import { FollowButton } from "@/components/FollowButton";
@@ -11,6 +11,7 @@ import { TodayBoard } from "@/components/TodayBoard";
 import { AskSection } from "@/components/AskSection";
 import { MetalSurface, resolveTheme } from "@/components/MetalCard";
 import type { FeedScope } from "@/lib/feed";
+import { ArrowRight } from "@/components/Icon";
 
 type Entry = {
   username: string;
@@ -103,13 +104,12 @@ export default function CommunityPage() {
 
   return (
     <main className="flex-1">
-      <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
-        <h1 className="font-serif text-h1 text-ink">Community</h1>
-        <p className="mt-2 text-ink-soft">
-          Fit is easier to trust when it comes from someone built like you. Browse
-          public closets, follow the people whose taste you trust, or enter a
-          friend&apos;s code to see theirs.
-        </p>
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-10 sm:px-6 sm:pt-14">
+        <PageHeader
+          eyebrow="Community"
+          title="Dress with people built like you"
+          lede="Fit is easier to trust when it comes from someone with your shape. Browse public closets, follow the people whose taste you trust, or enter a friend's code to see theirs."
+        />
         {follow?.claimed && (
           <p className="mt-2 text-xs uppercase tracking-widest text-ink-faint">
             {follow.followerCount} follower{follow.followerCount === 1 ? "" : "s"}
@@ -120,7 +120,7 @@ export default function CommunityPage() {
 
         <p className="mt-3 text-sm">
           <a href="#questions" className="font-medium text-brand hover:underline">
-            Ask the community about fit →
+            Ask the community about fit <ArrowRight size={14} className="-mt-px inline" />
           </a>
         </p>
 
@@ -146,11 +146,11 @@ export default function CommunityPage() {
               </Button>
             ) : (
               <Button size="md" disabled={posting} onClick={() => toggleListing(true)}>
-                {posting ? "…" : "Post me →"}
+                {posting ? "…" : <>Post me <ArrowRight size={14} className="-mt-px inline" /></>}
               </Button>
             )
           ) : (
-            <Link href="/account" className="whitespace-nowrap rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark">
+            <Link href="/account" className="whitespace-nowrap rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-black">
               Claim account
             </Link>
           )}
@@ -162,9 +162,9 @@ export default function CommunityPage() {
             labels are fixed (the follow count lives in the line above), and the
             caption below always renders one line. */}
         <div id="looks" className="mt-8 flex flex-wrap items-center gap-3 scroll-mt-20">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-soft">Latest looks</h2>
+          <h2 className="text-h3 font-semibold text-ink">Latest looks</h2>
           <ScopeTabs scope={scope} onChange={setScope} />
-          <Link href="/outfits" className="ml-auto text-xs font-medium text-brand hover:underline">Post an outfit →</Link>
+          <Link href="/outfits" className="ml-auto text-xs font-medium text-brand hover:underline">Post an outfit <ArrowRight size={14} className="-mt-px inline" /></Link>
         </div>
         <p className="mt-1 text-xs text-ink-faint">
           {scope === "following"
@@ -219,13 +219,13 @@ export default function CommunityPage() {
         </Card>
 
         {/* Public directory */}
-        <h2 className="mt-10 text-sm font-semibold uppercase tracking-widest text-ink-soft">
+        <h2 className="mt-10 text-h3 font-semibold text-ink">
           Public closets
         </h2>
         {entries === null ? (
           <p className="mt-3 text-sm text-ink-faint">Loading…</p>
         ) : entries.length === 0 ? (
-          <Card className="mt-3 bg-neutral-50 text-center">
+          <Card className="mt-3 bg-paper-soft text-center">
             <p className="text-sm text-ink-soft">
               No public closets yet. Be the first — post yourself above!
             </p>
@@ -245,7 +245,7 @@ export default function CommunityPage() {
           </div>
         )}
 
-        <Card className="mt-8 bg-neutral-50">
+        <Card className="mt-8 bg-paper-soft">
           <h2 className="text-sm font-semibold text-ink">How sharing works</h2>
           <ul className="mt-2 space-y-1.5 text-sm text-ink-soft">
             <li>• Anyone with your <strong>account code</strong> can view your closet — read only.</li>
@@ -273,20 +273,12 @@ function ScopeTabs({
     { key: "following", label: "Following" },
   ];
   return (
-    <div className="inline-flex rounded-full border border-line bg-paper-soft p-0.5 text-xs font-medium">
-      {tabs.map((t) => (
-        <button
-          key={t.key}
-          onClick={() => onChange(t.key)}
-          aria-pressed={scope === t.key}
-          className={`rounded-full px-3 py-1 transition-colors ${
-            scope === t.key ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
-          }`}
-        >
-          {t.label}
-        </button>
-      ))}
-    </div>
+    <Segmented
+      label="Whose looks"
+      options={tabs.map((t) => ({ value: t.key, label: t.label }))}
+      value={scope}
+      onChange={onChange}
+    />
   );
 }
 
@@ -303,10 +295,10 @@ function FeedEmpty({
 }) {
   if (scope === "everyone") {
     return (
-      <Card className="mt-3 bg-neutral-50 text-center">
+      <Card className="mt-3 bg-paper-soft text-center">
         <p className="text-sm text-ink-soft">
           No outfits yet.{" "}
-          <Link href="/outfits" className="text-brand hover:underline">Post the first look →</Link>
+          <Link href="/outfits" className="text-brand hover:underline">Post the first look <ArrowRight size={14} className="-mt-px inline" /></Link>
         </p>
       </Card>
     );
@@ -321,7 +313,7 @@ function FeedEmpty({
         </p>
         <Link
           href="/account"
-          className="mt-4 inline-block rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
+          className="mt-4 inline-block rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-black"
         >
           Claim account
         </Link>
@@ -329,7 +321,7 @@ function FeedEmpty({
     );
   }
   return (
-    <Card className="mt-3 bg-neutral-50 text-center">
+    <Card className="mt-3 bg-paper-soft text-center">
       <p className="text-sm text-ink-soft">
         {followingCount === 0
           ? "You're not following anyone yet. Follow a few closets below and this becomes your feed."
@@ -354,7 +346,7 @@ function MemberCard({
 }) {
   const theme = resolveTheme(entry.cardMetal, null);
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-card ring-1 ring-line transition-shadow hover:shadow-lift">
+    <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-line transition-shadow hover:ring-ink/25">
       {/* metal banner */}
       <div
         className="relative h-16"

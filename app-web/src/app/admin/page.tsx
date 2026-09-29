@@ -13,6 +13,7 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, EmptyState, LinkButton } from "@/components/ui";
+import { ArrowRight } from "@/components/Icon";
 
 type Item = {
   kind: "POST" | "ANSWER" | "OUTFIT";
@@ -97,7 +98,7 @@ export default function AdminPage() {
         </p>
 
         {data.items.length === 0 ? (
-          <Card className="mt-6 bg-neutral-50 text-center">
+          <Card className="mt-6 bg-paper-soft text-center">
             <p className="text-sm text-ink-soft">Nothing reported. Quiet is good.</p>
           </Card>
         ) : (
@@ -108,9 +109,9 @@ export default function AdminPage() {
                   <span className="rounded-full bg-paper-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft ring-1 ring-line">
                     {item.kind}
                   </span>
-                  <span className="text-xs font-semibold text-red-700">{item.count} report{item.count === 1 ? "" : "s"}</span>
+                  <span className="text-xs font-semibold text-bad">{item.count} report{item.count === 1 ? "" : "s"}</span>
                   {item.target.hidden && (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-900">
+                    <span className="rounded-full bg-warn-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-warn">
                       Hidden
                     </span>
                   )}
@@ -145,7 +146,7 @@ export default function AdminPage() {
                       href={`/ask/${encodeURIComponent(item.kind === "ANSWER" ? (item.target.postId ?? "") : item.targetId)}`}
                       className="text-brand hover:underline"
                     >
-                      Open thread →
+                      Open thread <ArrowRight size={14} className="-mt-px inline" />
                     </Link>
                   )}
                 </div>
@@ -155,7 +156,7 @@ export default function AdminPage() {
                     <button
                       disabled={busy === item.targetId}
                       onClick={() => act(item, "unhide")}
-                      className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-green-600 hover:text-green-700 disabled:opacity-50"
+                      className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-ok hover:text-ok disabled:opacity-50"
                     >
                       Restore
                     </button>
@@ -163,7 +164,7 @@ export default function AdminPage() {
                     <button
                       disabled={busy === item.targetId}
                       onClick={() => act(item, "hide")}
-                      className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-amber-600 hover:text-amber-700 disabled:opacity-50"
+                      className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-warn hover:text-warn disabled:opacity-50"
                     >
                       Hide
                     </button>
@@ -171,7 +172,7 @@ export default function AdminPage() {
                   <button
                     disabled={busy === item.targetId}
                     onClick={() => act(item, "delete")}
-                    className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-red-600 hover:text-red-700 disabled:opacity-50"
+                    className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-bad hover:text-bad disabled:opacity-50"
                   >
                     Delete permanently
                   </button>

@@ -6,7 +6,7 @@
 // inline: click a field, change it, blur/Enter saves. All fields optional.
 
 import { Suspense, lazy, useEffect, useState } from "react";
-import { Heart } from "@/components/Icon";
+import { ArrowLeft, ArrowRight, Close, Download, Heart, Pencil, Refresh } from "@/components/Icon";
 import Link from "next/link";
 import { Button, Card, LinkButton } from "@/components/ui";
 import { BodyFigure } from "@/components/BodyFigure";
@@ -224,7 +224,7 @@ export default function PassportPage() {
       <div className="mx-auto max-w-2xl px-4 sm:px-6">
         <div className="mb-3 flex items-center justify-between">
           <button onClick={() => setMode("view")} className="text-sm text-ink-faint hover:text-brand">
-            ← Back to my passport
+            <ArrowLeft size={14} className="-mt-px inline" /> Back to my passport
           </button>
           <Button size="md" onClick={() => setMode("view")}>Done editing</Button>
         </div>
@@ -238,12 +238,12 @@ export default function PassportPage() {
               write to the same passport.
             </p>
             <div className="mt-3">
-              <LinkButton href="/onboarding" size="md">Take me through it →</LinkButton>
+              <LinkButton href="/onboarding" size="md">Take me through it <ArrowRight size={14} className="-mt-px inline" /></LinkButton>
             </div>
           </div>
         )}
         {/* PASSPORT BOOK */}
-        <div className="overflow-hidden rounded-2xl bg-white shadow-lift ring-1 ring-neutral-200">
+        <div className="overflow-hidden rounded-2xl bg-white shadow-lift ring-1 ring-line">
           {/* Cover strip */}
           <div className="relative bg-gradient-to-br from-brand-dark via-brand to-brand-dark px-6 py-5 text-white">
             {/* subtle shine */}
@@ -259,7 +259,7 @@ export default function PassportPage() {
           </div>
 
           {/* Portrait + identity */}
-          <div className="grid gap-6 border-b border-neutral-200 px-6 py-6 sm:grid-cols-[auto,1fr]">
+          <div className="grid gap-6 border-b border-line px-6 py-6 sm:grid-cols-[auto,1fr]">
             <PortraitUpload
               initials={initials}
               value={profile.avatarDataUrl}
@@ -318,7 +318,7 @@ export default function PassportPage() {
                         update("preferredFit", (next.length ? next : ["regular"]).join(","));
                       }}
                       className={`relative rounded-lg border px-2 py-2 text-xs capitalize transition-all ${
-                        active ? "border-brand bg-brand-tint font-semibold text-brand" : "border-neutral-300 text-ink hover:border-neutral-400"
+                        active ? "border-brand bg-brand-tint font-semibold text-brand" : "border-line text-ink hover:border-ink/30"
                       }`}
                     >
                       {f}
@@ -386,7 +386,7 @@ export default function PassportPage() {
                       key={r}
                       onClick={() => update("region", r)}
                       className={`rounded-lg border px-3 py-1.5 text-xs font-mono transition-all ${
-                        active ? "border-brand bg-brand-tint font-semibold text-brand" : "border-neutral-300 text-ink hover:border-neutral-400"
+                        active ? "border-brand bg-brand-tint font-semibold text-brand" : "border-line text-ink hover:border-ink/30"
                       }`}
                     >{r}</button>
                   );
@@ -405,7 +405,7 @@ export default function PassportPage() {
           </div>
 
           {/* MRZ footer */}
-          <div className="border-t border-neutral-200 bg-neutral-50 px-6 py-3">
+          <div className="border-t border-line bg-paper-soft px-6 py-3">
             <p className="truncate font-mono text-[10px] tracking-widest text-ink-faint">
               {mrz(profile, me)}
             </p>
@@ -415,7 +415,7 @@ export default function PassportPage() {
         {/* Body-changed → refresh prompt */}
         {bodyChanged && (
           <div className="mt-4 flex items-center gap-3 rounded-2xl border border-brand/30 bg-brand-tint px-4 py-3 animate-fade-in-up">
-            <span className="text-lg">↻</span>
+            <Refresh size={20} className="flex-shrink-0 text-brand" />
             <div className="flex-1 text-sm text-ink">
               <p className="font-semibold">Your measurements changed</p>
               <p className="text-xs text-ink-soft">
@@ -424,11 +424,11 @@ export default function PassportPage() {
             </div>
             <Link
               href="/refresh?collections=all"
-              className="whitespace-nowrap rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white hover:bg-brand-dark"
+              className="whitespace-nowrap rounded-full bg-ink px-3.5 py-1.5 text-xs font-medium text-paper hover:bg-black"
             >
-              Refresh →
+              Refresh <ArrowRight size={14} className="-mt-px inline" />
             </Link>
-            <button onClick={() => setBodyChanged(false)} className="text-ink-faint hover:text-ink" aria-label="Dismiss">✕</button>
+            <button onClick={() => setBodyChanged(false)} className="-mr-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-ink/5 hover:text-ink" aria-label="Dismiss"><Close size={16} /></button>
           </div>
         )}
 
@@ -438,7 +438,7 @@ export default function PassportPage() {
 
       {/* STICKY SAVE BAR — always visible so the user knows edits persist and
           how to keep them. Explains autosave + gives explicit next steps. */}
-      <div className="sticky bottom-0 z-10 border-t border-neutral-200 bg-white/95 backdrop-blur">
+      <div className="sticky bottom-0 z-10 border-t border-line bg-white/95 backdrop-blur">
         <div className="mx-auto flex max-w-2xl items-center justify-between gap-3 px-6 py-3">
           <div className="flex items-center gap-2 text-xs">
             <SaveDot status={status} />
@@ -457,12 +457,12 @@ export default function PassportPage() {
               and the body's overflow-x-clip then hides the second button rather
               than letting it scroll into reach. Wrap instead of refusing to. */}
           <div className="flex flex-wrap gap-2 sm:flex-shrink-0 sm:flex-nowrap">
-            <Link href="/closet" className="flex min-h-[44px] items-center rounded-lg border border-neutral-300 px-3 text-xs font-medium text-ink-soft hover:border-neutral-400 sm:min-h-0 sm:py-1.5">
-              Closet →
+            <Link href="/closet" className="flex min-h-[44px] items-center rounded-lg border border-line px-3 text-xs font-medium text-ink-soft hover:border-ink/30 sm:min-h-0 sm:py-1.5">
+              Closet <ArrowRight size={14} className="-mt-px inline" />
             </Link>
             {!me.claimed && (
-              <Link href="/account" className="flex min-h-[44px] items-center rounded-lg bg-brand px-3 text-xs font-semibold text-white hover:bg-brand-dark sm:min-h-0 sm:py-1.5">
-                Save — claim account →
+              <Link href="/account" className="flex min-h-[44px] items-center rounded-full bg-ink px-3.5 text-xs font-medium text-paper hover:bg-black sm:min-h-0 sm:py-1.5">
+                Save — claim account <ArrowRight size={14} className="-mt-px inline" />
               </Link>
             )}
           </div>
@@ -474,9 +474,9 @@ export default function PassportPage() {
 
 function SaveDot({ status }: { status: "idle" | "saving" | "saved" | "error" }) {
   const cls =
-    status === "error" ? "bg-red-500"
-    : status === "saving" ? "bg-amber-400 animate-pulse"
-    : "bg-green-500";
+    status === "error" ? "bg-bad"
+    : status === "saving" ? "bg-warn animate-pulse"
+    : "bg-ok";
   return <span className={`h-2.5 w-2.5 flex-shrink-0 rounded-full ${cls}`} />;
 }
 
@@ -560,9 +560,9 @@ function ViewBook({
                 })
               }
             >
-              ↓ Export card
+              <Download size={16} /> Export card
             </Button>
-            <Button size="md" variant="secondary" onClick={onEdit}>✎ Edit passport</Button>
+            <Button size="md" variant="secondary" onClick={onEdit} icon={<Pencil size={16} />}>Edit passport</Button>
           </div>
         </div>
 
@@ -618,7 +618,7 @@ function ViewBook({
         {/* Details live BELOW the card so the card itself stays clean. */}
         <div className="mt-6 space-y-4">
           {/* Achievements */}
-          <div className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-line">
+          <div className="rounded-2xl bg-white p-6 ring-1 ring-line">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Achievements</p>
               {earnedBadges.length > 0 && <span className="text-[10px] text-ink-faint">tilt a medallion to catch the light</span>}
@@ -626,12 +626,12 @@ function ViewBook({
             {earnedBadges.length > 0 ? (
               <EarnedSealRow earnedIds={earnedBadges} pinnedIds={pinnedBadges} size={52} />
             ) : (
-              <Link href="/badges" className="text-sm text-brand hover:underline">Earn badges and pin up to 3 here →</Link>
+              <Link href="/badges" className="text-sm text-brand hover:underline">Earn badges and pin up to 3 here <ArrowRight size={14} className="-mt-px inline" /></Link>
             )}
           </div>
 
           {/* Signature look */}
-          <div className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-line">
+          <div className="rounded-2xl bg-white p-6 ring-1 ring-line">
             <div className="mb-3 flex items-center justify-between">
               <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Signature look</p>
               {outfits.length > 0 && (
@@ -669,12 +669,12 @@ function ViewBook({
             ) : outfits.length > 0 ? (
               <p className="text-sm text-ink-soft">Pick one of your outfits above to feature it here.</p>
             ) : (
-              <Link href="/outfits" className="text-sm text-brand hover:underline">Compose an outfit to feature as your signature look →</Link>
+              <Link href="/outfits" className="text-sm text-brand hover:underline">Compose an outfit to feature as your signature look <ArrowRight size={14} className="-mt-px inline" /></Link>
             )}
           </div>
 
           {/* Body type — text only; the figure is kept off the card for cleanliness */}
-          <div className="rounded-2xl bg-white p-6 shadow-card ring-1 ring-line">
+          <div className="rounded-2xl bg-white p-6 ring-1 ring-line">
             <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Body type</p>
             <p className="mt-1 text-lg font-semibold text-ink">{showBodyType ? bodyLabel : "Hidden"}</p>
             <p className="mt-0.5 text-xs text-ink-faint">
@@ -688,16 +688,16 @@ function ViewBook({
         {/* actions */}
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm">
           <div className="flex gap-4">
-            <Link href="/closet" className="text-ink-soft hover:text-brand">My closet →</Link>
-            <Link href="/badges" className="text-ink-soft hover:text-brand">Badge library →</Link>
+            <Link href="/closet" className="text-ink-soft hover:text-brand">My closet <ArrowRight size={14} className="-mt-px inline" /></Link>
+            <Link href="/badges" className="text-ink-soft hover:text-brand">Badge library <ArrowRight size={14} className="-mt-px inline" /></Link>
           </div>
           {me.claimed ? (
             <Link href={`/u/${encodeURIComponent(me.accountCode ?? "")}`} className="text-ink-soft hover:text-brand">
-              Preview public view →
+              Preview public view <ArrowRight size={14} className="-mt-px inline" />
             </Link>
           ) : (
             <Link href="/account" className="font-medium text-brand hover:underline">
-              Claim account to save &amp; share →
+              Claim account to save &amp; share <ArrowRight size={14} className="-mt-px inline" />
             </Link>
           )}
         </div>
@@ -799,7 +799,7 @@ function FieldChips<T extends string>({
               key={o.v}
               onClick={() => onChange(active ? null : o.v)}
               className={`flex-1 rounded-lg border px-2 py-2 text-xs font-mono transition-all ${
-                active ? "border-brand bg-brand-tint font-bold text-brand" : "border-neutral-300 text-ink hover:border-neutral-400"
+                active ? "border-brand bg-brand-tint font-bold text-brand" : "border-line text-ink hover:border-ink/30"
               }`}
               title={o.v}
             >{o.label}</button>
@@ -836,7 +836,7 @@ function FieldMultiChips({
                 onChange(Array.from(set).join(",") || null);
               }}
               className={`flex-1 rounded-lg border px-2 py-2 text-xs capitalize transition-all ${
-                active ? "border-brand bg-brand-tint font-bold text-brand" : "border-neutral-300 text-ink hover:border-neutral-400"
+                active ? "border-brand bg-brand-tint font-bold text-brand" : "border-line text-ink hover:border-ink/30"
               }`}
             >{o.label}</button>
           );
@@ -861,13 +861,13 @@ function UnitToggle({
   return (
     <div className="flex items-center gap-1.5">
       <span className="text-[10px] uppercase tracking-widest text-ink-faint">{label}</span>
-      <div className="inline-flex rounded-lg border border-neutral-300 p-0.5">
+      <div className="inline-flex rounded-lg border border-line p-0.5">
         {options.map((o) => (
           <button
             key={o}
             onClick={() => onChange(o)}
             className={`rounded-md px-2 py-0.5 text-xs transition-colors ${
-              value === o ? "bg-brand text-white" : "text-ink-soft hover:bg-neutral-100"
+              value === o ? "bg-brand text-white" : "text-ink-soft hover:bg-paper-dim"
             }`}
           >
             {o}
@@ -900,7 +900,7 @@ function RawNumField({
         <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">{label}</span>
         {hint && <span className="text-[9px] italic text-ink-faint">{hint}</span>}
       </div>
-      <div className="flex items-center rounded-lg border border-neutral-300 bg-white focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20">
+      <div className="flex items-center rounded-lg border border-line bg-white focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20">
         <input
           inputMode="decimal"
           value={text}
@@ -1006,12 +1006,12 @@ function PortraitUpload({
 
   return (
     <div className="flex flex-col items-center">
-      <label className="group relative h-24 w-20 cursor-pointer overflow-hidden rounded-md border-2 border-neutral-800 bg-neutral-50">
+      <label className="group relative h-24 w-20 cursor-pointer overflow-hidden rounded-md border-2 border-ink bg-paper-soft">
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={value} alt="portrait" className="h-full w-full object-cover" />
         ) : (
-          <span className="flex h-full w-full items-center justify-center font-mono text-2xl font-bold text-neutral-800">
+          <span className="flex h-full w-full items-center justify-center font-mono text-2xl font-bold text-ink">
             {initials}
           </span>
         )}
@@ -1022,7 +1022,7 @@ function PortraitUpload({
       </label>
       <p className="mt-1 text-[9px] uppercase tracking-widest text-ink-faint">portrait</p>
       {value && (
-        <button onClick={() => onChange(null)} className="mt-0.5 text-[9px] text-ink-faint hover:text-red-600">
+        <button onClick={() => onChange(null)} className="mt-0.5 text-[9px] text-ink-faint hover:text-bad">
           remove
         </button>
       )}
@@ -1075,7 +1075,7 @@ function TextField({
       onBlur={() => onCommit(text)}
       rows={2}
       placeholder={placeholder}
-      className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-faint focus:border-brand focus:ring-2 focus:ring-brand/20"
+      className="w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-faint focus:border-brand focus:ring-2 focus:ring-brand/20"
     />
   );
 }
@@ -1116,7 +1116,7 @@ function BodyTypeSection({
 
   return (
     <Section title="Body type" subtitle="derived from your measurements">
-      <div className="flex items-center gap-4 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3">
+      <div className="flex items-center gap-4 rounded-xl border border-line bg-paper-soft px-4 py-3">
         <BodyFigure volume={bt.figureKey} shape={bt.shape} size={80} />
         <div className="min-w-0 flex-1">
           <p className="text-lg font-semibold text-ink">{bt.label}</p>
@@ -1132,7 +1132,7 @@ function BodyTypeSection({
             </p>
           )}
           {bt.scopeNote && (
-            <p className="mt-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">
+            <p className="mt-2 rounded-lg border border-warn/30 bg-warn-tint px-3 py-2 text-xs text-warn">
               <span className="font-semibold">Sizing note:</span> {bt.scopeNote}
             </p>
           )}
@@ -1144,7 +1144,7 @@ function BodyTypeSection({
           {can3d && !show3d && (
             <button type="button" onClick={() => setShow3d(true)}
               className="mt-2 text-[11px] font-semibold text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand">
-              See it in 3D →
+              See it in 3D <ArrowRight size={14} className="-mt-px inline" />
             </button>
           )}
         </div>
@@ -1153,7 +1153,7 @@ function BodyTypeSection({
       {/* Opt-in, exactly as the badges keep their dimensional build behind an
           inspect stage. Default stays the flat figure. */}
       {can3d && show3d && (
-        <div className="mt-3 rounded-xl border border-neutral-200 bg-white px-4 py-4">
+        <div className="mt-3 rounded-xl border border-line bg-white px-4 py-4">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
             <SafeBoundary
               fallback={

@@ -699,14 +699,14 @@ open. The redesign runs alongside it.
   product details folded. No stock colours left on /check (112 kB vs 108).
 - **R5** — homepage cut to Hero → dashboard → How it works → What you get → Parallax →
   Community → closing CTA (demo closet button there, new visitors only). / 160 kB.
+- **R6** — every other page: arrows → icons (invariant 69, guard test), stock colours →
+  semantic tokens, cobalt primary buttons → ink, card shadows off, community on
+  `PageHeader` + `Segmented`, section h2s → `text-h3`.
 - **Homepage cut list decided (open decision #4 CLOSED):** remove `ConvergingStack` and
   `NewUserGuide` (its demo button moves into the closing CTA); keep the Parallax statement.
 
 **Next, in order (each its own push with a DEVLOG entry):**
-1. **R6 remaining pages:** passport (`MetalCard` untouched), community, outfits,
-   badges, help, account, onboarding, history, refresh, `u/[code]`. Convert → ← ↻
-   ✓ to icons here.
-2. **R7 audit:** First Load JS ≤ R0 baseline +10% (after R1: / 163 vs 156, /login
+1. **R7 audit:** First Load JS ≤ R0 baseline +10% (after R1: / 163 vs 156, /login
    106 vs 98.6 — the headroom is small), a11y focus and contrast, `mobile-audit`
    with zero overflow, and a motion audit. Enlarge the closet folder-colour dots (20 px
    tap targets).

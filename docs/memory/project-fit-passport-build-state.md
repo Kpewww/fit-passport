@@ -1023,3 +1023,10 @@ library or a raw `@phosphor-icons/react` import.
 - **Photo entry:** the camera control on the card, and the detail sheet (drop, or
   replace / remove). The new piece's card carries an *Add a photo* nudge.
 - **The photo is still outside the four-question add flow (㉙).**
+
+**(69)** **No typographic arrows or ticks standing in for icons** (→ ← ↻ ✓ ✕ ✦ ↓ ⌄ ▲ ▼ ✎ ＋).
+`src/lib/noGlyphArrows.test.ts` strips comments and scans every `.tsx`. Use
+`components/Icon.tsx`, or a word when the arrow meant "to" or "for". ≈ – — × are allowed.
+Session 76 R6 also mapped stock green/amber/red/neutral classes to `ok/warn/bad` +
+paper/line/ink everywhere except where colour is content (badges, metals, mannequin
+garments, closet folder skins).

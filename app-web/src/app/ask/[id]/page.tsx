@@ -5,7 +5,7 @@
 // attached as evidence.
 
 import { useCallback, useEffect, useState } from "react";
-import { ArrowUpRight } from "@/components/Icon";
+import { ArrowLeft, ArrowUpRight, Check } from "@/components/Icon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button, Card, EmptyState, Field, LinkButton, inputClass } from "@/components/ui";
@@ -117,7 +117,7 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <p className="text-xs text-ink-faint">
-          <Link href="/community#questions" className="hover:underline">← All questions</Link>
+          <Link href="/community#questions" className="hover:underline"><ArrowLeft size={14} className="-mt-px inline" /> All questions</Link>
         </p>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -125,7 +125,7 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
             {postKindLabel(post.kind)}
           </span>
           {post.resolvedAnswerId && (
-            <span className="rounded-full bg-green-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-green-800">
+            <span className="rounded-full bg-ok-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ok">
               Answered
             </span>
           )}
@@ -145,7 +145,7 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
           {post.author.bodyType && <span>· {post.author.bodyType} build</span>}
           <span>· {timeAgo(post.createdAt)}</span>
           {post.mine && (
-            <button onClick={removePost} className="ml-2 hover:text-red-600">Delete</button>
+            <button onClick={removePost} className="ml-2 hover:text-bad">Delete</button>
           )}
           {!post.mine && <ReportButton kind="POST" targetId={post.id} className="ml-2" />}
         </div>
@@ -173,7 +173,7 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
           </div>
         )}
 
-        <h2 className="mt-10 text-sm font-semibold uppercase tracking-widest text-ink-soft">
+        <h2 className="mt-10 text-h3 font-semibold text-ink">
           {answers.length === 0 ? "No answers yet" : `${answers.length} answer${answers.length === 1 ? "" : "s"}`}
         </h2>
 
@@ -240,10 +240,10 @@ function AnswerCard({
   }
 
   return (
-    <Card className={`!p-4 ${answer.accepted ? "ring-2 ring-green-500/60" : ""}`}>
+    <Card className={`!p-4 ${answer.accepted ? "ring-2 ring-ok/40" : ""}`}>
       {answer.accepted && (
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-green-700">
-          ✓ Accepted by the asker
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ok">
+          <Check size={14} className="-mt-px inline" /> Accepted by the asker
         </p>
       )}
       {answer.hidden && <HiddenNotice what="answer" />}
@@ -268,7 +268,7 @@ function AnswerCard({
           {answer.author.bodyType && <span>· {answer.author.bodyType} build</span>}
         </span>
         <span>{timeAgo(answer.createdAt)}</span>
-        {answer.mine && <button onClick={remove} className="hover:text-red-600">Delete</button>}
+        {answer.mine && <button onClick={remove} className="hover:text-bad">Delete</button>}
         {!answer.mine && <ReportButton kind="ANSWER" targetId={answer.id} />}
 
         <span className="ml-auto flex items-center gap-2">
@@ -277,8 +277,8 @@ function AnswerCard({
               onClick={onAccept}
               className={`rounded-full border px-2.5 py-1 font-medium transition-colors ${
                 answer.accepted
-                  ? "border-green-600 bg-green-600 text-white"
-                  : "border-line bg-white text-ink-soft hover:border-green-600 hover:text-green-700"
+                  ? "border-ok bg-ok text-white"
+                  : "border-line bg-white text-ink-soft hover:border-ok hover:text-ok"
               }`}
             >
               {answer.accepted ? "Accepted" : "Mark as the answer"}
@@ -308,7 +308,7 @@ function AnswerCard({
  */
 function HiddenNotice({ what }: { what: string }) {
   return (
-    <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-900 ring-1 ring-amber-200">
+    <p className="mt-2 rounded-lg bg-warn-tint px-3 py-2 text-xs text-warn ring-1 ring-warn/30">
       Only you can see this {what}. It was hidden after reports — edit or delete
       it, or reply to us if you think that was wrong.
     </p>
@@ -341,7 +341,7 @@ function AnswerComposer({
         </p>
         <Link
           href="/account"
-          className="whitespace-nowrap rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
+          className="whitespace-nowrap rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-black"
         >
           Claim account
         </Link>
@@ -388,7 +388,7 @@ function AnswerComposer({
           <ClosetAttachPicker closet={closet} value={knownGoodId} onChange={setKnownGoodId} />
         </div>
       </div>
-      {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
+      {err && <p className="mt-3 text-sm text-bad">{err}</p>}
       <div className="mt-4">
         <Button onClick={submit} disabled={body.trim().length < 10 || saving}>
           {saving ? "Posting…" : "Post answer"}

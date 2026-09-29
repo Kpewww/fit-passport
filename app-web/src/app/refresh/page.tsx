@@ -23,6 +23,7 @@ import { GarmentIcon } from "@/components/GarmentIcon";
 import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionInput";
 import { DIRECTION_DEFAULT, DIRECTION_OPTIONS, nearestOption } from "@/lib/fitDirection";
 import { colorHex, iconToneOn } from "@/lib/colors";
+import { ArrowLeft, Check } from "@/components/Icon";
 
 type Item = {
   id: string;
@@ -178,7 +179,7 @@ function RefreshInner() {
       <main className="flex-1 bg-paper">
         <div className="mx-auto max-w-md px-4 sm:px-6 py-10">
           <div className="mb-4 flex items-center justify-between text-sm">
-            <Link href="/closet" className="text-ink-faint hover:text-brand">← Closet</Link>
+            <Link href="/closet" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> Closet</Link>
           </div>
           <h1 className="font-serif text-h1 text-ink">Fit refresh</h1>
           <p className="mt-1 text-sm text-ink-soft">
@@ -195,7 +196,7 @@ function RefreshInner() {
                 <button
                   onClick={() => { setAllSelected(true); setPicked(new Set()); }}
                   className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-all ${
-                    allSelected ? "border-brand bg-brand-tint ring-1 ring-brand/30" : "border-neutral-200 bg-white hover:border-neutral-300"
+                    allSelected ? "border-brand bg-brand-tint ring-1 ring-brand/30" : "border-line bg-white hover:border-line"
                   }`}
                 >
                   <span className="font-medium text-ink">Everything</span>
@@ -217,12 +218,12 @@ function RefreshInner() {
                         });
                       }}
                       className={`flex w-full items-center justify-between rounded-xl border px-4 py-3 text-left transition-all ${
-                        on ? "border-brand bg-brand-tint ring-1 ring-brand/30" : "border-neutral-200 bg-white hover:border-neutral-300"
+                        on ? "border-brand bg-brand-tint ring-1 ring-brand/30" : "border-line bg-white hover:border-line"
                       }`}
                     >
                       <span className="flex items-center gap-2 font-medium text-ink">
-                        <span className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${on ? "border-brand bg-brand text-white" : "border-neutral-300"}`}>
-                          {on ? "✓" : ""}
+                        <span className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${on ? "border-brand bg-brand text-white" : "border-line"}`}>
+                          {on && <Check size={12} />}
                         </span>
                         {c.name}
                       </span>
@@ -256,7 +257,7 @@ function RefreshInner() {
           <EmptyState
             title="Nothing to refresh"
             body="No clothes in the selection you picked. Add some to your closet, or choose another collection."
-            action={<Button variant="secondary" onClick={() => setPhase("pick")}>← Change selection</Button>}
+            action={<Button variant="secondary" onClick={() => setPhase("pick")}><ArrowLeft size={14} className="-mt-px inline" /> Change selection</Button>}
           />
         </div>
       </main>
@@ -273,18 +274,18 @@ function RefreshInner() {
       <div className="mx-auto max-w-md px-4 sm:px-6 py-8">
         {/* Progress */}
         <div className="mb-4 flex items-center justify-between text-sm">
-          <button onClick={() => setPhase("pick")} className="text-ink-faint hover:text-brand">← Change selection</button>
+          <button onClick={() => setPhase("pick")} className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> Change selection</button>
           <span className="text-ink-soft">
             {Math.min(idx + (done ? 0 : 1), items.length)} / {items.length}
           </span>
         </div>
-        <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-neutral-200">
+        <div className="mb-6 h-1.5 overflow-hidden rounded-full bg-paper-dim">
           <div className="h-full rounded-full bg-brand" style={{ width: `${(idx / items.length) * 100}%`, transition: `width 0.4s ${SPRING}` }} />
         </div>
 
         {done ? (
           <Card className="text-center animate-fade-in-up">
-            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-2xl">✓</div>
+            <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-ok-tint text-ok"><Check size={24} /></div>
             <h2 className="text-xl font-semibold text-ink">Fit refresh complete</h2>
             <p className="mt-1 text-sm text-ink-soft">
               Updated {saved} · skipped {skipped}. Your closet reflects how things
@@ -302,7 +303,7 @@ function RefreshInner() {
               {/* peek of next card — rises + scales toward the top as you drag */}
               {items[idx + 1] && (
                 <div
-                  className="absolute inset-x-0 top-0 h-full rounded-2xl bg-white shadow-card ring-1 ring-neutral-200"
+                  className="absolute inset-x-0 top-0 h-full rounded-2xl bg-white shadow-card ring-1 ring-line"
                   style={{
                     transform: `translateY(${16 - progress * 16}px) scale(${0.94 + progress * 0.06})`,
                     opacity: 0.55 + progress * 0.45,
@@ -314,7 +315,7 @@ function RefreshInner() {
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
                 onPointerUp={onPointerUp}
-                className="absolute inset-0 cursor-grab touch-none rounded-2xl bg-white p-6 shadow-lift ring-1 ring-neutral-200 active:cursor-grabbing"
+                className="absolute inset-0 cursor-grab touch-none rounded-2xl bg-white p-6 shadow-lift ring-1 ring-line active:cursor-grabbing"
                 style={{
                   transform: leaving
                     ? `translate(${leaving === "save" ? 640 : -640}px, ${-40 - Math.abs(velocity.current) * 40}px) rotate(${leaving === "save" ? 20 : -20}deg)`
@@ -326,11 +327,11 @@ function RefreshInner() {
                 {/* swipe hint overlays */}
                 <div className="pointer-events-none absolute inset-0 flex items-center justify-between px-6">
                   <span
-                    className="rounded-lg border-2 border-neutral-400 px-2 py-1 text-sm font-bold uppercase text-neutral-400"
+                    className="rounded-lg border-2 border-ink/30 px-2 py-1 text-sm font-bold uppercase text-ink-faint"
                     style={{ opacity: dragX < -20 ? progress : 0, transform: `scale(${0.8 + (dragX < 0 ? progress : 0) * 0.4})` }}
                   >Skip</span>
                   <span
-                    className="rounded-lg border-2 border-green-500 px-2 py-1 text-sm font-bold uppercase text-green-600"
+                    className="rounded-lg border-2 border-ok px-2 py-1 text-sm font-bold uppercase text-ok"
                     style={{ opacity: dragX > 20 ? progress : 0, transform: `scale(${0.8 + (dragX > 0 ? progress : 0) * 0.4})` }}
                   >Save</span>
                 </div>
@@ -354,7 +355,7 @@ function RefreshInner() {
                   </div>
                   {current!.currentDirection != null && direction !== current!.currentDirection && (
                     <p className="mt-2 text-xs text-brand">
-                      Changed from {nearestOption(current!.currentDirection).label.toLowerCase()} →{" "}
+                      Changed from {nearestOption(current!.currentDirection).label.toLowerCase()} to{" "}
                       {nearestOption(direction).label.toLowerCase()}
                     </p>
                   )}
@@ -364,11 +365,11 @@ function RefreshInner() {
 
             {/* Buttons */}
             <div className="mt-6 flex items-center justify-center gap-3">
-              <Button variant="secondary" onClick={() => commit("skip")}>← Skip</Button>
-              <Button onClick={() => commit("save")}>Save →</Button>
+              <Button variant="secondary" onClick={() => commit("skip")} icon={<ArrowLeft size={16} />}>Skip</Button>
+              <Button onClick={() => commit("save")} arrow>Save</Button>
             </div>
             <p className="mt-3 text-center text-xs text-ink-faint">
-              Swipe or flick the card, use the buttons, or press ← / → · number keys 1-5 pick tight → loose
+              Swipe or flick the card, use the buttons, or press the arrow keys · number keys 1–5 pick tight to loose
             </p>
           </>
         )}

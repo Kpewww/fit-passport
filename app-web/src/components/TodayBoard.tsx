@@ -9,7 +9,7 @@
 import { useEffect, useState } from "react";
 import { Heart } from "@/components/Icon";
 import Link from "next/link";
-import { Card } from "@/components/ui";
+import { Card, Segmented } from "@/components/ui";
 import { Avatar } from "@/components/Badges";
 import { OutfitMannequin, type OutfitLayer } from "@/components/OutfitMannequin";
 import { PALETTE } from "@/components/BadgeMedallion";
@@ -57,23 +57,13 @@ export function TodayBoard() {
     <section className="mt-8">
       {/* Fixed heading + fixed tab labels: nothing here may resize with state. */}
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="text-sm font-semibold uppercase tracking-widest text-ink-soft">
-          The board
-        </h2>
-        <div className="inline-flex rounded-full border border-line bg-paper-soft p-0.5 text-xs font-medium">
-          {WINDOWS.map((t) => (
-            <button
-              key={t.key}
-              onClick={() => setW(t.key)}
-              aria-pressed={w === t.key}
-              className={`flex min-h-[40px] items-center rounded-full px-3.5 transition-colors sm:min-h-0 sm:px-3 sm:py-1 ${
-                w === t.key ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+        <h2 className="text-h3 font-semibold text-ink">The board</h2>
+        <Segmented
+          label="Board window"
+          options={WINDOWS.map((t) => ({ value: t.key, label: t.label }))}
+          value={w}
+          onChange={setW}
+        />
       </div>
       <p className="mt-1 text-xs text-ink-faint">
         Counted from 00:00 UTC and reset every day — a look posted this morning can
@@ -100,7 +90,7 @@ export function TodayBoard() {
               {board.topLooks.map((l, i) => (
                 <li key={l.id} className="flex items-center gap-3">
                   <RankMark n={i + 1} />
-                  <div className="flex-shrink-0 rounded-lg bg-neutral-50 p-0.5">
+                  <div className="flex-shrink-0 rounded-lg bg-paper-soft p-0.5">
                     <OutfitMannequin layers={l.layers} volume="average" shape="straight" size={44} />
                   </div>
                   <div className="min-w-0 flex-1">

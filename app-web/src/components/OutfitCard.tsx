@@ -73,9 +73,9 @@ export function OutfitCard({
   // overflowed its own cell. min-w-0 removes that floor and lets the (already
   // shrinkable) contents do their job.
   return (
-    <Card className="!p-4 min-w-0">
+    <Card className="group !p-4 min-w-0">
       <div className="flex gap-3">
-        <div className="flex-shrink-0 rounded-lg bg-neutral-50 p-1 [&>svg]:h-auto [&>svg]:w-[68px] sm:[&>svg]:w-[92px]">
+        <div className="flex-shrink-0 rounded-lg bg-paper-soft p-1 [&>svg]:h-auto [&>svg]:w-[68px] sm:[&>svg]:w-[92px]">
           <OutfitMannequin layers={layers} volume={figure.volume as never} shape={figure.shape as never} size={92} />
         </div>
         <div className="min-w-0 flex-1">
@@ -85,12 +85,19 @@ export function OutfitCard({
                 60px past a 390px viewport. Measured, not theoretical. */}
             <p className="min-w-0 truncate font-semibold text-ink">{outfit.title}</p>
             {outfit.mine && onDelete && (
-              <button onClick={onDelete} className="text-xs text-ink-faint hover:text-red-600">Delete</button>
+              <button onClick={onDelete} className="text-xs text-ink-faint hover:text-bad">Delete</button>
             )}
-            {!outfit.mine && <ReportButton kind="OUTFIT" targetId={outfit.id} />}
+            {/* Reporting stays one tap away, but on a screen that can hover it
+                waits until you point at the card, so a feed is not a column of
+                "Report" labels. A touch screen always shows it. */}
+            {!outfit.mine && (
+              <span className="transition-opacity duration-200 focus-within:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:opacity-0">
+                <ReportButton kind="OUTFIT" targetId={outfit.id} />
+              </span>
+            )}
           </div>
           {outfit.hidden && (
-            <p className="mt-1 rounded bg-amber-50 px-2 py-1 text-[11px] text-amber-900 ring-1 ring-amber-200">
+            <p className="mt-1 rounded bg-warn-tint px-2 py-1 text-[11px] text-warn ring-1 ring-warn/30">
               Only you can see this — hidden after reports.
             </p>
           )}
@@ -100,12 +107,12 @@ export function OutfitCard({
             {outfit.items.map((it) => garmentLabel(it.category)).join(" · ")}
           </p>
           {!outfit.onlineAvailable && (
-            <p className="mt-1 inline-block rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+            <p className="mt-1 inline-block rounded bg-warn-tint px-1.5 py-0.5 text-[10px] font-medium text-warn">
               <Store size={12} className="mr-1 inline -mt-0.5" />In-store only
             </p>
           )}
           {outfit.onlineAvailable && offlinePieces.length > 0 && (
-            <p className="mt-1 text-[10px] text-amber-700">Some pieces in-store only</p>
+            <p className="mt-1 text-[10px] text-warn">Some pieces in-store only</p>
           )}
 
           <div className="mt-2 flex items-center gap-3">
@@ -130,7 +137,7 @@ export function OutfitCard({
             <button
               onClick={toggle}
               className={`ml-auto flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
-                liked ? "border-red-300 bg-red-50 text-red-600" : "border-neutral-300 text-ink-soft hover:border-red-300 hover:text-red-500"
+                liked ? "border-bad/30 bg-bad-tint text-bad" : "border-line text-ink-soft hover:border-bad/30 hover:text-bad"
               }`}
             >
               <Heart size={14} weight={liked ? "fill" : "light"} /> {count}

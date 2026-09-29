@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Warning } from "@/components/Icon";
+import { ArrowLeft, ArrowRight, CaretDown, Check, Warning } from "@/components/Icon";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Field, inputClass, LinkButton } from "@/components/ui";
@@ -124,7 +124,7 @@ export default function AccountPage() {
                 }}
                 className="text-sm text-brand hover:underline"
               >
-                {copied ? "Copied ✓" : "Copy"}
+                {copied ? <><Check size={14} className="-mt-px inline" /> Copied</> : "Copy"}
               </button>
             </div>
             <p className="mt-2 text-xs text-ink-faint">
@@ -134,11 +134,11 @@ export default function AccountPage() {
           </Card>
 
           {!claimResult.hasEmail && (
-            <Card className="mt-4 border-l-4 border-l-amber-400 bg-amber-50">
-              <p className="text-sm font-semibold text-amber-900">
+            <Card className="mt-4 border-l-4 border-l-amber-400 bg-warn-tint">
+              <p className="text-sm font-semibold text-warn">
                 <Warning size={16} className="mr-1.5 inline -mt-0.5" />You didn&apos;t add a recovery email
               </p>
-              <p className="mt-1 text-sm text-amber-800">
+              <p className="mt-1 text-sm text-warn">
                 Without one, there&apos;s <strong>no way</strong> to reset your password
                 if you forget it. You&apos;d permanently lose editing access to this
                 account. Consider adding an email later from your account page.
@@ -148,7 +148,7 @@ export default function AccountPage() {
 
           <div className="mt-6 flex flex-wrap gap-3">
             <LinkButton href="/passport">
-              View my passport →
+              View my passport <ArrowRight size={14} className="-mt-px inline" />
             </LinkButton>
             <LinkButton href="/closet" variant="secondary">
               My closet
@@ -188,7 +188,7 @@ export default function AccountPage() {
           <p className="mt-6 text-xs text-ink-faint">
             Anyone with your code can view your closet and body type (if shared),
             but only someone with your password can edit it.{" "}
-            <Link href="/community" className="text-brand hover:underline">See the community →</Link>
+            <Link href="/community" className="text-brand hover:underline">See the community <ArrowRight size={14} className="-mt-px inline" /></Link>
           </p>
         </div>
       </main>
@@ -203,8 +203,8 @@ export default function AccountPage() {
             or closet before locking in an account. Nothing here is committed
             until "Claim my account code" is pressed. */}
         <div className="mb-4 flex items-center gap-4 text-sm">
-          <Link href="/passport" className="text-ink-faint hover:text-brand">← Edit my passport</Link>
-          <Link href="/closet" className="text-ink-faint hover:text-brand">← Edit my closet</Link>
+          <Link href="/passport" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> Edit my passport</Link>
+          <Link href="/closet" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> Edit my closet</Link>
         </div>
         <h1 className="font-serif text-h1 text-ink">Claim your account</h1>
         <p className="mt-2 text-ink-soft">
@@ -251,7 +251,7 @@ export default function AccountPage() {
               </select>
             </Field>
 
-            {err && <p className="text-sm text-red-700">{err}</p>}
+            {err && <p className="text-sm text-bad">{err}</p>}
 
             <Button type="submit" size="lg" disabled={saving || !form.username || form.password.length < 6 || form.bodyType === CLAIM_PLACEHOLDER}>
               {saving ? "Creating…" : "Claim my account code"}
@@ -263,7 +263,7 @@ export default function AccountPage() {
         </Card>
 
         <p className="mt-4 text-xs text-ink-faint">
-          Already have a code? <Link href="/login" className="text-brand hover:underline">Log in →</Link>
+          Already have a code? <Link href="/login" className="text-brand hover:underline">Log in <ArrowRight size={14} className="-mt-px inline" /></Link>
         </p>
       </div>
     </main>
@@ -295,7 +295,7 @@ function ChangePassword() {
     });
     const j = await r.json().catch(() => ({}));
     setBusy(false);
-    if (r.ok) { setMsg("Password updated ✓"); setCur(""); setNext(""); }
+    if (r.ok) { setMsg("Password updated."); setCur(""); setNext(""); }
     else setMsg(typeof j.error === "string" ? j.error : "couldn't update password");
   }
 
@@ -303,7 +303,7 @@ function ChangePassword() {
     <Card className="mt-4">
       <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between text-left">
         <span className="text-sm font-semibold text-ink">Change password</span>
-        <span className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`}>⌄</span>
+        <CaretDown size={16} className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <div className="mt-3 space-y-3">
@@ -314,7 +314,7 @@ function ChangePassword() {
           <Field label="New password">
             <input type="password" className={inputClass} value={next} onChange={(e) => setNext(e.target.value)} placeholder="at least 6 characters" autoComplete="new-password" />
           </Field>
-          {msg && <p className={`text-sm ${msg.includes("✓") ? "text-green-700" : "text-red-700"}`}>{msg}</p>}
+          {msg && <p className={`text-sm ${msg === "Password updated." ? "text-ok" : "text-bad"}`}>{msg}</p>}
           <Button onClick={save} disabled={busy || !cur || next.length < 6}>{busy ? "Saving…" : "Update password"}</Button>
         </div>
       )}
@@ -345,10 +345,10 @@ function DangerZone() {
   }
 
   return (
-    <Card className="mt-4 ring-red-200">
+    <Card className="mt-4 ring-bad/30">
       <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between text-left">
-        <span className="text-sm font-semibold text-red-700">Deactivate account</span>
-        <span className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`}>⌄</span>
+        <span className="text-sm font-semibold text-bad">Deactivate account</span>
+        <CaretDown size={16} className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <div className="mt-3 space-y-3">
@@ -359,8 +359,8 @@ function DangerZone() {
           <Field label="Password">
             <input type="password" className={inputClass} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
           </Field>
-          {msg && <p className="text-sm text-red-700">{msg}</p>}
-          <Button onClick={deactivate} disabled={busy || !password} className="!bg-red-600 hover:!bg-red-700">
+          {msg && <p className="text-sm text-bad">{msg}</p>}
+          <Button onClick={deactivate} disabled={busy || !password} className="!bg-bad hover:!bg-bad">
             {busy ? "…" : "Deactivate my account"}
           </Button>
         </div>

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Field, inputClass } from "@/components/ui";
+import { ArrowRight } from "@/components/Icon";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -52,7 +53,7 @@ export default function LoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password" />
             </Field>
-            {err && <p className="text-sm text-red-700">{err}</p>}
+            {err && <p className="text-sm text-bad">{err}</p>}
             <Button type="submit" size="lg" disabled={busy || !identifier || !password}>
               {busy ? "Logging in…" : "Log in"}
             </Button>
@@ -61,13 +62,13 @@ export default function LoginPage() {
         <p className="mt-4 text-xs text-ink-faint">
           Forgot your password?{" "}
           <Link href="/recover" className="text-brand hover:underline">
-            Reset it with your recovery email →
+            Reset it with your recovery email <ArrowRight size={14} className="-mt-px inline" />
           </Link>
         </p>
         <p className="mt-1 text-xs text-ink-faint">
           Just want to peek at a closet?{" "}
           <Link href="/community" className="text-brand hover:underline">
-            View one by code →
+            View one by code <ArrowRight size={14} className="-mt-px inline" />
           </Link>
         </p>
       </div>

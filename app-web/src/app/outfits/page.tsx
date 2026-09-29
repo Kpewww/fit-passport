@@ -4,7 +4,7 @@
 // then post them to the community. Posting drives the top prestige badges.
 
 import { useCallback, useEffect, useState } from "react";
-import { Refresh, Sparkle } from "@/components/Icon";
+import { ArrowLeft, ArrowRight, Close, Refresh, Sparkle } from "@/components/Icon";
 import Link from "next/link";
 import { Button, Card, EmptyState, Field, inputClass } from "@/components/ui";
 import { CategoryPicker } from "@/components/CategoryPicker";
@@ -133,7 +133,7 @@ export default function OutfitsPage() {
               community. Posting earns the top badges.
             </p>
           </div>
-          <Link href="/community" className="text-sm text-ink-faint hover:text-brand">Community feed →</Link>
+          <Link href="/community" className="whitespace-nowrap text-sm text-ink-faint hover:text-ink">Community feed <ArrowRight size={14} className="-mt-px inline" /></Link>
         </div>
 
         {/* Composer */}
@@ -148,12 +148,12 @@ export default function OutfitsPage() {
             <div className="space-y-2">
               <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">Pieces</p>
               {items.map((it, i) => (
-                <div key={i} className="grid grid-cols-[1fr,1fr,auto] items-center gap-2 rounded-lg border border-neutral-200 p-2">
+                <div key={i} className="grid grid-cols-[1fr,1fr,auto] items-center gap-2 rounded-lg border border-line p-2">
                   <div className="w-full"><CategoryPicker value={it.category} onChange={(v) => setItems(items.map((x, j) => j === i ? { ...x, category: v } : x))} /></div>
                   <input className={inputClass} placeholder="color (e.g. navy)" value={it.color}
                     onChange={(e) => setItems(items.map((x, j) => j === i ? { ...x, color: e.target.value } : x))} />
                   <button onClick={() => setItems(items.filter((_, j) => j !== i))}
-                    className="px-1 text-ink-faint hover:text-red-600" title="Remove" disabled={items.length === 1}>✕</button>
+                    className="px-1 text-ink-faint hover:text-bad" aria-label="Remove piece" disabled={items.length === 1}><Close size={16} /></button>
                   <label className="col-span-3 flex items-center gap-1.5 text-[11px] text-ink-soft">
                     <input type="checkbox" checked={!it.onlineAvailable} className="accent-brand"
                       onChange={(e) => setItems(items.map((x, j) => j === i ? { ...x, onlineAvailable: !e.target.checked } : x))} />
@@ -169,7 +169,7 @@ export default function OutfitsPage() {
               </div>
 
               {pickerOpen && (
-                <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-2">
+                <div className="rounded-lg border border-line bg-paper-soft p-2">
                   <input className={inputClass + " mb-2"} placeholder="Search your closet…"
                     value={search} onChange={(e) => setSearch(e.target.value)} />
                   <div className="grid max-h-52 grid-cols-1 gap-1 overflow-y-auto sm:grid-cols-2">
@@ -186,28 +186,28 @@ export default function OutfitsPage() {
                             const onlyBlank = prev.length === 1 && !prev[0].brand && !prev[0].color && prev[0].category === "tshirt" && !prev[0].size;
                             return onlyBlank ? [piece] : [...prev, piece];
                           })}
-                          className="flex items-center gap-2 rounded-md border border-neutral-200 bg-white px-2 py-1.5 text-left text-xs hover:border-brand">
+                          className="flex items-center gap-2 rounded-md border border-line bg-white px-2 py-1.5 text-left text-xs hover:border-brand">
                           {c.imageDataUrl
                             ? // eslint-disable-next-line @next/next/no-img-element
                               <img src={c.imageDataUrl} alt="" className="h-7 w-7 flex-shrink-0 rounded object-cover" />
-                            : <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded bg-neutral-100"><GarmentIcon category={c.category} size={18} className="text-ink-soft" /></span>}
+                            : <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded bg-paper-dim"><GarmentIcon category={c.category} size={18} className="text-ink-soft" /></span>}
                           <span className="min-w-0">
                             <span className="block truncate font-medium text-ink">{c.displayName || c.brand}</span>
                             <span className="block truncate text-ink-faint">{garmentLabel(c.category)} · {c.size}</span>
                           </span>
                         </button>
                       ))}
-                    {closet.length === 0 && <p className="col-span-2 px-1 py-2 text-xs text-ink-faint">Your closet is empty. <Link href="/closet" className="text-brand hover:underline">Add items →</Link></p>}
+                    {closet.length === 0 && <p className="col-span-2 px-1 py-2 text-xs text-ink-faint">Your closet is empty. <Link href="/closet" className="text-brand hover:underline">Add items <ArrowRight size={14} className="-mt-px inline" /></Link></p>}
                   </div>
                 </div>
               )}
             </div>
 
-            <Button onClick={post} disabled={saving || !title.trim()}>{saving ? "Posting…" : "Post outfit →"}</Button>
+            <Button onClick={post} disabled={saving || !title.trim()}>{saving ? "Posting…" : "Post outfit"}</Button>
           </div>
 
           {/* Live preview */}
-          <div className="flex flex-col items-center justify-start rounded-xl bg-neutral-50 p-3">
+          <div className="flex flex-col items-center justify-start rounded-xl bg-paper-soft p-3">
             <p className="mb-1 text-[10px] uppercase tracking-widest text-ink-faint">Preview on your body</p>
             {photo ? (
               // eslint-disable-next-line @next/next/no-img-element
@@ -219,16 +219,16 @@ export default function OutfitsPage() {
               <button
                 onClick={genPhoto}
                 disabled={genning || layers.length === 0}
-                className="rounded-lg border border-neutral-300 px-2.5 py-1 text-[11px] font-medium text-ink-soft hover:border-brand hover:text-brand disabled:opacity-50"
+                className="rounded-lg border border-line px-2.5 py-1 text-[11px] font-medium text-ink-soft hover:border-brand hover:text-brand disabled:opacity-50"
               >
                 {genning ? "Generating…" : photo ? <><Refresh size={16} /> Regenerate</> : <><Sparkle size={16} /> Photoreal preview</>}
               </button>
               {photo && (
                 <button
                   onClick={() => { setPhoto(null); setPhotoNote(null); }}
-                  className="rounded-lg border border-neutral-300 px-2.5 py-1 text-[11px] font-medium text-ink-soft hover:border-brand hover:text-brand"
+                  className="rounded-lg border border-line px-2.5 py-1 text-[11px] font-medium text-ink-soft hover:border-brand hover:text-brand"
                 >
-                  ← Stylized view
+                  <ArrowLeft size={14} className="-mt-px inline" /> Stylized view
                 </button>
               )}
             </div>
@@ -238,7 +238,7 @@ export default function OutfitsPage() {
         </Card>
 
         {/* My outfits */}
-        <h2 className="mt-10 text-sm font-semibold uppercase tracking-widest text-ink-soft">My outfits</h2>
+        <h2 className="mt-10 text-h3 font-semibold text-ink">My outfits</h2>
         {mine.length === 0 ? (
           <div className="mt-3"><EmptyState title="No outfits yet" body="Compose your first look above and post it." /></div>
         ) : (

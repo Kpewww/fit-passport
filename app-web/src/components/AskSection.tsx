@@ -20,6 +20,7 @@ import { Avatar } from "@/components/Badges";
 import { ClosetAttachPicker, type ClosetPick } from "@/components/Evidence";
 import { POST_KINDS, type PostKind } from "@/lib/posts";
 import { timeAgo } from "@/lib/timeAgo";
+import { Check } from "@/components/Icon";
 
 type PostRow = {
   id: string;
@@ -116,7 +117,7 @@ export function AskSection() {
         {posts === null ? (
           <p className="text-sm text-ink-faint">Loading…</p>
         ) : posts.length === 0 ? (
-          <Card className="bg-neutral-50 text-center">
+          <Card className="bg-paper-soft text-center">
             <p className="text-sm text-ink-soft">
               {unanswered
                 ? "Every question here has an answer. Nice."
@@ -128,7 +129,7 @@ export function AskSection() {
         )}
       </div>
 
-      <Card className="mt-6 bg-neutral-50">
+      <Card className="mt-6 bg-paper-soft">
         <h3 className="text-sm font-semibold text-ink">What makes an answer good here</h3>
         <ul className="mt-2 space-y-1.5 text-sm text-ink-soft">
           <li>• <strong>Attach a real item.</strong> Same brand, or the closest thing you own.</li>
@@ -197,7 +198,7 @@ function Composer({
         </div>
         <Link
           href="/account"
-          className="whitespace-nowrap rounded-lg bg-brand px-3 py-1.5 text-sm font-semibold text-white hover:bg-brand-dark"
+          className="whitespace-nowrap rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-black"
         >
           Claim account
         </Link>
@@ -273,7 +274,7 @@ function Composer({
         </div>
       </div>
 
-      {err && <p className="mt-3 text-sm text-red-600">{err}</p>}
+      {err && <p className="mt-3 text-sm text-bad">{err}</p>}
 
       <div className="mt-4 flex items-center gap-3">
         <Button onClick={submit} disabled={!canSubmit}>{saving ? "Posting…" : "Post question"}</Button>
@@ -291,9 +292,9 @@ function PostRowCard({ post }: { post: PostRow }) {
           <span className="rounded-full bg-paper-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft ring-1 ring-line">
             {KIND_FILTERS.find((f) => f.key === post.kind)?.label ?? post.kind}
           </span>
-          <span className={`flex-shrink-0 text-xs font-medium ${post.resolved ? "text-green-700" : post.answerCount > 0 ? "text-ink-soft" : "text-brand"}`}>
+          <span className={`flex-shrink-0 text-xs font-medium ${post.resolved ? "text-ok" : post.answerCount > 0 ? "text-ink-soft" : "text-brand"}`}>
             {post.resolved
-              ? "✓ Answered"
+              ? <><Check size={12} className="-mt-px inline" /> Answered</>
               : post.answerCount > 0
                 ? `${post.answerCount} answer${post.answerCount === 1 ? "" : "s"}`
                 : "Needs an answer"}

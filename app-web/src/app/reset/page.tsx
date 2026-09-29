@@ -43,7 +43,7 @@ function ResetInner() {
       <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
         <h1 className="font-serif text-h1 text-ink">Set a new password</h1>
         {invalidLink ? (
-          <p className="mt-2 text-sm text-red-700">
+          <p className="mt-2 text-sm text-bad">
             This reset link is missing information. Request a new one from{" "}
             <Link href="/recover" className="text-brand hover:underline">the reset page</Link>.
           </p>
@@ -57,7 +57,7 @@ function ResetInner() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="at least 6 characters" autoComplete="new-password" />
                 </Field>
-                {err && <p className="text-sm text-red-700">{err}</p>}
+                {err && <p className="text-sm text-bad">{err}</p>}
                 <Button type="submit" size="lg" disabled={busy || newPassword.length < 6}>
                   {busy ? "Saving…" : "Set password & sign in"}
                 </Button>

@@ -19,6 +19,7 @@
 
 import { useEffect, useState } from "react";
 import { Button, Card, Field, LinkButton, inputClass } from "@/components/ui";
+import { ArrowRight } from "@/components/Icon";
 import {
   ONBOARDING_STEPS,
   SCORED_MEASUREMENTS,
@@ -137,7 +138,7 @@ export default function OnboardingPage() {
                 : `${measurementsGiven} of 3 measurements recorded. The more of them we have, the less we have to assume.`}
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <LinkButton href="/check">Check a size →</LinkButton>
+              <LinkButton href="/check">Check a size <ArrowRight size={14} className="-mt-px inline" /></LinkButton>
               <LinkButton href="/closet" variant="secondary">Add clothes that fit you</LinkButton>
             </div>
           </Card>
@@ -343,7 +344,7 @@ export default function OnboardingPage() {
                 </Button>
               )}
               {status === "error" && (
-                <span className="text-sm text-red-700">Something went wrong.</span>
+                <span className="text-sm text-bad">Something went wrong.</span>
               )}
             </div>
 

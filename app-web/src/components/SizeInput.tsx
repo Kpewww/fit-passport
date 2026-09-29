@@ -56,7 +56,7 @@ export function SizeInput({
               className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
                 active
                   ? "border-brand bg-brand-tint text-brand"
-                  : "border-neutral-300 text-ink-soft hover:border-neutral-400"
+                  : "border-line text-ink-soft hover:border-ink/30"
               }`}
             >
               {s}
@@ -67,7 +67,7 @@ export function SizeInput({
 
       {/* 2. The input */}
       <input
-        className={`${inputClass} ${invalid ? "border-red-400 focus:border-red-400 focus:ring-red-200" : ""}`}
+        className={`${inputClass} ${invalid ? "border-bad focus:border-bad focus:ring-bad/30" : ""}`}
         placeholder={hint}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -76,7 +76,7 @@ export function SizeInput({
       {/* 3. One help line */}
       <div className="flex items-center gap-1.5 text-[11px]">
         {invalid ? (
-          <span className="text-red-600">Not a recognized size — try {hint}.</span>
+          <span className="text-bad">Not a recognized size — try {hint}.</span>
         ) : (
           <span className="text-ink-faint">{hint}</span>
         )}
@@ -91,7 +91,7 @@ export function SizeInput({
         )}
       </div>
       {explainer && showExplainer && (
-        <p className="rounded-md bg-neutral-100 px-2.5 py-2 text-[11px] leading-relaxed text-ink-soft">
+        <p className="rounded-md bg-paper-dim px-2.5 py-2 text-[11px] leading-relaxed text-ink-soft">
           {explainer}
         </p>
       )}

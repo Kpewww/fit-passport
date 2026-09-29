@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Download } from "@/components/Icon";
+import { ArrowLeft, Download } from "@/components/Icon";
 import { FitStars } from "@/components/ui";
 import Link from "next/link";
 import { Card, EmptyState, LinkButton } from "@/components/ui";
@@ -115,7 +115,7 @@ export default function ViewByCodePage({
           <span className="rounded-full bg-brand-tint px-2.5 py-0.5 font-medium text-brand">
             Viewing {data.username}&apos;s closet
           </span>
-          <span className="rounded-full bg-neutral-100 px-2.5 py-0.5 text-ink-faint">
+          <span className="rounded-full bg-paper-dim px-2.5 py-0.5 text-ink-faint">
             read-only
           </span>
         </div>
@@ -154,7 +154,7 @@ export default function ViewByCodePage({
                 <button
                   onClick={() => toggleBlock(!blocked.includes(data.accountCode))}
                   disabled={blocking}
-                  className="text-[11px] text-ink-faint underline-offset-2 hover:text-red-600 hover:underline disabled:opacity-50"
+                  className="text-[11px] text-ink-faint underline-offset-2 hover:text-bad hover:underline disabled:opacity-50"
                 >
                   {blocked.includes(data.accountCode) ? "Unblock" : "Block"}
                 </button>
@@ -195,9 +195,9 @@ export default function ViewByCodePage({
           ) : (
             buildSections(data).map((sec) => (
               <div key={sec.id}>
-                <h2 className="mb-2 text-sm font-semibold uppercase tracking-widest text-ink-soft">
+                <h2 className="mb-2 text-h3 font-semibold text-ink">
                   {sec.name}
-                  <span className="ml-2 rounded-full bg-neutral-100 px-2 py-0.5 text-[10px] font-normal normal-case text-ink-faint">
+                  <span className="ml-2 rounded-full bg-paper-dim px-2 py-0.5 text-[10px] font-normal normal-case text-ink-faint">
                     {sec.items.length}
                   </span>
                 </h2>
@@ -227,20 +227,20 @@ export default function ViewByCodePage({
         </div>
 
         {data.canExport && (
-          <div className="mt-6 flex items-center justify-between rounded-xl border border-neutral-200 bg-white px-4 py-3">
+          <div className="mt-6 flex items-center justify-between rounded-xl border border-line bg-white px-4 py-3">
             <p className="text-sm text-ink-soft">
               {data.username} lets anyone with the code export this closet.
             </p>
             <a
               href={`/api/view/${encodeURIComponent(code)}/export`}
-              className="whitespace-nowrap rounded-lg border border-neutral-300 px-3 py-1.5 text-sm font-medium text-ink-soft hover:border-brand hover:text-brand"
+              className="whitespace-nowrap rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-ink-soft hover:border-brand hover:text-brand"
             >
               <Download size={14} className="mr-1 inline -mt-0.5" />Export as JSON
             </a>
           </div>
         )}
 
-        <Card className="mt-6 flex flex-col items-start gap-3 bg-neutral-50 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+        <Card className="mt-6 flex flex-col items-start gap-3 bg-paper-soft sm:flex-row sm:items-center sm:justify-between sm:gap-0">
           <p className="text-sm text-ink-soft">
             Like this closet? Build your own fit profile and get size
             recommendations based on what fits {data.username}.
@@ -249,7 +249,7 @@ export default function ViewByCodePage({
         </Card>
 
         <p className="mt-4 text-center text-xs text-ink-faint">
-          <Link href="/community" className="hover:underline">← Back to community</Link>
+          <Link href="/community" className="hover:underline"><ArrowLeft size={14} className="-mt-px inline" /> Back to community</Link>
         </p>
       </div>
     </main>
@@ -275,9 +275,10 @@ function buildSections(data: PublicView) {
 
 function GenderTag({ gender }: { gender: string }) {
   const m: Record<string, { label: string; cls: string }> = {
-    mens: { label: "M", cls: "bg-blue-100 text-blue-700" },
-    womens: { label: "W", cls: "bg-pink-100 text-pink-700" },
-    unisex: { label: "U", cls: "bg-neutral-100 text-neutral-600" },
+    // One neutral treatment, as in the closet: the line is information, not a colour code.
+    mens: { label: "M", cls: "text-ink-soft ring-1 ring-line" },
+    womens: { label: "W", cls: "text-ink-soft ring-1 ring-line" },
+    unisex: { label: "U", cls: "text-ink-soft ring-1 ring-line" },
   };
   const g = m[gender];
   if (!g) return null;
@@ -289,7 +290,7 @@ function ColorDot({ color }: { color: string | null }) {
   const hex = colorHex(color);
   if (!hex) return null;
   return (
-    <span className="inline-block h-3 w-3 flex-shrink-0 rounded-full border border-neutral-300"
+    <span className="inline-block h-3 w-3 flex-shrink-0 rounded-full border border-line"
       style={{ backgroundColor: hex }} title={color} />
   );
 }

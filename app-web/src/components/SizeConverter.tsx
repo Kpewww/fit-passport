@@ -11,6 +11,7 @@ import { useMemo, useState } from "react";
 import { inputClass } from "@/components/ui";
 import { domainForCategory } from "@/lib/sizeSystems";
 import { convert, scalesForDomain } from "@/lib/sizeConvert";
+import { ArrowRight, Close } from "@/components/Icon";
 
 export function SizeConverter({
   category,
@@ -43,13 +44,13 @@ export function SizeConverter({
         onClick={() => setOpen(true)}
         className="text-xs font-medium text-brand hover:underline"
       >
-        Know it in another scale (EU / US / UK / cm)? Convert →
+        Know it in another scale (EU / US / UK / cm)? Convert <ArrowRight size={14} className="-mt-px inline" />
       </button>
     );
   }
 
   return (
-    <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+    <div className="rounded-lg border border-line bg-paper-soft p-3">
       <div className="mb-2 flex items-center justify-between">
         <p className="text-xs font-semibold text-ink">Size converter</p>
         <button
@@ -57,7 +58,7 @@ export function SizeConverter({
           onClick={() => setOpen(false)}
           className="text-xs text-ink-faint hover:text-ink"
         >
-          Close ✕
+          <Close size={14} className="-mt-px mr-1 inline" />Close
         </button>
       </div>
 
@@ -84,7 +85,7 @@ export function SizeConverter({
       </div>
 
       {raw.trim() && results.length === 0 && (
-        <p className="mt-2 text-[11px] text-amber-700">
+        <p className="mt-2 text-[11px] text-warn">
           Couldn&apos;t read &quot;{raw.trim()}&quot; as a {activeScale?.label} size.
           Example: {activeScale?.example}.
         </p>
@@ -104,7 +105,7 @@ export function SizeConverter({
                 className={`rounded-md border px-2.5 py-1.5 text-xs transition-colors ${
                   r.scaleId === activeScaleId
                     ? "border-brand bg-brand-tint font-semibold text-brand"
-                    : "border-neutral-300 bg-white text-ink-soft hover:border-brand hover:text-brand"
+                    : "border-line bg-white text-ink-soft hover:border-brand hover:text-brand"
                 }`}
                 title={`Use ${r.value}`}
               >

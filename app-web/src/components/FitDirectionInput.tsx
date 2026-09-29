@@ -233,7 +233,7 @@ function NumericScale({
         />
       </div>
       <p className="mt-1.5 text-[11px] text-ink-faint">
-        Tap the line, or use ← →. <span className="text-ink-soft">0 = just right.</span>
+        Tap the line, or use the arrow keys. <span className="text-ink-soft">0 = just right.</span>
       </p>
     </div>
   );
