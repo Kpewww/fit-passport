@@ -688,6 +688,15 @@ open. The redesign runs alongside it.
   about baseline (/login 100 vs 98.6, / 158 vs 156; /closet 126 vs 116 with the new
   features).
 
+- **F (fix round, founder's live review 2026-09-28)** — homepage "Why it works" was
+  full-bleed under a centred heading and a 3-card carousel with nothing to scroll → a
+  static aligned grid (`WhatYouGet`); closet leaned left on wide screens → add flow +
+  *Getting started* aside, list/folders two-column, New collection in the toolbar;
+  claim nudge covered content → bottom-left card, hidden on phones and /passport.
+  **Lesson: check renders at 1920, not only 1440 — all three faults were wide-screen only.**
+- **Homepage cut list decided (open decision #4 CLOSED):** remove `ConvergingStack` and
+  `NewUserGuide` (its demo button moves into the closing CTA); keep the Parallax statement.
+
 **Next, in order (each its own push with a DEVLOG entry):**
 1. **R4 Check result:** size and a thin ring → two reasons → a source row with
    icons → the size ranking. A refusal is a calm panel.

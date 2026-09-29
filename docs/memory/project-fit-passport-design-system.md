@@ -178,3 +178,15 @@ label, cobalt dot for current.
 a type label with a colour dot, stars). No card chrome. The camera control is
 white/90 on the image; the nudge version is ink with the words *Add a photo*. The
 sticky chip bar sits on solid `bg-paper`, never a blur.
+
+**Layout rules learned in the fix round (Session 76 F):**
+- A full-bleed row under a centred heading misaligns on wide screens. A row shares
+  its heading's container.
+- A narrow block left-aligned inside a wide container leans left. Either fill the
+  container, pair the block with an aside, or centre it.
+- Never ship a carousel whose content fits the viewport: its controls look live and
+  do nothing.
+- Corner notices go bottom-left, above back-to-top, never centred over content, and
+  are not shown on a phone when the nav already carries the same action.
+- `GarmentCover` is the one drawing of a garment (photo, or colour + icon), shared by
+  the closet and the homepage.

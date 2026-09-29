@@ -7,6 +7,8 @@ import { motion, useScroll, useTransform, useReducedMotion, type MotionValue } f
 import { Card, LinkButton, AccuracyBadge, Skeleton } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
 import { OutfitMannequin } from "@/components/OutfitMannequin";
+import { GarmentCover } from "@/components/GarmentCover";
+import { BadgeMedallion } from "@/components/BadgeMedallion";
 import { productLabel } from "@/lib/productLabel";
 import { Check, LinkIcon, Scales } from "@/components/Icon";
 
@@ -120,7 +122,7 @@ export default function Home() {
       )}
 
       <StickyHowItWorks />
-      <HorizontalShowcase reduce={!!reduce} />
+      <WhatYouGet />
       <ConvergingStack reduce={!!reduce} />
       <ParallaxStatement reduce={!!reduce} />
 
@@ -378,134 +380,96 @@ function StickyHowItWorks() {
   );
 }
 
-// ---------------- Horizontal scroll showcase (a lookbook you scroll sideways) ------
-type ShowCard = { n: string; title: string; line: string; render: () => React.ReactNode };
-
-// Two cards were cut here on 2026-09-01: "Any store" and "Explained, not
-// guessed". Both were a gradient panel carrying a sentence that the
-// how-it-works section directly above already makes — "paste a product" and "a
-// size, and the reason". They added a screen of scroll and no information. The
-// three that remain each show something: two render a real mannequin, and the
-// last is the badge ladder, which nothing above covers.
-const SHOW_CARDS: ShowCard[] = [
+// ---------------- What you get: three things the product makes ----------------
+//
+// This was a drag-to-scroll "lookbook". With three cards it had nothing to
+// scroll: 3 × 380px is narrower than any desktop, so the arrows and the drag did
+// nothing, and the row was full-bleed while its heading sat in the centred
+// container — on a wide screen the cards started at the window's edge, 400px
+// left of their own title (founder's report, 2026-09-28). Three cards are a
+// grid. On a phone they stay a native swipe row, aligned to the same gutter.
+//
+// Each card shows the real thing rather than a decoration: a closet card drawn
+// by the same component the closet uses, the outfit mannequin, and a badge.
+const GET_CARDS = [
   {
-    n: "01",
     title: "Your closet, learned",
-    line: "Anchors from clothes you love; we learn how each brand runs on you.",
-    render: () => (
-      <div className="flex h-full items-center justify-center bg-paper-dim">
-        <OutfitMannequin layers={[{ category: "jacket", color: "navy" }, { category: "pants", color: "charcoal" }]} volume={"average" as never} shape={"straight" as never} size={150} />
-      </div>
-    ),
+    line: "Clothes you love become anchors — we learn how each brand runs on you.",
+    visual: "closet",
   },
   {
-    n: "02",
     title: "Compose the look",
-    line: "Build outfits on a mannequin, then share them.",
-    render: () => (
-      <div className="flex h-full items-center justify-center bg-paper-dim">
-        <OutfitMannequin layers={[{ category: "sweater", color: "burgundy" }, { category: "jeans", color: "denim" }, { category: "sneakers", color: "white" }]} volume={"lean" as never} shape={"straight" as never} size={150} />
-      </div>
-    ),
+    line: "Build outfits on a mannequin shaped like you, then share them.",
+    visual: "outfit",
   },
   {
-    n: "03",
     title: "Earn your taste",
     line: "Struck-metal badges for a curated closet and admired looks.",
-    render: () => <ColorField className="from-brand via-ink to-ink" label="✦" light />,
+    visual: "badge",
   },
-];
+] as const;
 
-// A light, USER-CONTROLLED horizontal lookbook: drag it, swipe it, or use the
-// arrows / trackpad. No scroll-jacking — the page never pins or blocks you.
-function HorizontalShowcase({ reduce }: { reduce: boolean }) {
-  const rowRef = useRef<HTMLDivElement>(null);
-  const drag = useRef({ down: false, startX: 0, startLeft: 0, moved: false });
-
-  function onPointerDown(e: React.PointerEvent) {
-    const el = rowRef.current;
-    if (!el) return;
-    drag.current = { down: true, startX: e.clientX, startLeft: el.scrollLeft, moved: false };
-    el.setPointerCapture(e.pointerId);
-  }
-  function onPointerMove(e: React.PointerEvent) {
-    const el = rowRef.current;
-    if (!el || !drag.current.down) return;
-    const dx = e.clientX - drag.current.startX;
-    if (Math.abs(dx) > 3) drag.current.moved = true;
-    el.scrollLeft = drag.current.startLeft - dx;
-  }
-  function endDrag(e: React.PointerEvent) {
-    const el = rowRef.current;
-    if (el?.hasPointerCapture(e.pointerId)) el.releasePointerCapture(e.pointerId);
-    drag.current.down = false;
-  }
-  function nudge(dir: -1 | 1) {
-    rowRef.current?.scrollBy({ left: dir * Math.min(440, window.innerWidth * 0.8), behavior: reduce ? "auto" : "smooth" });
-  }
-
+function WhatYouGet() {
   return (
-    <section className="bg-paper py-20">
+    <section className="bg-paper py-20 sm:py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <p className="eyebrow text-ink-faint">Why it works</p>
-            <h2 className="mt-3 font-serif text-4xl text-ink sm:text-5xl">A wardrobe that travels.</h2>
-          </div>
-          {/* arrows — an obvious way to move without dragging */}
-          <div className="hidden gap-2 sm:flex">
-            <button onClick={() => nudge(-1)} aria-label="Previous" className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-soft transition-colors hover:border-ink hover:text-ink">←</button>
-            <button onClick={() => nudge(1)} aria-label="Next" className="flex h-10 w-10 items-center justify-center rounded-full border border-line text-ink-soft transition-colors hover:border-ink hover:text-ink">→</button>
-          </div>
+        <p className="eyebrow text-ink-faint">What you get</p>
+        <h2 className="mt-3 font-serif text-4xl text-ink sm:text-5xl">A wardrobe that travels.</h2>
+      </div>
+      <div className="mx-auto mt-10 max-w-6xl sm:px-6">
+        <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-2 sm:grid sm:snap-none sm:grid-cols-3 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0">
+          {GET_CARDS.map((c) => (
+            <article key={c.title} className="w-[80vw] flex-shrink-0 snap-start overflow-hidden rounded-2xl bg-white ring-1 ring-line sm:w-auto">
+              <div className="aspect-[4/3] overflow-hidden bg-paper-dim">
+                <GetVisual kind={c.visual} />
+              </div>
+              <div className="p-6">
+                <h3 className="font-serif text-2xl text-ink">{c.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-soft">{c.line}</p>
+              </div>
+            </article>
+          ))}
         </div>
       </div>
-
-      <div
-        ref={rowRef}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={endDrag}
-        onPointerCancel={endDrag}
-        // `overscroll-x-contain`: reaching either end of this row must not chain
-        // into the page — on a trackpad that chaining also triggers the browser's
-        // back-navigation gesture, which is worse than a scroll hitch.
-        className="no-scrollbar mt-8 flex cursor-grab snap-x gap-6 overflow-x-auto overscroll-x-contain scroll-px-6 px-6 pb-4 active:cursor-grabbing"
-      >
-        {SHOW_CARDS.map((c) => (
-          <div
-            key={c.n}
-            className="h-[52vh] max-h-[460px] w-[82vw] flex-shrink-0 snap-start sm:w-[380px]"
-            // a drag that moved shouldn't also register as a click on card links
-            onClickCapture={(e) => { if (drag.current.moved) { e.preventDefault(); e.stopPropagation(); } }}
-          >
-            <ShowCardView c={c} />
-          </div>
-        ))}
-        {/* trailing spacer so the last card can snap fully into view */}
-        <div className="w-2 flex-shrink-0 sm:hidden" />
-      </div>
-      <p className="mx-auto mt-3 max-w-6xl px-6 text-xs text-ink-faint">Drag, swipe, or use the arrows →</p>
     </section>
   );
 }
 
-function ShowCardView({ c }: { c: ShowCard }) {
-  return (
-    <div className="flex h-full flex-col overflow-hidden rounded-3xl bg-white shadow-card ring-1 ring-line">
-      <div className="relative flex-1 overflow-hidden">{c.render()}</div>
-      <div className="p-6">
-        <span className="font-serif text-sm italic text-brand">{c.n}</span>
-        <h3 className="mt-1 font-serif text-2xl text-ink">{c.title}</h3>
-        <p className="mt-1.5 text-sm text-ink-soft">{c.line}</p>
+function GetVisual({ kind }: { kind: (typeof GET_CARDS)[number]["visual"] }) {
+  if (kind === "closet") {
+    // Two gallery tiles, drawn by the closet's own cover component.
+    const tiles = [
+      { brand: "Uniqlo", size: "M", category: "tshirt", color: "navy" },
+      { brand: "COS", size: "EU 48", category: "shirt", color: "white" },
+    ];
+    return (
+      <div className="flex h-full items-center justify-center gap-3 px-6">
+        {tiles.map((t) => (
+          <div key={t.brand} className="w-[38%] min-w-0">
+            <div className="aspect-[4/5] overflow-hidden rounded-lg ring-1 ring-line/70">
+              <GarmentCover category={t.category} color={t.color} iconSize={36} />
+            </div>
+            <div className="mt-2 flex items-baseline justify-between gap-2 text-[11px]">
+              <span className="truncate font-medium text-ink">{t.brand}</span>
+              <span className="tabular-nums text-ink-soft">{t.size}</span>
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
-  );
-}
-
-function ColorField({ className, label, light }: { className: string; label: string; light?: boolean }) {
+    );
+  }
+  if (kind === "outfit") {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <OutfitMannequin layers={[{ category: "sweater", color: "burgundy" }, { category: "jeans", color: "denim" }, { category: "sneakers", color: "white" }]} volume={"lean" as never} shape={"straight" as never} size={150} />
+      </div>
+    );
+  }
   return (
-    <div className={`flex h-full items-center justify-center bg-gradient-to-br ${className}`}>
-      <span className={`font-serif text-5xl italic ${light ? "text-paper/90" : "text-white/90"}`}>{label}</span>
+    <div className="flex h-full items-center justify-center gap-4 bg-ink">
+      <BadgeMedallion id="curator" metal="silver" size={72} />
+      <BadgeMedallion id="archivist" metal="gold" size={104} />
+      <BadgeMedallion id="calibrated" metal="silver" size={72} />
     </div>
   );
 }

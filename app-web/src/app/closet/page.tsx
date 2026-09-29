@@ -13,6 +13,7 @@ import { CategoryPicker } from "@/components/CategoryPicker";
 import { isValidSize } from "@/lib/sizeSystems";
 import { garmentLabel } from "@/lib/garments";
 import { GarmentIcon } from "@/components/GarmentIcon";
+import { GarmentCover } from "@/components/GarmentCover";
 import { resizeGarmentPhoto } from "@/lib/imageResize";
 import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionInput";
 import { DIRECTION_DEFAULT, ratingFromDirection } from "@/lib/fitDirection";
@@ -107,6 +108,7 @@ export default function ClosetPage() {
   // Once the closet has its three pieces, the add flow folds into one row so the
   // clothes, not the form, lead the page.
   const [addOpen, setAddOpen] = useState(false);
+  const [newCollOpen, setNewCollOpen] = useState(false);
   // Folder view: the file "pulled fully out" onto the desk (detail sheet), and
   // the comparison "bucket" — items set aside to view side-by-side, mirroring
   // how you pull a few garments out of a real closet when planning an outfit.
@@ -267,12 +269,22 @@ export default function ClosetPage() {
         eyebrow="Closet"
         title="Your closet"
         lede="Clothes you own that fit well. Each piece teaches the size engine how a brand runs on your body."
-        action={<GoalAction count={count} />}
+        action={goalMet ? <LinkButton href="/check" arrow>Check a product</LinkButton> : undefined}
       />
 
-      {/* Add an item — one question per screen (see AddItemFlow). */}
-      <div className="mt-10 max-w-3xl">
-        {goalMet && !addOpen ? (
+      {/* Add an item — one question per screen (see AddItemFlow). Until the
+          closet has its three pieces, the flow shares the row with what it is
+          for: progress, and why three. The page used to set a 48rem form at the
+          left of a 72rem page with the progress stranded at the far right —
+          left-heavy on any wide screen (founder's report, 2026-09-28). */}
+      {!goalMet ? (
+        <div className="mt-10 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+          <AddItemFlow onAdded={(id) => { setNudgeId(id); load(); }} />
+          <SetupAside count={count} />
+        </div>
+      ) : (
+      <div className="mt-10">
+        {!addOpen ? (
           <button
             type="button"
             onClick={() => setAddOpen(true)}
@@ -286,20 +298,13 @@ export default function ClosetPage() {
         ) : (
           <AddItemFlow
             onAdded={(id) => { setNudgeId(id); load(); }}
-            onClose={goalMet ? () => setAddOpen(false) : undefined}
+            onClose={() => setAddOpen(false)}
           />
         )}
       </div>
+      )}
 
-      {count === 0 ? (
-        <div className="mt-10 max-w-3xl">
-          <EmptyState
-            icon={<Hanger size={22} />}
-            title="Your closet is empty"
-            body="Add 3 things you own that fit well. Tip: pick different brands so we learn how sizes differ for your body."
-          />
-        </div>
-      ) : (
+      {count > 0 && (
         <>
           {/* Toolbar: how to look at the closet, and what to do with it. */}
           <div className="mt-12 flex flex-wrap items-center justify-between gap-3">
@@ -312,8 +317,29 @@ export default function ClosetPage() {
                 <Button size="sm" variant="ghost" icon={<Stack size={16} />} onClick={() => setSelectMode(true)}>Merge duplicates</Button>
               )}
               <LinkButton href="/refresh?collections=all" size="sm" variant="ghost" icon={<Refresh size={16} />}>Refresh fit</LinkButton>
+              <Button size="sm" variant={newCollOpen ? "secondary" : "ghost"} icon={<Plus size={16} />} onClick={() => setNewCollOpen((v) => !v)}>New collection</Button>
             </div>
           </div>
+
+          {/* A new collection is occasional, so it is a toolbar action that opens
+              a row here, not a card at the foot of every visit. */}
+          {newCollOpen && (
+            <form onSubmit={(e) => { addCollection(e); setNewCollOpen(false); }} className="mt-4 flex flex-col gap-4 rounded-2xl bg-white p-4 ring-1 ring-line sm:flex-row sm:items-end">
+              <div className="min-w-0 flex-1">
+                <Field label="Collection name">
+                  <input autoFocus className={inputClass} placeholder="e.g. Formal, Gym, Winter"
+                    value={newCollectionName} onChange={(e) => setNewCollectionName(e.target.value)} />
+                </Field>
+              </div>
+              <Field label="Folder color" hint="optional">
+                <FolderColorPicker value={newCollectionColor} onPick={setNewCollectionColor} />
+              </Field>
+              <div className="flex gap-2">
+                <Button type="submit" size="sm" disabled={!newCollectionName.trim()}>Add collection</Button>
+                <Button size="sm" variant="ghost" onClick={() => setNewCollOpen(false)}>Cancel</Button>
+              </div>
+            </form>
+          )}
 
           {/* Collection chips. Sticky under the nav so a long closet can be
               narrowed from anywhere. A solid ground, not a blur: one more
@@ -378,7 +404,7 @@ export default function ClosetPage() {
               ))}
             </div>
           ) : (
-          <div className={`mt-8 space-y-12 ${view === "gallery" ? "" : "max-w-3xl"}`}>
+          <div className={`mt-8 ${view === "folder" ? "grid items-start gap-12 lg:grid-cols-2 lg:gap-x-10" : "space-y-12"}`}>
             {shown.map(({ collection, items: bucketItems, seed }) => {
               const pos = realCollections.findIndex((b) => b.collection.id === collection.id);
               const uncat = collection.id === "__uncat__";
@@ -416,32 +442,12 @@ export default function ClosetPage() {
           )}
 
           {view === "gallery" && activeFilter === "all" && emptyNames.length > 0 && (
-            <p className="mt-12 max-w-3xl text-xs text-ink-faint">
+            <p className="mt-12 text-xs text-ink-faint">
               Empty for now: {emptyNames.join(", ")}. New pieces file here by type — rename or delete these in the list view.
             </p>
           )}
         </>
       )}
-
-      {/* Add collection */}
-      <Card className="mt-12 max-w-3xl">
-        <form onSubmit={addCollection} className="flex flex-col gap-3 sm:flex-row sm:items-end">
-          <div className="flex-1">
-            <Field label="New collection">
-              <input className={inputClass} placeholder="e.g. Formal, Gym, Winter"
-                value={newCollectionName} onChange={(e) => setNewCollectionName(e.target.value)} />
-            </Field>
-          </div>
-          <div>
-            <Field label="Folder color" hint="optional">
-              <FolderColorPicker value={newCollectionColor} onPick={setNewCollectionColor} />
-            </Field>
-          </div>
-          <Button variant="secondary" type="submit" disabled={!newCollectionName.trim()}>
-            Add collection
-          </Button>
-        </form>
-      </Card>
 
       {/* The file pulled fully out onto the desk */}
       {detailGroup && (
@@ -466,23 +472,46 @@ export default function ClosetPage() {
 }
 
 /**
- * The header's one action. Until the closet has its three pieces, progress
- * toward them; after, the next thing to do with a closet — check a product.
- * It replaced a green "3/3 goal met" figure and a green card at the foot of the
- * page that said the same thing twice.
+ * Beside the add flow until the closet has its three pieces: how far along,
+ * why three, and — for someone with nothing in yet — a demo closet to look
+ * around with. It replaced a green "3/3 goal met" figure in the header and a
+ * green card at the foot of the page that said the same thing twice.
  */
-function GoalAction({ count }: { count: number }) {
-  if (count >= 3) return <LinkButton href="/check" arrow>Check a product</LinkButton>;
+function SetupAside({ count }: { count: number }) {
+  const [hasBody, setHasBody] = useState<boolean | null>(null);
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    fetch("/api/status").then((r) => r.json()).then((s) => setHasBody(!!s.hasBody)).catch(() => setHasBody(null));
+  }, []);
+  async function demo() {
+    setLoading(true);
+    await fetch("/api/demo", { method: "POST" });
+    window.location.reload();
+  }
   return (
-    <div className="sm:text-right">
-      <p className="eyebrow text-ink-faint">Recommended</p>
-      <div className="mt-2 flex gap-1.5 sm:justify-end" role="img" aria-label={`${count} of 3 pieces added`}>
+    <aside className="rounded-2xl bg-white p-6 ring-1 ring-line lg:sticky lg:top-24">
+      <p className="eyebrow text-ink-faint">Getting started</p>
+      <p className="mt-3 font-serif text-h2 tabular-nums text-ink">{count} of 3 pieces</p>
+      <div className="mt-3 flex gap-1.5" role="img" aria-label={`${count} of 3 pieces added`}>
         {[0, 1, 2].map((i) => (
-          <span key={i} className={`h-1 w-8 rounded-full ${i < count ? "bg-ink" : "bg-line"}`} />
+          <span key={i} className={`h-1 flex-1 rounded-full ${i < count ? "bg-ink" : "bg-line"}`} />
         ))}
       </div>
-      <p className="mt-1.5 text-xs tabular-nums text-ink-soft">{count} of 3 pieces</p>
-    </div>
+      <p className="mt-4 text-sm leading-relaxed text-ink-soft">
+        Three pieces you own that fit well are enough for accurate sizing. Pick different
+        brands — how sizes differ between them is what the engine learns.
+      </p>
+      {/* The demo replaces the closet AND the body profile (api/demo), so it is
+          offered only to someone with neither — never over real data. */}
+      {count === 0 && hasBody === false && (
+        <div className="mt-5 border-t border-line pt-4">
+          <p className="text-xs text-ink-faint">Just looking around?</p>
+          <Button size="sm" variant="secondary" loading={loading} icon={<Hanger size={16} />} onClick={demo} className="mt-2">
+            Try a demo closet
+          </Button>
+        </div>
+      )}
+    </aside>
   );
 }
 
@@ -667,16 +696,19 @@ function CollectionSection({
           ))}
         </div>
       ) : (
-        <div className="space-y-2">
+        // Two columns of rows on a wide screen: one row of text and actions
+        // stretched across 72rem is mostly gap. An open editor takes the row.
+        <div className="grid gap-2 lg:grid-cols-2">
           {groups.map((g) =>
             editingId && g.items.some((it) => it.id === editingId) ? (
-              <EditRow
-                key={g.key}
-                item={g.items.find((it) => it.id === editingId)!}
-                collections={allCollections}
-                onCancel={() => onEdit(null)}
-                onSaved={() => { onEdit(null); onReload(); }}
-              />
+              <div key={g.key} className="lg:col-span-2">
+                <EditRow
+                  item={g.items.find((it) => it.id === editingId)!}
+                  collections={allCollections}
+                  onCancel={() => onEdit(null)}
+                  onSaved={() => { onEdit(null); onReload(); }}
+                />
+              </div>
             ) : (
               <ItemCard
                 key={g.key}
@@ -739,7 +771,6 @@ function GalleryCard({
   const head = group.items[0];
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
-  const hex = colorHex(head.color);
   const photo = head.imageDataUrl;
   const selectable = selectMode && !group.isVariant;
   const isSel = selectable && selected;
@@ -760,21 +791,20 @@ function GalleryCard({
     <figure className="group/card min-w-0 animate-fade-in-up">
       <div
         className={`relative aspect-[4/5] overflow-hidden rounded-xl transition-shadow duration-200 ${isSel ? "ring-2 ring-brand" : "ring-1 ring-line/70"}`}
-        style={{ backgroundColor: photo ? "#E6E7E9" : hex ?? "#E6E7E9" }}
       >
         <button
           type="button"
           onClick={activate}
           aria-label={label}
           aria-pressed={selectable ? isSel : undefined}
-          className="absolute inset-0 flex items-center justify-center focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
+          className="absolute inset-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand"
         >
-          {photo ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={photo} alt="" className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover/card:scale-[1.02]" />
-          ) : (
-            <GarmentIcon category={head.category} size={56} className={iconToneOn(hex) === "light" ? "text-white/80" : "text-ink/50"} />
-          )}
+          <GarmentCover
+            category={head.category}
+            color={head.color}
+            photo={photo}
+            imgClassName="transition-transform duration-500 ease-out group-hover/card:scale-[1.02]"
+          />
         </button>
 
         {group.isVariant && (
@@ -1297,25 +1327,33 @@ function FolderColorPicker({
   onPick: (color: string | null) => void;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
+    // Each swatch sits in a 44px-tall button: the dots were 20px targets,
+    // the smallest tap targets left on the closet (mobile-audit).
+    <div className="flex flex-wrap items-center">
       <button
         type="button"
         onClick={() => onPick(null)}
-        title="Auto color"
-        className={`h-5 w-5 rounded-full border bg-white text-[9px] leading-none text-ink-faint ${
-          !value ? "ring-2 ring-brand ring-offset-1" : "border-neutral-300"
-        }`}
-      >A</button>
+        aria-label="Automatic color"
+        aria-pressed={!value}
+        className="flex h-11 w-8 items-center justify-center"
+      >
+        <span className={`flex h-6 w-6 items-center justify-center rounded-full bg-white text-[10px] text-ink-faint ${
+          !value ? "ring-2 ring-ink ring-offset-2 ring-offset-white" : "ring-1 ring-line"
+        }`}>A</span>
+      </button>
       {FOLDER_COLOR_ORDER.map((name) => (
         <button
           key={name}
           type="button"
           onClick={() => onPick(name)}
-          title={name}
-          className={`h-5 w-5 rounded-full ${FOLDER_COLORS[name].swatch} ${
-            value === name ? "ring-2 ring-brand ring-offset-1" : ""
-          }`}
-        />
+          aria-label={`${name} folder`}
+          aria-pressed={value === name}
+          className="flex h-11 w-8 items-center justify-center"
+        >
+          <span className={`h-6 w-6 rounded-full ${FOLDER_COLORS[name].swatch} ${
+            value === name ? "ring-2 ring-ink ring-offset-2 ring-offset-white" : ""
+          }`} />
+        </button>
       ))}
     </div>
   );

@@ -31,6 +31,89 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-28 · Session 76 (F) — Three layout faults the founder found on the live site
+
+The founder reviewed R0–R3 in their own browser, on a wide screen, and reported:
+- the homepage "Why it works" block sat crooked and did not respond;
+- the closet leaned left;
+- they asked for a broader look at what could still be improved.
+
+All three layout faults only show on a screen wider than the 1440 px we had been
+checking. The render check now includes **1920** as well.
+
+**1. "Why it works" was crooked, and did nothing.**
+- **Crooked:** the heading sat in the centred `max-w-6xl` container, but the card
+  row was full-bleed, starting at the window's edge. At 1920 the cards began at
+  x≈18 and their own heading at x≈408.
+- **Did nothing:** it was a drag-to-scroll lookbook, but two of its five cards
+  were cut on 2026-09-01. Three cards at 380 px are narrower than any desktop, so
+  there was nothing to scroll: the arrows and the drag did nothing, while still
+  looking like they should.
+- **Now:** `WhatYouGet`, a three-column grid in the same container as its
+  heading. Measured left edges, heading = first card: 408 = 408 at 1920,
+  168 = 168 at 1440, 16 = 16 at 390. On a phone it stays a native swipe row
+  aligned to the gutter.
+- **Each card shows the real thing:**
+  - two closet tiles drawn by the new `GarmentCover`, which the closet gallery
+    now uses too, so the advert and the product cannot drift apart;
+  - the outfit mannequin;
+  - three flat `BadgeMedallion`s, replacing a gradient with a ✦ on it.
+
+**2. The closet leaned left.** R3 set a 48 rem add form, empty state and "new
+collection" card at the left of a 72 rem page, with the progress figure stranded
+at the far right.
+- **Under three pieces:** the add flow shares a row with a *Getting started*
+  aside (`lg:grid-cols-[1fr_20rem]`). It holds the progress, now next to the task
+  it measures, and why three pieces.
+- **Demo closet button:** shown only when the closet is empty **and** there is no
+  body profile. That is deliberate: `/api/demo` replaces both, so it is never
+  offered over real data. The separate empty-state card said what the aside
+  says, and is gone.
+- **Three or more pieces:** the folded *Add a piece* row spans the page.
+- **New collection** became a toolbar action that opens an inline row. It used to
+  be a card at the foot of every visit.
+- **List and Folders views** use the width as two columns on wide screens: one
+  row of text and actions stretched across 72 rem was mostly gap. An open editor
+  takes the whole row.
+- **Folder colour dots** were the closet's smallest tap targets at 20 px. Each is
+  now a 24 px swatch in a 44 px-tall button. The closet's sub-44 px targets went
+  from 12 to 4.
+
+**3. The claim nudge covered content.**
+- It was a dark bar centred at the foot of every page, and in the closet gallery
+  it sat on the middle card.
+- It is now a compact white card at the bottom left, above the back-to-top
+  button, with an ink *Claim account* button and a 44 px close.
+- It is not shown on a phone, where the nav bar always shows the same *Claim
+  account* button and the card took half the screen to repeat it.
+- It is not shown on `/passport`, whose save bar already says "Save — claim
+  account".
+- `sessionStorage` access is now guarded.
+
+**Decided with the founder for what follows:**
+- **Homepage (open decision #4, closed):** remove `ConvergingStack` ("three
+  signals", a restatement of How it works step 2) and `NewUserGuide` (a
+  restatement of How it works). Its demo-closet action moves into the closing
+  CTA. Keep the black Parallax statement. This lands in R5.
+- **Order:** R4 (Check result) → R5 → R6 → R7.
+
+Checked:
+- renders at 1920, 1440 and 390, with no page errors;
+- `mobile-audit` shows no overflow;
+- First Load JS: / 161 (the medallions; R5's two cut sections come after), and
+  /closet 126 is unchanged;
+- 516 tests pass; typecheck and build are clean.
+
+### Files touched
+```
+app-web/src/app/page.tsx               (HorizontalShowcase → WhatYouGet; ShowCardView, ColorField removed)
+app-web/src/components/GarmentCover.tsx (new — shared by the closet gallery and the homepage)
+app-web/src/app/closet/page.tsx        (SetupAside, toolbar "New collection", two-column list/folders, 44px swatches)
+app-web/src/components/ClaimNudge.tsx  (bottom-left card; not on phones or /passport)
+```
+
+---
+
 ## 2026-09-28 · Session 76 (R3) — The closet is a gallery, and your photo is the cover
 
 Redesign step R3, and the founder's second request: users can put their own photo
