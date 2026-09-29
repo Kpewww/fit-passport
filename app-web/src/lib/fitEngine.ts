@@ -35,6 +35,7 @@ import { directionToLadderShift, describeDirection, isDirectional } from "./fitD
 import { reportConsistency } from "./closetConsistency";
 import { personalEaseTarget, resolveEase, type ResolvedEase } from "./personalEase";
 import { CONFIDENCE_WEIGHTS } from "./confidenceWeights";
+import { measureStability, stabilityFactor, type Stability } from "./stability";
 import {
   AGREEMENT,
   ANCHOR_WEIGHTS,
@@ -45,8 +46,8 @@ import {
   DEFAULT_WEIGHTS,
   DIMENSIONS,
   KNOWN_GOOD,
-  MARGIN,
   OUTCOME,
+  STABILITY,
   TIE,
   VERDICT_CM,
 } from "./scoringConstants";
@@ -173,6 +174,12 @@ export type EngineOutput = {
   // number already reflects this; the note explains WHY, which is the point of a
   // transparent engine — a lowered number with no reason is just a worse number.
   conflictNote: string | null;
+  /**
+   * Whether the pick survives the noise already in its inputs (stability.ts):
+   * agreement across a grid of plausible alternative measurements, and the chest
+   * range over which the answer holds. Null when there was nothing to compare.
+   */
+  stability: Stability | null;
 };
 
 // ------------ Engine ------------
@@ -260,7 +267,16 @@ function bodyRangeFit(b: number, lo: number, hi: number): { sub: number; delta: 
   // Negate to garment-relative, then push past the edge so a size the body does
   // not fit inside never reads as "true to size".
   const push = BODY_RANGE.outsidePushCm;
-  return { delta: outBy > 0 ? -outBy - push : -outBy + push, sub: gauss(outBy, BODY_RANGE.outsideSigmaCm) };
+  // CONTINUOUS AT THE EDGE, AND ALWAYS BELOW IT OUTSIDE. The outside score used to
+  // start at gauss(0) = 1.0 while the inside score at the same edge is only
+  // insideFloor + insideSpan·e^(−½) ≈ 0.94 — so sitting just OUTSIDE a size's range
+  // scored higher than sitting just inside it. Measured on Nike's chart in Session
+  // 78: a 94.5 cm chest (inside S, outside M) was recommended M, and 95.5 cm
+  // (inside M) was recommended S; the pick flipped back and forth within ~2 cm of
+  // every boundary. Scaling the fall-off by the edge value makes the curve
+  // continuous and monotone, so the size that contains the wearer always wins.
+  const edge = BODY_RANGE.insideFloor + BODY_RANGE.insideSpan * Math.exp(-0.5);
+  return { delta: outBy > 0 ? -outBy - push : -outBy + push, sub: edge * gauss(outBy, BODY_RANGE.outsideSigmaCm) };
 }
 
 /**
@@ -698,7 +714,11 @@ function scoreBrandBiasForSize(
   };
 }
 
-export function recommend(input: EngineInput): EngineOutput {
+export function recommend(
+  input: EngineInput,
+  /** skipStability: set by the stability grid's own runs, which need only the pick. */
+  opts: { skipStability?: boolean } = {},
+): EngineOutput {
   const { profile, product, sizes, knownGood, outcomes } = input;
 
   // ---- Per-user brand bias from outcomes (see brandBias.ts) -------------------
@@ -819,15 +839,20 @@ export function recommend(input: EngineInput): EngineOutput {
 
   ranked.sort((a, b) => b.score - a.score);
 
-  // Confidence should track how DECISIVE the top pick is, not only how much data
-  // we had: two near-tied sizes is genuine ambiguity (the size-rec literature
-  // frames the pick as "most likely to be kept" — a coin-flip deserves lower
-  // confidence). Scale every size's confidence by the top-two margin.
-  if (ranked.length >= 2) {
-    const margin = ranked[0].score - ranked[1].score;
-    // margin 0 → ×0.6 (ambiguous); margin ≥0.1 → ×1.0 (decisive).
-    const marginFactor = Math.max(MARGIN.floor, Math.min(1, MARGIN.floor + margin * MARGIN.slope));
-    for (const r of ranked) r.confidence = Math.round(r.confidence * marginFactor * 100) / 100;
+  // Confidence should track how DECISIVE the pick is, not only how much data we
+  // had: a pick that flips when the wearer's measurement moves by the error a tape
+  // measure already carries is a coin-flip, and deserves lower confidence. This
+  // used to be the top-two SCORE margin; since Session 78 it is measured directly
+  // — re-run on plausible alternative inputs, count how often the pick survives
+  // (stability.ts). Same range as before (a dead heat keeps 60%), but in the
+  // wearer's centimetres, so it can be said out loud.
+  let stability: Stability | null = null;
+  if (ranked.length >= 2 && !opts.skipStability) {
+    stability = measureStability(input, ranked[0].label, (variant) =>
+      recommend(variant, { skipStability: true }).best.label,
+    );
+    const factor = stabilityFactor(stability.agreement);
+    for (const r of ranked) r.confidence = Math.round(r.confidence * factor * 100) / 100;
   }
 
   // ---- Signal agreement ------------------------------------------------------
@@ -837,6 +862,17 @@ export function recommend(input: EngineInput): EngineOutput {
   const ladder = new Map(sizes.map((s, i) => [s.label, i] as const));
   const disagreement = signalDisagreement(ranked, ladder);
   const conflictParts: string[] = [];
+  // A pick that the wearer's own tape-measure error could flip must say so: the
+  // confidence already fell (stabilityFactor), and a lower number with no reason
+  // would break the explainability invariant.
+  if (stability && stability.agreement < STABILITY.fragileBelow && stability.holdsForChestCm) {
+    const [lo, hi] = stability.holdsForChestCm;
+    conflictParts.push(
+      `This one is close: it holds for a chest between ${lo} and ${hi} cm, and a ` +
+        `${stability.bodyNoiseCm} cm difference in how you measure could change it — ` +
+        `measuring again is worth it.`,
+    );
+  }
   if (disagreement) {
     // One ladder step apart is ordinary tension; two or more means the signals
     // are telling genuinely different stories.
@@ -963,7 +999,7 @@ export function recommend(input: EngineInput): EngineOutput {
       `measurements and preference. Add a ${humanDomain(productDomain)} you own for a real recommendation.`;
   }
 
-  return { ranked, best, explanation, undetermined, domainNote, domainRelevance, conflictNote };
+  return { ranked, best, explanation, undetermined, domainNote, domainRelevance, conflictNote, stability };
 }
 
 /** Human name for a size domain, for disclaimers. */

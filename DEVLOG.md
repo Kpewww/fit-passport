@@ -31,6 +31,70 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 78c — Small changes no longer swing a confident answer, and an edge bug they exposed
+
+Phase C of the Session 78 plan: "small changes should not swing the whole result".
+
+**The framing that matters.** A scorer built from smooth curves never jumps in
+score, but the recommended size is an argmax, and an argmax flips the instant two
+scores cross. Refusing to flip is not the answer — at a real boundary, flipping is
+correct. What must never happen is a pick the wearer's own tape-measure error could
+flip, presented with a confident number and no explanation.
+
+**`src/lib/stability.ts`** re-runs the engine on a deterministic grid of plausible
+alternatives — chest and waist each moved by ±½ and ±1 × a 2 cm self-measurement
+noise, the chart moved by ±1 cm — up to 75 runs, ~1 ms at 15 µs per run (measured).
+It reports **agreement** (share of runs picking the same size) and **holds for**
+(the chest range over which the pick does not change). Agreement **replaces the
+top-two score-margin factor** in confidence, on the same 0.6–1.0 scale; both measured
+decisiveness and keeping both would count it twice. Deterministic, so testable.
+
+`/check` now shows "Holds for a chest of 95.7–103.7 cm" under the answer, and when a
+quarter or more of plausible measurements would change it, the confidence panel says
+"This one is close: it holds for a chest between 89 and 95 cm, and a 2 cm difference
+in how you measure could change it — measuring again is worth it."
+
+### The bug the property tests found
+
+Writing "a bigger chest never picks a smaller size" failed. Tracing it: **near every
+boundary the pick oscillated.** On Nike's chart a 94.5 cm chest — inside S's range,
+outside M's — was recommended **M**; 95.5 cm, inside M, was recommended **S**. Cause
+in `bodyRangeFit`: inside a range the score at the edge is 0.85 + 0.15·e^(−½) ≈ 0.94,
+but just outside it started at gauss(0) = 1.0 — **sitting just outside a size's range
+scored higher than sitting just inside it**, since body ranges were introduced. The
+fall-off now starts from the edge value, so the curve is continuous and monotone and
+the size that contains the wearer always wins. Live, 94.5 cm → **S** (was M).
+
+**Two of my own test settings were wrong, and are recorded as such:**
+- The continuity test first allowed 0.03 per 0.1 cm and **passed straight over the
+  ~0.016 edge jump**. Measured the legitimate maximum (0.0064, where the smooth
+  fall-off is steepest) and set 0.01 — between the two. Verified red on the old edge.
+- `fragileBelow` was 0.6, copied from the confidence floor without asking what it
+  meant. Exactly on a boundary 40% of plausible measurements disagreed and the note
+  did not appear. It is now 0.75: say so when a quarter or more would change it.
+
+**And a hole in Phase B's own guard:** the calibration-table test checked each key
+was listed, not that its value was current — after `fragileBelow` changed, the table
+still said 0.6 and passed. It now checks values, and `scripts/scoring-table.mjs`
+regenerates the table from the registry.
+
+**Pinned by tests:** stable deep inside a range, fragile on a boundary (lower
+confidence AND a note), deterministic, the factor's range, the grid size; and of the
+scorer itself: continuity, monotonicity, order invariance, duplicate-row invariance.
+Continuity and monotonicity verified red against the old edge.
+
+### New invariants
+
+- **(74) Body-range scoring is continuous and monotone** — outside a range the score
+  starts from the edge value and only falls. A size that contains the wearer can
+  never lose to one that does not.
+- **(75) Decisiveness is measured as stability, in the wearer's centimetres.** Any
+  confidence lowered for a fragile pick carries a sentence saying so.
+
+565 tests + 1 skip, exit 0. `/check` First Load JS 114 kB.
+
+---
+
 ## 2026-09-29 · Session 78b — Every scoring number now says where it came from
 
 Phase B of the Session 78 plan: the founder asked for a scoring system that cannot

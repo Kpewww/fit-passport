@@ -1093,3 +1093,19 @@ generated from the registry).
 **Measured, pending Phase D:** real curated charts step **8.3 cm** between sizes
 (median, n = 19) vs the **4.5 cm** `LADDER_STEP_CHEST_CM` used to turn a fit feeling
 into centimetres (from 2 demo fixtures).
+
+**SESSION 78c (2026-09-29).** 566 tests. **Stability replaced the top-two margin
+factor** (`stability.ts`): a deterministic grid (chest/waist ±½, ±1 × 2 cm; chart
+±1 cm; ≤75 runs, ~1 ms) → `agreement` scales confidence 0.6–1.0, `holdsForChestCm`
+shown on `/check`; below 0.75 agreement the confidence panel says the pick is close.
+
+**NEW INVARIANTS:**
+**(74)** **Body-range scoring is continuous and monotone.** Just-outside used to
+score 1.0 against 0.94 just-inside, so picks oscillated within ~2 cm of every
+boundary (94.5 cm → M on Nike's chart, inside S). Fixed; pinned by continuity
+(≤0.01 per 0.1 cm; legit max measured 0.0064) and monotonicity tests.
+**(75)** **Decisiveness = stability in the wearer's centimetres**, and a fragile
+pick always says so.
+
+**After changing any constant:** `node scripts/scoring-table.mjs` in app-web/ —
+`scoringConstants.test.ts` now also fails on a stale VALUE in the spec's table.

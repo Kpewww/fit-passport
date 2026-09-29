@@ -134,8 +134,30 @@ export const CONFIDENCE_CAPS = {
   provenance: { estimated: 0.5, "brand-chart": 0.75 },
 } as const;
 
-/** Confidence × (floor + slope × top-two score margin), clamped to [floor, 1]. */
-export const MARGIN = { floor: 0.6, slope: 4 } as const;
+/**
+ * Stability — does the pick survive the noise already in its inputs (stability.ts)?
+ * Replaced the top-two score margin factor in Session 78: same idea, measured in the
+ * wearer's own centimetres instead of score units, and explainable on screen.
+ */
+export const STABILITY = {
+  /** How far a self-taken chest or waist measurement can plausibly be off. */
+  bodyNoiseCm: 2,
+  /** How far a retailer's chart can plausibly be off. */
+  chartNoiseCm: 1,
+  /** Grid resolution: ±½ and ±1 × noise for the body, ±1 × noise for the chart. */
+  bodySteps: 2,
+  chartSteps: 1,
+  /** Confidence kept at a dead heat (agreement ½); full agreement keeps all of it. */
+  floor: 0.6,
+  /**
+   * Below this agreement the answer is called fragile, and the reason says so:
+   * when a quarter or more of plausible measurements would change the answer.
+   */
+  fragileBelow: 0.75,
+  /** Range and resolution of the "holds for chest X–Y cm" scan. */
+  holdScanCm: 8,
+  holdScanStepCm: 0.5,
+} as const;
 
 /** Confidence × this when signals point at different sizes. */
 export const AGREEMENT = { oneStep: 0.8, twoPlusSteps: 0.65 } as const;
@@ -261,8 +283,14 @@ export const PROVENANCE: Record<string, ConstantSource> = {
   "CONFIDENCE_CAPS.provenance.estimated": A("invented chart numbers; policy ceiling"),
   "CONFIDENCE_CAPS.provenance.brand-chart": A("real brand numbers, but not this product's; policy ceiling"),
 
-  "MARGIN.floor": A("a dead heat keeps 60% of its confidence"),
-  "MARGIN.slope": A("a 0.1 score margin counts as decisive"),
+  "STABILITY.bodyNoiseCm": A("typical error of a self-taken tape measurement; no source fetched — to calibrate"),
+  "STABILITY.chartNoiseCm": A("Uniqlo states its garments can vary by about 1 cm (seen in a search summary of uniqlo.com; primary page not fetched)"),
+  "STABILITY.bodySteps": A("grid resolution: five body offsets per dimension"),
+  "STABILITY.chartSteps": A("grid resolution: three chart offsets"),
+  "STABILITY.floor": A("same scale as the margin factor it replaced: a dead heat keeps 60%"),
+  "STABILITY.fragileBelow": A("say so when a quarter or more of plausible measurements would change the answer. First set to 0.6 by copying the confidence floor; exactly on a boundary 40% of the grid disagreed and the note did not appear"),
+  "STABILITY.holdScanCm": A("about one size step each way"),
+  "STABILITY.holdScanStepCm": A("half a centimetre — finer than a tape is read"),
   "AGREEMENT.oneStep": A("ordinary tension between signals"),
   "AGREEMENT.twoPlusSteps": A("signals telling different stories"),
   "TIE.epsilon": A("floating-point equality"),

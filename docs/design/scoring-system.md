@@ -20,13 +20,13 @@ provenances:
 |---|---|---|
 | **measured** | Computed from data we hold, with the n stated | **1** |
 | **cited** | A published source states this value — not just the idea | **2** |
-| **assumed** | A judgement, usually hand-tuned against a handful of cases | **80** |
+| **assumed** | A judgement, usually hand-tuned against a handful of cases | **86** |
 
 `scoringConstants.test.ts` fails if a value has no provenance, if a provenance
 names no value, if a measured entry does not state its n, or if an assumed value
 is missing from the calibration table below.
 
-**Read the counts plainly.** Eighty of eighty-three numbers are judgements. The
+**Read the counts plainly.** 86 of 89 numbers are judgements. The
 literature the engine cites supports the SHAPE of the model — fit as a bipolar
 ordinal (too small … too big), fit as a multi-measurement signal — and not a
 single one of its values. That is normal for a scorer before it has outcome data,
@@ -72,7 +72,7 @@ confidence = floor 0.30
 then, each step only able to lower it:
 1. closet evidence from another garment domain → at most 0.35
 2. × the wearer's report consistency (scatter costs up to 15%)
-3. × decisiveness: 0.6 for a dead heat between the top two, 1.0 once they are 0.1 apart
+3. × **stability** (§7): 0.6 when half the plausible alternative measurements would pick another size, 1.0 when none would
 4. × 0.8 / 0.65 when signals point one / two-plus sizes apart
 5. a size our own measurement model calls too small or too big → at most 0.6
 6. a regional-average body instead of the wearer's own → at most 0.4
@@ -122,6 +122,35 @@ The assumed numbers become measured in this order, each gated on data:
    against reality, in bands; the confidence weights and caps are then fitted so a
    band's stated confidence matches its keep rate.
 3. **Real size steps** from every chart captured → `ladderStepChestCm`.
+
+## 7. Small changes must not swing a confident answer (Session 78c)
+
+A scorer built from smooth curves never jumps in score, but the recommended size is
+an argmax, and an argmax flips the instant two scores cross. A wearer whose chest
+sits on the M/L boundary gets M at 100.0 cm and L at 100.5 cm — and neither a tape
+measure nor a retailer's chart is accurate to half a centimetre. **Refusing to flip is
+not the answer: at a real boundary, flipping is correct.** The honest answer is to
+know when a pick is fragile, lower the confidence, and say why.
+
+`stability.ts` re-runs the engine on a deterministic grid of plausible alternatives:
+the wearer's chest and waist each moved by ±½ and ±1 × the self-measurement noise
+(2 cm, assumed), and the whole chart moved by ± the chart tolerance (1 cm, assumed).
+That is up to 75 runs, about 1 ms at 15 µs per run. Two results:
+
+- **agreement** — the share of runs that still pick the same size. Confidence ×
+  0.6 at a dead heat (½), × 1.0 at full agreement, linearly between — the same range
+  as the top-two score-margin factor it **replaced** (both measured decisiveness;
+  keeping both would count it twice).
+- **holds for** — how far the wearer's chest can move, alone, before the pick
+  changes. Shown on `/check`, and when agreement falls below 75% the explanation
+  says so in words: "it holds for a chest between 99 and 101 cm, and a 2 cm
+  difference in how you measure could change it".
+
+It is deterministic — no random sampling — so the same input always gives the same
+stability, and it can be tested. Properties pinned by tests: continuity (a 0.1 cm
+change moves no score by more than a small bound), monotonicity (a bigger chest never
+picks a smaller size, all else equal), order and duplicate-row invariance, and that a
+boundary pick is always less confident than a centred one.
 
 ## Calibration table
 
@@ -181,8 +210,14 @@ number we have not yet earned; the test fails if one is missing here.
 | `CONFIDENCE_CAPS.estimatedBody` | 0.4 | assumed | a regional average is a prior, not the wearer |
 | `CONFIDENCE_CAPS.provenance.estimated` | 0.5 | assumed | invented chart numbers; policy ceiling |
 | `CONFIDENCE_CAPS.provenance.brand-chart` | 0.75 | assumed | real brand numbers, but not this product's; policy ceiling |
-| `MARGIN.floor` | 0.6 | assumed | a dead heat keeps 60% of its confidence |
-| `MARGIN.slope` | 4 | assumed | a 0.1 score margin counts as decisive |
+| `STABILITY.bodyNoiseCm` | 2 | assumed | typical error of a self-taken tape measurement; no source fetched — to calibrate |
+| `STABILITY.chartNoiseCm` | 1 | assumed | Uniqlo states its garments can vary by about 1 cm (seen in a search summary of uniqlo.com; primary page not fetched) |
+| `STABILITY.bodySteps` | 2 | assumed | grid resolution: five body offsets per dimension |
+| `STABILITY.chartSteps` | 1 | assumed | grid resolution: three chart offsets |
+| `STABILITY.floor` | 0.6 | assumed | same scale as the margin factor it replaced: a dead heat keeps 60% |
+| `STABILITY.fragileBelow` | 0.75 | assumed | say so when a quarter or more of plausible measurements would change the answer. First set to 0.6 by copying the confidence floor; exactly on a boundary 40% of the grid disagreed and the note did not appear |
+| `STABILITY.holdScanCm` | 8 | assumed | about one size step each way |
+| `STABILITY.holdScanStepCm` | 0.5 | assumed | half a centimetre — finer than a tape is read |
 | `AGREEMENT.oneStep` | 0.8 | assumed | ordinary tension between signals |
 | `AGREEMENT.twoPlusSteps` | 0.65 | assumed | signals telling different stories |
 | `TIE.epsilon` | 0.000001 | assumed | floating-point equality |

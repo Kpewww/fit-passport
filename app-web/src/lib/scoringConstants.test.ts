@@ -57,6 +57,16 @@ describe("scoringConstants — every number declares where it came from", () => 
     expect(unlisted, `assumed constants missing from scoring-system.md: ${unlisted.join(", ")}`).toEqual([]);
   });
 
+  it("publishes the CURRENT value of every constant, not the one it had when the table was written", () => {
+    // Listing the key was not enough: after STABILITY.fragileBelow changed from
+    // 0.6 to 0.75, the table still said 0.6 and the key test passed. A stale number
+    // in a table whose purpose is not publishing stale numbers.
+    const doc = readFileSync(join(process.cwd(), "..", "docs", "design", "scoring-system.md"), "utf8");
+    const val = (path: string) => path.split(".").reduce((o: any, k) => o?.[k], R as any);
+    const stale = Object.keys(R.PROVENANCE).filter((k) => !doc.includes(`| \`${k}\` | ${JSON.stringify(val(k))} |`));
+    expect(stale, `scoring-system.md shows an out-of-date value for: ${stale.join(", ")}`).toEqual([]);
+  });
+
   it("imports nothing, so the client bundle can use it (invariant ㉟)", () => {
     const src = readFileSync(join(process.cwd(), "src", "lib", "scoringConstants.ts"), "utf8");
     expect(src).not.toMatch(/^import /m);

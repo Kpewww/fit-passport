@@ -146,6 +146,7 @@ function engineOutput(): EngineOutput {
     domainNote: null,
     domainRelevance: "empty",
     conflictNote: null,
+    stability: null,
   };
 }
 

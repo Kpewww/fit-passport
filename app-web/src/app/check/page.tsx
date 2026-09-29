@@ -105,6 +105,14 @@ type CheckResponse = {
     domainNote: string | null;
     domainRelevance: "match" | "cross" | "empty";
     conflictNote: string | null;
+    /** Does the pick survive plausible measurement error? See lib/stability.ts. */
+    stability?: {
+      agreement: number;
+      runs: number;
+      holdsForChestCm: [number, number] | null;
+      bodyNoiseCm: number;
+      chartNoiseCm: number;
+    } | null;
   };
   effectiveFit: FitPref;
   /** Absent when a stored check is reopened (`?product=`) — that is a recompute. */
@@ -654,6 +662,15 @@ function Result({
                 </p>
                 {result.best.normalized && result.best.normalized !== result.best.label && (
                   <p className="mt-2 text-sm text-ink-faint">≈ {result.best.normalized}</p>
+                )}
+                {/* How far the answer holds — the stability grid said in the wearer's
+                    own units, so "small changes don't swing it" is something they
+                    can check against their tape. Phrased as a fact about THIS
+                    answer; the fragile case adds its own sentence in conflictNote. */}
+                {result.stability?.holdsForChestCm && (
+                  <p className="mt-2 text-sm text-ink-soft">
+                    Holds for a chest of {result.stability.holdsForChestCm[0]}–{result.stability.holdsForChestCm[1]} cm
+                  </p>
                 )}
               </div>
               <div className="flex flex-shrink-0 flex-col items-center">
