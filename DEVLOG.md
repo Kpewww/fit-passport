@@ -31,6 +31,67 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-28 · Session 76 (R4) — The Check result leads with the answer
+
+Redesign step R4. The result page used to open with the product card
+(provenance pills, a six-field details grid, the URL), so the size was the second
+thing on the screen, in a sans-serif box with a cobalt rule down its side.
+
+**Now one answer card, read top to bottom:**
+- **The size:** the product's brand and type as a small label, its name, then the
+  size in the display serif, with a thin confidence ring (`ok` / cobalt / `warn`
+  by value).
+- **Fit preview:** a `Segmented` for fit preference ("Preview as"). It replaced a
+  hand-built cobalt toggle.
+- **The reasons:** the first two lines of the engine's explanation, then *The full
+  working* folded. The engine prefixes each line with "•", which the first render
+  showed doubled against the list's own dot, so the prefix is now stripped.
+- **Where the numbers came from:** one row of plain statements with an icon each
+  (`SourceRow`). It replaced four colour-coded pills (green, sky, amber, stone)
+  the reader had to decode. **The honesty rules are unchanged:**
+  - a brand chart means "Identified from the link", never "read";
+  - the extension means "Read in your browser from…";
+  - an estimate says "Sizes estimated — confirm the chart" in `warn`;
+  - an AI reader is named;
+  - the brand-chart link and its capture date stay.
+- **Product details** (retailer, material, sizes found, fit note, URL): folded
+  under the source row.
+- **Then:** *I bought it — record the fit*.
+
+`undetermined` still prints no size and no ring (the rule is unchanged). The
+cross-type warning and the signal-conflict note became a `warn-tint` panel and a
+quiet `paper-soft` panel, each an icon and a sentence.
+
+**Around it:**
+- The hero title is in `text-display`, balanced over two lines.
+- The URL field lost its shadow.
+- "Get my size →" uses the arrow icon.
+- An error is a `bad-tint` panel with an icon, instead of `red-50`.
+- The size converter is a flat card with a `Segmented`.
+- In the signal guide, done steps are `ok` with a check icon.
+- **Ranked sizes:**
+  - the pick chip is ink;
+  - verdict chips use `ok` / `warn` / neutral;
+  - score bars are ink;
+  - rows are 44 px tall;
+  - reason weights are `ok` / `bad`;
+  - ⌄ is a caret icon.
+- No stock green, amber, red, sky, stone or neutral classes remain on the page.
+
+Checked:
+- the COS Oxford demo check with the demo closet, rendered at 1440 and 390, with
+  no page errors;
+- `mobile-audit` shows no overflow;
+- /check First Load JS is 112 kB (R0 108, +3.7%);
+- 516 tests pass; typecheck and build are clean.
+
+### Files touched
+```
+app-web/src/app/check/page.tsx   (Result rebuilt, SourceRow (new), hero, converter, SignalGuide, SizeRow, ScoreBar)
+```
+
+---
+
 ## 2026-09-28 · Session 76 (F) — Three layout faults the founder found on the live site
 
 The founder reviewed R0–R3 in their own browser, on a wide screen, and reported:

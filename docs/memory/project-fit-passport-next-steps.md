@@ -694,19 +694,20 @@ open. The redesign runs alongside it.
   *Getting started* aside, list/folders two-column, New collection in the toolbar;
   claim nudge covered content → bottom-left card, hidden on phones and /passport.
   **Lesson: check renders at 1920, not only 1440 — all three faults were wide-screen only.**
+- **R4** — the Check result leads with the answer: display-serif size + ring, fit `Segmented`,
+  two reasons (rest folded), an icon `SourceRow` (same honesty rules as the old pills),
+  product details folded. No stock colours left on /check (112 kB vs 108).
 - **Homepage cut list decided (open decision #4 CLOSED):** remove `ConvergingStack` and
   `NewUserGuide` (its demo button moves into the closing CTA); keep the Parallax statement.
 
 **Next, in order (each its own push with a DEVLOG entry):**
-1. **R4 Check result:** size and a thin ring → two reasons → a source row with
-   icons → the size ranking. A refusal is a calm panel.
-2. **R5 homepage.** **Show the cut list with before/after screenshots and get the
+1. **R5 homepage.** **Show the cut list with before/after screenshots and get the
    founder's OK before deleting** (ParallaxStatement vs ConvergingStack, etc.).
    Open decision #4.
-3. **R6 remaining pages:** passport (`MetalCard` untouched), community, outfits,
+2. **R6 remaining pages:** passport (`MetalCard` untouched), community, outfits,
    badges, help, account, onboarding, history, refresh, `u/[code]`. Convert → ← ↻
    ✓ to icons here.
-4. **R7 audit:** First Load JS ≤ R0 baseline +10% (after R1: / 163 vs 156, /login
+3. **R7 audit:** First Load JS ≤ R0 baseline +10% (after R1: / 163 vs 156, /login
    106 vs 98.6 — the headroom is small), a11y focus and contrast, `mobile-audit`
    with zero overflow, and a motion audit. Enlarge the closet folder-colour dots (20 px
    tap targets).

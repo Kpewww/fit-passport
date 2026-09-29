@@ -1,13 +1,14 @@
 "use client";
 
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
-import { Warning, Scales } from "@/components/Icon";
+import { Alert, ArrowRight, ArrowUpRight, BrowserIcon, CaretDown, Check, Globe, LinkIcon, Robot, Ruler, Scales, Warning } from "@/components/Icon";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
   Card,
   ConfidenceRing,
   LinkButton,
+  Segmented,
   Skeleton,
   inputClass,
 } from "@/components/ui";
@@ -36,11 +37,11 @@ type SizeScore = {
 // Ordinal verdict → chip colour. Green = as you asked; amber = usable but off;
 // neutral for the extremes so the "pick" chip stays the loudest thing in the row.
 const VERDICT_STYLE: Record<string, string> = {
-  "too small": "bg-neutral-100 text-neutral-500",
-  snug: "bg-amber-100 text-amber-800",
-  "true to size": "bg-green-100 text-green-800",
-  relaxed: "bg-amber-100 text-amber-800",
-  "too big": "bg-neutral-100 text-neutral-500",
+  "too small": "bg-paper-dim text-ink-faint",
+  snug: "bg-warn-tint text-warn",
+  "true to size": "bg-ok-tint text-ok",
+  relaxed: "bg-warn-tint text-warn",
+  "too big": "bg-paper-dim text-ink-faint",
 };
 
 type SizeOption = {
@@ -250,8 +251,8 @@ function CheckInner() {
         {/* Centered hero — mirrors the homepage composition. */}
         <div className="text-center">
           <p className="eyebrow text-ink-faint">Size check</p>
-          <h1 className="mt-3 font-serif text-4xl leading-tight text-ink sm:text-5xl">What size should I buy?</h1>
-          <p className="mx-auto mt-3 max-w-lg text-ink-soft">
+          <h1 className="mx-auto mt-4 max-w-3xl font-serif text-display text-ink [text-wrap:balance]">What size should I buy?</h1>
+          <p className="mx-auto mt-5 max-w-lg text-ink-soft">
             Paste a product URL. We&apos;ll read the page, extract its sizing, and recommend a
             size — with the reasons, so you can see exactly what it&apos;s based on.
           </p>
@@ -259,7 +260,7 @@ function CheckInner() {
           {/* Same pill field family as the homepage hero, in the light palette. */}
           <form
             onSubmit={submit}
-            className="mx-auto mt-7 flex max-w-xl items-center gap-2 rounded-full border border-line bg-paper-soft p-1.5 shadow-card focus-within:border-ink/30"
+            className="mx-auto mt-8 flex max-w-xl items-center gap-2 rounded-full border border-line bg-white p-1.5 transition-colors focus-within:border-ink/40"
           >
             <input
               type="text"
@@ -274,9 +275,9 @@ function CheckInner() {
             <button
               type="submit"
               disabled={loading}
-              className="flex min-h-[44px] flex-shrink-0 items-center rounded-full bg-ink px-4 text-sm font-medium text-paper transition-transform hover:scale-[0.98] active:scale-95 disabled:opacity-50 sm:min-h-0 sm:px-5 sm:py-2.5"
+              className="flex min-h-[44px] flex-shrink-0 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper transition-colors hover:bg-black disabled:opacity-50 sm:min-h-0 sm:px-5 sm:py-2.5"
             >
-              {loading ? "Reading…" : "Get my size →"}
+              {loading ? "Reading…" : <>Get my size <ArrowRight size={16} /></>}
             </button>
           </form>
 
@@ -315,7 +316,10 @@ function CheckInner() {
         )}
 
         {err && (
-          <div className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{err}</div>
+          <div role="alert" className="mt-6 flex items-start gap-3 rounded-2xl bg-bad-tint px-5 py-4 text-sm text-bad">
+            <Alert size={20} className="mt-px flex-shrink-0" />
+            <p>{err}</p>
+          </div>
         )}
 
         {loading && <LoadingResult />}
@@ -353,26 +357,18 @@ function LiveConverter() {
   }
 
   return (
-    <div className="mt-10 rounded-2xl border border-line bg-white p-6 shadow-card">
+    <div className="mt-12 rounded-2xl bg-white p-6 ring-1 ring-line sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="eyebrow text-ink-faint">Size converter</p>
           <h2 className="mt-1.5 font-serif text-2xl text-ink">Know your size in every system</h2>
         </div>
-        {/* garment kind toggle */}
-        <div className="inline-flex overflow-hidden rounded-full border border-line text-xs">
-          {CONV_KINDS.map((k) => (
-            <button
-              key={k.domain}
-              onClick={() => pickDomain(k.domain)}
-              className={`px-3 py-1.5 transition-colors ${
-                domain === k.domain ? "bg-ink text-paper" : "text-ink-soft hover:bg-paper-dim"
-              }`}
-            >
-              {k.label}
-            </button>
-          ))}
-        </div>
+        <Segmented
+          label="Garment kind"
+          options={CONV_KINDS.map((k) => ({ value: k.domain, label: k.label }))}
+          value={domain}
+          onChange={pickDomain}
+        />
       </div>
 
       <div className="mt-5 flex flex-wrap items-end gap-3">
@@ -410,8 +406,8 @@ function LiveConverter() {
               key={s.id}
               className={`rounded-xl border px-3 py-3 ${isSource ? "border-ink bg-paper-dim" : "border-line"}`}
             >
-              <p className="text-[9px] uppercase tracking-[0.2em] text-ink-faint">{s.label}</p>
-              <p className="mt-1 font-mono text-xl text-ink">{hit?.value ?? "—"}</p>
+              <p className="text-meta uppercase text-ink-faint">{s.label}</p>
+              <p className="mt-1 text-xl tabular-nums text-ink">{hit?.value ?? "—"}</p>
             </div>
           );
         })}
@@ -486,7 +482,7 @@ function SignalGuide({
   if (remaining.length === 0) return null;
 
   return (
-    <div className="mt-8 overflow-hidden rounded-2xl border border-line bg-white shadow-card">
+    <div className="mt-10 overflow-hidden rounded-2xl bg-white ring-1 ring-line">
       <div className="border-b border-line bg-paper-soft px-6 py-4">
         <p className="eyebrow text-ink-faint">
           {undetermined
@@ -523,10 +519,10 @@ function SignalGuide({
           <li key={s.label} className="flex items-center gap-4 px-6 py-4">
             <span
               className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
-                s.done ? "bg-green-600 text-white" : "bg-paper-dim text-ink-faint"
+                s.done ? "bg-ok text-white" : "bg-paper-dim text-ink-faint"
               }`}
             >
-              {s.done ? "✓" : ""}
+              {s.done && <Check size={14} />}
             </span>
             <div className="min-w-0 flex-1">
               <p className={`text-sm font-medium ${s.done ? "text-ink-faint line-through" : "text-ink"}`}>
@@ -536,7 +532,7 @@ function SignalGuide({
               {!s.done && <p className="mt-0.5 text-xs text-ink-soft">{s.why}</p>}
             </div>
             {!s.done && (
-              <LinkButton href={s.href} variant="secondary" size="md">{s.cta}</LinkButton>
+              <LinkButton href={s.href} variant="secondary" size="sm">{s.cta}</LinkButton>
             )}
           </li>
         ))}
@@ -577,98 +573,26 @@ function Result({
   reranking: boolean;
 }) {
   const { product, source, result, body } = data;
-  return (
-    <section className="mt-8 space-y-5 animate-fade-in-up">
-      {/* PROVENANCE — prove we read THIS page */}
-      <Card>
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          {/* This badge used to claim "Read from {host}" unconditionally, including
-              when nothing had been read. A brand chart is exactly that case — the
-              numbers are the brand's, but this product's page was never opened —
-              so the claim is now made only when it is true. */}
-          {source.sizesFrom === "brand-chart" ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-stone-100 px-2 py-0.5 font-medium text-stone-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-stone-500" />
-              Identified from the link
-            </span>
-          ) : (
-            <span className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-0.5 font-medium text-green-800">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-600" />
-              {/* Who read it matters too: the extension hands us the page from the
-                  user's own browser, which is how we reach retailers our server
-                  is refused by. Saying "read from" alone would imply we fetched it. */}
-              {source.fetch === "extension" ? "Read in your browser from" : "Read from"} {source.host || "the page"}
-            </span>
-          )}
-          {/* Be honest about where the SIZE CHART came from. Three cases, because
-              they warrant three different amounts of trust: the brand's own
-              published guide is real measurement but not this product's; an
-              estimate is not measurement at all. */}
-          {source.sizesFrom === "brand-chart" ? (
-            <span
-              className="rounded-full bg-sky-100 px-2 py-0.5 font-medium text-sky-900"
-              title="These are the brand's own published size-guide measurements, not this product page's. We couldn't read the page itself, so we can't confirm which sizes this item comes in or whether it's a slim or relaxed cut."
-            >
-              ✓ {product.brand}&rsquo;s published size guide
-            </span>
-          ) : source.sizesFrom === "estimated" ? (
-            <span
-              className="rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-900"
-              title="We couldn't find a real size chart on the page, so these measurements are estimated from the brand and category. Check them against the retailer's chart, or add the real numbers."
-            >
-              <Warning size={12} className="mr-1 inline -mt-0.5" />sizes estimated — confirm the chart
-            </span>
-          ) : (
-            <span className="rounded-full bg-green-50 px-2 py-0.5 font-medium text-green-700">
-              ✓ sizes read from the page
-            </span>
-          )}
-        </div>
-        {/* The chart is checkable or it is not trustworthy — link the page the
-            numbers came from, and date it, because a size guide goes stale. */}
-        {source.sizesFrom === "brand-chart" && source.chart ? (
-          <p className="mt-2 text-xs text-stone-600">
-            {source.measurementKind === "body"
-              ? "These are body measurements — the chest each size is cut to fit, as the brand states them."
-              : "These are the garment's flat measurements, as the brand states them."}{" "}
-            <a
-              href={source.chart.sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="underline underline-offset-2 hover:text-ink"
-            >
-              Check the brand&rsquo;s size guide
-            </a>{" "}
-            · read {source.chart.capturedAt}
-          </p>
-        ) : null}
-        <h2 className="mt-2 text-xl font-semibold text-ink">{product.productName}</h2>
-        <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1.5 text-sm sm:grid-cols-3">
-          <Detail label="Retailer" value={product.retailer} />
-          <Detail label="Brand" value={product.brand} />
-          <Detail label="Category" value={product.category} />
-          <Detail label="Material" value={product.material} />
-          <Detail label="Sizes found" value={`${product.sizeOptions.length} options`} />
-          <Detail label="Fit note" value={product.fitNotes} />
-        </dl>
-        <a
-          href={product.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-block max-w-full truncate text-xs text-brand hover:underline"
-          title={product.url}
-        >
-          {product.url}
-        </a>
-      </Card>
+  // The first two lines of the engine's explanation are the reasons; the rest is
+  // the working, one tap away. Showing all of it at once buried the answer.
+  // The engine prefixes its lines with a bullet; the list draws its own.
+  const lines = result.explanation
+    .split("\n")
+    .map((l) => l.replace(/^\s*[•*-]\s*/, ""))
+    .filter((l) => l.trim());
+  const lead = lines.slice(0, 2);
+  const more = lines.slice(2);
+  const meta = [product.brand, product.category].filter(Boolean).join(" · ");
 
+  return (
+    <section className="mt-10 space-y-6 animate-fade-in-up">
       {/* CROSS-DOMAIN DISCLAIMER — closet evidence is a different garment type */}
       {result.domainNote && (
-        <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm">
-          <Warning size={20} className="mt-0.5 flex-shrink-0 text-amber-600" />
-          <div className="text-amber-900">
-            <p className="font-semibold">Low-confidence recommendation</p>
-            <p className="mt-0.5 text-amber-800">{result.domainNote}</p>
+        <div className="flex items-start gap-3 rounded-2xl bg-warn-tint px-5 py-4 text-sm">
+          <Warning size={20} className="mt-px flex-shrink-0 text-warn" />
+          <div>
+            <p className="font-medium text-warn">Low-confidence recommendation</p>
+            <p className="mt-0.5 text-ink-soft">{result.domainNote}</p>
           </div>
         </div>
       )}
@@ -678,96 +602,106 @@ function Result({
           a transparent engine. Kept visually quieter than the cross-domain
           warning: a conflict lowers certainty, it doesn't invalidate the answer. */}
       {result.conflictNote && (
-        <div className="flex items-start gap-3 rounded-xl border border-line bg-paper-soft px-4 py-3 text-sm">
-          <Scales size={20} className="mt-0.5 flex-shrink-0 text-ink-faint" />
-          <div className="text-ink-soft">
-            <p className="font-semibold text-ink">Why confidence is lower here</p>
-            <p className="mt-0.5">{result.conflictNote}</p>
+        <div className="flex items-start gap-3 rounded-2xl bg-paper-soft px-5 py-4 text-sm ring-1 ring-line">
+          <Scales size={20} className="mt-px flex-shrink-0 text-ink-faint" />
+          <div>
+            <p className="font-medium text-ink">Why confidence is lower here</p>
+            <p className="mt-0.5 text-ink-soft">{result.conflictNote}</p>
           </div>
         </div>
       )}
 
-      {/* THE ANSWER + fit toggle.
-          When the engine reports `undetermined`, every size scored identically and
-          `best` is just the first rung of the ladder — so we must NOT print it in
-          48px type with a confidence ring beside it. Showing a number there would
-          dress ladder order up as a recommendation, which is the exact failure this
-          product exists to avoid. */}
-      <Card className="border-l-4 border-l-brand">
-        {result.undetermined ? (
-          <div>
-            {/* One statement, once. This block used to say "no recommendation
-                yet", then "we can't tell these apart", then "all N sizes scored
-                the same" — three phrasings of the same fact, and the engine's own
-                explanation below said it a fourth time. Saying it repeatedly does
-                not make it clearer, it makes the page feel like an apology. */}
-            <p className="text-xs uppercase tracking-widest text-ink-faint">No recommendation</p>
-            <p className="mt-1 font-serif text-3xl text-ink">All {result.ranked.length} sizes scored the same.</p>
-            <p className="mt-2 text-sm text-ink-soft">Here&apos;s what would break the tie.</p>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs uppercase tracking-widest text-brand">Recommended size</p>
-              <p className={`mt-1 text-5xl font-bold text-ink transition-opacity ${reranking ? "opacity-40" : ""}`}>
-                {result.best.label}
-              </p>
-              {result.best.normalized && result.best.normalized !== result.best.label && (
-                <p className="mt-1 text-sm text-ink-faint">≈ {result.best.normalized}</p>
-              )}
-            </div>
-            <div className="text-center">
-              <ConfidenceRing value={result.best.confidence} />
-              <p className="mt-1 text-xs text-ink-faint">confidence</p>
-            </div>
-          </div>
-        )}
+      {/* THE ANSWER. One card, read top to bottom: the size, the two reasons,
+          where the numbers came from, then what to do next. (Session 76, R4 —
+          the product card used to come first, so the answer was the second
+          thing on the screen.) */}
+      <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-line">
+        <div className="p-6 sm:p-8">
+          {meta && <p className="eyebrow text-ink-faint">{meta}</p>}
+          <h2 className="mt-2 text-h3 font-semibold text-ink">{product.productName}</h2>
 
-        {/* Fit preference toggle — default regular; preview others live */}
-        <div className="mt-4">
-          <p className="mb-1.5 text-xs font-medium text-ink-soft">
-            Preview a different fit preference:
-          </p>
-          <div className="inline-flex rounded-xl border border-neutral-300 p-0.5">
-            {(Object.keys(FIT_LABELS) as FitPref[]).map((f) => (
-              <button
-                key={f}
-                onClick={() => onFit(f)}
-                disabled={reranking}
-                className={`rounded-lg px-3 py-1.5 text-sm transition-colors ${
-                  fit === f
-                    ? "bg-brand text-white"
-                    : "text-ink-soft hover:bg-neutral-100"
-                }`}
-              >
-                {FIT_LABELS[f]}
-              </button>
+          {/* When the engine reports `undetermined`, every size scored identically
+              and `best` is just the first rung of the ladder — so we must NOT print
+              it in display type with a confidence ring beside it. Showing a number
+              there would dress ladder order up as a recommendation, which is the
+              exact failure this product exists to avoid. */}
+          {result.undetermined ? (
+            <div className="mt-6">
+              <p className="eyebrow text-ink-faint">No recommendation</p>
+              <p className="mt-2 font-serif text-h2 text-ink">All {result.ranked.length} sizes scored the same.</p>
+              <p className="mt-2 text-sm text-ink-soft">Here&apos;s what would break the tie.</p>
+            </div>
+          ) : (
+            <div className="mt-6 flex items-end justify-between gap-6">
+              <div className="min-w-0">
+                <p className="eyebrow text-brand">Recommended size</p>
+                <p className={`mt-2 font-serif text-display text-ink transition-opacity duration-200 ${reranking ? "opacity-40" : ""}`}>
+                  {result.best.label}
+                </p>
+                {result.best.normalized && result.best.normalized !== result.best.label && (
+                  <p className="mt-2 text-sm text-ink-faint">≈ {result.best.normalized}</p>
+                )}
+              </div>
+              <div className="flex flex-shrink-0 flex-col items-center">
+                <ConfidenceRing value={result.best.confidence} size={84} />
+                <p className="mt-1.5 text-xs text-ink-faint">confidence</p>
+              </div>
+            </div>
+          )}
+
+          {/* Fit preference — default from the profile; preview others live. */}
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <span className="text-xs text-ink-faint">Preview as</span>
+            <Segmented
+              label="Fit preference"
+              options={(Object.keys(FIT_LABELS) as FitPref[]).map((f) => ({ value: f, label: FIT_LABELS[f] }))}
+              value={fit}
+              onChange={(f) => { if (!reranking) onFit(f); }}
+            />
+          </div>
+        </div>
+
+        {/* The reasons. */}
+        <div className={`border-t border-line bg-paper-soft px-6 py-5 text-sm transition-opacity duration-200 sm:px-8 ${reranking ? "opacity-40" : ""}`}>
+          <ul className="space-y-1.5 text-ink">
+            {lead.map((line, i) => (
+              <li key={i} className="flex items-start gap-2.5">
+                <span className="mt-2 h-1 w-1 flex-shrink-0 rounded-full bg-ink" aria-hidden />
+                <span>{line}</span>
+              </li>
             ))}
-          </div>
+          </ul>
+          {more.length > 0 && (
+            <details className="group mt-3">
+              <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink">
+                <CaretDown size={14} className="transition-transform group-open:rotate-180" />
+                The full working
+              </summary>
+              <div className="mt-2 space-y-1 text-ink-soft">
+                {more.map((line, i) => <p key={i}>{line}</p>)}
+              </div>
+            </details>
+          )}
         </div>
 
-        <div className={`mt-4 space-y-1.5 rounded-xl bg-brand-tint px-4 py-3 text-sm text-ink transition-opacity ${reranking ? "opacity-40" : ""}`}>
-          {result.explanation.split("\n").map((line, i) => (
-            <p key={i}>{line}</p>
-          ))}
+        {/* Where the numbers came from. */}
+        <div className="border-t border-line px-6 py-4 sm:px-8">
+          <SourceRow product={product} source={source} />
         </div>
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <LinkButton href="/history" variant="secondary" size="md">
-            I bought it — record how it fit
-          </LinkButton>
-          <span className="text-xs text-ink-faint">
-            Recording outcomes makes your next recommendation smarter.
-          </span>
+
+        <div className="flex flex-col gap-3 border-t border-line px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+          <p className="text-xs text-ink-faint">Recording how it fit makes the next recommendation smarter.</p>
+          <LinkButton href="/history" variant="secondary" size="sm" icon={<Check size={16} />}>I bought it — record the fit</LinkButton>
         </div>
-      </Card>
+      </div>
 
       {/* SEE THE GAP — the ease arithmetic the engine already does, drawn. Only
           renders when we have a body chest AND a garment chest to compare; there
           is nothing honest to draw otherwise. */}
       {body && (
         <Card>
-          <h3 className="font-semibold text-ink">What the numbers look like</h3>
-          <p className="mb-3 mt-0.5 text-xs text-ink-faint">
+          <h3 className="text-h3 font-semibold text-ink">What the numbers look like</h3>
+          <p className="mb-4 mt-0.5 text-xs text-ink-faint">
             The room each size leaves you through the chest.
           </p>
           <FitFigure
@@ -783,16 +717,16 @@ function Result({
         </Card>
       )}
 
-      {/* Ranked sizes — now interactive */}
+      {/* Ranked sizes — interactive */}
       <Card>
-        <h3 className="font-semibold text-ink">Why this size — all options ranked</h3>
-        <p className="mb-3 mt-0.5 text-xs text-ink-faint">Tap a size to see the full breakdown.</p>
-        <div className={`space-y-2.5 transition-opacity ${reranking ? "opacity-40" : ""}`}>
+        <h3 className="text-h3 font-semibold text-ink">Every size, ranked</h3>
+        <p className="mb-4 mt-0.5 text-xs text-ink-faint">Tap a size to see what its score is based on.</p>
+        <div className={`space-y-2 transition-opacity duration-200 ${reranking ? "opacity-40" : ""}`}>
           {result.ranked.map((s, idx) => (
             <SizeRow
               key={s.label}
               score={s}
-              isBest={idx === 0}
+              isBest={idx === 0 && !result.undetermined}
               option={product.sizeOptions.find((o) => o.label === s.label)}
               sizesFrom={source.sizesFrom}
               measurementKind={source.measurementKind}
@@ -805,11 +739,93 @@ function Result({
   );
 }
 
+/**
+ * Where the numbers came from, as one row of plain statements with an icon
+ * each. It used to be a row of coloured pills (green, sky, amber, stone) that
+ * the reader had to decode. Every claim below is made only when it is true —
+ * the rules are unchanged from the pills they replaced.
+ */
+function SourceRow({ product, source }: { product: Product; source: Source }) {
+  const reader =
+    source.extractedBy === "llm-text" ? "read by AI from the page's text"
+      : source.extractedBy === "llm-vision" ? "read by AI from a chart image"
+      : null;
+  return (
+    <div className="space-y-2 text-xs text-ink-soft">
+      <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+        {/* Who read it. A brand chart means this product's page was never opened
+            — so we say "identified", never "read". The extension hands us the
+            page from the user's own browser, which is how we reach retailers
+            our server is refused by. */}
+        {source.sizesFrom === "brand-chart" ? (
+          <span className="inline-flex items-center gap-1.5"><LinkIcon size={16} className="text-ink-faint" />Identified from the link</span>
+        ) : source.fetch === "extension" ? (
+          <span className="inline-flex items-center gap-1.5"><BrowserIcon size={16} className="text-ink-faint" />Read in your browser from {source.host || "the page"}</span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5"><Globe size={16} className="text-ink-faint" />Read from {source.host || "the page"}</span>
+        )}
+        {/* Where the SIZE CHART came from — three cases, three amounts of trust. */}
+        {source.sizesFrom === "brand-chart" ? (
+          <span
+            className="inline-flex items-center gap-1.5"
+            title="These are the brand's own published size-guide measurements, not this product page's. We couldn't read the page itself, so we can't confirm which sizes this item comes in or whether it's a slim or relaxed cut."
+          >
+            <Ruler size={16} className="text-ink-faint" />{product.brand}&rsquo;s published size guide
+          </span>
+        ) : source.sizesFrom === "estimated" ? (
+          <span
+            className="inline-flex items-center gap-1.5 font-medium text-warn"
+            title="We couldn't find a real size chart on the page, so these measurements are estimated from the brand and category. Check them against the retailer's chart, or add the real numbers."
+          >
+            <Warning size={16} />Sizes estimated — confirm the chart
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5">
+            {reader ? <Robot size={16} className="text-ink-faint" /> : <Ruler size={16} className="text-ink-faint" />}
+            Sizes {reader ?? "read from the page"}
+          </span>
+        )}
+      </div>
+      {/* The chart is checkable or it is not trustworthy — link the page the
+          numbers came from, and date it, because a size guide goes stale. */}
+      {source.sizesFrom === "brand-chart" && source.chart ? (
+        <p className="text-ink-faint">
+          {source.measurementKind === "body"
+            ? "Body measurements — the chest each size is cut to fit, as the brand states them."
+            : "The garment's flat measurements, as the brand states them."}{" "}
+          <a href={source.chart.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">
+            Check the brand&rsquo;s size guide
+          </a>{" "}
+          · read {source.chart.capturedAt}
+        </p>
+      ) : null}
+      <details className="group">
+        <summary className="inline-flex cursor-pointer list-none items-center gap-1 font-medium text-ink-soft hover:text-ink">
+          <CaretDown size={14} className="transition-transform group-open:rotate-180" />
+          Product details
+        </summary>
+        <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
+          <Detail label="Retailer" value={product.retailer} />
+          <Detail label="Brand" value={product.brand} />
+          <Detail label="Category" value={product.category} />
+          <Detail label="Material" value={product.material} />
+          <Detail label="Sizes found" value={`${product.sizeOptions.length} options`} />
+          <Detail label="Fit note" value={product.fitNotes} />
+        </dl>
+        <a href={product.url} target="_blank" rel="noopener noreferrer" title={product.url}
+          className="mt-3 inline-flex max-w-full items-center gap-1 truncate text-brand hover:underline">
+          <ArrowUpRight size={14} className="flex-shrink-0" /><span className="truncate">{product.url}</span>
+        </a>
+      </details>
+    </div>
+  );
+}
+
 function Detail({ label, value }: { label: string; value: string | null }) {
   if (!value) return null;
   return (
     <div>
-      <dt className="text-[11px] uppercase tracking-widest text-ink-faint">{label}</dt>
+      <dt className="text-meta uppercase text-ink-faint">{label}</dt>
       <dd className="text-ink">{value}</dd>
     </div>
   );
@@ -864,12 +880,12 @@ function SizeRow({
   return (
     <div
       className={`overflow-hidden rounded-xl border transition-colors ${
-        isBest ? "border-brand/40 bg-brand-tint/40" : "border-neutral-200"
+        isBest ? "border-ink/25 bg-paper-soft" : "border-line"
       }`}
     >
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex w-full items-center justify-between gap-3 px-3 py-2.5 text-left hover:bg-neutral-50/60"
+        className="flex min-h-[44px] w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-paper-soft"
       >
         <div className="flex items-center gap-2 font-medium text-ink">
           {score.label}
@@ -877,26 +893,24 @@ function SizeRow({
             <span className="text-xs text-ink-faint">≈ {score.normalized}</span>
           )}
           {isBest && (
-            <span className="rounded-full bg-brand px-2 py-0.5 text-[10px] font-semibold uppercase text-white">
+            <span className="rounded-full bg-ink px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-paper">
               pick
             </span>
           )}
           {score.verdict && (
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${VERDICT_STYLE[score.verdict] ?? "bg-neutral-100 text-neutral-500"}`}>
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${VERDICT_STYLE[score.verdict] ?? "bg-paper-dim text-ink-faint"}`}>
               {score.verdict}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2">
           <ScoreBar score={score.score} />
-          <span className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`}>
-            ⌄
-          </span>
+          <CaretDown size={16} className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`} />
         </div>
       </button>
 
       {open && (
-        <div className="space-y-3 border-t border-neutral-200/70 px-3 py-3 text-sm animate-fade-in-up">
+        <div className="space-y-3 border-t border-line px-4 py-3 text-sm animate-fade-in-up">
           {/* Reasons */}
           <div>
             <p className="mb-1 text-[11px] uppercase tracking-widest text-ink-faint">
@@ -908,15 +922,15 @@ function SizeRow({
                   <li key={i} className="flex items-start gap-2">
                     <span
                       className={`mt-1.5 inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full ${
-                        r.weight < 0 ? "bg-red-400" : "bg-brand"
+                        r.weight < 0 ? "bg-bad" : "bg-ink"
                       }`}
                     />
                     <span className="text-ink-soft">
-                      <span className="mr-1.5 rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-ink-faint">
+                      <span className="mr-1.5 rounded bg-paper-dim px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-ink-faint">
                         {r.signal}
                       </span>
                       {r.message}
-                      <span className={`ml-1.5 text-xs ${r.weight < 0 ? "text-red-500" : "text-green-600"}`}>
+                      <span className={`ml-1.5 text-xs tabular-nums ${r.weight < 0 ? "text-bad" : "text-ok"}`}>
                         ({r.weight < 0 ? "" : "+"}{Math.round(r.weight * 100)})
                       </span>
                     </span>
@@ -942,7 +956,7 @@ function SizeRow({
               <div className="flex flex-wrap gap-1.5">
                 {measurementChips(option).length > 0 ? (
                   measurementChips(option).map((m) => (
-                    <span key={m} className="rounded-lg bg-neutral-100 px-2 py-0.5 text-xs text-ink-soft">
+                    <span key={m} className="rounded-lg bg-paper-dim px-2 py-0.5 text-xs tabular-nums text-ink-soft">
                       {m}
                     </span>
                   ))
@@ -954,7 +968,7 @@ function SizeRow({
           )}
 
           {/* Score + confidence footer */}
-          <div className="flex gap-6 border-t border-neutral-200/60 pt-2 text-xs text-ink-faint">
+          <div className="flex gap-6 border-t border-line pt-2 text-xs text-ink-faint">
             <span>match score <b className="text-ink">{Math.round(score.score * 100)}</b>/100</span>
             <span>confidence <b className="text-ink">{Math.round(score.confidence * 100)}%</b></span>
           </div>
@@ -978,13 +992,13 @@ function measurementChips(o: SizeOption): string[] {
 function ScoreBar({ score }: { score: number }) {
   return (
     <div className="flex items-center gap-2">
-      <div className="h-1.5 w-20 overflow-hidden rounded-full bg-neutral-200">
+      <div className="h-1 w-20 overflow-hidden rounded-full bg-line">
         <div
-          className="h-full rounded-full bg-brand transition-all"
+          className="h-full rounded-full bg-ink transition-all"
           style={{ width: `${Math.round(score * 100)}%` }}
         />
       </div>
-      <span className="w-7 text-right text-xs text-ink-faint">{Math.round(score * 100)}</span>
+      <span className="w-7 text-right text-xs tabular-nums text-ink-faint">{Math.round(score * 100)}</span>
     </div>
   );
 }
@@ -1035,9 +1049,9 @@ function EaseIn3D({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3 text-xs font-semibold text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand"
+        className="mt-3 inline-flex min-h-[44px] items-center gap-1 text-xs font-medium text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand sm:min-h-0"
       >
-        See it around your shape in 3D →
+        See it around your shape in 3D <ArrowRight size={14} />
       </button>
     );
   }
