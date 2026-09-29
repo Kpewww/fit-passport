@@ -91,13 +91,13 @@ Each size is labelled on the garment-relative chest delta: too small ≤ −6 cm
 literature's (Sembium, Guigourès, Misra); the cut points are assumed. A delta
 computed from the wearer's side must be negated first (invariant (51)).
 
-## 5. A measured finding that changes a constant — not yet applied
+## 5. The size step — measured, and applied in Session 78
 
-`PERSONAL_EASE.ladderStepChestCm` = **4.5 cm** is the one conversion from a fit
-feeling to centimetres (a full "too tight" = one size step). It was measured from
-**two demo fixture charts** stepping by 4 cm.
+`PERSONAL_EASE.ladderStepChestCm` is the one conversion from a fit feeling to
+centimetres (a full "too tight" = one size step). Until Session 78 it was **4.5 cm**,
+measured from **two demo fixture charts** stepping by 4 cm.
 
-The real curated charts held since Session 72, measured in Session 78:
+The real curated charts held since Session 72:
 
 | Chart | Steps between adjacent sizes (cm) |
 |---|---|
@@ -105,11 +105,14 @@ The real curated charts held since Session 72, measured in Session 78:
 | Patagonia men's | 5.1, 5.7, 7.7, 8.9, 8.3, 9.5, 13.3 |
 | Patagonia women's | 3.8, 5.1, 5.1, 7.6, 10.2, 10.2 |
 
-**Median 8.3 cm (n = 19); the central steps S→M→L→XL also median 8.3 (n = 9).**
-That is nearly double, which means every "too tight" or "too loose" report is
-currently converted to about half the room it describes. Still thin — three charts,
-two brands — so it is recorded here and applied with a before/after in Phase D
-rather than slipped into the Phase B move.
+**Median 8.3 cm (n = 19).** So every "too tight" or "a bit snug" had been read as
+about half the room it describes. It is now **8.3**, and a test recomputes it from
+the charts so the "measured" label cannot drift from the data. Thin evidence — three
+charts, two brands — and it should be re-measured as charts are added.
+
+Before → after, one wearer (chest 100 cm, regular) with three measured tees at +8,
++10 and +12 cm of room, all reported "a bit snug": ease target **10.8 → 12.1 cm**.
+They said all three were tight; the old step barely moved them.
 
 ## 6. Calibration plan
 
@@ -239,7 +242,7 @@ number we have not yet earned; the test fails if one is missing here.
 | `CONSISTENCY.tightSpread` | 2 | assumed | spread on the ±10 scale that reads as consistent |
 | `CONSISTENCY.wideSpread` | 6 | assumed | spread that reads as scattered |
 | `CONSISTENCY.minFactor` | 0.85 | assumed | scatter can cost at most 15% of confidence |
-| `PERSONAL_EASE.ladderStepChestCm` | 4.5 | measured | n = 2 DEMO FIXTURE charts (Uniqlo 92/96/100/104/110, COS 102–118 by 4). The real curated charts held since Session 72 step 5–15 cm, median ≈ 7.6 cm — recalibration is Phase D of Session 78 |
+| `PERSONAL_EASE.ladderStepChestCm` | 8.3 | measured | median step between adjacent sizes across the curated brand charts, n = 19 steps from 3 charts (Nike men's tops; Patagonia men's and women's). Was 4.5 until Session 78, from 2 demo fixtures — about half the real step, so every fit feeling was read as half the room it describes. Thin: 2 brands |
 | `PERSONAL_EASE.minEvidence` | 2 | assumed | two garments before learning anything |
 | `PERSONAL_EASE.fullEvidence` | 4 | assumed | four for full weight |
 | `PERSONAL_EASE.noticeableCm` | 0.2 | assumed | a fifth of a centimetre is not a wearable difference |

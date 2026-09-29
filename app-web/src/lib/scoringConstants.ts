@@ -195,7 +195,12 @@ export const CONSISTENCY = {
 } as const;
 
 export const PERSONAL_EASE = {
-  ladderStepChestCm: 4.5,
+  /**
+   * One size step of chest, in cm — the ONE conversion from a fit feeling to
+   * centimetres (a full "too tight" = one step). Measured from the brands' own
+   * published charts; `scoringConstants.test.ts` recomputes it from them.
+   */
+  ladderStepChestCm: 8.3,
   minEvidence: 2,
   fullEvidence: 4,
   /** Below this, a learned target is not a difference anyone can wear. */
@@ -316,8 +321,9 @@ export const PROVENANCE: Record<string, ConstantSource> = {
   "CONSISTENCY.minFactor": A("scatter can cost at most 15% of confidence"),
 
   "PERSONAL_EASE.ladderStepChestCm": M(
-    "n = 2 DEMO FIXTURE charts (Uniqlo 92/96/100/104/110, COS 102–118 by 4). The real " +
-      "curated charts held since Session 72 step 5–15 cm, median ≈ 7.6 cm — recalibration is Phase D of Session 78",
+    "median step between adjacent sizes across the curated brand charts, n = 19 steps from 3 charts " +
+      "(Nike men's tops; Patagonia men's and women's). Was 4.5 until Session 78, from 2 demo fixtures — " +
+      "about half the real step, so every fit feeling was read as half the room it describes. Thin: 2 brands",
   ),
   "PERSONAL_EASE.minEvidence": A("two garments before learning anything"),
   "PERSONAL_EASE.fullEvidence": A("four for full weight"),

@@ -31,6 +31,29 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 78d1 — A fit feeling is read as the room it actually describes
+
+Phase D, step 1. `PERSONAL_EASE.ladderStepChestCm` — the ONE conversion from a fit
+feeling to centimetres, a full "too tight" being one size step — was **4.5 cm**,
+measured from two demo fixture charts stepping by 4 cm. The brands' own published
+charts, measured in Session 78b, step **8.3 cm** (median, n = 19 steps, 3 charts). Every
+"a bit snug" had been read as about half the room the wearer meant.
+
+Now 8.3, and `scoringConstants.test.ts` recomputes the median from `BRAND_CHARTS` and
+fails if the registry value drifts from it — a "measured" label has to stay
+reproducible from the data it cites. The cap that keeps a learned ease within one size
+step of the stated preference moves with it, which is what "one size step" should mean.
+
+Before → after: a chest-100 wearer whose three measured tees (+8, +10, +12 cm of room)
+were all "a bit snug" now gets an ease target of **12.1 cm** instead of **10.8** against
+regular's 10. No existing test pinned the old number; they use the constant by name.
+
+Thin: three charts, two brands. Recorded as such in the registry.
+
+567 tests + 1 skip, exit 0.
+
+---
+
 ## 2026-09-29 · Session 78c — Small changes no longer swing a confident answer, and an edge bug they exposed
 
 Phase C of the Session 78 plan: "small changes should not swing the whole result".

@@ -6,6 +6,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as R from "./scoringConstants";
+import { BRAND_CHARTS, chartToSizes } from "./brandCharts";
 
 const VALUE_EXPORTS = Object.entries(R).filter(
   ([k, v]) => k !== "PROVENANCE" && (typeof v === "number" || (typeof v === "object" && v !== null)),
@@ -70,5 +71,20 @@ describe("scoringConstants — every number declares where it came from", () => 
   it("imports nothing, so the client bundle can use it (invariant ㉟)", () => {
     const src = readFileSync(join(process.cwd(), "src", "lib", "scoringConstants.ts"), "utf8");
     expect(src).not.toMatch(/^import /m);
+  });
+
+  it("keeps the 'measured' size step equal to what the brands' charts actually measure", () => {
+    // A measured constant must stay reproducible from the data it cites.
+    const steps: number[] = [];
+    for (const c of BRAND_CHARTS) {
+      const mids = chartToSizes(c)
+        .map((s) => (s.bodyChestMinCm != null ? (s.bodyChestMinCm + s.bodyChestMaxCm!) / 2 : s.chestCm))
+        .filter((m): m is number => m != null);
+      for (let i = 1; i < mids.length; i++) steps.push(Math.round((mids[i] - mids[i - 1]) * 10) / 10);
+    }
+    const sorted = [...steps].sort((a, b) => a - b);
+    const median = sorted.length % 2 ? sorted[(sorted.length - 1) / 2] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
+    expect(steps.length).toBe(19);
+    expect(R.PERSONAL_EASE.ladderStepChestCm).toBeCloseTo(median, 1);
   });
 });
