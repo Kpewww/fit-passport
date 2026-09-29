@@ -31,6 +31,59 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-28 · Session 76 (R5) — The homepage says each thing once
+
+Redesign step R5. Open decision #4 is closed: the founder chose the cut list on
+2026-09-28.
+
+The homepage had five consecutive sets of "three things", and they overlapped:
+- How it works (three steps);
+- Why it works (three cards);
+- Three signals (three cards, restating How it works step 2);
+- Get started (three steps, restating How it works);
+- Community (three cards).
+
+**Cut:**
+- **`ConvergingStack`** ("Three signals"), with `DeckCard` and `SignalCard`. It
+  was one of the page's scroll-linked sections: a `useScroll` driving four
+  transforms per frame, and a 22vw word on its own layer. That work is gone with
+  it.
+- **`NewUserGuide`** ("Get started"). Its one unique thing, the demo closet,
+  moved into the closing CTA. It is shown only to a new visitor (no body, no
+  closet, no products), because `/api/demo` replaces both closet and profile.
+
+**The page now:** Hero → the returning user's dashboard (if any) → How it works →
+What you get → the black "You keep the profile" statement → Community → Start
+your fit passport.
+
+**Restyled:**
+- **Hero:** the infinitely bouncing "Scroll ↓" is gone. It was one more running
+  animation, and the page below makes the point. "Get my size" uses the arrow
+  icon and stays cobalt, the one accent, on the black band.
+- **How it works:** only step 1 is cobalt; step 2 is ink, step 3 is white with a
+  hairline, and no shadows. It keeps its 01–03 numbers, because those really are
+  a sequence.
+- **Community cards:** flat, with an arrow icon on the link. They lost their
+  01/02/03, because those three are not a sequence, and a number that does not
+  count anything is decoration.
+- **Returning dashboard:** done steps are `ok` with a check icon; "Do it" and
+  "Badges" use arrow icons; the set-up percentage is in the serif, in ink instead
+  of cobalt.
+
+Checked:
+- a new visitor rendered at 1440 and 390 (the 1440 page is 4,784 px tall), with
+  no page errors;
+- `mobile-audit` shows no overflow;
+- / First Load JS is 160 kB (R0 156, +2.6%, with F's real badges included);
+- 516 tests pass; typecheck and build are clean.
+
+### Files touched
+```
+app-web/src/app/page.tsx   (ConvergingStack, DeckCard, SignalCard, SIGNALS, NewUserGuide removed; Hero, HowItWorks, CommunityValue, ClosingCTA, dashboard restyled)
+```
+
+---
+
 ## 2026-09-28 · Session 76 (R4) — The Check result leads with the answer
 
 Redesign step R4. The result page used to open with the product card
