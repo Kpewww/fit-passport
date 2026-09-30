@@ -19,6 +19,9 @@ import {
 import { ReportButton } from "@/components/ReportButton";
 import { postKindLabel } from "@/lib/posts";
 import { timeAgo } from "@/lib/timeAgo";
+import { useLocale, useT } from "@/i18n/client";
+import { usePeopleWords } from "@/i18n/people";
+import type { PostKind } from "@/lib/posts";
 
 type Author = {
   username: string | null;
@@ -57,6 +60,11 @@ type Thread = {
 
 export default function ThreadPage({ params }: { params: { id: string } }) {
   const { id } = params;
+  const t = useT("thread");
+  const ta = useT("ask");
+  const tc = useT("common");
+  const locale = useLocale();
+  const people = usePeopleWords();
   const router = useRouter();
   const [data, setData] = useState<Thread | null>(null);
   const [gone, setGone] = useState(false);
@@ -98,9 +106,9 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-14">
           <EmptyState
-            title="That question is gone"
-            body="It may have been deleted, or its author deactivated their account."
-            action={<LinkButton href="/community#questions">Back to questions</LinkButton>}
+            title={t("goneTitle")}
+            body={t("goneBody")}
+            action={<LinkButton href="/community#questions">{t("backToQuestions")}</LinkButton>}
           />
         </div>
       </main>
@@ -108,7 +116,7 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
   }
 
   if (!data) {
-    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-14 text-ink-faint">{tc("loading")}</div></main>;
   }
 
   const { post, answers } = data;
@@ -117,16 +125,16 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <p className="text-xs text-ink-faint">
-          <Link href="/community#questions" className="hover:underline"><ArrowLeft size={14} className="-mt-px inline" /> All questions</Link>
+          <Link href="/community#questions" className="hover:underline"><ArrowLeft size={14} className="-mt-px inline" /> {t("allQuestions")}</Link>
         </p>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="rounded-full bg-paper-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft ring-1 ring-line">
-            {postKindLabel(post.kind)}
+            {["HELP", "RECOMMEND", "VERDICT"].includes(post.kind) ? ta(`kind.${post.kind as PostKind}.label`) : postKindLabel(post.kind)}
           </span>
           {post.resolvedAnswerId && (
             <span className="rounded-full bg-ok-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ok">
-              Answered
+              {t("answered")}
             </span>
           )}
         </div>
@@ -142,10 +150,10 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
           ) : (
             post.author.username
           )}
-          {post.author.bodyType && <span>· {post.author.bodyType} build</span>}
-          <span>· {timeAgo(post.createdAt)}</span>
+          {post.author.bodyType && <span>· {people.build(post.author.bodyType)}</span>}
+          <span>· {timeAgo(post.createdAt, Date.now(), locale)}</span>
           {post.mine && (
-            <button onClick={removePost} className="ml-2 hover:text-bad">Delete</button>
+            <button onClick={removePost} className="ml-2 hover:text-bad">{t("delete")}</button>
           )}
           {!post.mine && <ReportButton kind="POST" targetId={post.id} className="ml-2" />}
         </div>
@@ -162,19 +170,19 @@ export default function ThreadPage({ params }: { params: { id: string } }) {
               rel="noopener noreferrer nofollow"
               className="text-brand hover:underline"
             >
-              The product in question <ArrowUpRight size={14} className="inline -mt-0.5" />
+              {t("theProduct")} <ArrowUpRight size={14} className="inline -mt-0.5" />
             </a>
           </p>
         )}
 
         {post.evidence && (
           <div className="mt-4 max-w-md">
-            <EvidenceCard ev={post.evidence} label="Their reference garment" />
+            <EvidenceCard ev={post.evidence} label={t("theirReference")} />
           </div>
         )}
 
         <h2 className="mt-10 text-h3 font-semibold text-ink">
-          {answers.length === 0 ? "No answers yet" : `${answers.length} answer${answers.length === 1 ? "" : "s"}`}
+          {answers.length === 0 ? t("noAnswers") : ta.n("answers", answers.length)}
         </h2>
 
         <div className="mt-3 space-y-3">
@@ -211,6 +219,9 @@ function AnswerCard({
   onAccept: () => void;
   onChange: () => void;
 }) {
+  const t = useT("thread");
+  const locale = useLocale();
+  const people = usePeopleWords();
   const [voted, setVoted] = useState(answer.votedByMe);
   const [count, setCount] = useState(answer.helpfulCount);
   // Set when the server kept a vote that does not rank the answer (anonymous voter).
@@ -245,7 +256,7 @@ function AnswerCard({
     <Card className={`!p-4 ${answer.accepted ? "ring-2 ring-ok/40" : ""}`}>
       {answer.accepted && (
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-ok">
-          <Check size={14} className="-mt-px inline" /> Accepted by the asker
+          <Check size={14} className="-mt-px inline" /> {t("acceptedByAsker")}
         </p>
       )}
       {answer.hidden && <HiddenNotice what="answer" />}
@@ -253,7 +264,7 @@ function AnswerCard({
 
       {answer.evidence && (
         <div className="mt-3 max-w-md">
-          <EvidenceCard ev={answer.evidence} label="From their closet" />
+          <EvidenceCard ev={answer.evidence} label={t("fromTheirCloset")} />
         </div>
       )}
 
@@ -267,10 +278,10 @@ function AnswerCard({
           ) : (
             answer.author.username
           )}
-          {answer.author.bodyType && <span>· {answer.author.bodyType} build</span>}
+          {answer.author.bodyType && <span>· {people.build(answer.author.bodyType)}</span>}
         </span>
-        <span>{timeAgo(answer.createdAt)}</span>
-        {answer.mine && <button onClick={remove} className="hover:text-bad">Delete</button>}
+        <span>{timeAgo(answer.createdAt, Date.now(), locale)}</span>
+        {answer.mine && <button onClick={remove} className="hover:text-bad">{t("delete")}</button>}
         {!answer.mine && <ReportButton kind="ANSWER" targetId={answer.id} />}
 
         <span className="ml-auto flex items-center gap-2">
@@ -283,7 +294,7 @@ function AnswerCard({
                   : "border-line bg-white text-ink-soft hover:border-ok hover:text-ok"
               }`}
             >
-              {answer.accepted ? "Accepted" : "Mark as the answer"}
+              {answer.accepted ? t("accepted") : t("markAnswer")}
             </button>
           )}
           {/* No self-voting — the server rejects it, so don't offer it. */}
@@ -294,16 +305,17 @@ function AnswerCard({
                 voted ? "border-ink bg-ink text-paper" : "border-line bg-white text-ink-soft hover:border-ink/40 hover:text-ink"
               }`}
             >
-              {voted ? "Helpful" : "Helpful?"} {count > 0 ? count : ""}
+              {voted ? t("helpful") : t("helpfulQ")} {count > 0 ? count : ""}
             </button>
           )}
-          {answer.mine && count > 0 && <span>{count} found this helpful</span>}
+          {answer.mine && count > 0 && <span>{t("foundHelpful", { n: count })}</span>}
         </span>
       </div>
       {uncounted && (
         <p className="mt-2 text-right text-xs text-ink-faint">
-          Saved. Votes rank answers once you{" "}
-          <Link href="/account" className="underline underline-offset-2 hover:text-ink">claim an account</Link>.
+          {t.rich("savedClaim", {
+            link: (c) => <Link href="/account" className="underline underline-offset-2 hover:text-ink">{c}</Link>,
+          })}
         </p>
       )}
     </Card>
@@ -314,11 +326,11 @@ function AnswerCard({
  * Shown only to the author of hidden content. The alternative — content that
  * silently disappears — is how people conclude a product is broken.
  */
-function HiddenNotice({ what }: { what: string }) {
+function HiddenNotice({ what }: { what: "question" | "answer" }) {
+  const t = useT("thread");
   return (
     <p className="mt-2 rounded-lg bg-warn-tint px-3 py-2 text-xs text-warn ring-1 ring-warn/30">
-      Only you can see this {what}. It was hidden after reports — edit or delete
-      it, or reply to us if you think that was wrong.
+      {what === "question" ? t("hiddenQuestion") : t("hiddenAnswer")}
     </p>
   );
 }
@@ -334,6 +346,7 @@ function AnswerComposer({
   closet: ClosetPick[];
   onPosted: () => void;
 }) {
+  const t = useT("thread");
   const [body, setBody] = useState("");
   const [knownGoodId, setKnownGoodId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -343,15 +356,13 @@ function AnswerComposer({
     return (
       <Card className="mt-6 flex flex-wrap items-center justify-between gap-3 bg-brand-tint/40">
         <p className="max-w-md text-sm text-ink-soft">
-          <strong className="text-ink">Know the answer?</strong> Claim an account to
-          reply — it&apos;s what lets you attach a garment you own as proof, and it&apos;s
-          how the Counsel badges are earned.
+          {t.rich("knowAnswer", { b: (c) => <strong className="text-ink">{c}</strong> })}
         </p>
         <Link
           href="/account"
           className="whitespace-nowrap rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-black"
         >
-          Claim account
+          {t("claimAccount")}
         </Link>
       </Card>
     );
@@ -369,7 +380,7 @@ function AnswerComposer({
       .catch(() => null);
     setSaving(false);
     if (!res?.id) {
-      setErr(res?.message ?? "Couldn't post that answer. Try again.");
+      setErr(res?.message ?? t("answerFailed"));
       return;
     }
     setBody("");
@@ -379,9 +390,9 @@ function AnswerComposer({
 
   return (
     <Card className="mt-6">
-      <p className="font-semibold text-ink">Your answer</p>
+      <p className="font-semibold text-ink">{t("yourAnswer")}</p>
       <div className="mt-3 space-y-3">
-        <Field label="What would you tell them?" hint="Where it sat wrong matters more than the size">
+        <Field label={t("whatTell")} hint={t("whatTellHint")}>
           <textarea
             className={inputClass + " min-h-[90px]"}
             value={body}
@@ -391,7 +402,7 @@ function AnswerComposer({
         </Field>
         <div>
           <p className="mb-1.5 text-sm font-medium text-ink">
-            Back it up <span className="font-normal text-ink-faint">— attach the garment you&apos;re talking about</span>
+            {t("backItUp")} <span className="font-normal text-ink-faint">{t("backItUpHint")}</span>
           </p>
           <ClosetAttachPicker closet={closet} value={knownGoodId} onChange={setKnownGoodId} />
         </div>
@@ -399,7 +410,7 @@ function AnswerComposer({
       {err && <p className="mt-3 text-sm text-bad">{err}</p>}
       <div className="mt-4">
         <Button onClick={submit} disabled={body.trim().length < 10 || saving}>
-          {saving ? "Posting…" : "Post answer"}
+          {saving ? t("posting") : t("postAnswer")}
         </Button>
       </div>
     </Card>

@@ -14,6 +14,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser, canEdit } from "@/lib/session";
 import { parseFeedScope, rankFeed } from "@/lib/feed";
 import { invisibleUserIds, notBlocked } from "@/lib/blocks";
+import { say } from "@/lib/apiText";
 
 const ItemSchema = z.object({
   knownGoodId: z.string().optional().nullable(),
@@ -112,7 +113,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!canEdit()) {
-    return NextResponse.json({ error: "read-only — password required" }, { status: 403 });
+    return NextResponse.json({ error: say(req, "read-only — password required") }, { status: 403 });
   }
   const parsed = CreateSchema.safeParse(await req.json());
   if (!parsed.success) {
@@ -149,7 +150,7 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
   const user = await getCurrentUser();
   const id = new URL(req.url).searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: say(req, "id required") }, { status: 400 });
   await prisma.outfit.deleteMany({ where: { id, userId: user.id } });
   return NextResponse.json({ ok: true });
 }

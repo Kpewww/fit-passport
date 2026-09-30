@@ -9,6 +9,8 @@ import Link from "next/link";
 import { Card } from "@/components/ui";
 import { BadgeSeal } from "@/components/Badges";
 import { badgesByTrack, METAL_STYLE, type EarnedBadge } from "@/lib/badges";
+import { useT } from "@/i18n/client";
+import { useBadgeWords } from "@/i18n/badges";
 
 type StatusResp = {
   badges: EarnedBadge[];
@@ -18,6 +20,8 @@ type StatusResp = {
 };
 
 export default function BadgesPage() {
+  const t = useT("badges");
+  const w = useBadgeWords();
   const [data, setData] = useState<StatusResp | null>(null);
   const [pinned, setPinned] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
@@ -45,7 +49,7 @@ export default function BadgesPage() {
   }
 
   if (!data) {
-    return <main className="flex-1"><div className="mx-auto max-w-3xl px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-3xl px-4 sm:px-6 py-14 text-ink-faint">{t("loading")}</div></main>;
   }
 
   const earnedCount = data.badges.filter((b) => b.earnedNow).length;
@@ -60,24 +64,21 @@ export default function BadgesPage() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-serif text-h1 text-ink">Badges</h1>
-            <p className="mt-1 text-ink-soft">
-              Progress through each track; the Rare Honors sit above them. Pin up
-              to 3 earned badges to show off on your passport.
-            </p>
+            <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
+            <p className="mt-1 text-ink-soft">{t("lede")}</p>
           </div>
-          <Link href="/passport" className="text-sm text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> Passport</Link>
+          <Link href="/passport" className="text-sm text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> {t("passport")}</Link>
         </div>
 
         <p className="mt-4 text-sm text-ink-soft">
-          <strong className="text-ink">{earnedCount}</strong> of {data.badges.length} earned ·{" "}
-          <span className="text-ink-faint">{pinned.length}/3 pinned{saving ? " · saving…" : ""}</span>
+          {t.rich("earnedOf", { b: (c) => <strong className="text-ink">{c}</strong> }, { n: earnedCount, total: data.badges.length })} ·{" "}
+          <span className="text-ink-faint">{t("pinned", { n: pinned.length })}{saving ? t("saving") : ""}</span>
         </p>
 
-        {tracks.map((t) => (
-          <Section key={t.track} title={t.label}>
+        {tracks.map((tr) => (
+          <Section key={tr.track} title={w.track(tr.track, tr.label)}>
             <div className="grid gap-3 sm:grid-cols-2">
-              {t.badges.map((b) => (
+              {tr.badges.map((b) => (
                 <BadgeCard key={b.id} badge={b}
                   pinned={pinned.includes(b.id)}
                   canPin={b.earnedNow && (pinned.length < 3 || pinned.includes(b.id))}
@@ -115,6 +116,8 @@ function BadgeCard({
   canPin?: boolean;
   onPin?: () => void;
 }) {
+  const t = useT("badges");
+  const w = useBadgeWords();
   const st = METAL_STYLE[badge.metal];
   const dim = !badge.earnedNow;
   return (
@@ -126,21 +129,21 @@ function BadgeCard({
         metal={badge.metal}
         size={54}
         locked={!badge.earnedNow}
-        title={badge.title}
+        title={w.title(badge.id, badge.title)}
         detail={badge}
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <p className={`truncate font-semibold ${dim ? "text-ink-soft" : "text-ink"}`}>{badge.title}</p>
+          <p className={`truncate font-semibold ${dim ? "text-ink-soft" : "text-ink"}`}>{w.title(badge.id, badge.title)}</p>
           <span className={`rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase ${st.bg} ${st.text}`}>
-            {st.label}
+            {w.metal(badge.metal, st.label)}
           </span>
-          {badge.earnedNow && <span className="inline-flex items-center gap-0.5 text-[10px] text-ok"><Check size={10} />earned</span>}
+          {badge.earnedNow && <span className="inline-flex items-center gap-0.5 text-[10px] text-ok"><Check size={10} />{t("earned")}</span>}
         </div>
-        <p className="mt-0.5 text-xs text-ink-soft">{badge.blurb}</p>
-        <p className="mt-0.5 text-[11px] italic text-ink-faint">{badge.lore}</p>
+        <p className="mt-0.5 text-xs text-ink-soft">{w.blurb(badge.id, badge.blurb)}</p>
+        <p className="mt-0.5 text-[11px] italic text-ink-faint">{w.lore(badge.id, badge.lore)}</p>
         {badge.progressText && !badge.earnedNow && (
-          <p className="mt-1 text-[11px] font-medium text-brand">{badge.progressText}</p>
+          <p className="mt-1 text-[11px] font-medium text-brand">{w.progress(badge.progressText)}</p>
         )}
         {onPin && (
           <button
@@ -154,7 +157,7 @@ function BadgeCard({
                   : "cursor-not-allowed border-line text-ink-faint"
             }`}
           >
-            {pinned ? <><Pin size={14} weight="fill" className="mr-1 inline -mt-0.5" />Pinned — click to unpin</> : canPin ? "Pin to passport" : "3 pinned already"}
+            {pinned ? <><Pin size={14} weight="fill" className="mr-1 inline -mt-0.5" />{t("pinnedUnpin")}</> : canPin ? t("pinToPassport") : t("threePinned")}
           </button>
         )}
       </div>

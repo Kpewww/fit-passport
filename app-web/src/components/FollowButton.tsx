@@ -12,6 +12,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/i18n/client";
 
 export function FollowButton({
   accountCode,
@@ -66,6 +67,7 @@ export function FollowButton({
     onChange?.(!!res.following);
   }
 
+  const t = useT("social");
   const pad = size === "md" ? "px-3.5 py-1.5 text-sm" : "px-2.5 py-1 text-xs";
   const look = on
     ? "border-ink bg-ink text-paper hover:bg-black"
@@ -78,13 +80,13 @@ export function FollowButton({
       title={
         canFollow
           ? on
-            ? "Unfollow — their looks leave your Following feed"
-            : "Follow — their looks show up in your Following feed"
-          : "Claim an account to follow people"
+            ? t("unfollowTitle")
+            : t("followTitle")
+          : t("claimToFollow")
       }
       className={`whitespace-nowrap rounded-full border font-medium transition-colors disabled:opacity-60 ${pad} ${look}`}
     >
-      {on ? "Following" : "+ Follow"}
+      {on ? t("following") : t("follow")}
     </button>
   );
 }

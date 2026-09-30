@@ -15,6 +15,9 @@ import Link from "next/link";
 import { garmentLabel } from "@/lib/garments";
 import { inputClass } from "@/components/ui";
 import { ArrowRight } from "@/components/Icon";
+import { useT } from "@/i18n/client";
+import { useGarmentText } from "@/i18n/garment";
+import { usePeopleWords } from "@/i18n/people";
 
 export type EvidenceView = {
   id: string;
@@ -38,24 +41,27 @@ export type ClosetPick = {
   color: string | null;
 };
 
-export function EvidenceCard({ ev, label = "Receipt" }: { ev: EvidenceView; label?: string }) {
+export function EvidenceCard({ ev, label }: { ev: EvidenceView; label?: string }) {
+  const t = useT("social");
+  const g = useGarmentText();
+  const people = usePeopleWords();
   return (
     <div className="rounded-xl border border-line bg-paper-soft px-3 py-2.5">
-      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-faint">{label}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-ink-faint">{label ?? t("receipt")}</p>
       <p className="mt-1 text-sm font-medium text-ink">
         {ev.brand}
-        <span className="text-ink-soft"> · {garmentLabel(ev.category)}</span>
-        <span className="text-ink-soft"> · size {ev.size}</span>
+        <span className="text-ink-soft"> · {g.label(ev.category)}</span>
+        <span className="text-ink-soft"> · {t("sizeN", { size: ev.size })}</span>
         {ev.region ? <span className="text-ink-faint"> ({ev.region})</span> : null}
       </p>
       <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-ink-faint">
         <span>
           <FitStars rating={ev.fitRating} size={11} />
-          <span className="ml-1">fit</span>
+          <span className="ml-1">{t("fit")}</span>
         </span>
-        {ev.color && <span>· {ev.color}</span>}
+        {ev.color && <span>· {g.color(ev.color)}</span>}
         {/* The line that does the actual work: whose body this fits. */}
-        {ev.ownerBodyType && <span className="text-brand">· on a {ev.ownerBodyType} build</span>}
+        {ev.ownerBodyType && <span className="text-brand">· {t("onBuild", { type: people.bodyType(ev.ownerBodyType) })}</span>}
       </p>
     </div>
   );
@@ -63,9 +69,10 @@ export function EvidenceCard({ ev, label = "Receipt" }: { ev: EvidenceView; labe
 
 /** Placeholder for an attachment whose item or owner has since gone away. */
 export function EvidenceMissing() {
+  const t = useT("social");
   return (
     <p className="rounded-xl border border-dashed border-line px-3 py-2 text-xs text-ink-faint">
-      The attached closet item is no longer available.
+      {t("evidenceGone")}
     </p>
   );
 }
@@ -87,11 +94,13 @@ export function ClosetAttachPicker({
   const [q, setQ] = useState("");
 
   const picked = useMemo(() => closet.find((c) => c.id === value) ?? null, [closet, value]);
+  const t = useT("social");
+  const g = useGarmentText();
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const list = needle
       ? closet.filter((c) =>
-          `${c.brand} ${c.displayName ?? ""} ${garmentLabel(c.category)} ${c.size}`
+          `${c.brand} ${c.displayName ?? ""} ${garmentLabel(c.category)} ${g.label(c.category)} ${c.size}`
             .toLowerCase()
             .includes(needle),
         )
@@ -104,13 +113,13 @@ export function ClosetAttachPicker({
       <div className="flex items-center gap-2 rounded-xl border border-line bg-white px-3 py-2">
         <span className="min-w-0 flex-1 truncate text-sm text-ink">
           <span className="font-medium">{picked.brand}</span>
-          <span className="text-ink-soft"> · {garmentLabel(picked.category)} · {picked.size}</span>
+          <span className="text-ink-soft"> · {g.label(picked.category)} · {picked.size}</span>
         </span>
         <button
           onClick={() => { onChange(null); setOpen(false); }}
           className="text-xs font-medium text-ink-faint hover:text-bad"
         >
-          Remove
+          {t("remove")}
         </button>
       </div>
     );
@@ -122,24 +131,25 @@ export function ClosetAttachPicker({
         onClick={() => setOpen((v) => !v)}
         className="rounded-lg border border-line bg-white px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-ink/40 hover:text-ink"
       >
-        {open ? "Cancel" : "+ Attach an item from my closet"}
+        {open ? t("cancel") : t("attachItem")}
       </button>
       {open && (
         <div className="mt-2 rounded-xl border border-line bg-white p-2">
           <input
             className={inputClass + " mb-2"}
-            placeholder="Search your closet…"
+            placeholder={t("searchCloset")}
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
           <div className="max-h-48 overflow-y-auto">
             {closet.length === 0 ? (
               <p className="px-1 py-2 text-xs text-ink-faint">
-                Your closet is empty.{" "}
-                <Link href="/closet" className="text-brand hover:underline">Add items <ArrowRight size={14} className="-mt-px inline" /></Link>
+                {t.rich("closetEmpty", {
+                  link: (c) => <Link href="/closet" className="text-brand hover:underline">{c} <ArrowRight size={14} className="-mt-px inline" /></Link>,
+                })}
               </p>
             ) : shown.length === 0 ? (
-              <p className="px-1 py-2 text-xs text-ink-faint">Nothing matches “{q}”.</p>
+              <p className="px-1 py-2 text-xs text-ink-faint">{t("noMatch", { q })}</p>
             ) : (
               shown.map((c) => (
                 <button
@@ -149,7 +159,7 @@ export function ClosetAttachPicker({
                 >
                   <span className="min-w-0 flex-1 truncate text-ink">
                     <span className="font-medium">{c.brand}</span>
-                    <span className="text-ink-soft"> · {garmentLabel(c.category)}</span>
+                    <span className="text-ink-soft"> · {g.label(c.category)}</span>
                   </span>
                   <span className="flex-shrink-0 text-xs text-ink-faint">{c.size}</span>
                 </button>

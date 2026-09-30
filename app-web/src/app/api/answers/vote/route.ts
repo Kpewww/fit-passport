@@ -12,6 +12,7 @@ import { z } from "zod";
 import { COUNTED_VOTE } from "@/lib/countedVotes";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { say } from "@/lib/apiText";
 
 const Body = z.object({
   answerId: z.string().min(1),
@@ -25,7 +26,7 @@ export async function POST(req: Request) {
   const user = await getCurrentUser();
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "bad request" }, { status: 400 });
+    return NextResponse.json({ error: say(req, "bad request") }, { status: 400 });
   }
   const { answerId, helpful } = parsed.data;
 
@@ -33,9 +34,9 @@ export async function POST(req: Request) {
     where: { id: answerId },
     select: { id: true, userId: true },
   });
-  if (!answer) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!answer) return NextResponse.json({ error: say(req, "not found") }, { status: 404 });
   if (answer.userId === user.id) {
-    return NextResponse.json({ error: "you can't vote for your own answer" }, { status: 400 });
+    return NextResponse.json({ error: say(req, "you can't vote for your own answer") }, { status: 400 });
   }
 
   if (helpful) {

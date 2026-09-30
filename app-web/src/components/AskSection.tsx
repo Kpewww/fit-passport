@@ -21,6 +21,8 @@ import { ClosetAttachPicker, type ClosetPick } from "@/components/Evidence";
 import { POST_KINDS, type PostKind } from "@/lib/posts";
 import { timeAgo } from "@/lib/timeAgo";
 import { Check } from "@/components/Icon";
+import { useLocale, useT } from "@/i18n/client";
+import { usePeopleWords } from "@/i18n/people";
 
 type PostRow = {
   id: string;
@@ -36,14 +38,11 @@ type PostRow = {
   evidence: { brand: string; category: string; size: string } | null;
 };
 
-const KIND_FILTERS: Array<{ key: "ALL" | PostKind; label: string }> = [
-  { key: "ALL", label: "All" },
-  { key: "HELP", label: "Fit check" },
-  { key: "RECOMMEND", label: "What to buy" },
-  { key: "VERDICT", label: "Kept or returned" },
-];
+const KIND_FILTERS: Array<"ALL" | PostKind> = ["ALL", "HELP", "RECOMMEND", "VERDICT"];
 
 export function AskSection() {
+  const t = useT("ask");
+  const tc = useT("common");
   const router = useRouter();
   const [posts, setPosts] = useState<PostRow[] | null>(null);
   const [kind, setKind] = useState<"ALL" | PostKind>("ALL");
@@ -70,12 +69,8 @@ export function AskSection() {
 
   return (
     <section id="questions" className="mt-10 scroll-mt-20">
-      <h2 className="font-serif text-3xl text-ink">Questions</h2>
-      <p className="mt-1.5 max-w-xl text-sm text-ink-soft">
-        Answers here come with receipts. People can attach a garment they actually
-        own — brand, size, how well it fits, and the build it fits — so you get
-        evidence instead of guesses.
-      </p>
+      <h2 className="font-serif text-3xl text-ink">{t("title")}</h2>
+      <p className="mt-1.5 max-w-xl text-sm text-ink-soft">{t("lede")}</p>
 
       <Composer
         claimed={claimed}
@@ -88,40 +83,38 @@ export function AskSection() {
         <div className="inline-flex rounded-full border border-line bg-paper-soft p-0.5 text-xs font-medium">
           {KIND_FILTERS.map((f) => (
             <button
-              key={f.key}
-              onClick={() => setKind(f.key)}
-              aria-pressed={kind === f.key}
+              key={f}
+              onClick={() => setKind(f)}
+              aria-pressed={kind === f}
               className={`rounded-full px-3 py-1 transition-colors ${
-                kind === f.key ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
+                kind === f ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"
               }`}
             >
-              {f.label}
+              {t(`filter.${f}`)}
             </button>
           ))}
         </div>
         <button
           onClick={() => setUnanswered((v) => !v)}
           aria-pressed={unanswered}
-          title="Questions nobody has answered yet — the fastest way to be useful"
+          title={t("needsAnswerTitle")}
           className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
             unanswered
               ? "border-ink bg-ink text-paper"
               : "border-line bg-white text-ink-soft hover:border-ink/40 hover:text-ink"
           }`}
         >
-          Needs an answer
+          {t("needsAnswer")}
         </button>
       </div>
 
       <div className="mt-4 space-y-3">
         {posts === null ? (
-          <p className="text-sm text-ink-faint">Loading…</p>
+          <p className="text-sm text-ink-faint">{tc("loading")}</p>
         ) : posts.length === 0 ? (
           <Card className="bg-paper-soft text-center">
             <p className="text-sm text-ink-soft">
-              {unanswered
-                ? "Every question here has an answer. Nice."
-                : "No questions yet — ask the first one above."}
+              {unanswered ? t("allAnswered") : t("noQuestions")}
             </p>
           </Card>
         ) : (
@@ -130,11 +123,11 @@ export function AskSection() {
       </div>
 
       <Card className="mt-6 bg-paper-soft">
-        <h3 className="text-sm font-semibold text-ink">What makes an answer good here</h3>
+        <h3 className="text-sm font-semibold text-ink">{t("goodAnswer")}</h3>
         <ul className="mt-2 space-y-1.5 text-sm text-ink-soft">
-          <li>• <strong>Attach a real item.</strong> Same brand, or the closest thing you own.</li>
-          <li>• <strong>Say where it sat wrong</strong>, not just the size — shoulders, sleeve, rise.</li>
-          <li>• Answering earns the <Link href="/badges" className="text-brand hover:underline">Counsel</Link> badges. They&apos;re the only ones other people have to give you.</li>
+          <li>• {t.rich("good1", { b: (c) => <strong>{c}</strong> })}</li>
+          <li>• {t.rich("good2", { b: (c) => <strong>{c}</strong> })}</li>
+          <li>• {t.rich("good3", { link: (c) => <Link href="/badges" className="text-brand hover:underline">{c}</Link> })}</li>
         </ul>
       </Card>
     </section>
@@ -150,6 +143,7 @@ function Composer({
   closet: ClosetPick[];
   onPosted: (id: string) => void;
 }) {
+  const t = useT("ask");
   const [open, setOpen] = useState(false);
   const [kind, setKind] = useState<PostKind>("HELP");
   const [title, setTitle] = useState("");
@@ -180,7 +174,7 @@ function Composer({
       .catch(() => null);
     setSaving(false);
     if (!res?.id) {
-      setErr(res?.message ?? "Couldn't post that. Check the title and details and try again.");
+      setErr(res?.message ?? t("postFailed"));
       return;
     }
     onPosted(res.id);
@@ -190,17 +184,14 @@ function Composer({
     return (
       <Card className="mt-6 flex flex-wrap items-center justify-between gap-3 bg-brand-tint/40">
         <div>
-          <p className="font-semibold text-ink">Ask, and answer, with a name attached</p>
-          <p className="mt-0.5 max-w-md text-sm text-ink-soft">
-            Claim an account to post — it&apos;s what lets you attach your closet as
-            evidence and earn credit for helping.
-          </p>
+          <p className="font-semibold text-ink">{t("claimTitle")}</p>
+          <p className="mt-0.5 max-w-md text-sm text-ink-soft">{t("claimBody")}</p>
         </div>
         <Link
           href="/account"
           className="whitespace-nowrap rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-black"
         >
-          Claim account
+          {t("claimAccount")}
         </Link>
       </Card>
     );
@@ -209,7 +200,7 @@ function Composer({
   if (!open) {
     return (
       <div className="mt-6">
-        <Button size="lg" onClick={() => setOpen(true)}>Ask a question</Button>
+        <Button size="lg" onClick={() => setOpen(true)}>{t("askQuestion")}</Button>
       </div>
     );
   }
@@ -217,8 +208,8 @@ function Composer({
   return (
     <Card className="mt-6">
       <div className="flex items-start justify-between gap-3">
-        <p className="font-semibold text-ink">Ask a question</p>
-        <button onClick={() => setOpen(false)} className="text-xs text-ink-faint hover:text-ink">Close</button>
+        <p className="font-semibold text-ink">{t("askQuestion")}</p>
+        <button onClick={() => setOpen(false)} className="text-xs text-ink-faint hover:text-ink">{t("close")}</button>
       </div>
 
       {/* Kind first — it sets the reader's expectation and our example prompt. */}
@@ -232,23 +223,23 @@ function Composer({
               kind === k.kind ? "border-ink bg-ink/[0.03]" : "border-line hover:border-ink/30"
             }`}
           >
-            <span className="block text-sm font-medium text-ink">{k.label}</span>
-            <span className="mt-0.5 block text-xs text-ink-faint">{k.hint}</span>
+            <span className="block text-sm font-medium text-ink">{t(`kind.${k.kind}.label`)}</span>
+            <span className="mt-0.5 block text-xs text-ink-faint">{t(`kind.${k.kind}.hint`)}</span>
           </button>
         ))}
       </div>
 
       <div className="mt-4 space-y-3">
-        <Field label="Question" hint="Be specific — vague questions get vague answers">
+        <Field label={t("question")} hint={t("questionHint")}>
           <input
             className={inputClass}
             value={title}
             maxLength={140}
-            placeholder={active.example}
+            placeholder={t(`kind.${active.kind}.example`)}
             onChange={(e) => setTitle(e.target.value)}
           />
         </Field>
-        <Field label="Details" hint="Your build, what you normally wear, what worries you">
+        <Field label={t("details")} hint={t("detailsHint")}>
           <textarea
             className={inputClass + " min-h-[100px]"}
             value={body}
@@ -256,7 +247,7 @@ function Composer({
             onChange={(e) => setBody(e.target.value)}
           />
         </Field>
-        <Field label="Product link" hint="Optional">
+        <Field label={t("productLink")} hint={t("optional")}>
           <input
             className={inputClass}
             type="text"
@@ -268,7 +259,7 @@ function Composer({
         </Field>
         <div>
           <p className="mb-1.5 text-sm font-medium text-ink">
-            Reference garment <span className="font-normal text-ink-faint">— optional, but it&apos;s the useful part</span>
+            {t("reference")} <span className="font-normal text-ink-faint">{t("referenceHint")}</span>
           </p>
           <ClosetAttachPicker closet={closet} value={knownGoodId} onChange={setKnownGoodId} />
         </div>
@@ -277,41 +268,45 @@ function Composer({
       {err && <p className="mt-3 text-sm text-bad">{err}</p>}
 
       <div className="mt-4 flex items-center gap-3">
-        <Button onClick={submit} disabled={!canSubmit}>{saving ? "Posting…" : "Post question"}</Button>
-        <span className="text-xs text-ink-faint">Your precise measurements are never attached.</span>
+        <Button onClick={submit} disabled={!canSubmit}>{saving ? t("posting") : t("postQuestion")}</Button>
+        <span className="text-xs text-ink-faint">{t("neverAttached")}</span>
       </div>
     </Card>
   );
 }
 
 function PostRowCard({ post }: { post: PostRow }) {
+  const t = useT("ask");
+  const tSocial = useT("social");
+  const locale = useLocale();
+  const people = usePeopleWords();
   return (
     <Link href={`/ask/${post.id}`} className="block">
       <Card className="!p-4 transition-shadow hover:shadow-lift">
         <div className="flex items-start justify-between gap-3">
           <span className="rounded-full bg-paper-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft ring-1 ring-line">
-            {KIND_FILTERS.find((f) => f.key === post.kind)?.label ?? post.kind}
+            {KIND_FILTERS.includes(post.kind as PostKind) ? t(`filter.${post.kind as PostKind}`) : post.kind}
           </span>
           <span className={`flex-shrink-0 text-xs font-medium ${post.resolved ? "text-ok" : post.answerCount > 0 ? "text-ink-soft" : "text-brand"}`}>
             {post.resolved
-              ? <><Check size={12} className="-mt-px inline" /> Answered</>
+              ? <><Check size={12} className="-mt-px inline" /> {t("answered")}</>
               : post.answerCount > 0
-                ? `${post.answerCount} answer${post.answerCount === 1 ? "" : "s"}`
-                : "Needs an answer"}
+                ? t.n("answers", post.answerCount)
+                : t("needsAnswer")}
           </span>
         </div>
         <p className="mt-1.5 font-medium text-ink">{post.title}</p>
         <p className="mt-0.5 line-clamp-2 text-sm text-ink-soft">{post.body}</p>
         {post.evidence && (
           <p className="mt-1.5 text-xs text-ink-faint">
-            Receipt attached: <span className="text-ink-soft">{post.evidence.brand} · size {post.evidence.size}</span>
+            {t("receiptAttached")} <span className="text-ink-soft">{post.evidence.brand} · {tSocial("sizeN", { size: post.evidence.size })}</span>
           </p>
         )}
         <div className="mt-2 flex items-center gap-1.5 text-xs text-ink-faint">
           <Avatar src={post.author.avatarDataUrl} initials={(post.author.username ?? "?").slice(0, 2).toUpperCase()} size={18} ring={false} />
           {post.author.username}
-          {post.author.bodyType && <span>· {post.author.bodyType} build</span>}
-          <span>· {timeAgo(post.createdAt)}</span>
+          {post.author.bodyType && <span>· {people.build(post.author.bodyType)}</span>}
+          <span>· {timeAgo(post.createdAt, Date.now(), locale)}</span>
         </div>
       </Card>
     </Link>

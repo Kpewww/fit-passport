@@ -95,7 +95,7 @@ export function BrandInput({
             </li>
           ))}
           <li className="border-t border-line px-3 py-1.5 text-xs text-ink-faint">
-            Not listed? Just type it — any brand works.
+            {t("brandUnlisted")}
           </li>
         </ul>
       )}

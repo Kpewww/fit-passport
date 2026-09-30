@@ -8,6 +8,9 @@ import { Card, EmptyState, LinkButton } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
 import { FollowButton } from "@/components/FollowButton";
 import { colorHex } from "@/lib/colors";
+import { useT } from "@/i18n/client";
+import { useGarmentText } from "@/i18n/garment";
+import { usePeopleWords } from "@/i18n/people";
 
 type ClosetItem = {
   id: string;
@@ -43,6 +46,12 @@ export default function ViewByCodePage({
 }: {
   params: { code: string };
 }) {
+  const t = useT("profile");
+  const tc = useT("common");
+  const tCommunity = useT("community");
+  const g = useGarmentText();
+  const people = usePeopleWords();
+  const tSocial = useT("social");
   const { code } = params;
   const [data, setData] = useState<PublicView | null>(null);
   const [notFound, setNotFound] = useState(false);
@@ -78,7 +87,7 @@ export default function ViewByCodePage({
   // than buried in a content menu.
   async function toggleBlock(next: boolean) {
     if (!data) return;
-    if (next && !confirm(`Block ${data.username}? Their looks and answers disappear from your feeds, and yours from theirs. They're not told.`)) return;
+    if (next && !confirm(t("blockConfirm", { name: data.username }))) return;
     setBlocking(true);
     await fetch("/api/block", {
       method: "POST",
@@ -95,9 +104,9 @@ export default function ViewByCodePage({
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-14">
           <EmptyState
-            title="No closet found for that code"
-            body="Double-check the account code. Codes look like FP-XXXX-XXXX-XXXXX."
-            action={<LinkButton href="/community">Try another code</LinkButton>}
+            title={t("notFoundTitle")}
+            body={t("notFoundBody")}
+            action={<LinkButton href="/community">{t("tryAnother")}</LinkButton>}
           />
         </div>
       </main>
@@ -105,7 +114,7 @@ export default function ViewByCodePage({
   }
 
   if (!data) {
-    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-14 text-ink-faint">{tc("loading")}</div></main>;
   }
 
   return (
@@ -113,10 +122,10 @@ export default function ViewByCodePage({
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <div className="flex items-center gap-2 text-xs">
           <span className="rounded-full bg-brand-tint px-2.5 py-0.5 font-medium text-brand">
-            Viewing {data.username}&apos;s closet
+            {t("viewing", { name: data.username })}
           </span>
           <span className="rounded-full bg-paper-dim px-2.5 py-0.5 text-ink-faint">
-            read-only
+            {t("readOnly")}
           </span>
         </div>
         <div className="mt-3 flex items-center gap-4">
@@ -134,7 +143,7 @@ export default function ViewByCodePage({
               )}
               {data.followerCount > 0 && (
                 <span className="text-xs text-ink-faint">
-                  {data.followerCount} follower{data.followerCount === 1 ? "" : "s"}
+                  {tCommunity.n("followers", data.followerCount)}
                 </span>
               )}
             </div>
@@ -156,7 +165,7 @@ export default function ViewByCodePage({
                   disabled={blocking}
                   className="text-[11px] text-ink-faint underline-offset-2 hover:text-bad hover:underline disabled:opacity-50"
                 >
-                  {blocked.includes(data.accountCode) ? "Unblock" : "Block"}
+                  {blocked.includes(data.accountCode) ? t("unblock") : t("block")}
                 </button>
               )}
             </div>
@@ -164,39 +173,36 @@ export default function ViewByCodePage({
         </div>
         <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-ink-soft">
           {data.sex && data.sex !== "unspecified" && (
-            <span>Sex (sizing ref): <strong className="capitalize">{data.sex}</strong></span>
+            <span>{t.rich("sex", { b: (c) => <strong className="capitalize">{c}</strong> }, { sex: data.sex === "male" || data.sex === "female" ? t(`sexValue.${data.sex}`) : data.sex })}</span>
           )}
           {data.bodyType ? (
-            <span>Body type: <strong className="capitalize">{data.bodyType}</strong></span>
+            <span>{t.rich("bodyType", { b: (c) => <strong className="capitalize">{c}</strong> }, { type: people.bodyType(data.bodyType) })}</span>
           ) : (
-            <span className="text-ink-faint">Body type not shared</span>
+            <span className="text-ink-faint">{t("bodyNotShared")}</span>
           )}
           {data.shopsFor && (
-            <span>Shops: <strong>{data.shopsFor.split(",").join(" + ")}</strong></span>
+            <span>{t.rich("shops", { b: (c) => <strong>{c}</strong> }, { lines: data.shopsFor.split(",").map((l) => g.line(l)).join(" + ") })}</span>
           )}
-          <span className="text-ink-faint">· {data.closet.length} items</span>
+          <span className="text-ink-faint">{t("items", { n: data.closet.length })}</span>
         </p>
         {data.shopsFor && data.sex && data.sex !== "unspecified" &&
          ((data.sex === "male" && data.shopsFor.includes("womens")) ||
           (data.sex === "female" && data.shopsFor.includes("mens"))) && (
           <p className="mt-1 text-xs text-brand">
-            Cross-department shopper — useful reference for anyone doing the same.
+            {t("crossDept")}
           </p>
         )}
 
-        <p className="mt-2 text-xs text-ink-faint">
-          Precise measurements are never shared by code — only the closet and a
-          coarse body type (if the owner opted in).
-        </p>
+        <p className="mt-2 text-xs text-ink-faint">{t("privacy")}</p>
 
         <div className="mt-6 space-y-6">
           {data.closet.length === 0 ? (
-            <EmptyState title="This closet is empty" body="Nothing to show yet." />
+            <EmptyState title={t("emptyTitle")} body={t("emptyBody")} />
           ) : (
             buildSections(data).map((sec) => (
               <div key={sec.id}>
                 <h2 className="mb-2 text-h3 font-semibold text-ink">
-                  {sec.name}
+                  {g.folder(sec.name)}
                   <span className="ml-2 rounded-full bg-paper-dim px-2 py-0.5 text-[10px] font-normal normal-case text-ink-faint">
                     {sec.items.length}
                   </span>
@@ -207,9 +213,9 @@ export default function ViewByCodePage({
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2 font-medium text-ink">
                           <ColorDot color={it.color} />
-                          {it.brand} · <span className="text-ink-soft">{it.category}</span> · size {it.size}
+                          {it.brand} · <span className="text-ink-soft">{g.label(it.category)}</span> · {tSocial("sizeN", { size: it.size })}
                           {it.gender && <GenderTag gender={it.gender} />}
-                          {it.color && <span className="text-xs text-ink-faint">· {it.color}</span>}
+                          {it.color && <span className="text-xs text-ink-faint">· {g.color(it.color)}</span>}
                         </div>
                         <span className="inline-flex gap-0.5 text-xs">
                           <FitStars rating={it.fitRating} size={11} />
@@ -229,27 +235,24 @@ export default function ViewByCodePage({
         {data.canExport && (
           <div className="mt-6 flex items-center justify-between rounded-xl border border-line bg-white px-4 py-3">
             <p className="text-sm text-ink-soft">
-              {data.username} lets anyone with the code export this closet.
+              {t("canExport", { name: data.username })}
             </p>
             <a
               href={`/api/view/${encodeURIComponent(code)}/export`}
               className="whitespace-nowrap rounded-lg border border-line px-3 py-1.5 text-sm font-medium text-ink-soft hover:border-brand hover:text-brand"
             >
-              <Download size={14} className="mr-1 inline -mt-0.5" />Export as JSON
+              <Download size={14} className="mr-1 inline -mt-0.5" />{t("exportJson")}
             </a>
           </div>
         )}
 
         <Card className="mt-6 flex flex-col items-start gap-3 bg-paper-soft sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-          <p className="text-sm text-ink-soft">
-            Like this closet? Build your own fit profile and get size
-            recommendations based on what fits {data.username}.
-          </p>
-          <LinkButton href="/">Get started</LinkButton>
+          <p className="text-sm text-ink-soft">{t("likeThis", { name: data.username })}</p>
+          <LinkButton href="/">{t("getStarted")}</LinkButton>
         </Card>
 
         <p className="mt-4 text-center text-xs text-ink-faint">
-          <Link href="/community" className="hover:underline"><ArrowLeft size={14} className="-mt-px inline" /> Back to community</Link>
+          <Link href="/community" className="hover:underline"><ArrowLeft size={14} className="-mt-px inline" /> {t("backToCommunity")}</Link>
         </p>
       </div>
     </main>
@@ -274,24 +277,20 @@ function buildSections(data: PublicView) {
 }
 
 function GenderTag({ gender }: { gender: string }) {
-  const m: Record<string, { label: string; cls: string }> = {
-    // One neutral treatment, as in the closet: the line is information, not a colour code.
-    mens: { label: "M", cls: "text-ink-soft ring-1 ring-line" },
-    womens: { label: "W", cls: "text-ink-soft ring-1 ring-line" },
-    unisex: { label: "U", cls: "text-ink-soft ring-1 ring-line" },
-  };
-  const g = m[gender];
-  if (!g) return null;
-  return <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${g.cls}`} title={gender}>{g.label}</span>;
+  const g = useGarmentText();
+  // One neutral treatment, as in the closet: the line is information, not a colour code.
+  if (!["mens", "womens", "unisex"].includes(gender)) return null;
+  return <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-ink-soft ring-1 ring-line" title={g.line(gender)}>{g.lineShort(gender)}</span>;
 }
 
 function ColorDot({ color }: { color: string | null }) {
+  const g = useGarmentText();
   if (!color) return null;
   const hex = colorHex(color);
   if (!hex) return null;
   return (
     <span className="inline-block h-3 w-3 flex-shrink-0 rounded-full border border-line"
-      style={{ backgroundColor: hex }} title={color} />
+      style={{ backgroundColor: hex }} title={g.color(color)} />
   );
 }
 

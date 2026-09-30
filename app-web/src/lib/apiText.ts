@@ -29,6 +29,26 @@ export const API_ZH: Record<string, string> = {
     "用户名：2–30 个字符，只能用字母、数字和 . _ -，也不能是邮箱地址。",
   "password: at least 6 characters": "密码：至少 6 个字符。",
   "email: that doesn't look like an email address": "邮箱：格式看起来不对。",
+  // community, questions, outfits, follows, reports
+  "not found": "没找到。",
+  "bad request": "请求无效。",
+  "only the asker can accept an answer": "只有提问的人才能采纳回答。",
+  "no such answer": "没有这个回答。",
+  "Claim an account to ask the community.": "认领账户后才能向社区提问。",
+  "unknown post kind": "未知的帖子类型。",
+  "that item isn't in your closet": "这件衣服不在你的衣橱里。",
+  "Claim an account to answer.": "认领账户后才能回答。",
+  "id required": "缺少编号。",
+  "you can't vote for your own answer": "不能给自己的回答投票。",
+  "Claim an account to follow people.": "认领账户后才能关注别人。",
+  "cannot follow yourself": "不能关注自己。",
+  "read-only — password required to edit": "只读——编辑需要密码。",
+  "you can't like your own look": "不能给自己的搭配点赞。",
+  "read-only — password required": "只读——需要密码。",
+  "unknown kind or reason": "未知的类型或理由。",
+  "that's your own content — delete it instead": "这是你自己的内容——直接删除就好。",
+  "Claim an account to block people.": "认领账户后才能屏蔽别人。",
+  "you can't block yourself": "不能屏蔽自己。",
 };
 
 /** The sentence in the requester's language (English when there is no Chinese for it). */

@@ -10,6 +10,8 @@ import { useEffect, useState } from "react";
 import { Heart } from "@/components/Icon";
 import Link from "next/link";
 import { Card, Segmented } from "@/components/ui";
+import { useT } from "@/i18n/client";
+import { usePeopleWords } from "@/i18n/people";
 import { Avatar } from "@/components/Badges";
 import { OutfitMannequin, type OutfitLayer } from "@/components/OutfitMannequin";
 import { PALETTE } from "@/components/BadgeMedallion";
@@ -36,12 +38,12 @@ type Board = {
   topStylists: Array<Author & { likes: number; helpful: number; score: number }>;
 };
 
-const WINDOWS: Array<{ key: LeaderWindow; label: string }> = [
-  { key: "today", label: "Today" },
-  { key: "week", label: "This week" },
-];
+const WINDOWS: LeaderWindow[] = ["today", "week"];
 
 export function TodayBoard() {
+  const t = useT("board");
+  const tc = useT("common");
+  const people = usePeopleWords();
   const [w, setW] = useState<LeaderWindow>("today");
   const [board, setBoard] = useState<Board | null>(null);
 
@@ -57,33 +59,28 @@ export function TodayBoard() {
     <section className="mt-8">
       {/* Fixed heading + fixed tab labels: nothing here may resize with state. */}
       <div className="flex flex-wrap items-center gap-3">
-        <h2 className="text-h3 font-semibold text-ink">The board</h2>
+        <h2 className="text-h3 font-semibold text-ink">{t("title")}</h2>
         <Segmented
-          label="Board window"
-          options={WINDOWS.map((t) => ({ value: t.key, label: t.label }))}
+          label={t("windowLabel")}
+          options={WINDOWS.map((k) => ({ value: k, label: t(k) }))}
           value={w}
           onChange={setW}
         />
       </div>
-      <p className="mt-1 text-xs text-ink-faint">
-        Counted from 00:00 UTC and reset every day — a look posted this morning can
-        top it by tonight.
-      </p>
+      <p className="mt-1 text-xs text-ink-faint">{t("note")}</p>
 
       <div className="mt-3 grid gap-3 sm:grid-cols-2">
         <Card className="!p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-faint">
-            Top looks
+            {t("topLooks")}
           </p>
           {board === null ? (
-            <p className="mt-3 text-sm text-ink-faint">Loading…</p>
+            <p className="mt-3 text-sm text-ink-faint">{tc("loading")}</p>
           ) : board.topLooks.length === 0 ? (
             <p className="mt-3 text-sm text-ink-soft">
-              No likes yet in this window. Every board starts empty —{" "}
-              <Link href="/community#looks" className="text-brand hover:underline">
-                like a look
-              </Link>{" "}
-              to open it.
+              {t.rich("noLikes", {
+                link: (c) => <Link href="/community#looks" className="text-brand hover:underline">{c}</Link>,
+              })}
             </p>
           ) : (
             <ol className="mt-2 space-y-2">
@@ -106,7 +103,7 @@ export function TodayBoard() {
                       ) : (
                         l.author.username
                       )}
-                      {l.author.bodyType ? ` · ${l.author.bodyType} build` : ""}
+                      {l.author.bodyType ? ` · ${people.build(l.author.bodyType)}` : ""}
                     </p>
                   </div>
                   <span className="flex-shrink-0 text-xs font-medium text-ink-soft">
@@ -120,15 +117,15 @@ export function TodayBoard() {
 
         <Card className="!p-4">
           <p className="text-xs font-semibold uppercase tracking-[0.16em] text-ink-faint">
-            Top stylists
+            {t("topStylists")}
           </p>
           {board === null ? (
-            <p className="mt-3 text-sm text-ink-faint">Loading…</p>
+            <p className="mt-3 text-sm text-ink-faint">{tc("loading")}</p>
           ) : board.topStylists.length === 0 ? (
             <p className="mt-3 text-sm text-ink-soft">
-              Nobody has earned a place yet. Post a look, or{" "}
-              <Link href="/ask" className="text-brand hover:underline">answer a question</Link> —
-              a helpful answer is worth more here than a like.
+              {t.rich("noStylists", {
+                link: (c) => <Link href="/ask" className="text-brand hover:underline">{c}</Link>,
+              })}
             </p>
           ) : (
             <ol className="mt-2 space-y-2">
@@ -154,9 +151,9 @@ export function TodayBoard() {
                     {/* Show the make-up of the score, not just the score — the
                         same "explain the number" rule as the fit engine. */}
                     <p className="truncate text-xs text-ink-faint">
-                      {s.likes > 0 ? `${s.likes} like${s.likes === 1 ? "" : "s"}` : ""}
+                      {s.likes > 0 ? t.n("likes", s.likes) : ""}
                       {s.likes > 0 && s.helpful > 0 ? " · " : ""}
-                      {s.helpful > 0 ? `${s.helpful} helpful answer${s.helpful === 1 ? "" : "s"}` : ""}
+                      {s.helpful > 0 ? t.n("helpful", s.helpful) : ""}
                     </p>
                   </div>
                   <span className="flex-shrink-0 text-xs font-semibold text-ink">{s.score}</span>

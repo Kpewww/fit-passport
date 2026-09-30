@@ -17,6 +17,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { normalizeAccountCode } from "@/lib/auth";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
+import { say } from "@/lib/apiText";
 
 const Body = z.object({
   accountCode: z.string().min(4).max(64),
@@ -45,21 +46,21 @@ export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user.claimed) {
     return NextResponse.json(
-      { error: "claim-required", message: "Claim an account to block people." },
+      { error: "claim-required", message: say(req, "Claim an account to block people.") },
       { status: 403 },
     );
   }
 
   const parsed = Body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "bad request" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: say(req, "bad request") }, { status: 400 });
 
   const target = await prisma.user.findUnique({
     where: { accountCode: normalizeAccountCode(parsed.data.accountCode) },
     select: { id: true, claimed: true },
   });
-  if (!target || !target.claimed) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!target || !target.claimed) return NextResponse.json({ error: say(req, "not found") }, { status: 404 });
   if (target.id === user.id) {
-    return NextResponse.json({ error: "you can't block yourself" }, { status: 400 });
+    return NextResponse.json({ error: say(req, "you can't block yourself") }, { status: 400 });
   }
 
   if (parsed.data.block) {

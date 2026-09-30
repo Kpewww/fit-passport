@@ -13,6 +13,8 @@ import { OutfitCard, type OutfitView } from "@/components/OutfitCard";
 import { deriveBodyType } from "@/lib/bodyType";
 import { garmentLabel } from "@/lib/garments";
 import { GarmentIcon } from "@/components/GarmentIcon";
+import { useT } from "@/i18n/client";
+import { useGarmentText } from "@/i18n/garment";
 
 type Item = { brand: string; category: string; color: string; size: string; onlineAvailable: boolean };
 type Outfit = OutfitView;
@@ -25,6 +27,8 @@ type ClosetItem = {
 const BLANK_ITEM: Item = { brand: "", category: "tshirt", color: "", size: "", onlineAvailable: true };
 
 export default function OutfitsPage() {
+  const t = useT("outfits");
+  const g = useGarmentText();
   const [mine, setMine] = useState<Outfit[]>([]);
   const [figure, setFigure] = useState<{ volume: string; shape: string }>({ volume: "average", shape: "straight" });
 
@@ -78,14 +82,14 @@ export default function OutfitsPage() {
         }),
       }).then((r) => r.json());
       if (!r.configured) {
-        setPhotoNote("Photoreal preview isn't set up yet — using the stylized view. (Add an image-gen API key to enable.)");
+        setPhotoNote(t("photoNotSetUp"));
       } else if (r.image) {
         setPhoto(r.image);
       } else {
-        setPhotoNote("Couldn't generate a photo this time — showing the stylized view.");
+        setPhotoNote(t("photoFailed"));
       }
     } catch {
-      setPhotoNote("Generation failed — showing the stylized view.");
+      setPhotoNote(t("genFailed"));
     } finally {
       setGenning(false);
     }
@@ -117,7 +121,7 @@ export default function OutfitsPage() {
   }
 
   async function del(id: string) {
-    if (!confirm("Delete this outfit?")) return;
+    if (!confirm(t("deleteConfirm"))) return;
     await fetch(`/api/outfits?id=${id}`, { method: "DELETE" });
     load();
   }
@@ -127,56 +131,53 @@ export default function OutfitsPage() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-serif text-h1 text-ink">Outfits</h1>
-            <p className="mt-1 text-ink-soft">
-              Compose a look, preview it on your body type, and post it to the
-              community. Posting earns the top badges.
-            </p>
+            <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
+            <p className="mt-1 text-ink-soft">{t("lede")}</p>
           </div>
-          <Link href="/community" className="whitespace-nowrap text-sm text-ink-faint hover:text-ink">Community feed <ArrowRight size={14} className="-mt-px inline" /></Link>
+          <Link href="/community" className="whitespace-nowrap text-sm text-ink-faint hover:text-ink">{t("feed")} <ArrowRight size={14} className="-mt-px inline" /></Link>
         </div>
 
         {/* Composer */}
         <Card className="mt-6 grid gap-6 sm:grid-cols-[1fr,auto]">
           <div className="space-y-3">
-            <Field label="Title"><input className={inputClass} value={title} placeholder="e.g. Autumn layers" onChange={(e) => setTitle(e.target.value)} /></Field>
+            <Field label={t("titleLabel")}><input className={inputClass} value={title} placeholder={t("titlePlaceholder")} onChange={(e) => setTitle(e.target.value)} /></Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Occasion" hint="optional"><input className={inputClass} value={occasion} placeholder="Fall, Wedding…" onChange={(e) => setOccasion(e.target.value)} /></Field>
-              <Field label="Note" hint="optional"><input className={inputClass} value={description} placeholder="short caption" onChange={(e) => setDescription(e.target.value)} /></Field>
+              <Field label={t("occasion")} hint={t("optional")}><input className={inputClass} value={occasion} placeholder={t("occasionPlaceholder")} onChange={(e) => setOccasion(e.target.value)} /></Field>
+              <Field label={t("note")} hint={t("optional")}><input className={inputClass} value={description} placeholder={t("notePlaceholder")} onChange={(e) => setDescription(e.target.value)} /></Field>
             </div>
 
             <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">Pieces</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">{t("pieces")}</p>
               {items.map((it, i) => (
                 <div key={i} className="grid grid-cols-[1fr,1fr,auto] items-center gap-2 rounded-lg border border-line p-2">
                   <div className="w-full"><CategoryPicker value={it.category} onChange={(v) => setItems(items.map((x, j) => j === i ? { ...x, category: v } : x))} /></div>
-                  <input className={inputClass} placeholder="color (e.g. navy)" value={it.color}
+                  <input className={inputClass} placeholder={t("colorPlaceholder")} value={it.color}
                     onChange={(e) => setItems(items.map((x, j) => j === i ? { ...x, color: e.target.value } : x))} />
                   <button onClick={() => setItems(items.filter((_, j) => j !== i))}
-                    className="px-1 text-ink-faint hover:text-bad" aria-label="Remove piece" disabled={items.length === 1}><Close size={16} /></button>
+                    className="px-1 text-ink-faint hover:text-bad" aria-label={t("removePiece")} disabled={items.length === 1}><Close size={16} /></button>
                   <label className="col-span-3 flex items-center gap-1.5 text-[11px] text-ink-soft">
                     <input type="checkbox" checked={!it.onlineAvailable} className="accent-brand"
                       onChange={(e) => setItems(items.map((x, j) => j === i ? { ...x, onlineAvailable: !e.target.checked } : x))} />
-                    In-store only (not available online)
+                    {t("inStoreOnly")}
                   </label>
                 </div>
               ))}
               <div className="flex gap-3">
-                <button onClick={() => setItems([...items, { ...BLANK_ITEM }])} className="text-sm text-brand hover:underline">+ Add blank piece</button>
+                <button onClick={() => setItems([...items, { ...BLANK_ITEM }])} className="text-sm text-brand hover:underline">{t("addBlank")}</button>
                 <button onClick={() => setPickerOpen((v) => !v)} className="text-sm text-brand hover:underline">
-                  {pickerOpen ? "Close closet" : "+ Add from my closet"}
+                  {pickerOpen ? t("closeCloset") : t("addFromCloset")}
                 </button>
               </div>
 
               {pickerOpen && (
                 <div className="rounded-lg border border-line bg-paper-soft p-2">
-                  <input className={inputClass + " mb-2"} placeholder="Search your closet…"
+                  <input className={inputClass + " mb-2"} placeholder={t("searchCloset")}
                     value={search} onChange={(e) => setSearch(e.target.value)} />
                   <div className="grid max-h-52 grid-cols-1 gap-1 overflow-y-auto sm:grid-cols-2">
                     {closet
                       .filter((c) => {
                         const q = search.toLowerCase();
-                        return !q || [c.brand, c.displayName, c.category, c.color].some((v) => v?.toLowerCase().includes(q));
+                        return !q || [c.brand, c.displayName, c.category, g.label(c.category), c.color].some((v) => v?.toLowerCase().includes(q));
                       })
                       .map((c) => (
                         <button key={c.id} type="button"
@@ -193,25 +194,25 @@ export default function OutfitsPage() {
                             : <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded bg-paper-dim"><GarmentIcon category={c.category} size={18} className="text-ink-soft" /></span>}
                           <span className="min-w-0">
                             <span className="block truncate font-medium text-ink">{c.displayName || c.brand}</span>
-                            <span className="block truncate text-ink-faint">{garmentLabel(c.category)} · {c.size}</span>
+                            <span className="block truncate text-ink-faint">{g.label(c.category)} · {c.size}</span>
                           </span>
                         </button>
                       ))}
-                    {closet.length === 0 && <p className="col-span-2 px-1 py-2 text-xs text-ink-faint">Your closet is empty. <Link href="/closet" className="text-brand hover:underline">Add items <ArrowRight size={14} className="-mt-px inline" /></Link></p>}
+                    {closet.length === 0 && <p className="col-span-2 px-1 py-2 text-xs text-ink-faint">{t.rich("closetEmpty", { link: (c) => <Link href="/closet" className="text-brand hover:underline">{c} <ArrowRight size={14} className="-mt-px inline" /></Link> })}</p>}
                   </div>
                 </div>
               )}
             </div>
 
-            <Button onClick={post} disabled={saving || !title.trim()}>{saving ? "Posting…" : "Post outfit"}</Button>
+            <Button onClick={post} disabled={saving || !title.trim()}>{saving ? t("posting") : t("postOutfit")}</Button>
           </div>
 
           {/* Live preview */}
           <div className="flex flex-col items-center justify-start rounded-xl bg-paper-soft p-3">
-            <p className="mb-1 text-[10px] uppercase tracking-widest text-ink-faint">Preview on your body</p>
+            <p className="mb-1 text-[10px] uppercase tracking-widest text-ink-faint">{t("previewOnBody")}</p>
             {photo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={photo} alt="photoreal preview" className="w-[150px] rounded-lg" />
+              <img src={photo} alt={t("photoAlt")} className="w-[150px] rounded-lg" />
             ) : (
               <OutfitMannequin layers={layers} volume={figure.volume as never} shape={figure.shape as never} size={150} />
             )}
@@ -221,26 +222,26 @@ export default function OutfitsPage() {
                 disabled={genning || layers.length === 0}
                 className="rounded-lg border border-line px-2.5 py-1 text-[11px] font-medium text-ink-soft hover:border-brand hover:text-brand disabled:opacity-50"
               >
-                {genning ? "Generating…" : photo ? <><Refresh size={16} /> Regenerate</> : <><Sparkle size={16} /> Photoreal preview</>}
+                {genning ? t("generating") : photo ? <><Refresh size={16} /> {t("regenerate")}</> : <><Sparkle size={16} /> {t("photoreal")}</>}
               </button>
               {photo && (
                 <button
                   onClick={() => { setPhoto(null); setPhotoNote(null); }}
                   className="rounded-lg border border-line px-2.5 py-1 text-[11px] font-medium text-ink-soft hover:border-brand hover:text-brand"
                 >
-                  <ArrowLeft size={14} className="-mt-px inline" /> Stylized view
+                  <ArrowLeft size={14} className="-mt-px inline" /> {t("stylizedView")}
                 </button>
               )}
             </div>
             {photoNote && <p className="mt-1 text-center text-[10px] text-ink-faint">{photoNote}</p>}
-            {!photoNote && <p className="mt-1 text-[10px] text-ink-faint">{photo ? "photoreal" : "stylized preview"}</p>}
+            {!photoNote && <p className="mt-1 text-[10px] text-ink-faint">{photo ? t("photorealTag") : t("stylizedTag")}</p>}
           </div>
         </Card>
 
         {/* My outfits */}
-        <h2 className="mt-10 text-h3 font-semibold text-ink">My outfits</h2>
+        <h2 className="mt-10 text-h3 font-semibold text-ink">{t("myOutfits")}</h2>
         {mine.length === 0 ? (
-          <div className="mt-3"><EmptyState title="No outfits yet" body="Compose your first look above and post it." /></div>
+          <div className="mt-3"><EmptyState title={t("noOutfits")} body={t("noOutfitsBody")} /></div>
         ) : (
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {mine.map((o) => <OutfitCard key={o.id} outfit={o} figure={figure} onDelete={() => del(o.id)} onChange={load} />)}

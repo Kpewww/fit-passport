@@ -8,6 +8,7 @@ import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { say } from "@/lib/apiText";
 
 const Body = z.object({
   outfitId: z.string().min(1),
@@ -26,11 +27,11 @@ export async function POST(req: Request) {
   const { outfitId, like } = parsed.data;
 
   const outfit = await prisma.outfit.findUnique({ where: { id: outfitId }, select: { id: true, userId: true } });
-  if (!outfit) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!outfit) return NextResponse.json({ error: say(req, "not found") }, { status: 404 });
   // The answer-vote route has always refused self-votes; likes did not, so a
   // claimed user could like their own looks up the daily board.
   if (like && outfit.userId === user.id) {
-    return NextResponse.json({ error: "you can't like your own look" }, { status: 400 });
+    return NextResponse.json({ error: say(req, "you can't like your own look") }, { status: 400 });
   }
 
   if (like) {

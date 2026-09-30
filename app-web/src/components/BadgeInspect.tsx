@@ -14,6 +14,8 @@ import { BadgeMedallion, PALETTE } from "@/components/BadgeMedallion";
 import { BadgeCoin } from "@/components/BadgeCoin";
 import { SafeBoundary } from "@/components/SafeBoundary";
 import { METAL_STYLE, type BadgeDef } from "@/lib/badges";
+import { useT } from "@/i18n/client";
+import { useBadgeWords } from "@/i18n/badges";
 
 // three.js is heavy, so it arrives with the stage rather than with the page.
 const BadgeWebGL = lazy(() =>
@@ -95,6 +97,8 @@ export function BadgeInspect({
 
   const p = PALETTE[badge.metal];
   const st = METAL_STYLE[badge.metal];
+  const t = useT("badges");
+  const w = useBadgeWords();
   const size = 300;
 
   return (
@@ -112,7 +116,7 @@ export function BadgeInspect({
       <button
         onClick={onClose}
         className="absolute right-6 top-6 z-10 text-3xl leading-none text-white/50 transition-colors hover:text-white"
-        aria-label="Close inspect"
+        aria-label={t("closeInspect")}
       >
         ×
       </button>
@@ -153,7 +157,7 @@ export function BadgeInspect({
             <Suspense
               fallback={
                 <div className="flex h-[300px] w-[300px] items-center justify-center text-xs text-white/40">
-                  Preparing the metal…
+                  {t("preparing")}
                 </div>
               }
             >
@@ -175,19 +179,17 @@ export function BadgeInspect({
       {/* info panel */}
       <div onClick={(e) => e.stopPropagation()} className="relative mt-8 max-w-md px-8 text-center text-white">
         <div className="flex items-center justify-center gap-2">
-          <h3 className="font-serif text-3xl">{badge.title}</h3>
+          <h3 className="font-serif text-3xl">{w.title(badge.id, badge.title)}</h3>
           <span className="rounded-full border border-white/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-white/70">
-            {st.label}
+            {w.metal(badge.metal, st.label)}
           </span>
         </div>
-        <p className="mt-3 text-sm text-white/70">{badge.blurb}</p>
-        <p className="mt-2 text-xs italic text-white/45">{badge.lore}</p>
+        <p className="mt-3 text-sm text-white/70">{w.blurb(badge.id, badge.blurb)}</p>
+        <p className="mt-2 text-xs italic text-white/45">{w.lore(badge.id, badge.lore)}</p>
         {badge.earnedNow === false && badge.progressText && (
-          <p className="mt-3 text-xs font-medium text-white/80">{badge.progressText}</p>
+          <p className="mt-3 text-xs font-medium text-white/80">{w.progress(badge.progressText)}</p>
         )}
-        <p className="mt-6 text-[10px] uppercase tracking-[0.24em] text-white/30">
-          Drag to turn · Esc to close
-        </p>
+        <p className="mt-6 text-[10px] uppercase tracking-[0.24em] text-white/30">{t("dragHelp")}</p>
       </div>
     </div>
   );

@@ -16,6 +16,7 @@ import { loadEvidence, ownsClosetItem } from "@/lib/evidence";
 import { normalizeUrl } from "@/lib/normalizeUrl";
 import { invisibleUserIds, notBlocked } from "@/lib/blocks";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
+import { say } from "@/lib/apiText";
 
 const CreateSchema = z.object({
   kind: z.string(),
@@ -112,7 +113,7 @@ export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user.claimed) {
     return NextResponse.json(
-      { error: "claim-required", message: "Claim an account to ask the community." },
+      { error: "claim-required", message: say(req, "Claim an account to ask the community.") },
       { status: 403 },
     );
   }
@@ -122,12 +123,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const kind = parsePostKind(parsed.data.kind);
-  if (!kind) return NextResponse.json({ error: "unknown post kind" }, { status: 400 });
+  if (!kind) return NextResponse.json({ error: say(req, "unknown post kind") }, { status: 400 });
 
   // You may only attach your OWN garment — otherwise "evidence" is hearsay.
   const knownGoodId = parsed.data.knownGoodId || null;
   if (knownGoodId && !(await ownsClosetItem(knownGoodId, user.id))) {
-    return NextResponse.json({ error: "that item isn't in your closet" }, { status: 400 });
+    return NextResponse.json({ error: say(req, "that item isn't in your closet") }, { status: 400 });
   }
 
   const post = await prisma.post.create({

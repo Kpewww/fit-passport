@@ -12,6 +12,7 @@ import { getCurrentUser } from "@/lib/session";
 import { rankAnswers } from "@/lib/posts";
 import { loadEvidence } from "@/lib/evidence";
 import { invisibleUserIds } from "@/lib/blocks";
+import { say } from "@/lib/apiText";
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   const user = await getCurrentUser();
@@ -80,7 +81,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     (post.hidden && post.userId !== user.id) ||
     hiddenUsers.includes(post.userId)
   ) {
-    return NextResponse.json({ error: "not found" }, { status: 404 });
+    return NextResponse.json({ error: say(req, "not found") }, { status: 404 });
   }
 
   const evidence = await loadEvidence([
@@ -143,13 +144,13 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     where: { id: params.id },
     select: { userId: true },
   });
-  if (!post) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!post) return NextResponse.json({ error: say(req, "not found") }, { status: 404 });
   if (post.userId !== user.id) {
-    return NextResponse.json({ error: "only the asker can accept an answer" }, { status: 403 });
+    return NextResponse.json({ error: say(req, "only the asker can accept an answer") }, { status: 403 });
   }
 
   const parsed = PatchSchema.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "bad request" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: say(req, "bad request") }, { status: 400 });
 
   const { resolvedAnswerId } = parsed.data;
   if (resolvedAnswerId) {
@@ -158,7 +159,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
       where: { id: resolvedAnswerId, postId: params.id },
       select: { id: true },
     });
-    if (!belongs) return NextResponse.json({ error: "no such answer" }, { status: 400 });
+    if (!belongs) return NextResponse.json({ error: say(req, "no such answer") }, { status: 400 });
   }
 
   await prisma.post.update({ where: { id: params.id }, data: { resolvedAnswerId } });
@@ -169,6 +170,6 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
   const user = await getCurrentUser();
   // deleteMany scoped by userId = an authorization check that can't be skipped.
   const res = await prisma.post.deleteMany({ where: { id: params.id, userId: user.id } });
-  if (res.count === 0) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (res.count === 0) return NextResponse.json({ error: say(req, "not found") }, { status: 404 });
   return NextResponse.json({ ok: true });
 }

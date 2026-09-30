@@ -13,6 +13,8 @@ import { lazy, Suspense, useState } from "react";
 import { badgeById, METAL_STYLE, type EarnedBadge, type Metal } from "@/lib/badges";
 import { BadgeCoin } from "@/components/BadgeCoin";
 import { SafeBoundary } from "@/components/SafeBoundary";
+import { useT } from "@/i18n/client";
+import { useBadgeWords } from "@/i18n/badges";
 
 // The inspect stage is only downloaded once someone actually opens one.
 const BadgeInspect = lazy(() =>
@@ -74,9 +76,13 @@ export function BadgeSeal({
   /** Set false only where a modal would be wrong (inside another modal). */
   inspect?: boolean;
 }) {
+  const t = useT("badges");
+  const w = useBadgeWords();
   const [open, setOpen] = useState(false);
   const badgeId = id ?? "starter";
   const def = badgeById(badgeId);
+  // Callers pass the English title; the name is shown in the reader's language.
+  title = title && def ? w.title(def.id, title) : title;
 
   const coin = (
     <BadgeCoin id={badgeId} metal={metal} size={size} locked={locked} title={title} />
@@ -94,7 +100,7 @@ export function BadgeSeal({
     <>
       <button
         type="button"
-        title={title ? `${title} — click to inspect` : "Click to inspect"}
+        title={title ? t("titleInspect", { title }) : t("clickToInspect")}
         onClick={(e) => {
           // Seals live inside <Link> cards (community, passport). Without this,
           // inspecting a badge navigates away instead.
@@ -122,6 +128,7 @@ export function BadgeSeal({
 
 // A horizontal badge chip (seal + title + tier).
 export function BadgeChip({ badge }: { badge: EarnedBadge }) {
+  const w = useBadgeWords();
   const st = METAL_STYLE[badge.metal];
   return (
     <div
@@ -138,8 +145,8 @@ export function BadgeChip({ badge }: { badge: EarnedBadge }) {
         detail={badge}
       />
       <div className="min-w-0">
-        <p className="truncate text-sm font-semibold text-ink">{badge.title}</p>
-        <p className="text-[10px] uppercase tracking-wide text-ink-faint">{st.label}</p>
+        <p className="truncate text-sm font-semibold text-ink">{w.title(badge.id, badge.title)}</p>
+        <p className="text-[10px] uppercase tracking-wide text-ink-faint">{w.metal(badge.metal, st.label)}</p>
       </div>
     </div>
   );
@@ -147,12 +154,13 @@ export function BadgeChip({ badge }: { badge: EarnedBadge }) {
 
 // Render a row of pinned badge seals from their IDs (for compact display).
 export function PinnedSeals({ ids, size = 34 }: { ids: string[]; size?: number }) {
+  const w = useBadgeWords();
   const badges = ids.map(badgeById).filter(Boolean) as NonNullable<ReturnType<typeof badgeById>>[];
   if (badges.length === 0) return null;
   return (
     <div className="flex gap-1.5">
       {badges.map((b) => (
-        <BadgeSeal key={b.id} id={b.id} metal={b.metal} size={size} title={`${b.title} · ${METAL_STYLE[b.metal].label}`} />
+        <BadgeSeal key={b.id} id={b.id} metal={b.metal} size={size} title={`${w.title(b.id, b.title)} · ${w.metal(b.metal, METAL_STYLE[b.metal].label)}`} />
       ))}
     </div>
   );
@@ -175,6 +183,8 @@ const METAL_CHIP: Record<Metal, string> = {
 // hover — used on the passport so a holder can read what each medallion means.
 // Tooltip is anchored below-left so it stays inside `overflow-hidden` cards.
 export function BadgeHoverSeal({ id, size = 48 }: { id: string; size?: number }) {
+  const t = useT("badges");
+  const w = useBadgeWords();
   const b = badgeById(id);
   if (!b) return null;
   const st = METAL_STYLE[b.metal];
@@ -185,14 +195,14 @@ export function BadgeHoverSeal({ id, size = 48 }: { id: string; size?: number })
       </div>
       <div className="pointer-events-none absolute left-0 top-full z-30 mt-2 hidden w-60 rounded-xl border border-neutral-200 bg-white p-3 text-left shadow-lift group-hover/badge:block">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-ink">{b.title}</span>
+          <span className="text-sm font-semibold text-ink">{w.title(b.id, b.title)}</span>
           <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide ${METAL_CHIP[b.metal]}`}>
-            {st.label}
+            {w.metal(b.metal, st.label)}
           </span>
         </div>
-        <p className="mt-1 text-xs leading-snug text-ink-soft">{b.blurb}</p>
-        <p className="mt-1.5 border-t border-neutral-100 pt-1.5 text-[11px] italic leading-snug text-ink-faint">{b.lore}</p>
-        <p className="mt-1.5 text-[10px] uppercase tracking-[0.16em] text-ink-faint">Hover to turn · click to inspect</p>
+        <p className="mt-1 text-xs leading-snug text-ink-soft">{w.blurb(b.id, b.blurb)}</p>
+        <p className="mt-1.5 border-t border-neutral-100 pt-1.5 text-[11px] italic leading-snug text-ink-faint">{w.lore(b.id, b.lore)}</p>
+        <p className="mt-1.5 text-[10px] uppercase tracking-[0.16em] text-ink-faint">{t("hoverHelp")}</p>
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { ownsClosetItem } from "@/lib/evidence";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
+import { say } from "@/lib/apiText";
 
 const CreateSchema = z.object({
   postId: z.string().min(1),
@@ -26,7 +27,7 @@ export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user.claimed) {
     return NextResponse.json(
-      { error: "claim-required", message: "Claim an account to answer." },
+      { error: "claim-required", message: say(req, "Claim an account to answer.") },
       { status: 403 },
     );
   }
@@ -41,12 +42,12 @@ export async function POST(req: Request) {
     select: { id: true, user: { select: { deactivated: true } } },
   });
   if (!post || post.user.deactivated) {
-    return NextResponse.json({ error: "not found" }, { status: 404 });
+    return NextResponse.json({ error: say(req, "not found") }, { status: 404 });
   }
 
   const knownGoodId = parsed.data.knownGoodId || null;
   if (knownGoodId && !(await ownsClosetItem(knownGoodId, user.id))) {
-    return NextResponse.json({ error: "that item isn't in your closet" }, { status: 400 });
+    return NextResponse.json({ error: say(req, "that item isn't in your closet") }, { status: 400 });
   }
 
   const answer = await prisma.answer.create({
@@ -60,7 +61,7 @@ export async function POST(req: Request) {
 export async function DELETE(req: Request) {
   const user = await getCurrentUser();
   const id = new URL(req.url).searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
+  if (!id) return NextResponse.json({ error: say(req, "id required") }, { status: 400 });
 
   // Authorize FIRST. Clearing the acceptance before checking ownership would let
   // anyone un-accept someone else's answer just by asking to delete it.
@@ -68,7 +69,7 @@ export async function DELETE(req: Request) {
     where: { id, userId: user.id },
     select: { id: true },
   });
-  if (!owned) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!owned) return NextResponse.json({ error: say(req, "not found") }, { status: 404 });
 
   // If this answer was the accepted one, the post goes back to unresolved —
   // otherwise it would point at a row that no longer exists.

@@ -19,6 +19,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { normalizeAccountCode } from "@/lib/auth";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
+import { say } from "@/lib/apiText";
 
 const ToggleSchema = z.object({
   accountCode: z.string().min(4).max(64),
@@ -70,14 +71,14 @@ export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user.claimed) {
     return NextResponse.json(
-      { error: "claim-required", message: "Claim an account to follow people." },
+      { error: "claim-required", message: say(req, "Claim an account to follow people.") },
       { status: 403 },
     );
   }
 
   const parsed = ToggleSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
-    return NextResponse.json({ error: "bad request" }, { status: 400 });
+    return NextResponse.json({ error: say(req, "bad request") }, { status: 400 });
   }
 
   const code = normalizeAccountCode(parsed.data.accountCode);
@@ -86,10 +87,10 @@ export async function POST(req: Request) {
     select: { id: true, claimed: true, deactivated: true },
   });
   if (!target || !target.claimed || target.deactivated) {
-    return NextResponse.json({ error: "not found" }, { status: 404 });
+    return NextResponse.json({ error: say(req, "not found") }, { status: 404 });
   }
   if (target.id === user.id) {
-    return NextResponse.json({ error: "cannot follow yourself" }, { status: 400 });
+    return NextResponse.json({ error: say(req, "cannot follow yourself") }, { status: 400 });
   }
 
   if (parsed.data.follow) {

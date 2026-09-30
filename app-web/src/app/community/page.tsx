@@ -12,6 +12,8 @@ import { AskSection } from "@/components/AskSection";
 import { MetalSurface, resolveTheme } from "@/components/MetalCard";
 import type { FeedScope } from "@/lib/feed";
 import { ArrowRight } from "@/components/Icon";
+import { useT } from "@/i18n/client";
+import { usePeopleWords } from "@/i18n/people";
 
 type Entry = {
   username: string;
@@ -45,6 +47,7 @@ type OutfitFeed = {
 };
 
 export default function CommunityPage() {
+  const t = useT("community");
   const router = useRouter();
   const [code, setCode] = useState("");
   const [entries, setEntries] = useState<Entry[] | null>(null);
@@ -106,21 +109,21 @@ export default function CommunityPage() {
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-4 pb-16 pt-10 sm:px-6 sm:pt-14">
         <PageHeader
-          eyebrow="Community"
-          title="Dress with people built like you"
-          lede="Fit is easier to trust when it comes from someone with your shape. Browse public closets, follow the people whose taste you trust, or enter a friend's code to see theirs."
+          eyebrow={t("eyebrow")}
+          title={t("title")}
+          lede={t("lede")}
         />
         {follow?.claimed && (
           <p className="mt-2 text-xs uppercase tracking-widest text-ink-faint">
-            {follow.followerCount} follower{follow.followerCount === 1 ? "" : "s"}
+            {t.n("followers", follow.followerCount)}
             {" · "}
-            {follow.followingCount} following
+            {t("following", { n: follow.followingCount })}
           </p>
         )}
 
         <p className="mt-3 text-sm">
           <a href="#questions" className="font-medium text-brand hover:underline">
-            Ask the community about fit <ArrowRight size={14} className="-mt-px inline" />
+            {t("askCommunity")} <ArrowRight size={14} className="-mt-px inline" />
           </a>
         </p>
 
@@ -132,26 +135,22 @@ export default function CommunityPage() {
             while the button holds its width. */}
         <Card className="mt-6 flex flex-col items-start gap-3 bg-brand-tint/40 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
           <div>
-            <p className="font-semibold text-ink">Post yourself to the community</p>
-            <p className="mt-0.5 text-sm text-ink-soft">
-              {me?.claimed
-                ? "List your closet publicly so others can find your fit. Coarse info only — precise measurements are never shared. You can unlist anytime."
-                : "Claim an account first, then you can share your closet publicly."}
-            </p>
+            <p className="font-semibold text-ink">{t("postYourself")}</p>
+            <p className="mt-0.5 text-sm text-ink-soft">{me?.claimed ? t("postBodyClaimed") : t("postBodyAnon")}</p>
           </div>
           {me?.claimed ? (
             me.listedInCommunity ? (
               <Button variant="secondary" size="md" disabled={posting} onClick={() => toggleListing(false)}>
-                {posting ? "…" : "Unlist"}
+                {posting ? "…" : t("unlist")}
               </Button>
             ) : (
               <Button size="md" disabled={posting} onClick={() => toggleListing(true)}>
-                {posting ? "…" : <>Post me <ArrowRight size={14} className="-mt-px inline" /></>}
+                {posting ? "…" : <>{t("postMe")} <ArrowRight size={14} className="-mt-px inline" /></>}
               </Button>
             )
           ) : (
             <Link href="/account" className="whitespace-nowrap rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-black">
-              Claim account
+              {t("claimAccount")}
             </Link>
           )}
         </Card>
@@ -162,17 +161,15 @@ export default function CommunityPage() {
             labels are fixed (the follow count lives in the line above), and the
             caption below always renders one line. */}
         <div id="looks" className="mt-8 flex flex-wrap items-center gap-3 scroll-mt-20">
-          <h2 className="text-h3 font-semibold text-ink">Latest looks</h2>
+          <h2 className="text-h3 font-semibold text-ink">{t("latestLooks")}</h2>
           <ScopeTabs scope={scope} onChange={setScope} />
-          <Link href="/outfits" className="ml-auto text-xs font-medium text-brand hover:underline">Post an outfit <ArrowRight size={14} className="-mt-px inline" /></Link>
+          <Link href="/outfits" className="ml-auto text-xs font-medium text-brand hover:underline">{t("postOutfit")} <ArrowRight size={14} className="-mt-px inline" /></Link>
         </div>
         <p className="mt-1 text-xs text-ink-faint">
-          {scope === "following"
-            ? "Newest first, from the people you follow."
-            : "Most-liked first — what the community rated highest."}
+          {scope === "following" ? t("captionFollowing") : t("captionEveryone")}
         </p>
         {feed === null ? (
-          <p className="mt-3 text-sm text-ink-faint">Loading…</p>
+          <p className="mt-3 text-sm text-ink-faint">{t("loading")}</p>
         ) : feed.length === 0 ? (
           <FeedEmpty scope={scope} claimed={canFollow} followingCount={follow?.followingCount ?? 0} />
         ) : (
@@ -208,26 +205,26 @@ export default function CommunityPage() {
         <Card className="mt-8">
           <form onSubmit={go} className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="flex-1">
-              <Field label="Have a code? View a specific closet">
+              <Field label={t("codeLabel")}>
                 <input className={inputClass} value={code}
                   onChange={(e) => setCode(e.target.value)}
                   placeholder="FP-XXXX-XXXX-XXXXX" />
               </Field>
             </div>
-            <Button type="submit" disabled={!code.trim()}>View</Button>
+            <Button type="submit" disabled={!code.trim()}>{t("view")}</Button>
           </form>
         </Card>
 
         {/* Public directory */}
         <h2 className="mt-10 text-h3 font-semibold text-ink">
-          Public closets
+          {t("publicClosets")}
         </h2>
         {entries === null ? (
-          <p className="mt-3 text-sm text-ink-faint">Loading…</p>
+          <p className="mt-3 text-sm text-ink-faint">{t("loading")}</p>
         ) : entries.length === 0 ? (
           <Card className="mt-3 bg-paper-soft text-center">
             <p className="text-sm text-ink-soft">
-              No public closets yet. Be the first — post yourself above!
+              {t("noClosets")}
             </p>
           </Card>
         ) : (
@@ -246,12 +243,11 @@ export default function CommunityPage() {
         )}
 
         <Card className="mt-8 bg-paper-soft">
-          <h2 className="text-sm font-semibold text-ink">How sharing works</h2>
+          <h2 className="text-sm font-semibold text-ink">{t("howSharing")}</h2>
           <ul className="mt-2 space-y-1.5 text-sm text-ink-soft">
-            <li>• Anyone with your <strong>account code</strong> can view your closet — read only.</li>
-            <li>• Editing needs your <strong>password</strong>. Your code alone can&apos;t change anything.</li>
-            <li>• Precise body measurements are <strong>never</strong> shared — only a coarse body type, if you opt in.</li>
-            <li>• The public directory is <strong>strictly opt-in</strong> — you choose to be listed, and can unlist anytime.</li>
+            {(["share1", "share2", "share3", "share4"] as const).map((k) => (
+              <li key={k}>• {t.rich(k, { b: (c) => <strong>{c}</strong> })}</li>
+            ))}
           </ul>
         </Card>
       </div>
@@ -268,14 +264,15 @@ function ScopeTabs({
   scope: FeedScope;
   onChange: (s: FeedScope) => void;
 }) {
+  const t = useT("community");
   const tabs: Array<{ key: FeedScope; label: string }> = [
-    { key: "everyone", label: "Everyone" },
-    { key: "following", label: "Following" },
+    { key: "everyone", label: t("everyone") },
+    { key: "following", label: t("followingTab") },
   ];
   return (
     <Segmented
-      label="Whose looks"
-      options={tabs.map((t) => ({ value: t.key, label: t.label }))}
+      label={t("scopeLabel")}
+      options={tabs.map((tab) => ({ value: tab.key, label: tab.label }))}
       value={scope}
       onChange={onChange}
     />
@@ -293,12 +290,14 @@ function FeedEmpty({
   claimed: boolean;
   followingCount: number;
 }) {
+  const t = useT("community");
   if (scope === "everyone") {
     return (
       <Card className="mt-3 bg-paper-soft text-center">
         <p className="text-sm text-ink-soft">
-          No outfits yet.{" "}
-          <Link href="/outfits" className="text-brand hover:underline">Post the first look <ArrowRight size={14} className="-mt-px inline" /></Link>
+          {t.rich("noOutfits", {
+            link: (c) => <Link href="/outfits" className="text-brand hover:underline">{c} <ArrowRight size={14} className="-mt-px inline" /></Link>,
+          })}
         </p>
       </Card>
     );
@@ -306,16 +305,13 @@ function FeedEmpty({
   if (!claimed) {
     return (
       <Card className="mt-3 bg-brand-tint/40 text-center">
-        <p className="font-semibold text-ink">A feed of your own</p>
-        <p className="mx-auto mt-1 max-w-md text-sm text-ink-soft">
-          Claim an account to follow the people whose fit you trust — then this tab
-          becomes their looks only, newest first.
-        </p>
+        <p className="font-semibold text-ink">{t("ownFeedTitle")}</p>
+        <p className="mx-auto mt-1 max-w-md text-sm text-ink-soft">{t("ownFeedBody")}</p>
         <Link
           href="/account"
           className="mt-4 inline-block rounded-full bg-ink px-4 py-2 text-sm font-medium text-paper hover:bg-black"
         >
-          Claim account
+          {t("claimAccount")}
         </Link>
       </Card>
     );
@@ -323,9 +319,7 @@ function FeedEmpty({
   return (
     <Card className="mt-3 bg-paper-soft text-center">
       <p className="text-sm text-ink-soft">
-        {followingCount === 0
-          ? "You're not following anyone yet. Follow a few closets below and this becomes your feed."
-          : "The people you follow haven't posted a look yet."}
+        {followingCount === 0 ? t("notFollowing") : t("noPostsYet")}
       </p>
     </Card>
   );
@@ -344,6 +338,9 @@ function MemberCard({
   canFollow: boolean;
   onFollowChange: () => void;
 }) {
+  const t = useT("community");
+  const tp = useT("passport");
+  const people = usePeopleWords();
   const theme = resolveTheme(entry.cardMetal, null);
   return (
     <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-line transition-shadow hover:ring-ink/25">
@@ -357,7 +354,7 @@ function MemberCard({
           className="absolute bottom-1.5 right-3 text-[8px] uppercase tracking-[0.24em]"
           style={{ color: theme.text, opacity: 0.6 }}
         >
-          {theme.label}
+          {tp(`theme.${theme.key as "lapis"}`)}
         </span>
       </div>
       {/* Details, with the avatar overlapping the banner edge.
@@ -373,11 +370,9 @@ function MemberCard({
           {/* Badge COUNT is deliberately not repeated here — the seals on the
               right already say it, and the room is better spent on fit signal. */}
           <p className="text-xs text-ink-faint">
-            {entry.closetCount} items
-            {entry.bodyType ? ` · ${entry.bodyType}` : ""}
-            {entry.followerCount > 0
-              ? ` · ${entry.followerCount} follower${entry.followerCount === 1 ? "" : "s"}`
-              : ""}
+            {t("items", { n: entry.closetCount })}
+            {entry.bodyType ? ` · ${people.bodyType(entry.bodyType)}` : ""}
+            {entry.followerCount > 0 ? ` · ${t.n("followers", entry.followerCount)}` : ""}
           </p>
         </div>
         <div className="flex flex-shrink-0 flex-col items-end gap-1.5 pb-0.5">

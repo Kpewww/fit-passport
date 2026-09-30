@@ -11,6 +11,8 @@ import { OutfitMannequin, type OutfitLayer } from "@/components/OutfitMannequin"
 import { Avatar } from "@/components/Badges";
 import { ReportButton } from "@/components/ReportButton";
 import { garmentLabel } from "@/lib/garments";
+import { useT } from "@/i18n/client";
+import { useGarmentText } from "@/i18n/garment";
 
 export type OutfitItemView = {
   id: string;
@@ -66,6 +68,8 @@ export function OutfitCard({
 
   const layers: OutfitLayer[] = outfit.items.map((it) => ({ category: it.category, color: it.color }));
   const offlinePieces = outfit.items.filter((it) => !it.onlineAvailable);
+  const t = useT("social");
+  const g = useGarmentText();
 
   // min-w-0 on the CARD matters as much as inside it: the card is a grid item,
   // and a grid item's default `min-width: auto` sizes it to its min-content —
@@ -85,7 +89,7 @@ export function OutfitCard({
                 60px past a 390px viewport. Measured, not theoretical. */}
             <p className="min-w-0 truncate font-semibold text-ink">{outfit.title}</p>
             {outfit.mine && onDelete && (
-              <button onClick={onDelete} className="text-xs text-ink-faint hover:text-bad">Delete</button>
+              <button onClick={onDelete} className="text-xs text-ink-faint hover:text-bad">{t("delete")}</button>
             )}
             {/* Reporting stays one tap away, but on a screen that can hover it
                 waits until you point at the card, so a feed is not a column of
@@ -98,21 +102,21 @@ export function OutfitCard({
           </div>
           {outfit.hidden && (
             <p className="mt-1 rounded bg-warn-tint px-2 py-1 text-[11px] text-warn ring-1 ring-warn/30">
-              Only you can see this — hidden after reports.
+              {t("hiddenAfterReports")}
             </p>
           )}
           {outfit.occasion && <p className="text-xs text-brand">{outfit.occasion}</p>}
           {outfit.description && <p className="mt-0.5 text-xs text-ink-soft">{outfit.description}</p>}
           <p className="mt-1 text-xs text-ink-faint">
-            {outfit.items.map((it) => garmentLabel(it.category)).join(" · ")}
+            {outfit.items.map((it) => g.label(it.category)).join(" · ")}
           </p>
           {!outfit.onlineAvailable && (
             <p className="mt-1 inline-block rounded bg-warn-tint px-1.5 py-0.5 text-[10px] font-medium text-warn">
-              <Store size={12} className="mr-1 inline -mt-0.5" />In-store only
+              <Store size={12} className="mr-1 inline -mt-0.5" />{t("inStoreOnly")}
             </p>
           )}
           {outfit.onlineAvailable && offlinePieces.length > 0 && (
-            <p className="mt-1 text-[10px] text-warn">Some pieces in-store only</p>
+            <p className="mt-1 text-[10px] text-warn">{t("somePiecesInStore")}</p>
           )}
 
           <div className="mt-2 flex items-center gap-3">

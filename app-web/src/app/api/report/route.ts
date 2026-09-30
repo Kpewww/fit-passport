@@ -20,6 +20,7 @@ import {
   shouldAutoHide,
 } from "@/lib/reports";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
+import { say } from "@/lib/apiText";
 
 const Body = z.object({
   kind: z.string(),
@@ -40,22 +41,22 @@ export async function POST(req: Request) {
 
   const user = await getCurrentUser();
   const parsed = Body.safeParse(await req.json().catch(() => null));
-  if (!parsed.success) return NextResponse.json({ error: "bad request" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: say(req, "bad request") }, { status: 400 });
 
   const kind = parseReportKind(parsed.data.kind);
   const reason = parseReportReason(parsed.data.reason);
   if (!kind || !reason) {
-    return NextResponse.json({ error: "unknown kind or reason" }, { status: 400 });
+    return NextResponse.json({ error: say(req, "unknown kind or reason") }, { status: 400 });
   }
   const { targetId } = parsed.data;
 
   // Confirm the target exists AND find its author, so we can refuse self-reports
   // (pointless) and know whose content we might hide.
   const authorId = await targetAuthor(kind, targetId);
-  if (!authorId) return NextResponse.json({ error: "not found" }, { status: 404 });
+  if (!authorId) return NextResponse.json({ error: say(req, "not found") }, { status: 404 });
   if (authorId === user.id) {
     return NextResponse.json(
-      { error: "that's your own content — delete it instead" },
+      { error: say(req, "that's your own content — delete it instead") },
       { status: 400 },
     );
   }

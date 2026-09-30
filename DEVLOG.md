@@ -31,6 +31,41 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 79h — The social side in Chinese, and a guard against English slipping back
+
+The last group of pages is translated: community (the today board, the
+directory, the feed), questions and answers, outfits, badges, public profiles
+and help. With it, every page except `/admin` (internal, stays English) reads in
+both languages.
+
+- Badges: the Chinese titles, requirements and historical notes live in
+  `lib/badgeText.ts`, keyed by badge id; `badges.ts` and its logic are unchanged.
+  Progress lines ("2/20 items · 1/4 collections") are rewritten unit by unit, so
+  the numbers stay the engine's own. `badgeText.test.ts` fails if a badge, or a
+  progress line the badges can produce, has no Chinese.
+- Time stamps read 3 小时前 / 昨天 (`timeAgo` takes a locale); body types and
+  garment names on posts and evidence use the same per-language words as the
+  closet and passport.
+- The logo section on `/help` is the concept document's copy; the Chinese is a
+  translation of it and adds no reading of its own.
+- The social API's sentences for people (claim-first messages, "you can't like
+  your own look", report errors, and the rest) go through `say()`, so a Chinese
+  request gets Chinese back. Codes a client branches on (`claim-required`,
+  `not-connected`) are unchanged.
+- New guard, `i18n/untranslated.test.ts`: scans every page and component for
+  English written straight into JSX, or into a placeholder / aria-label / title /
+  alt / label / hint, and fails on two Latin words in a row. It found three
+  leftovers (the brand box's hint, a missing-evidence line, a badge tooltip),
+  now fixed. Fed the pre-translation help page, it reports 16 phrases.
+
+Seen in Chinese at 1440 and 390 on /help, /community, /outfits and /badges with
+the demo account: no overflow; the only English on the community page is what
+people wrote in their posts.
+
+637 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-09-29 · Session 79g — The passport, onboarding and refresh in Chinese
 
 The body-profile pages are translated: the passport (edit and view), the metal

@@ -10,6 +10,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser, canEdit } from "@/lib/session";
 import { computeBadgeStats } from "@/lib/badgeStats";
 import { earnedBadgeIds, earnedMetals } from "@/lib/badges";
+import { say } from "@/lib/apiText";
 
 const Body = z.object({
   pinnedBadges: z.array(z.string()).max(3).optional(),
@@ -24,7 +25,7 @@ const Body = z.object({
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!canEdit()) {
-    return NextResponse.json({ error: "read-only — password required to edit" }, { status: 403 });
+    return NextResponse.json({ error: say(req, "read-only — password required to edit") }, { status: 403 });
   }
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) {

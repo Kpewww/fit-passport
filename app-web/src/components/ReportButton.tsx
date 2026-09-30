@@ -9,6 +9,7 @@
 
 import { useState } from "react";
 import { REPORT_REASONS, type ReportKind } from "@/lib/reports";
+import { useT } from "@/i18n/client";
 
 export function ReportButton({
   kind,
@@ -19,6 +20,7 @@ export function ReportButton({
   targetId: string;
   className?: string;
 }) {
+  const t = useT("social");
   const [open, setOpen] = useState(false);
   const [done, setDone] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -35,13 +37,11 @@ export function ReportButton({
     setBusy(false);
     setOpen(false);
     if (!res || res.error) {
-      setDone(res?.error ?? "Couldn't send that report.");
+      setDone(res?.error ?? t("reportFailed"));
       return;
     }
     setDone(
-      res.hidden
-        ? "Reported — this is now hidden pending review."
-        : "Reported. Thank you — we look at these.",
+      res.hidden ? t("reportedHidden") : t("reported"),
     );
   }
 
@@ -64,7 +64,7 @@ export function ReportButton({
            a row that was already fighting for space on a phone. */
         className="-my-2 py-2 text-[11px] text-ink-faint underline-offset-2 hover:text-bad hover:underline"
       >
-        {open ? "Cancel" : "Report"}
+        {open ? t("cancel") : t("report")}
       </button>
       {open && (
         <span
@@ -75,7 +75,7 @@ export function ReportButton({
           }}
         >
           <span className="block px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-ink-faint">
-            What&apos;s wrong with it?
+            {t("whatsWrong")}
           </span>
           {REPORT_REASONS.map((r) => (
             <button
@@ -85,7 +85,7 @@ export function ReportButton({
               onClick={() => send(r.key)}
               className="block w-full rounded-lg px-2 py-1.5 text-left text-xs text-ink hover:bg-paper-soft disabled:opacity-50"
             >
-              {r.label}
+              {t(`reason.${r.key as "SPAM"}`)}
             </button>
           ))}
         </span>
