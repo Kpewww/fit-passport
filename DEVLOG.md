@@ -31,6 +31,69 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-30 · Session 80d — A to-buy list, kept out of the closet
+
+Founder's request: let the extension save the product on the page, first as "to buy"
+— and keep it strictly apart from clothes the user owns, so an untried product never
+becomes a known-good garment, never feeds fit learning, never counts toward a badge.
+
+**Data: a new table, `SavedItem`, not a flag on `KnownGoodItem`.** The closet table is
+read in fourteen places — the engine's anchors, personal ease, brand bias, badges, the
+public view and its export, community counts, evidence, outfits, refresh, demo reset —
+and a status column would need a filter at every one; one forgotten filter would teach
+the engine from a shirt nobody has worn. Migration `20260930120000_saved_items` is one
+`CREATE TABLE` plus indexes and two foreign keys (cascade with the user; set-null with a
+stored check), generated offline by diffing the old and new Postgres data models, and
+re-generated identically after the schema's formatting noise was undone. Old data is
+untouched.
+
+**API `/api/saved`** — GET (list, or one with its stored check's chart), POST, PATCH,
+DELETE. Like `/api/check`, an extension request with no session gets 401 `not-connected`
+before anything could mint an account (invariant (60)). Duplicates are found by a URL key
+(host without www, path, product-naming parameters only — the extension's own allowlist),
+unique per user: a second save answers 409 `already-saved` with the saved row. A save with
+a page runs the parser only — `extractSmart(…, { noModel: true })`, a new option — so
+saving never spends a model call. Rate-limited.
+
+**Website:** `/saved` ("想买的，先放这里。") lists saved products — name, brand, the size
+to buy, the latest recommendation if a check ran (never shown for a tie: the engine's
+`isUndetermined` rule is now exported and read against the stored ranking, not
+re-implemented), the note; edit, remove, open the product page. The closet header shows
+"待购 · N". **"Bought it — add to closet"** runs the closet's own add flow pre-filled from
+the save (and from the stored check's chart, with its provenance), starting at the size
+question so the user confirms what they bought, then how it fits. `/api/closet` accepts
+`fromSavedId` and **refuses it without a fit report** — the default `fitRating` of 4 would
+otherwise make an untried purchase a known-good anchor — and deletes the saved row in the
+same transaction. `ItemSchema` moved to `lib/closetItemInput.ts` so that rule is testable.
+
+**Extension 0.4.0:** "Save to buy" on the preview and on a result opens a confirm form —
+name, brand, size (the page's sizes, with the one already chosen on the page
+pre-selected), note. States: saved; already saved (with "Change to L" when the size
+differs); not connected; too many; failed with retry. `capture.js` now reports the page's
+size labels and the chosen one to the popup only; a chosen value must be one of the
+offered sizes, so a carousel's `aria-selected` slide "2" is never taken for a size (test).
+The popup also stops printing the engine's raw English verdict ("true to size") — it has
+words in both languages now.
+
+**Found and fixed while testing:** changing a saved item's size **cleared its category** —
+the edit schema turned a missing field into `null`, which PATCH reads as "clear". Pinned.
+
+Verified, in a real browser with the extension loaded, on the real Uniqlo AIRism page
+captured by the real `capture.js` (only the popup's active-tab lookup was stubbed, since a
+popup opened as a tab is its own active tab): save → "已加入待购"; save again with another
+size → "已在待购中。已保存的尺码：M。" and "改为 L" → "尺码已改为 L"; the server holds the
+product with brand UNIQLO, category tshirt and the page's seven sizes; the closet still
+has 0 items; with cookies cleared the same request answers 401 `not-connected` in Chinese.
+On the website (Chinese, 1440 and 390): `/saved` shows both saved products with no
+overflow; "已购买，加入衣橱" opens the closet at the size question with the move note, and
+saving with "稍紧" leaves one saved product and adds UNIQLO M, fit −5, with its link (no
+garment chest: Uniqlo's chart is body measurements, correctly not stored as garment).
+New tests: `savedInput.test.ts` (URL key, what a save or edit may carry, the fit-report
+rule, and a scan that only `/api/saved` and `/api/closet` touch `savedItem`), capture's
+chosen size. 662 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-09-30 · Session 80c — Adding by link says only what it read
 
 Founder's question: does the closet's "have a link?" box actually work, and if not, fix

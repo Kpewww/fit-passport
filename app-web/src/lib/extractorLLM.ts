@@ -532,6 +532,12 @@ export async function extractSmart(
      * recorded in `source.fetch` rather than smuggled into `sizesFrom`.
      */
     html?: string;
+    /**
+     * Skip the paid model steps (text and vision). Saving a product to the to-buy
+     * list only needs its name, brand and offered sizes — not worth a model call
+     * each (Session 80).
+     */
+    noModel?: boolean;
   } = {},
 ): Promise<ExtractedProduct> {
   const deterministic = extractFromUrl(url);
@@ -623,7 +629,7 @@ export async function extractSmart(
   }
 
   // 3. No parseable table, but we can afford the LLM → let it read the page.
-  if (process.env.ANTHROPIC_API_KEY) {
+  if (process.env.ANTHROPIC_API_KEY && !opts.noModel) {
     const llm = await callLLM(url, htmlToLlmText(html));
     if (llm && llm.sizes.length >= 2) {
       // The LLM's category only fills a gap: a garment the page or URL already

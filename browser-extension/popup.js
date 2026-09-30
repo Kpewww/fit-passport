@@ -178,6 +178,7 @@
       el("div", { className: "actions" }, [
         button(hasChart ? t("check") : t("checkAnyway"), function () { send(cap); }, true),
         button(t("rescan"), start),
+        button(t("saveToBuy"), function () { saveForm(cap, null, function () { preview(cap, tab); }); }),
       ]),
       el("p", {
         className: "small",
@@ -244,7 +245,7 @@
         [button(t("tryAgain"), function () { send(cap); }, true)]
       );
     }
-    if (res.ok && body && body.result) return result(body);
+    if (res.ok && body && body.result) return result(body, cap);
     refusal(res.status, body || {}, cap);
   }
 
@@ -305,7 +306,7 @@
     return parts.join(" · ");
   }
 
-  function result(data) {
+  function result(data, cap) {
     var r = data.result;
     var best = r.best || {};
     var lines = String(r.explanation || "").split("\n").map(function (l) { return l.trim(); });
@@ -328,7 +329,7 @@
           el("div", { className: "size-line" }, [
             el("span", { className: "size", text: best.label }),
             el("span", { className: "conf", text: t("confidence", { pct: Math.round((best.confidence || 0) * 100) }) }),
-            best.verdict ? el("span", { className: "chip", text: best.verdict }) : null,
+            best.verdict ? el("span", { className: "chip", text: verdictWord(best.verdict) }) : null,
           ]),
           reasons.length ? el("ul", { className: "reasons" }, reasons.map(function (t) { return el("li", { text: t }); })) : null,
         ]);
@@ -345,8 +346,141 @@
           openTab(origin() + "/check?product=" + encodeURIComponent(data.product.id));
         }, true),
         button(t("checkAgain"), start),
+        cap ? button(t("saveToBuy"), function () { saveForm(cap, data, function () { result(data, cap); }); }) : null,
       ])
     );
+  }
+
+  // The engine's verdict is an English key; the words are the popup's.
+  var VERDICT_KEYS = { "too small": "verdictTooSmall", snug: "verdictSnug", "true to size": "verdictTrue", relaxed: "verdictRelaxed", "too big": "verdictTooBig" };
+  function verdictWord(v) { return VERDICT_KEYS[v] ? t(VERDICT_KEYS[v]) : v; }
+
+  // ---- 4. save to the to-buy list (Session 80) ----
+  //
+  // A saved product is not a garment the user owns: the server keeps it apart from
+  // the closet, and nothing that recommends a size reads it. The user confirms what
+  // is saved — name, brand, the size they mean to buy — before anything is sent.
+  // After a check, the stored check is referenced instead of resending the page.
+
+  function field(label, input) {
+    return el("label", { className: "field" }, [el("span", { text: label }), input]);
+  }
+
+  function saveForm(cap, data, back) {
+    var f = cap.found;
+    var product = data && data.product;
+    var sizes = f.sizes || [];
+    var nameIn = el("input", { type: "text", maxlength: "200", value: (product && product.productName) || f.title || "" });
+    var brandIn = el("input", { type: "text", maxlength: "80", value: (product && product.brand) || f.brand || "" });
+    var sizeIn;
+    if (sizes.length) {
+      sizeIn = el("select", {}, [el("option", { value: "", text: t("noSize") })].concat(sizes.map(function (z) {
+        var o = el("option", { value: z, text: z });
+        if (z === f.selectedSize) o.setAttribute("selected", "");
+        return o;
+      })));
+    } else {
+      sizeIn = el("input", { type: "text", maxlength: "24", value: f.selectedSize || "" });
+    }
+    var noteIn = el("input", { type: "text", maxlength: "500", placeholder: t("notePlaceholder") });
+    var go = button(t("saveConfirm"), function () {
+      submitSave(cap, product, {
+        productName: nameIn.value.trim(),
+        brand: brandIn.value.trim(),
+        size: sizeIn.value.trim(),
+        note: noteIn.value.trim(),
+      }, back);
+    }, true);
+    show(
+      el("p", { className: "title", text: t("saveTitle") }),
+      el("p", { className: "muted", text: t("saveIntro") }),
+      el("div", { className: "card form" }, [
+        field(t("fieldName"), nameIn),
+        field(t("fieldBrand"), brandIn),
+        field(t("fieldSize"), sizeIn),
+        field(t("fieldNote"), noteIn),
+      ]),
+      el("div", { className: "actions" }, [go, button(t("back"), back)])
+    );
+  }
+
+  async function savedRequest(method, path, body) {
+    var res = await fetch(origin() + path, {
+      method: method,
+      credentials: "include",
+      headers: { "content-type": "application/json", "x-fp-client": "extension/" + CFG.version, "x-fp-lang": I18N.lang() },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    var json = null;
+    try { json = await res.json(); } catch (e) { json = null; }
+    return { res: res, body: json || {} };
+  }
+
+  async function submitSave(cap, product, fields, back) {
+    show(el("p", { className: "muted", text: t("saving") }));
+    var r;
+    try {
+      r = await savedRequest("POST", "/api/saved", {
+        url: cap.url,
+        // The stored check already holds what the page said; otherwise the same
+        // reduced page the preview showed, and nothing more.
+        productId: product ? product.id : undefined,
+        html: product ? undefined : cap.html,
+        productName: fields.productName,
+        brand: fields.brand,
+        size: fields.size,
+        note: fields.note,
+      });
+    } catch (e) {
+      return message(
+        t("unreachableTitle"),
+        t(origin().indexOf("localhost") >= 0 ? "unreachableBodyDev" : "unreachableBody", { origin: origin() }),
+        [button(t("tryAgain"), function () { submitSave(cap, product, fields, back); }, true), button(t("back"), back)]
+      );
+    }
+    var status = r.res.status;
+    if (r.res.ok) {
+      return message(t("savedTitle"), t("savedBody"), [
+        button(t("viewSaved"), function () { openTab(origin() + "/saved"); }, true),
+        button(t("back"), back),
+      ]);
+    }
+    if (status === 409 && r.body.item) {
+      var item = r.body.item;
+      var actions = [];
+      if (fields.size && fields.size !== item.size) {
+        actions.push(button(t("updateSize", { size: fields.size }), function () { updateSize(item, fields.size, back); }, true));
+      }
+      actions.push(button(t("viewSaved"), function () { openTab(origin() + "/saved"); }, actions.length === 0));
+      actions.push(button(t("back"), back));
+      return message(t("alreadyTitle"), t("alreadyBody", { size: item.size || t("noSize") }), actions);
+    }
+    if (status === 401) {
+      return message(t(REFUSAL_TITLES["not-connected"]), r.body.message, [
+        button(t("openFitPassport"), function () { openTab(origin()); }, true),
+      ]);
+    }
+    if (status === 429) return message(t("tooManyTitle"), t("tooManyBody"), [button(t("back"), back)]);
+    message(t("saveFailedTitle"), typeof r.body.message === "string" ? r.body.message : t("failedBody", { status: status }), [
+      button(t("tryAgain"), function () { submitSave(cap, product, fields, back); }, true),
+      button(t("back"), back),
+    ]);
+  }
+
+  async function updateSize(item, size, back) {
+    show(el("p", { className: "muted", text: t("saving") }));
+    try {
+      var r = await savedRequest("PATCH", "/api/saved", { id: item.id, size: size });
+      if (r.res.ok) {
+        return message(t("updated", { size: size }), null, [
+          button(t("viewSaved"), function () { openTab(origin() + "/saved"); }, true),
+          button(t("back"), back),
+        ]);
+      }
+      message(t("saveFailedTitle"), typeof r.body.message === "string" ? r.body.message : t("failedBody", { status: r.res.status }), [button(t("back"), back)]);
+    } catch (e) {
+      message(t("unreachableTitle"), t("unreachableBody", { origin: origin() }), [button(t("back"), back)]);
+    }
   }
 
   start();

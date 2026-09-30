@@ -677,6 +677,11 @@
     // a select that is not about size (quantity, country, a saved address) is
     // never sent at all.
     var selects = doc.querySelectorAll("select");
+    // Size labels for the popup's save form, and the one the shopper has already
+    // chosen on the page (Session 80). Local to the popup: the server reads the
+    // options from the markup below, as before.
+    var popupSizes = [];
+    var selectedSize = null;
     for (var q = 0; q < selects.length; q++) {
       if (!SIZE_SELECT_RE.test(selects[q].outerHTML)) continue;
       var opts = selects[q].querySelectorAll("option");
@@ -685,6 +690,9 @@
         var txt = collapse(opts[o].textContent || "");
         optHtml += "<option>" + esc(mask(txt)) + "</option>";
         stats.optionsKept++;
+        if (SIZE_LABEL_RE.test(txt) && popupSizes.indexOf(txt) < 0) popupSizes.push(txt);
+        // A chosen option — not the "Select a size" placeholder at index 0.
+        if (selectedSize == null && opts[o].selected && o > 0 && SIZE_LABEL_RE.test(txt)) selectedSize = txt;
       }
       body.push('<select data-fp="size">' + optHtml + "</select>");
     }
@@ -711,6 +719,8 @@
       seenValue[v] = true;
       values.push(v);
     });
+    values.forEach(function (v) { if (popupSizes.indexOf(v) < 0) popupSizes.push(v); });
+    if (selectedSize == null) selectedSize = chosenSize(doc, popupSizes);
     if (values.length) {
       body.push('<div data-fp="labels">' + values.map(function (v) {
         return '<span data-size="' + esc(v) + '"></span>';
@@ -770,8 +780,36 @@
         sizeRows: biggest,
         sizeOptions: stats.optionsKept + stats.swatchValuesKept,
         chartImages: stats.chartImagesKept,
+        // For the popup's "Save to buy" form only; never sent on their own.
+        sizes: popupSizes.slice(0, MAX_SWATCH_VALUES),
+        selectedSize: selectedSize,
       },
     };
+  }
+
+  // The size a shopper has picked on the page, from the controls that say so:
+  // aria-checked / aria-pressed / aria-selected="true", or a checked radio. Only a
+  // value shaped like a size label counts, read from the control's own attributes
+  // or its short text. Nothing else about the control is read. A carousel dot or
+  // a pager can be aria-selected too, which is why the value must be a size the
+  // page offers.
+  function chosenSize(doc, offered) {
+    var marked = doc.querySelectorAll('[aria-checked="true"],[aria-pressed="true"],[aria-selected="true"],input[type="radio"]:checked');
+    for (var i = 0; i < marked.length; i++) {
+      var node = marked[i];
+      if (insideTable(node)) continue;
+      var candidates = ["data-size", "data-value", "data-option-value", "value", "title", "aria-label"]
+        .map(function (a) { return node.getAttribute(a); })
+        .concat([node.textContent]);
+      for (var c = 0; c < candidates.length; c++) {
+        var v = collapse(candidates[c] || "");
+        // One of the sizes the page offers; with none listed, only a label that
+        // cannot be a slide number or a page number (XS…XXL, EU/US/UK n).
+        if (!v || v.length > 12 || !SIZE_LABEL_RE.test(v)) continue;
+        if (offered.length ? offered.indexOf(v) >= 0 : !/^\d/.test(v)) return v;
+      }
+    }
+    return null;
   }
 
   fpCapture.VERSION = VERSION;

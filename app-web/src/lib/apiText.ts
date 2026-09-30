@@ -49,6 +49,8 @@ export const API_ZH: Record<string, string> = {
   "that's your own content — delete it instead": "这是你发布的内容，可直接删除。",
   "Claim an account to block people.": "认领账户后，即可屏蔽他人。",
   "you can't block yourself": "无法屏蔽自己。",
+  // the to-buy list (Session 80)
+  "That product is already on your to-buy list.": "这件商品已在待购中。",
 };
 
 /** The sentence in the requester's language (English when there is no Chinese for it). */

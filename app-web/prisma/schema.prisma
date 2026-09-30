@@ -100,6 +100,7 @@ model User {
   knownGood   KnownGoodItem[]
   collections Collection[]
   products    Product[]
+  saved       SavedItem[]
   outcomes    FitOutcome[]
   recs        FitRecommendation[]
   outfits     Outfit[]
@@ -535,7 +536,43 @@ model Product {
   sizeOptions SizeOption[]
   recs        FitRecommendation[]
   outcomes    FitOutcome[]
+  saved       SavedItem[]
 
+  @@index([userId])
+}
+
+/// A product saved to buy later ("待购") — Session 80. NOT a garment the user owns.
+///
+/// A separate table on purpose. KnownGoodItem is read in fourteen places (the
+/// engine's anchors, personal ease, brand bias, badges, the public view and its
+/// export, community counts, evidence, outfits, refresh); a status column there
+/// would need a filter at every one, and one forgotten filter would teach the
+/// engine from a shirt nobody has worn. Nothing that learns or counts reads this
+/// table. It becomes a KnownGoodItem only through the closet's add flow, after the
+/// user has bought it and answered how it fits (/api/closet, fromSavedId).
+model SavedItem {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The product link as the user saved it; `urlKey` is what duplicates are found by.
+  url         String
+  urlKey      String
+  retailer    String?
+  brand       String?
+  productName String?
+  category    String? // one of the closet's category keys, when the page named one
+  size        String? // the size the user means to buy, as the page labels it
+  sizesJson   String? // labels the page offered, for the edit picker
+  note        String?
+  /// The stored check, when one ran — its chart travels to the closet on purchase.
+  productId   String?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, urlKey])
   @@index([userId])
 }
 

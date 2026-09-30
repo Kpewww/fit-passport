@@ -105,6 +105,18 @@ export default function ClosetPage() {
   // clothes, not the form, lead the page.
   const [addOpen, setAddOpen] = useState(false);
   const [newCollOpen, setNewCollOpen] = useState(false);
+  // The to-buy list (/saved): its size for the header link, and a product being
+  // moved in from it (?fromSaved=id), which opens the add flow pre-filled.
+  const [savedCount, setSavedCount] = useState(0);
+  const [fromSaved, setFromSaved] = useState<string | null>(null);
+  useEffect(() => {
+    const id = new URLSearchParams(window.location.search).get("fromSaved");
+    if (id) { setFromSaved(id); setAddOpen(true); }
+  }, []);
+  function doneFromSaved() {
+    setFromSaved(null);
+    window.history.replaceState(null, "", "/closet");
+  }
   // Folder view: the file "pulled fully out" onto the desk (detail sheet), and
   // the comparison "bucket" — items set aside to view side-by-side, mirroring
   // how you pull a few garments out of a real closet when planning an outfit.
@@ -149,12 +161,14 @@ export default function ClosetPage() {
   }, [items]);
 
   const load = useCallback(async () => {
-    const [c, i] = await Promise.all([
+    const [c, i, sv] = await Promise.all([
       fetch("/api/collections").then((r) => r.json()),
       fetch("/api/closet").then((r) => r.json()),
+      fetch("/api/saved").then((r) => r.json()).catch(() => ({ items: [] })),
     ]);
     setCollections(c.collections);
     setItems(i.items);
+    setSavedCount(Array.isArray(sv.items) ? sv.items.length : 0);
   }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -266,7 +280,14 @@ export default function ClosetPage() {
         eyebrow={t("eyebrow")}
         title={t("title")}
         lede={t("lede")}
-        action={goalMet ? <LinkButton href="/check" arrow>{t("checkProduct")}</LinkButton> : undefined}
+        action={
+          goalMet || savedCount > 0 ? (
+            <div className="flex flex-wrap items-center gap-2">
+              {savedCount > 0 && <LinkButton href="/saved" variant="secondary">{t("savedLink", { n: savedCount })}</LinkButton>}
+              {goalMet && <LinkButton href="/check" arrow>{t("checkProduct")}</LinkButton>}
+            </div>
+          ) : undefined
+        }
       />
 
       {/* Add an item — one question per screen (see AddItemFlow). Until the
@@ -276,7 +297,7 @@ export default function ClosetPage() {
           left-heavy on any wide screen (founder's report, 2026-09-28). */}
       {!goalMet ? (
         <div className="mt-10 grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
-          <AddItemFlow onAdded={(id) => { setNudgeId(id); load(); }} />
+          <AddItemFlow fromSaved={fromSaved} onFromSavedDone={doneFromSaved} onAdded={(id) => { setNudgeId(id); load(); }} />
           <SetupAside count={count} />
         </div>
       ) : (
@@ -294,8 +315,10 @@ export default function ClosetPage() {
           </button>
         ) : (
           <AddItemFlow
+            fromSaved={fromSaved}
+            onFromSavedDone={doneFromSaved}
             onAdded={(id) => { setNudgeId(id); load(); }}
-            onClose={() => setAddOpen(false)}
+            onClose={() => { setAddOpen(false); if (fromSaved) doneFromSaved(); }}
           />
         )}
       </div>
@@ -1791,7 +1814,18 @@ function BucketPanel({
 // Asking for something without saying why is most of what makes a form feel
 // like homework.
 
-function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => void; onClose?: () => void }) {
+function AddItemFlow({
+  onAdded,
+  onClose,
+  fromSaved = null,
+  onFromSavedDone,
+}: {
+  onAdded: (id: string | null) => void;
+  onClose?: () => void;
+  /** A to-buy product being moved into the closet once bought (Session 80). */
+  fromSaved?: string | null;
+  onFromSavedDone?: () => void;
+}) {
   const t = useT("closet");
   const g = useGarmentText();
   const [form, setForm] = useState({ ...BLANK });
@@ -1814,6 +1848,36 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
   const [sizeLabels, setSizeLabels] = useState<string[]>([]);
   const [productUrl, setProductUrl] = useState<string | null>(null);
   const [fromDemo, setFromDemo] = useState(false);
+
+  // Moving a bought product in from the to-buy list: start from what was saved —
+  // and from the stored check's chart, so the garment keeps its own measurements
+  // for the size bought — then ask the size actually bought and how it fits.
+  useEffect(() => {
+    if (!fromSaved) return;
+    let live = true;
+    fetch(`/api/saved?id=${encodeURIComponent(fromSaved)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (!live || !j?.item) return;
+        const it = j.item;
+        const measured = typeof j.measuredFrom === "string" && ["page", "brand-chart", "fixture", "seller"].includes(j.measuredFrom);
+        setSizeRows(measured && Array.isArray(j.sizeRows) ? j.sizeRows : []);
+        setMeasuredFrom(measured ? j.measuredFrom : null);
+        setSizeLabels(Array.isArray(it.sizes) ? it.sizes : []);
+        setProductUrl(it.url ?? null);
+        setForm((f) => ({
+          ...f,
+          brand: it.brand || f.brand,
+          displayName: it.productName || f.displayName,
+          category: it.category || f.category,
+          size: it.size || "",
+        }));
+        setExtractNote(t("fromSavedNote", { name: it.productName || it.brand || "" }));
+        setStepIndex(it.brand && it.category ? ADD_STEPS.indexOf("size") : it.brand ? ADD_STEPS.indexOf("category") : 0);
+      })
+      .catch(() => {});
+    return () => { live = false; };
+  }, [fromSaved, t]);
   const [saveFailed, setSaveFailed] = useState(false);
 
   const step = ADD_STEPS[stepIndex];
@@ -1919,6 +1983,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
         onlineAvailable: form.onlineAvailable,
         ...garmentMeasurementsFor(form.size),
         productUrl: productUrl || undefined,
+        fromSavedId: fromSaved || undefined,
         imageDataUrl: form.imageDataUrl || null,
         areaNotesJson: form.areaNotes ? JSON.stringify({ notes: form.areaNotes }) : null,
       }),
@@ -1934,6 +1999,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
     setSizeRows([]); setMeasuredFrom(null); setSizeLabels([]); setProductUrl(null); setFromDemo(false);
     setSaving(false);
     const created = await res.json().catch(() => null);
+    if (fromSaved) onFromSavedDone?.();
     onAdded(typeof created?.item?.id === "string" ? created.item.id : null);
   }
 

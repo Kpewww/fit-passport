@@ -32,6 +32,17 @@ There is one engine, and it is the one with the tests.
 If the page's size chart only appears after you open a "Size guide", open it and
 press **Re-scan**. The extension never clicks anything on the page for you.
 
+**Save to buy** (0.4.0). From the preview or a result, **Save to buy** opens a short
+form — name, brand, the size you mean to buy (the page's sizes, with the one you
+picked on the page pre-selected), a note — and saves it to your to-buy list on the
+website (`/saved`, `POST /api/saved`). After a check, the stored check is referenced
+by id; otherwise the same reduced document the preview shows is sent, and the server
+reads name, brand and offered sizes from it without calling a model. Saving the same
+product twice (tracking parameters ignored) says so and offers to change the saved
+size. A saved product is **not** in your closet and never feeds a recommendation;
+"Bought it — add to closet" on the website moves it there once you say how it fits.
+No new permission: it uses the same session and host permission as a check.
+
 ## Install (development)
 
 1. `chrome://extensions` → enable **Developer mode**.

@@ -752,6 +752,17 @@ function scoreBrandBiasForSize(
   };
 }
 
+/**
+ * Nothing told the sizes apart: the top size carries no reason and every size has
+ * the same score (invariant ㉝). Exported so a stored ranking (FitRecommendation
+ * .breakdownJson) is read by the same rule — the to-buy list must not show "XS"
+ * for a check that was a tie (Session 80).
+ */
+export function isUndetermined(ranked: ReadonlyArray<{ score: number; reasons: ReadonlyArray<unknown> }>): boolean {
+  const best = ranked[0];
+  return !!best && best.reasons.length === 0 && ranked.length > 1 && ranked.every((r) => Math.abs(r.score - best.score) < TIE.epsilon);
+}
+
 export function recommend(
   input: EngineInput,
   /**
@@ -1016,10 +1027,7 @@ export function recommend(
   // Nothing told these sizes apart: no signal produced a reason, and every
   // candidate carries the same score. `best` is then the first rung of the
   // ladder and nothing more.
-  const undetermined =
-    best.reasons.length === 0 &&
-    ranked.length > 1 &&
-    ranked.every((r) => Math.abs(r.score - best.score) < TIE.epsilon);
+  const undetermined = isUndetermined(ranked);
 
   // Suppress the "alternative" line when everything ties — calling the second
   // rung "close" implies the first was ahead of it, and it wasn't.

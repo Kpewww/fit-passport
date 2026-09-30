@@ -42,6 +42,8 @@ type Capture = {
     sizeRows: number;
     sizeOptions: number;
     chartImages: number;
+    sizes: string[];
+    selectedSize: string | null;
   };
 };
 type FpCapture = ((doc: Document, loc: { href: string }) => Capture) & {
@@ -318,6 +320,24 @@ describe("what the popup is told it found", () => {
     expect(f.sizeTables).toBe(1);
     expect(f.sizeRows).toBe(4);
     expect(f.sizeOptions).toBe(5); // "Choose a size" + S, M, L, XL — the server filters
+  });
+
+  it("offers the page's sizes for the save form, and the one the shopper chose (Session 80)", () => {
+    const f = capture(LOGGED_IN).found;
+    expect(f.sizes).toEqual(["S", "M", "L", "XL"]);
+    const chosenSelect = capture(`<html><body><h1>Tee</h1><select name="size"><option>Choose a size</option><option>S</option><option selected>M</option></select></body></html>`).found;
+    expect(chosenSelect.selectedSize).toBe("M");
+    const chosenSwatch = capture(`<html><body><h1>Tee</h1>
+      <div class="sizes"><button data-size="S" aria-pressed="false">S</button><button data-size="L" aria-pressed="true">L</button></div></body></html>`).found;
+    expect(chosenSwatch.selectedSize).toBe("L");
+  });
+
+  it("does not take a carousel's selected slide number for a size", () => {
+    const f = capture(`<html><body><h1>Tee</h1>
+      <div class="gallery"><button aria-selected="true">2</button></div>
+      <select name="size"><option>Choose a size</option><option>S</option><option>M</option></select></body></html>`).found;
+    expect(f.selectedSize).toBeNull();
+    expect(capture(`<html><body><h1>Tee</h1><button aria-selected="true">3</button></body></html>`).found.selectedSize).toBeNull();
   });
 
   it("marks a hidden tab's chart as not visible", () => {
