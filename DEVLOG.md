@@ -31,6 +31,20 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 79 close-out — resume brief and project memory
+
+Session 79 (79a–79h) is done: the site, the engine's reasons and refusals, the
+API's sentences and the extension popup read in Chinese or English, following the
+browser and remembering a manual choice; Tmall pages now give the server a product
+name, brand and gender. `docs/RESUME.md` and the build-state and next-steps memory
+record it, with three new invariants: (81) sentences a person reads go through the
+messages, (82) engine prose only through `EngineText`, (83) API sentences through
+`say()`, with machine codes never translated.
+
+Docs only; no code changed since 79h (637 tests + 1 skip).
+
+---
+
 ## 2026-09-29 · Session 79h — The social side in Chinese, and a guard against English slipping back
 
 The last group of pages is translated: community (the today board, the

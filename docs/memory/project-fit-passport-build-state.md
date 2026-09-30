@@ -1161,3 +1161,29 @@ anchor, brand bias, anchor weights and confidence read — not just from the eas
 
 **Open (todo/engineering/08):** the Uniqlo demo fixture recommends XL at chest 100 —
 likely body numbers in the garment field (real page M = 95.9–104.1, midpoint 100).
+
+**Session 79 (2026-09-29) — Chinese version + 中|EN switch; Tmall pages read.**
+Home-grown i18n in `app-web/src/i18n/` (no dependency): `messages/en.ts` is the
+source, `zh.ts` is typed `Messages` so a missing key fails tsc; `t` / `t.rich` / `t.n`
+with `{name}` values and a small tag set (`RICH_TAGS` in `format.ts`). Locale order:
+`x-fp-lang` header → `fp-lang` cookie → Accept-Language → en. Reading the cookie makes
+every page dynamic (ƒ) — accepted. Stored values stay English keys (categories, default
+folders, colours, lines, body types); only display translates (`i18n/garment.ts`,
+`people.ts`, `badges.ts`). Badge Chinese lives in `lib/badgeText.ts`. Chinese fonts are
+system CJK stacks under `:lang(zh)` (a CJK webfont is megabytes); italics off in zh. Copy
+spec: `docs/design/chinese-copy.md` (glossary, spacing, classical-phrasing budget).
+Chrome's zh-CN labels were verified from its locale.pak (加载未打包的扩展程序, not
+加载已解压的) — don't write them from memory. The extension popup has its own switch
+(`browser-extension/i18n.js`, localStorage) and sends `x-fp-lang`. Tmall: brand/gender
+come from 参数信息 by LABEL (class names are hashed), the name from the cleaned
+`<title>`; Taobao's shopper profile (我的档案, 身高/体重) is never read.
+
+**NEW INVARIANTS:**
+**(81)** **Every sentence a person reads goes through the messages** (`useT`/`getT`),
+never written into JSX. `i18n/untranslated.test.ts` fails on two Latin words in a row
+in JSX text or a placeholder/aria-label/title/alt/label/hint; `/admin` is exempt.
+**(82)** **Engine prose comes only from `EngineText`** (`lib/engineText.ts`); the
+English implementation is the wording the tests pin, and zh must carry the same numbers.
+**(83)** **API sentences for people go through `say(req, english)`** with Chinese in
+`API_ZH`; machine codes a client branches on (`claim-required`, `not-connected`) are
+never translated.

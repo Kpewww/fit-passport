@@ -743,3 +743,23 @@ photos to object storage = **later**; hero = **extension first, URL folded**.
   (`07`, needs a Blob store).
 - **When the Chrome Web Store listing exists:** change the one constant in
   `extensionDistribution.ts` to `{ kind: "store", href }`.
+
+## Session 79 (2026-09-29) — Chinese version + 中|EN switch, DONE (79a–79h)
+
+Founder's request: a Chinese version with a switch; Chinese copy that reads like
+good Chinese product writing (persuasive, imaginative but on topic, classical
+phrasing only where it earns its place); and a Tmall page where the extension found
+the chart but said "no product details". Decided: brand stays **Fit Passport** only
+(no Chinese name); default language **follows the browser**, a manual choice is
+remembered (cookie on the site, localStorage in the popup).
+**All shipped:** every page but `/admin`, the engine's reasons and refusals, the API's
+sentences, the extension popup (0.3.0). The Tmall cause was not the picture
+description — Tmall has no JSON-LD Product, so name/brand never reached the server;
+now read from 参数信息 by label and from the cleaned `<title>`.
+
+**Next, by who can move it** (the board is `todo/`):
+- **Founder:** read the Chinese copy on the live site and flag anything that doesn't
+  sound native — the copy spec is `docs/design/chinese-copy.md`.
+- **Engineering:** a chart that is a picture inside 图文详情 (`10`); the per-size
+  身高/体重 line as a weak signal (`11`); plus the Session 78 list above (09, 08, 03, 07).
+- **People:** unchanged from Session 78 (`01` ground truth, `03` Upstash in prod).

@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 78f · 2026-09-29 — LIVE, 588 tests + 1 honest skip.**
+> **Last updated: Session 79 · 2026-09-29 — LIVE, 637 tests + 1 honest skip.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -36,7 +36,7 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 **技术栈:** Node 24 LTS + **Next.js 14.2.35** App Router + React 18 + TS +
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
 Framer Motion(**Lenis 已移除**);three.js 懒加载:徽章 inspect **以及** 3D 人台/松量壳(`BodyMesh3D.tsx`)。
-命令:`npm run dev`、`npm run typecheck`、`npm test`(**588 个 + 1 个诚实跳过;看退出码,不要只看 Tests 那一行**)、`npm run build`、
+命令:`npm run dev`、`npm run typecheck`、`npm test`(**637 个 + 1 个诚实跳过;看退出码,不要只看 Tests 那一行**)、`npm run build`、
 改 schema 后 `npm run db:push`(**还必须建 migration**,见铁律 10)、生成文档 PDF `npm run docs:pdf`。
 测量工具:`app-web/scripts/mobile-audit.mjs`(移动端布局)、
 `brand/tests/size-test.mjs`(标志尺寸)、`app-web/scripts/capture-chart.mjs`(抄品牌尺码表)、
@@ -154,6 +154,17 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
   `eval/local/captures`(被 git 忽略,换电脑后不在)。
 - ⚠ 本地 `.env` 的 Upstash 为空,开发环境用的是进程内限流(路由重新编译时会清零)。
 
+**Session 79(中文版 + 中|EN 切换,分阶段推送 79a–79h):**
+- 自建 i18n(`app-web/src/i18n/`,无依赖):`messages/en.ts` 是源,`zh.ts` 类型为
+  `Messages`,少一个键 tsc 就报错。语言顺序:`x-fp-lang` 头 → `fp-lang` cookie →
+  浏览器语言 → 英文。品牌名只用 Fit Passport。文案规范见 `docs/design/chinese-copy.md`。
+- 除 `/admin` 外所有页面、引擎的理由与拒答(`lib/engineText.ts`)、API 的提示句
+  (`say()` + `API_ZH`)、插件弹窗(0.3.0,自带切换)都有中英两版。存储的值仍是英文键,
+  只在显示时翻译。
+- 守卫测试 `i18n/untranslated.test.ts`:页面或组件里直接写英文短语会失败(铁律 81–83)。
+- 天猫:没有 JSON-LD,品牌/性别从「参数信息」按标签读,商品名取清洗过的 `<title>`;
+  淘宝的「我的档案」(身高/体重)从不读取。
+
 **下一步:见 `todo/`(做什么)与 `docs/memory/project-fit-passport-next-steps.md`
 底部(为什么)。** 客户访谈**已由创始人推迟**;插件**已不再受访谈证据门槛限制**
 (Session 73 创始人拍板)。
@@ -241,7 +252,7 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
 
 徽章阶梯 铜→银→金→**钛**→钻石→黑曜石 + 特殊色,源 `src/lib/badges.ts`;金属护照卡
 (`MetalCard.tsx`,**保持炫酷不动**);徽章**默认扁平**,立体版只在 inspect 舞台;
-本地管理员由 `node scripts/seed-admin.mjs` 播种;会员编号;拉黑双向生效;举报 +
+本地管理员由 `node scripts/seed-admin.mjs` 播种;中英双语(`src/i18n/`,文案进 messages,别写死在 JSX);会员编号;拉黑双向生效;举报 +
 自动隐藏 + `/admin` 审核队列;Upstash 限流;字体自托管。
 生态:关注+关注流、Ask&Answer(带真实衣橱证据)、每日 Top+Top 穿搭师榜。
 工具:`app-web/scripts/mobile-audit.mjs`(移动端布局实测,需 `npx playwright install chromium`)。
