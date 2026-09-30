@@ -12,6 +12,7 @@ import { inputClass } from "@/components/ui";
 import { domainForCategory } from "@/lib/sizeSystems";
 import { convert, scalesForDomain } from "@/lib/sizeConvert";
 import { ArrowRight, Close } from "@/components/Icon";
+import { useT } from "@/i18n/client";
 
 export function SizeConverter({
   category,
@@ -22,6 +23,7 @@ export function SizeConverter({
 }) {
   const domain = domainForCategory(category);
   const scales = scalesForDomain(domain);
+  const t = useT("sizeInput");
   const [open, setOpen] = useState(false);
   const [scaleId, setScaleId] = useState(scales[0]?.id ?? "");
   const [raw, setRaw] = useState("");
@@ -44,7 +46,7 @@ export function SizeConverter({
         onClick={() => setOpen(true)}
         className="text-xs font-medium text-brand hover:underline"
       >
-        Know it in another scale (EU / US / UK / cm)? Convert <ArrowRight size={14} className="-mt-px inline" />
+        {t("convertOpen")} <ArrowRight size={14} className="-mt-px inline" />
       </button>
     );
   }
@@ -52,18 +54,18 @@ export function SizeConverter({
   return (
     <div className="rounded-lg border border-line bg-paper-soft p-3">
       <div className="mb-2 flex items-center justify-between">
-        <p className="text-xs font-semibold text-ink">Size converter</p>
+        <p className="text-xs font-semibold text-ink">{t("converter")}</p>
         <button
           type="button"
           onClick={() => setOpen(false)}
           className="text-xs text-ink-faint hover:text-ink"
         >
-          <Close size={14} className="-mt-px mr-1 inline" />Close
+          <Close size={14} className="-mt-px mr-1 inline" />{t("close")}
         </button>
       </div>
 
       <p className="mb-1.5 text-[11px] text-ink-soft">
-        1. Choose the scale you know your size in · 2. Type it
+        {t("steps")}
       </p>
       <div className="flex gap-1.5">
         <select
@@ -77,7 +79,7 @@ export function SizeConverter({
         </select>
         <input
           className={`${inputClass} flex-1 py-1.5 text-xs`}
-          placeholder={activeScale ? `e.g. ${activeScale.example}` : ""}
+          placeholder={activeScale ? t("example", { example: activeScale.example }) : ""}
           value={raw}
           onChange={(e) => setRaw(e.target.value)}
           inputMode="text"
@@ -86,15 +88,14 @@ export function SizeConverter({
 
       {raw.trim() && results.length === 0 && (
         <p className="mt-2 text-[11px] text-warn">
-          Couldn&apos;t read &quot;{raw.trim()}&quot; as a {activeScale?.label} size.
-          Example: {activeScale?.example}.
+          {t("unreadable", { raw: raw.trim(), scale: activeScale?.label ?? "", example: activeScale?.example ?? "" })}
         </p>
       )}
 
       {results.length > 0 && (
         <div className="mt-2.5">
           <p className="mb-1 text-[10px] uppercase tracking-widest text-ink-faint">
-            That&apos;s about · tap to use
+            {t("thatsAbout")}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {results.map((r) => (
@@ -107,7 +108,7 @@ export function SizeConverter({
                     ? "border-brand bg-brand-tint font-semibold text-brand"
                     : "border-line bg-white text-ink-soft hover:border-brand hover:text-brand"
                 }`}
-                title={`Use ${r.value}`}
+                title={t("use", { value: r.value })}
               >
                 <span className="text-ink-faint">{r.scaleLabel}</span>{" "}
                 <span className="font-semibold">{r.value.replace(/^(EU|US|UK)\s*/, "")}</span>
@@ -115,7 +116,7 @@ export function SizeConverter({
             ))}
           </div>
           <p className="mt-1.5 text-[10px] text-ink-faint">
-            ≈ approximate — brands vary. Pick the one matching how this product is labeled.
+            {t("approx")}
           </p>
         </div>
       )}

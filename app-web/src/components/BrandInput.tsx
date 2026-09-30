@@ -3,18 +3,20 @@
 import { useEffect, useRef, useState } from "react";
 import { suggestBrands } from "@/lib/brands";
 import { inputClass } from "@/components/ui";
+import { useT } from "@/i18n/client";
 
 // Free-text brand field with suggestion dropdown. Suggestions never lock the
 // input — the user can type any brand and submit it as-is.
 export function BrandInput({
   value,
   onChange,
-  placeholder = "Brand (e.g. Uniqlo)",
+  placeholder,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
 }) {
+  const t = useT("sizeInput");
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [active, setActive] = useState(-1);
@@ -64,7 +66,7 @@ export function BrandInput({
     <div ref={boxRef} className="relative">
       <input
         className={inputClass}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("brandPlaceholder")}
         value={value}
         onChange={(e) => {
           onChange(e.target.value);

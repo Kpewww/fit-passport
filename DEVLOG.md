@@ -31,6 +31,30 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 79f — The closet in Chinese
+
+The closet (2,124 lines, the largest page) and its inputs — category picker, size
+input, size converter, brand field — are translated.
+
+- **Names without changing data.** Garment types, sections, the default folders,
+  product lines and colour presets are shown through `useGarmentText()`
+  (`src/i18n/garment.ts`); what is stored stays the stable English key the engine
+  and the closet's auto-filing match on. The default folders are database rows
+  ("T-Shirts", "Jackets"…) that new items are filed into by name, so they are
+  translated at display time only while the name is still the default; a folder
+  the user renamed shows exactly as typed. A colour the user typed stays as typed.
+- `/check`'s meta line now names the category ("COS · 衬衫", was "COS · SHIRT").
+- The size hints are the same strings `lib/sizeSystems.ts` gives the server,
+  now per language in `sizeInput.hint.*`.
+
+Seen in Chinese with the demo closet at 1440 and 390, gallery, list and folder
+views: no overflow; the only Latin text left is brands and the demo's own fit
+notes (user content, correctly untranslated).
+
+631 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-09-29 · Session 79e — Signing in, in Chinese, down to the API's errors
 
 Login, password recovery, reset and the account page are translated — and so is

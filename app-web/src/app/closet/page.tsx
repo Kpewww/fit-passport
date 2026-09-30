@@ -19,6 +19,8 @@ import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionIn
 import { DIRECTION_DEFAULT, ratingFromDirection } from "@/lib/fitDirection";
 import { ADD_STEPS, type AddStep, canSubmit, stepReady } from "@/lib/addFlow";
 import { COLOR_PRESETS, colorHex, iconToneOn } from "@/lib/colors";
+import { useT } from "@/i18n/client";
+import { useGarmentText } from "@/i18n/garment";
 
 type Item = {
   id: string;
@@ -59,24 +61,18 @@ type SizeRow = {
   lengthCm: number | null;
 };
 
-const GENDERS = [
-  { v: "", label: "—" },
-  { v: "mens", label: "Men's" },
-  { v: "womens", label: "Women's" },
-  { v: "unisex", label: "Unisex" },
-];
+// Product line values; their names come from garment.line (messages).
+const GENDERS = ["", "mens", "womens", "unisex"] as const;
 
 const BLANK = { brand: "", displayName: "", category: "tshirt", gender: "", size: "", fitRating: 5, fitDirection: DIRECTION_DEFAULT, areaNotes: "", color: "", onlineAvailable: true, imageDataUrl: "" };
 
 type View = "gallery" | "list" | "folder";
 const VIEW_KEY = "fp.closet.view";
-const VIEWS: Array<{ value: View; label: string }> = [
-  { value: "gallery", label: "Gallery" },
-  { value: "list", label: "List" },
-  { value: "folder", label: "Folders" },
-];
+const VIEWS: View[] = ["gallery", "list", "folder"];
 
 export default function ClosetPage() {
+  const t = useT("closet");
+  const g = useGarmentText();
   const [items, setItems] = useState<Item[]>([]);
   const [collections, setCollections] = useState<Collection[]>([]);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -247,6 +243,7 @@ export default function ClosetPage() {
       .sort((a, b) => a.sortIndex - b.sortIndex)
       .map((c, i) => ({ collection: c, items: itemsIn(items, c.id), seed: i })),
     ...(uncategorized.length > 0
+      // "Uncategorized" is a key the folder names translate (useGarmentText).
       ? [{ collection: { id: "__uncat__", name: "Uncategorized", sortIndex: 999, itemCount: uncategorized.length }, items: uncategorized, seed: -1 }]
       : []),
   ];
@@ -259,17 +256,17 @@ export default function ClosetPage() {
   // "Empty" boxes. List and folder views keep them, since that is where they
   // are renamed and deleted.
   const shown = view === "gallery" ? inFilter.filter((b) => b.items.length > 0) : inFilter;
-  const emptyNames = buckets.filter((b) => b.items.length === 0).map((b) => b.collection.name);
+  const emptyNames = buckets.filter((b) => b.items.length === 0).map((b) => g.folder(b.collection.name));
   const realCollections = buckets.filter((b) => b.collection.id !== "__uncat__");
 
   return (
     <FitScaleProvider>
     <Page>
       <PageHeader
-        eyebrow="Closet"
-        title="Your closet"
-        lede="Clothes you own that fit well. Each piece teaches the size engine how a brand runs on your body."
-        action={goalMet ? <LinkButton href="/check" arrow>Check a product</LinkButton> : undefined}
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        lede={t("lede")}
+        action={goalMet ? <LinkButton href="/check" arrow>{t("checkProduct")}</LinkButton> : undefined}
       />
 
       {/* Add an item — one question per screen (see AddItemFlow). Until the
@@ -293,7 +290,7 @@ export default function ClosetPage() {
             <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-white ring-1 ring-line">
               <Plus size={18} />
             </span>
-            <span><span className="font-medium text-ink">Add a piece</span> — four quick questions, or paste a link.</span>
+            <span>{t.rich("addPiece", { b: (c) => <span className="font-medium text-ink">{c}</span> })}</span>
           </button>
         ) : (
           <AddItemFlow
@@ -308,16 +305,16 @@ export default function ClosetPage() {
         <>
           {/* Toolbar: how to look at the closet, and what to do with it. */}
           <div className="mt-12 flex flex-wrap items-center justify-between gap-3">
-            <Segmented label="Closet view" options={VIEWS} value={view} onChange={setView} />
+            <Segmented label={t("viewLabel")} options={VIEWS.map((v) => ({ value: v, label: t(`views.${v}`) }))} value={view} onChange={setView} />
             <div className="flex flex-wrap items-center gap-1">
               <Button size="sm" variant={reorderMode ? "primary" : "ghost"} icon={<Reorder size={16} />} onClick={() => setReorderMode((v) => !v)}>
-                {reorderMode ? "Done" : "Reorder"}
+                {reorderMode ? t("done") : t("reorder")}
               </Button>
               {count >= 2 && !selectMode && (
-                <Button size="sm" variant="ghost" icon={<Stack size={16} />} onClick={() => setSelectMode(true)}>Merge duplicates</Button>
+                <Button size="sm" variant="ghost" icon={<Stack size={16} />} onClick={() => setSelectMode(true)}>{t("merge")}</Button>
               )}
-              <LinkButton href="/refresh?collections=all" size="sm" variant="ghost" icon={<Refresh size={16} />}>Refresh fit</LinkButton>
-              <Button size="sm" variant={newCollOpen ? "secondary" : "ghost"} icon={<Plus size={16} />} onClick={() => setNewCollOpen((v) => !v)}>New collection</Button>
+              <LinkButton href="/refresh?collections=all" size="sm" variant="ghost" icon={<Refresh size={16} />}>{t("refreshFit")}</LinkButton>
+              <Button size="sm" variant={newCollOpen ? "secondary" : "ghost"} icon={<Plus size={16} />} onClick={() => setNewCollOpen((v) => !v)}>{t("newCollection")}</Button>
             </div>
           </div>
 
@@ -326,17 +323,17 @@ export default function ClosetPage() {
           {newCollOpen && (
             <form onSubmit={(e) => { addCollection(e); setNewCollOpen(false); }} className="mt-4 flex flex-col gap-4 rounded-2xl bg-white p-4 ring-1 ring-line sm:flex-row sm:items-end">
               <div className="min-w-0 flex-1">
-                <Field label="Collection name">
-                  <input autoFocus className={inputClass} placeholder="e.g. Formal, Gym, Winter"
+                <Field label={t("collectionName")}>
+                  <input autoFocus className={inputClass} placeholder={t("collectionPlaceholder")}
                     value={newCollectionName} onChange={(e) => setNewCollectionName(e.target.value)} />
                 </Field>
               </div>
-              <Field label="Folder color" hint="optional">
+              <Field label={t("folderColor")} hint={t("optional")}>
                 <FolderColorPicker value={newCollectionColor} onPick={setNewCollectionColor} />
               </Field>
               <div className="flex gap-2">
-                <Button type="submit" size="sm" disabled={!newCollectionName.trim()}>Add collection</Button>
-                <Button size="sm" variant="ghost" onClick={() => setNewCollOpen(false)}>Cancel</Button>
+                <Button type="submit" size="sm" disabled={!newCollectionName.trim()}>{t("addCollection")}</Button>
+                <Button size="sm" variant="ghost" onClick={() => setNewCollOpen(false)}>{t("cancel")}</Button>
               </div>
             </form>
           )}
@@ -348,11 +345,11 @@ export default function ClosetPage() {
             <div className="sticky top-14 z-30 -mx-4 mt-4 bg-paper px-4 py-2.5 sm:top-16 sm:-mx-6 sm:px-6">
               <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1">
                 <Chip selected={activeFilter === "all"} onClick={() => setFilter("all")} className="flex-shrink-0">
-                  All <span className="tabular-nums opacity-60">{count}</span>
+                  {t("all")} <span className="tabular-nums opacity-60">{count}</span>
                 </Chip>
                 {filled.map((b) => (
                   <Chip key={b.collection.id} selected={activeFilter === b.collection.id} onClick={() => setFilter(b.collection.id)} className="flex-shrink-0">
-                    {b.collection.name} <span className="tabular-nums opacity-60">{b.items.length}</span>
+                    {g.folder(b.collection.name)} <span className="tabular-nums opacity-60">{b.items.length}</span>
                   </Chip>
                 ))}
               </div>
@@ -362,12 +359,12 @@ export default function ClosetPage() {
           {selectMode && (
             <div className="mt-4 flex flex-col gap-3 rounded-2xl bg-white px-4 py-3 ring-1 ring-line sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-ink-soft">
-                Select pieces that are the <strong className="font-medium text-ink">same garment</strong> in a different size or colour, then merge.
-                <span className="ml-2 tabular-nums text-ink-faint">{selected.size} selected</span>
+                {t.rich("mergeHelp", { b: (c) => <strong className="font-medium text-ink">{c}</strong> })}
+                <span className="ml-2 tabular-nums text-ink-faint">{t("selected", { n: selected.size })}</span>
               </p>
               <div className="flex gap-2">
-                <Button size="sm" disabled={selected.size < 2} onClick={doMerge}>Merge{selected.size > 0 ? ` (${selected.size})` : ""}</Button>
-                <Button size="sm" variant="ghost" onClick={() => { setSelectMode(false); setSelected(new Set()); }}>Cancel</Button>
+                <Button size="sm" disabled={selected.size < 2} onClick={doMerge}>{selected.size > 0 ? t("mergeButtonN", { n: selected.size }) : t("mergeButton")}</Button>
+                <Button size="sm" variant="ghost" onClick={() => { setSelectMode(false); setSelected(new Set()); }}>{t("cancel")}</Button>
               </div>
             </div>
           )}
@@ -375,7 +372,7 @@ export default function ClosetPage() {
           {reorderMode && (
             <p className="mt-4 flex items-center gap-2 rounded-xl bg-brand-tint px-3 py-2 text-xs text-ink-soft">
               <Reorder size={16} className="flex-shrink-0 text-brand" />
-              Move collections with the arrows beside their names, and pieces with the arrows on each one. Tap <strong className="font-medium text-ink">Done</strong> when finished.
+              {t.rich("reorderHelp", { b: (c) => <strong className="font-medium text-ink">{c}</strong> })}
             </p>
           )}
 
@@ -443,7 +440,7 @@ export default function ClosetPage() {
 
           {view === "gallery" && activeFilter === "all" && emptyNames.length > 0 && (
             <p className="mt-12 text-xs text-ink-faint">
-              Empty for now: {emptyNames.join(", ")}. New pieces file here by type — rename or delete these in the list view.
+              {t("emptyForNow", { names: emptyNames.join(t("listSeparator")) })}
             </p>
           )}
         </>
@@ -478,6 +475,7 @@ export default function ClosetPage() {
  * green card at the foot of the page that said the same thing twice.
  */
 function SetupAside({ count }: { count: number }) {
+  const t = useT("closet");
   const [hasBody, setHasBody] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
@@ -490,24 +488,21 @@ function SetupAside({ count }: { count: number }) {
   }
   return (
     <aside className="rounded-2xl bg-white p-6 ring-1 ring-line lg:sticky lg:top-24">
-      <p className="eyebrow text-ink-faint">Getting started</p>
-      <p className="mt-3 font-serif text-h2 tabular-nums text-ink">{count} of 3 pieces</p>
-      <div className="mt-3 flex gap-1.5" role="img" aria-label={`${count} of 3 pieces added`}>
+      <p className="eyebrow text-ink-faint">{t("gettingStarted")}</p>
+      <p className="mt-3 font-serif text-h2 tabular-nums text-ink">{t("piecesOf3", { n: count })}</p>
+      <div className="mt-3 flex gap-1.5" role="img" aria-label={t("piecesAdded", { n: count })}>
         {[0, 1, 2].map((i) => (
           <span key={i} className={`h-1 flex-1 rounded-full ${i < count ? "bg-ink" : "bg-line"}`} />
         ))}
       </div>
-      <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-        Three pieces you own that fit well are enough for accurate sizing. Pick different
-        brands — how sizes differ between them is what the engine learns.
-      </p>
+      <p className="mt-4 text-sm leading-relaxed text-ink-soft">{t("whyThree")}</p>
       {/* The demo replaces the closet AND the body profile (api/demo), so it is
           offered only to someone with neither — never over real data. */}
       {count === 0 && hasBody === false && (
         <div className="mt-5 border-t border-line pt-4">
-          <p className="text-xs text-ink-faint">Just looking around?</p>
+          <p className="text-xs text-ink-faint">{t("justLooking")}</p>
           <Button size="sm" variant="secondary" loading={loading} icon={<Hanger size={16} />} onClick={demo} className="mt-2">
-            Try a demo closet
+            {t("tryDemo")}
           </Button>
         </div>
       )}
@@ -573,6 +568,8 @@ function CollectionSection({
   onMoveFolder: (dir: -1 | 1) => void;
   undeletable?: boolean;
 }) {
+  const t = useT("closet");
+  const g = useGarmentText();
   const [renaming, setRenaming] = useState(false);
   const [name, setName] = useState(collection.name);
   const [pickingColor, setPickingColor] = useState(false);
@@ -604,7 +601,7 @@ function CollectionSection({
   }
 
   async function deleteCollection() {
-    if (!confirm(`Delete "${collection.name}"? Items move to Uncategorized.`)) return;
+    if (!confirm(t("deleteConfirm", { name: g.folder(collection.name) }))) return;
     await fetch(`/api/collections?id=${collection.id}`, { method: "DELETE" });
     onReload();
   }
@@ -617,21 +614,21 @@ function CollectionSection({
             <input autoFocus className={`${inputClass} !py-1.5 font-medium`}
               value={name} onChange={(e) => setName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && saveName()} />
-            <Button size="sm" onClick={saveName}>Save</Button>
-            <Button size="sm" variant="ghost" onClick={() => { setName(collection.name); setRenaming(false); }}>Cancel</Button>
+            <Button size="sm" onClick={saveName}>{t("save")}</Button>
+            <Button size="sm" variant="ghost" onClick={() => { setName(collection.name); setRenaming(false); }}>{t("cancel")}</Button>
           </div>
         ) : (
           <h2 className="flex min-w-0 items-center gap-2 text-h3 font-semibold text-ink">
             {/* Reorder handle for the whole folder — only in reorder mode */}
             {reorderMode && !undeletable && (
               <span className="-ml-1 flex items-center">
-                <button onClick={() => onMoveFolder(-1)} disabled={!canFolderUp} aria-label="Move collection up"
+                <button onClick={() => onMoveFolder(-1)} disabled={!canFolderUp} aria-label={t("moveCollectionUp")}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-ink-soft hover:bg-ink/5 disabled:opacity-30"><CaretUp size={16} /></button>
-                <button onClick={() => onMoveFolder(1)} disabled={!canFolderDown} aria-label="Move collection down"
+                <button onClick={() => onMoveFolder(1)} disabled={!canFolderDown} aria-label={t("moveCollectionDown")}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-ink-soft hover:bg-ink/5 disabled:opacity-30"><CaretDown size={16} /></button>
               </span>
             )}
-            <span className="truncate">{collection.name}</span>
+            <span className="truncate">{g.folder(collection.name)}</span>
             <span className="text-xs font-normal tabular-nums text-ink-faint">{items.length}</span>
           </h2>
         )}
@@ -639,7 +636,7 @@ function CollectionSection({
           <div className="relative flex flex-shrink-0 items-center gap-3 text-xs">
             {/* Folder color — editable in folder view (not for Uncategorized) */}
             {view === "folder" && !undeletable && (
-              <button onClick={() => setPickingColor((v) => !v)} aria-label="Folder color"
+              <button onClick={() => setPickingColor((v) => !v)} aria-label={t("folderColor")}
                 className={`h-4 w-4 rounded-full ring-1 ring-black/10 ${folderColorFor(collection.color, colorSeed).swatch}`} />
             )}
             {pickingColor && (
@@ -649,14 +646,14 @@ function CollectionSection({
             )}
             {items.length > 0 && collection.id !== "__uncat__" && (
               <Link href={`/refresh?collections=${collection.id}`} className="inline-flex items-center gap-1 text-ink-faint transition-colors hover:text-ink"
-                title="Re-rate how these pieces fit right now — bodies change, so this keeps your fit data current.">
-                <Refresh size={14} /> Refresh
+                title={t("refreshTitle")}>
+                <Refresh size={14} /> {t("refresh")}
               </Link>
             )}
             {!undeletable && (
               <>
-                <button onClick={() => setRenaming(true)} className="text-ink-faint transition-colors hover:text-ink">Rename</button>
-                <button onClick={deleteCollection} className="text-ink-faint transition-colors hover:text-bad">Delete</button>
+                <button onClick={() => setRenaming(true)} className="text-ink-faint transition-colors hover:text-ink">{t("rename")}</button>
+                <button onClick={deleteCollection} className="text-ink-faint transition-colors hover:text-bad">{t("delete")}</button>
               </>
             )}
           </div>
@@ -674,7 +671,7 @@ function CollectionSection({
         />
       ) : items.length === 0 ? (
         <p className="rounded-xl border border-dashed border-line px-4 py-3 text-xs text-ink-faint">
-          Empty — items of this type will file here automatically.
+          {t("emptySection")}
         </p>
       ) : view === "gallery" ? (
         <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 sm:gap-x-6 lg:grid-cols-4">
@@ -768,14 +765,16 @@ function GalleryCard({
   canMoveDown: boolean;
   onMove: (itemId: string, dir: -1 | 1) => void;
 }) {
+  const t = useT("closet");
+  const g = useGarmentText();
   const head = group.items[0];
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
   const photo = head.imageDataUrl;
   const selectable = selectMode && !group.isVariant;
   const isSel = selectable && selected;
-  const sub = head.displayName || garmentLabel(head.category);
-  const sizeLabel = group.isVariant ? `${group.items.length} sizes` : head.size;
+  const sub = head.displayName || g.label(head.category);
+  const sizeLabel = group.isVariant ? t("nSizes", { n: group.items.length }) : head.size;
 
   async function pick(file: File | undefined) {
     if (!file) return;
@@ -785,7 +784,7 @@ function GalleryCard({
   }
 
   const activate = () => (selectMode ? selectable && onToggleSelect(head.id) : onOpen(group));
-  const label = `${selectMode ? (isSel ? "Deselect" : "Select") : "Open"} ${head.brand} ${sub}, size ${sizeLabel}`;
+  const label = t(selectMode ? (isSel ? "deselect" : "select") : "open", { brand: head.brand, name: sub, size: sizeLabel });
 
   return (
     <figure className="group/card min-w-0 animate-fade-in-up">
@@ -809,7 +808,7 @@ function GalleryCard({
 
         {group.isVariant && (
           <span className="pointer-events-none absolute left-2.5 top-2.5 rounded-full bg-white/90 px-2 py-0.5 text-[11px] font-medium text-ink">
-            {group.items.length} variants
+            {t("nVariants", { n: group.items.length })}
           </span>
         )}
 
@@ -830,7 +829,7 @@ function GalleryCard({
             ) : (
               <Camera size={16} />
             )}
-            {nudge && !photo ? <span>Add a photo</span> : <span className="sr-only">{photo ? "Replace photo" : "Add a photo"}</span>}
+            {nudge && !photo ? <span>{t("addPhoto")}</span> : <span className="sr-only">{photo ? t("replacePhoto") : t("addPhoto")}</span>}
             <input
               type="file"
               accept="image/*"
@@ -842,9 +841,9 @@ function GalleryCard({
 
         {reorderMode && !selectMode && !group.isVariant && (
           <div className="absolute bottom-2.5 left-2.5 flex gap-1">
-            <button type="button" onClick={() => onMove(head.id, -1)} disabled={!canMoveUp} aria-label="Move earlier"
+            <button type="button" onClick={() => onMove(head.id, -1)} disabled={!canMoveUp} aria-label={t("moveEarlier")}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-ink ring-1 ring-black/5 disabled:opacity-30"><ArrowLeft size={16} /></button>
-            <button type="button" onClick={() => onMove(head.id, 1)} disabled={!canMoveDown} aria-label="Move later"
+            <button type="button" onClick={() => onMove(head.id, 1)} disabled={!canMoveDown} aria-label={t("moveLater")}
               className="flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-ink ring-1 ring-black/5 disabled:opacity-30"><ArrowRight size={16} /></button>
           </div>
         )}
@@ -862,7 +861,7 @@ function GalleryCard({
           </span>
           {!group.isVariant && <FitStars rating={head.fitRating} size={11} className="flex-shrink-0" />}
         </div>
-        {failed && <p className="mt-1 text-xs text-bad">That photo couldn&apos;t be read. Try a JPEG or PNG.</p>}
+        {failed && <p className="mt-1 text-xs text-bad">{t("photoFailed")}</p>}
       </figcaption>
     </figure>
   );
@@ -930,6 +929,8 @@ function ItemCard({
   onToggleSelect: (id: string) => void;
   reorderMode: boolean;
 }) {
+  const t = useT("closet");
+  const g = useGarmentText();
   const [expanded, setExpanded] = useState(false);
   const head = group.items[0];
 
@@ -941,7 +942,7 @@ function ItemCard({
             <ColorDot color={head.color} />
             {group.label}
             <span className="rounded-full bg-brand-tint px-2 py-0.5 text-[10px] font-semibold text-brand">
-              {group.items.length} variants
+              {t("nVariants", { n: group.items.length })}
             </span>
           </div>
           <CaretDown size={16} className={`text-ink-faint transition-transform ${expanded ? "rotate-180" : ""}`} />
@@ -954,12 +955,12 @@ function ItemCard({
                 <span className="text-[11px] font-medium text-ink">{it.size}</span>
                 {/* hover popover with the description + actions */}
                 <div className="pointer-events-none absolute -top-1 left-1/2 z-20 w-36 -translate-x-1/2 -translate-y-full rounded-lg border border-line bg-white p-2 text-center opacity-0 shadow-lift transition-opacity group-hover/var:pointer-events-auto group-hover/var:opacity-100">
-                  <p className="text-xs font-medium text-ink">size {it.size}{it.color ? ` · ${it.color}` : ""}</p>
+                  <p className="text-xs font-medium text-ink">{t("sizeN", { size: it.size })}{it.color ? ` · ${g.color(it.color)}` : ""}</p>
                   <FitStars rating={it.fitRating} size={11} />
                   <div className="mt-1 flex justify-center gap-2 text-[11px]">
-                    <button onClick={() => onEdit(it.id)} className="text-ink-faint hover:text-brand">Edit</button>
-                    <button onClick={() => onPatch(it.id, { groupId: null, groupName: null })} className="text-ink-faint hover:text-brand">Unmerge</button>
-                    <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-bad">Remove</button>
+                    <button onClick={() => onEdit(it.id)} className="text-ink-faint hover:text-brand">{t("edit")}</button>
+                    <button onClick={() => onPatch(it.id, { groupId: null, groupName: null })} className="text-ink-faint hover:text-brand">{t("unmerge")}</button>
+                    <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-bad">{t("remove")}</button>
                   </div>
                 </div>
               </div>
@@ -997,13 +998,13 @@ function ItemCard({
               onClick={() => onMove(it.id, -1)}
               disabled={!canMoveUp}
               className="text-ink-faint hover:text-brand disabled:opacity-30"
-              aria-label="Move up"
+              aria-label={t("moveUp")}
             ><CaretUp size={16} /></button>
             <button
               onClick={() => onMove(it.id, 1)}
               disabled={!canMoveDown}
               className="text-ink-faint hover:text-brand disabled:opacity-30"
-              aria-label="Move down"
+              aria-label={t("moveDown")}
             ><CaretDown size={16} /></button>
           </div>
         )}
@@ -1012,13 +1013,13 @@ function ItemCard({
           <div className="flex items-center gap-2 font-medium text-ink">
             <ColorDot color={it.color} />
             <span className="truncate">
-              {it.displayName ? it.displayName : it.brand} · <span className="text-ink-soft">{garmentLabel(it.category)}</span> · size {it.size}
+              {it.displayName ? it.displayName : it.brand} · <span className="text-ink-soft">{g.label(it.category)}</span> · {t("sizeN", { size: it.size })}
             </span>
             {it.gender && <GenderBadge gender={it.gender} />}
           </div>
           <div className="mt-0.5 flex items-center gap-2 text-xs text-ink-faint">
             <FitStars rating={it.fitRating} />
-            {it.color && <span>· {it.color}</span>}
+            {it.color && <span>· {g.color(it.color)}</span>}
             {it.areaNotesJson && <span>· {safeNotes(it.areaNotesJson)}</span>}
           </div>
           <GarmentMeasurements item={it} />
@@ -1031,8 +1032,8 @@ function ItemCard({
             currentId={it.collectionId}
             onMove={(cid) => onPatch(it.id, { collectionId: cid })}
           />
-          <button onClick={() => onEdit(it.id)} className="text-ink-soft hover:text-brand">Edit</button>
-          <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-bad">Remove</button>
+          <button onClick={() => onEdit(it.id)} className="text-ink-soft hover:text-brand">{t("edit")}</button>
+          <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-bad">{t("remove")}</button>
         </div>
       )}
     </Card>
@@ -1048,15 +1049,18 @@ function MoveMenu({
   currentId: string | null;
   onMove: (collectionId: string) => void;
 }) {
+  const t = useT("closet");
+  const g = useGarmentText();
   return (
     <select
       value={currentId ?? ""}
       onChange={(e) => onMove(e.target.value)}
       className="rounded-lg border border-line px-2 py-1 text-xs text-ink-soft"
-      title="Move to collection"
+      title={t("moveTo")}
+      aria-label={t("moveTo")}
     >
       {collections.map((c) => (
-        <option key={c.id} value={c.id}>{c.name}</option>
+        <option key={c.id} value={c.id}>{g.folder(c.name)}</option>
       ))}
     </select>
   );
@@ -1081,6 +1085,8 @@ function EditRow({
     areaNotes: safeNotes(item.areaNotesJson) ?? "",
     imageDataUrl: item.imageDataUrl ?? "",
   });
+  const t = useT("closet");
+  const g = useGarmentText();
   const [saving, setSaving] = useState(false);
 
   async function save() {
@@ -1113,11 +1119,11 @@ function EditRow({
           reserves right padding (pr-20) so its helper text never sits under it */}
       <button onClick={save} disabled={saving || !f.brand || !f.size || !isValidSize(f.category, f.size)}
         className="absolute right-3 top-3 z-10 h-8 rounded-full bg-ink px-3.5 text-xs font-medium text-paper hover:bg-black disabled:opacity-45">
-        {saving ? "…" : "Save"}
+        {saving ? "…" : t("save")}
       </button>
       <div className="grid gap-3 sm:grid-cols-6">
         <div className="sm:col-span-6 pr-20">
-          <Field label="Photo" hint="optional">
+          <Field label={t("photo")} hint={t("optional")}>
             <div className="flex items-center gap-3">
               <label className="flex h-14 w-14 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-lg text-ink-faint hover:border-brand">
                 {f.imageDataUrl ? (
@@ -1126,30 +1132,30 @@ function EditRow({
                 ) : <GarmentIcon category={f.category} size={24} />}
                 <input type="file" accept="image/*" className="hidden" onChange={(e) => pickImage(e.target.files?.[0])} />
               </label>
-              {f.imageDataUrl && <button type="button" onClick={() => setF({ ...f, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-bad">remove</button>}
+              {f.imageDataUrl && <button type="button" onClick={() => setF({ ...f, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-bad">{t("removeLower")}</button>}
             </div>
           </Field>
         </div>
         <div className="sm:col-span-2">
-          <Field label="Brand"><BrandInput value={f.brand} onChange={(v) => setF({ ...f, brand: v })} /></Field>
+          <Field label={t("brand")}><BrandInput value={f.brand} onChange={(v) => setF({ ...f, brand: v })} /></Field>
         </div>
         <div className="sm:col-span-2">
-          <Field label="Name" hint="optional"><input className={inputClass} value={f.displayName} placeholder="e.g. Blue Oxford" onChange={(e) => setF({ ...f, displayName: e.target.value })} /></Field>
+          <Field label={t("name")} hint={t("optional")}><input className={inputClass} value={f.displayName} placeholder={t("namePlaceholder")} onChange={(e) => setF({ ...f, displayName: e.target.value })} /></Field>
         </div>
         <div className="sm:col-span-2">
-          <Field label="Type">
+          <Field label={t("type")}>
             <CategoryPicker value={f.category} onChange={(v) => setF({ ...f, category: v })} />
           </Field>
         </div>
         <div className="sm:col-span-1">
-          <Field label="Line">
+          <Field label={t("lineLabel")}>
             <select className={inputClass} value={f.gender} onChange={(e) => setF({ ...f, gender: e.target.value })}>
-              {GENDERS.map((g) => <option key={g.v} value={g.v}>{g.label}</option>)}
+              {GENDERS.map((v) => <option key={v} value={v}>{g.line(v)}</option>)}
             </select>
           </Field>
         </div>
         <div className="sm:col-span-6">
-          <Field label="How does it sit on you?">
+          <Field label={t("howSits")}>
             <FitDirectionInput
               value={f.fitDirection}
               onChange={(n) => setF({ ...f, fitDirection: n, fitRating: ratingFromDirection(n) })}
@@ -1157,27 +1163,27 @@ function EditRow({
           </Field>
         </div>
         <div className="sm:col-span-6">
-          <Field label="Size">
+          <Field label={t("size")}>
             <SizeInput category={f.category} value={f.size} onChange={(v) => setF({ ...f, size: v })} />
           </Field>
         </div>
         <div className="sm:col-span-3">
-          <Field label="Color"><ColorPicker value={f.color} onChange={(v) => setF({ ...f, color: v })} /></Field>
+          <Field label={t("color")}><ColorPicker value={f.color} onChange={(v) => setF({ ...f, color: v })} /></Field>
         </div>
         <div className="sm:col-span-3">
-          <Field label="Collection">
+          <Field label={t("collection")}>
             <select className={inputClass} value={f.collectionId} onChange={(e) => setF({ ...f, collectionId: e.target.value })}>
-              <option value="">Uncategorized</option>
-              {collections.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              <option value="">{g.folder("Uncategorized")}</option>
+              {collections.map((c) => <option key={c.id} value={c.id}>{g.folder(c.name)}</option>)}
             </select>
           </Field>
         </div>
         <div className="sm:col-span-6">
-          <Field label="Fit notes"><input className={inputClass} value={f.areaNotes} onChange={(e) => setF({ ...f, areaNotes: e.target.value })} /></Field>
+          <Field label={t("fitNotes")}><input className={inputClass} value={f.areaNotes} onChange={(e) => setF({ ...f, areaNotes: e.target.value })} /></Field>
         </div>
         <div className="flex gap-2 sm:col-span-6">
-          <Button onClick={save} disabled={saving || !f.brand || !f.size || !isValidSize(f.category, f.size)}>{saving ? "Saving…" : "Save changes"}</Button>
-          <Button variant="ghost" onClick={onCancel}>Cancel</Button>
+          <Button onClick={save} disabled={saving || !f.brand || !f.size || !isValidSize(f.category, f.size)}>{saving ? t("saving") : t("saveChanges")}</Button>
+          <Button variant="ghost" onClick={onCancel}>{t("cancel")}</Button>
         </div>
       </div>
     </Card>
@@ -1186,6 +1192,8 @@ function EditRow({
 
 function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   // Current swatch color to feed the native wheel (falls back to grey).
+  const t = useT("closet");
+  const g = useGarmentText();
   const wheelValue = colorHex(value) ?? "#9ca3af";
   return (
     <div className="space-y-2">
@@ -1195,7 +1203,7 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
           <button
             key={c.name}
             type="button"
-            title={c.name}
+            title={g.color(c.name)}
             onClick={() => onChange(value === c.name ? "" : c.name)}
             className={`h-6 w-6 rounded-full border transition-transform hover:scale-110 ${
               value === c.name ? "scale-110 border-brand ring-2 ring-brand/40" : "border-line"
@@ -1208,13 +1216,13 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
       <div className="flex items-center gap-2">
         <input
           className={inputClass + " flex-1"}
-          placeholder="or type a color…"
+          placeholder={t("colorPlaceholder")}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />
         <label
           className="relative flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-line"
-          title="Pick any color"
+          title={t("pickColor")}
           style={{ backgroundColor: wheelValue }}
         >
           <input
@@ -1231,29 +1239,25 @@ function ColorPicker({ value, onChange }: { value: string; onChange: (v: string)
 }
 
 function GenderBadge({ gender }: { gender: string }) {
-  const map: Record<string, { label: string; cls: string }> = {
-    // One neutral treatment: the line is information, not a colour code.
-    mens: { label: "M", cls: "text-ink-soft ring-1 ring-line" },
-    womens: { label: "W", cls: "text-ink-soft ring-1 ring-line" },
-    unisex: { label: "U", cls: "text-ink-soft ring-1 ring-line" },
-  };
-  const m = map[gender];
-  if (!m) return null;
+  const g = useGarmentText();
+  // One neutral treatment: the line is information, not a colour code.
+  if (!["mens", "womens", "unisex"].includes(gender)) return null;
   return (
-    <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${m.cls}`} title={gender}>
-      {m.label}
+    <span className="rounded px-1.5 py-0.5 text-[10px] font-semibold text-ink-soft ring-1 ring-line" title={g.line(gender)}>
+      {g.lineShort(gender)}
     </span>
   );
 }
 
 function ColorDot({ color }: { color: string | null }) {
+  const g = useGarmentText();
   const hex = colorHex(color);
   if (!hex) return null;
   return (
     <span
       className="inline-block h-2.5 w-2.5 flex-shrink-0 rounded-full ring-1 ring-black/10"
       style={{ backgroundColor: hex }}
-      title={color ?? undefined}
+      title={color ? g.color(color) : undefined}
     />
   );
 }
@@ -1292,8 +1296,8 @@ function ItemThumb({ item, size }: { item: Item; size: number }) {
 // files aside to look at together — the way you pull a few things out of a real
 // closet when planning an outfit.
 
-function itemName(it: Item): string {
-  return it.displayName || `${it.brand} ${garmentLabel(it.category)}`;
+function itemName(it: Item, label: (category: string) => string = garmentLabel): string {
+  return it.displayName || `${it.brand} ${label(it.category)}`;
 }
 
 // Folder sleeve colors — each collection reads as its own folder, distinct from
@@ -1326,6 +1330,8 @@ function FolderColorPicker({
   value: string | null | undefined;
   onPick: (color: string | null) => void;
 }) {
+  const t = useT("closet");
+  const g = useGarmentText();
   return (
     // Each swatch sits in a 44px-tall button: the dots were 20px targets,
     // the smallest tap targets left on the closet (mobile-audit).
@@ -1333,7 +1339,7 @@ function FolderColorPicker({
       <button
         type="button"
         onClick={() => onPick(null)}
-        aria-label="Automatic color"
+        aria-label={t("autoColor")}
         aria-pressed={!value}
         className="flex h-11 w-8 items-center justify-center"
       >
@@ -1346,7 +1352,7 @@ function FolderColorPicker({
           key={name}
           type="button"
           onClick={() => onPick(name)}
-          aria-label={`${name} folder`}
+          aria-label={t("folderNamed", { color: g.color(name) })}
           aria-pressed={value === name}
           className="flex h-11 w-8 items-center justify-center"
         >
@@ -1374,6 +1380,7 @@ function Folder({
   onBucket: (it: Item) => void;
   inBucket: (id: string) => boolean;
 }) {
+  const t = useT("closet");
   const c = folderColorFor(color, colorSeed);
   return (
     <div className="relative pt-3">
@@ -1383,7 +1390,7 @@ function Folder({
       <div className={`relative rounded-xl rounded-tl-none border ${c.edge} bg-gradient-to-b ${c.body} p-3 shadow-card`}>
         {groups.length === 0 ? (
           <div className="flex h-20 items-center justify-center rounded-lg border-2 border-dashed border-white/70 text-xs italic text-black/40">
-            Empty folder — items of this type file here automatically.
+            {t("emptyFolder")}
           </div>
         ) : (
           <div className="relative">
@@ -1423,9 +1430,11 @@ function FileCard({
   onBucket: (it: Item) => void;
   inBucket: (id: string) => boolean;
 }) {
+  const t = useT("closet");
+  const g = useGarmentText();
   const head = group.items[0];
-  const name = itemName(head);
-  const sizeLabel = group.isVariant ? `${group.items.length} sizes` : `size ${head.size}`;
+  const name = itemName(head, g.label);
+  const sizeLabel = group.isVariant ? t("nSizes", { n: group.items.length }) : t("sizeN", { size: head.size });
   const bucketed = inBucket(head.id);
   return (
     <div
@@ -1449,7 +1458,7 @@ function FileCard({
               {group.items.length}
             </span>
           )}
-          <span className="flex-shrink-0 text-xs text-ink-faint">{garmentLabel(head.category)} · {sizeLabel}</span>
+          <span className="flex-shrink-0 text-xs text-ink-faint">{g.label(head.category)} · {sizeLabel}</span>
         </div>
 
         {/* overview — open on the front file, and on hover for the rest */}
@@ -1466,7 +1475,7 @@ function FileCard({
                 {head.gender ? <span className="ml-1"><GenderBadge gender={head.gender} /></span> : null}
               </p>
               <FitStars rating={head.fitRating} size={11} />
-              {head.color && <p className="text-[11px] text-ink-faint">{head.color}</p>}
+              {head.color && <p className="text-[11px] text-ink-faint">{g.color(head.color)}</p>}
             </div>
             <button
               onClick={(e) => { e.stopPropagation(); onBucket(head); }}
@@ -1475,9 +1484,9 @@ function FileCard({
                   ? "border-brand bg-brand-tint text-brand"
                   : "border-line text-ink-soft hover:border-brand hover:text-brand"
               }`}
-              title="Set aside to compare"
+              title={t("setAside")}
             >
-              {bucketed ? <><Check size={12} className="-mt-px mr-0.5 inline" />Bucket</> : <><Plus size={12} className="-mt-px mr-0.5 inline" />Bucket</>}
+              {bucketed ? <><Check size={12} className="-mt-px mr-0.5 inline" />{t("bucket")}</> : <><Plus size={12} className="-mt-px mr-0.5 inline" />{t("bucket")}</>}
             </button>
           </div>
         </div>
@@ -1516,8 +1525,10 @@ function DetailSheet({
   onPhoto: (id: string, file: File | null) => Promise<void>;
   onRemove: (id: string) => void;
 }) {
+  const t = useT("closet");
+  const g = useGarmentText();
   const head = group.items[0];
-  const name = itemName(head);
+  const name = itemName(head, g.label);
   // Which item (if any) is being edited inline, right here in the sheet.
   const [editId, setEditId] = useState<string | null>(null);
   const editItem = editId ? group.items.find((it) => it.id === editId) ?? null : null;
@@ -1562,10 +1573,10 @@ function DetailSheet({
       >
         <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-4">
           <div className="min-w-0">
-            <p className="eyebrow text-ink-faint">{garmentLabel(head.category)}</p>
+            <p className="eyebrow text-ink-faint">{g.label(head.category)}</p>
             <h3 className="mt-1 truncate text-h3 font-semibold text-ink">{name}</h3>
           </div>
-          <button onClick={onClose} className="-mr-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-ink-soft hover:bg-ink/5 hover:text-ink" aria-label="Close">
+          <button onClick={onClose} className="-mr-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-ink-soft hover:bg-ink/5 hover:text-ink" aria-label={t("close")}>
             <Close size={20} />
           </button>
         </div>
@@ -1594,58 +1605,58 @@ function DetailSheet({
               >
                 {head.imageDataUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={head.imageDataUrl} alt={`${name}, your photo`} className="h-full w-full object-cover" />
+                  <img src={head.imageDataUrl} alt={t("yourPhotoAlt", { name })} className="h-full w-full object-cover" />
                 ) : (
                   <GarmentIcon category={head.category} size={80} className={iconToneOn(hex) === "light" ? "text-white/80" : "text-ink/45"} />
                 )}
                 {busy && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white/60">
-                    <span className="h-6 w-6 animate-spin rounded-full border-2 border-ink border-r-transparent" aria-label="Saving photo" />
+                    <span className="h-6 w-6 animate-spin rounded-full border-2 border-ink border-r-transparent" aria-label={t("savingPhoto")} />
                   </div>
                 )}
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
                 <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-line bg-white px-3.5 text-xs font-medium text-ink transition-colors hover:border-ink/40 focus-within:ring-2 focus-within:ring-brand/40">
                   <Camera size={16} />
-                  {head.imageDataUrl ? "Replace photo" : "Add a photo"}
+                  {head.imageDataUrl ? t("replacePhoto") : t("addPhoto")}
                   <input type="file" accept="image/*" className="sr-only" onChange={(e) => { photo(e.target.files?.[0]); e.target.value = ""; }} />
                 </label>
                 {head.imageDataUrl && (
-                  <Button size="sm" variant="ghost" icon={<Trash size={16} />} onClick={() => photo(null)}>Remove</Button>
+                  <Button size="sm" variant="ghost" icon={<Trash size={16} />} onClick={() => photo(null)}>{t("remove")}</Button>
                 )}
               </div>
               <p className="mt-2 text-xs text-ink-faint">
-                {failed ? <span className="text-bad">That file couldn&apos;t be read as a photo. Try a JPEG or PNG.</span> : "Your own photo. It's cropped to 4:5 and kept small."}
+                {failed ? <span className="text-bad">{t("photoFileFailed")}</span> : t("photoNote")}
               </p>
             </div>
 
             <div className="flex items-start gap-4 px-5 py-5">
               <div className="min-w-0 space-y-1 text-sm">
                 <p className="font-medium text-ink">{head.brand}</p>
-                <p className="text-ink-soft">{garmentLabel(head.category)}{head.gender ? ` · ${head.gender}` : ""}</p>
+                <p className="text-ink-soft">{g.label(head.category)}{head.gender ? ` · ${g.line(head.gender)}` : ""}</p>
                 <FitStars rating={head.fitRating} size={14} />
               </div>
               {!group.isVariant && (
-                <Button size="sm" variant="secondary" icon={<Pencil size={16} />} className="ml-auto" onClick={() => setEditId(head.id)}>Edit</Button>
+                <Button size="sm" variant="secondary" icon={<Pencil size={16} />} className="ml-auto" onClick={() => setEditId(head.id)}>{t("edit")}</Button>
               )}
             </div>
 
             {/* variants OR single size */}
             <div className="border-t border-line px-5 py-4">
               <p className="eyebrow mb-2 text-ink-faint">
-                {group.isVariant ? `${group.items.length} variants` : "Details"}
+                {group.isVariant ? t("nVariants", { n: group.items.length }) : t("details")}
               </p>
               <div className="space-y-1.5">
                 {group.items.map((v) => (
                   <div key={v.id} className="flex items-center justify-between rounded-lg px-3 py-2 text-sm ring-1 ring-line">
                     <span className="flex items-center gap-2">
                       <ColorDot color={v.color} />
-                      <span className="font-medium text-ink">size {v.size}</span>
-                      {v.color && <span className="text-ink-faint">· {v.color}</span>}
+                      <span className="font-medium text-ink">{t("sizeN", { size: v.size })}</span>
+                      {v.color && <span className="text-ink-faint">· {g.color(v.color)}</span>}
                     </span>
                     <span className="flex items-center gap-3 text-xs">
-                      <button onClick={() => setEditId(v.id)} className="text-ink-soft hover:text-ink">Edit</button>
-                      <button onClick={() => onRemove(v.id)} className="text-ink-faint hover:text-bad">Remove</button>
+                      <button onClick={() => setEditId(v.id)} className="text-ink-soft hover:text-ink">{t("edit")}</button>
+                      <button onClick={() => onRemove(v.id)} className="text-ink-faint hover:text-bad">{t("remove")}</button>
                     </span>
                   </div>
                 ))}
@@ -1658,17 +1669,17 @@ function DetailSheet({
 
             {/* timestamps: created · last modified · edit history */}
             <div className="border-t border-line px-5 py-4 text-xs">
-              <p className="eyebrow mb-2 text-ink-faint">History</p>
+              <p className="eyebrow mb-2 text-ink-faint">{t("history")}</p>
               <dl className="space-y-1 text-ink-soft">
-                <div className="flex justify-between"><dt className="text-ink-faint">Created</dt><dd>{fmtWhen(head.createdAt)}</dd></div>
-                <div className="flex justify-between"><dt className="text-ink-faint">Last modified</dt><dd>{lastEdited ? fmtWhen(lastEdited) : "never"}</dd></div>
+                <div className="flex justify-between"><dt className="text-ink-faint">{t("created")}</dt><dd>{fmtWhen(head.createdAt)}</dd></div>
+                <div className="flex justify-between"><dt className="text-ink-faint">{t("lastModified")}</dt><dd>{lastEdited ? fmtWhen(lastEdited) : t("never")}</dd></div>
               </dl>
               {history.length > 1 && (
                 <details className="mt-2">
-                  <summary className="cursor-pointer text-ink-faint hover:text-ink">{history.length} recorded edits</summary>
+                  <summary className="cursor-pointer text-ink-faint hover:text-ink">{t("nEdits", { n: history.length })}</summary>
                   <ul className="mt-1 space-y-0.5 border-l border-line pl-3 text-ink-faint">
-                    {history.slice().reverse().map((t, i) => (
-                      <li key={i}>{fmtWhen(t)}</li>
+                    {history.slice().reverse().map((when, i) => (
+                      <li key={i}>{fmtWhen(when)}</li>
                     ))}
                   </ul>
                 </details>
@@ -1686,10 +1697,10 @@ function DetailSheet({
                   className={inBucket(head.id) ? "!border-brand !text-brand" : ""}
                   onClick={() => onBucket(head)}
                 >
-                  {inBucket(head.id) ? "In bucket" : "Add to bucket"}
+                  {inBucket(head.id) ? t("inBucket") : t("addToBucket")}
                 </Button>
               </div>
-              <p className="text-[11px] text-ink-faint">Precise measurements stay private — never shared by code.</p>
+              <p className="text-[11px] text-ink-faint">{t("privateNote")}</p>
             </div>
           </>
         )}
@@ -1710,6 +1721,8 @@ function BucketPanel({
   onClear: () => void;
   onOpen: (it: Item) => void;
 }) {
+  const t = useT("closet");
+  const g = useGarmentText();
   const [open, setOpen] = useState(true);
   if (items.length === 0) return null;
   return (
@@ -1717,10 +1730,10 @@ function BucketPanel({
       {open ? (
         <div className="w-72 rounded-2xl bg-white p-3 ring-1 ring-line shadow-lift">
           <div className="mb-2 flex items-center justify-between">
-            <p className="flex items-center gap-1.5 text-sm font-semibold text-ink"><Basket size={16} /> Comparison bucket <span className="text-ink-faint">({items.length})</span></p>
+            <p className="flex items-center gap-1.5 text-sm font-semibold text-ink"><Basket size={16} /> {t("comparisonBucket")} <span className="text-ink-faint">({items.length})</span></p>
             <div className="flex items-center gap-2 text-xs">
-              <button onClick={onClear} className="text-ink-faint hover:text-bad">Clear</button>
-              <button onClick={() => setOpen(false)} className="flex h-6 w-6 items-center justify-center rounded-full text-ink-faint hover:bg-ink/5 hover:text-ink" aria-label="Collapse"><CaretDown size={14} /></button>
+              <button onClick={onClear} className="text-ink-faint hover:text-bad">{t("clear")}</button>
+              <button onClick={() => setOpen(false)} className="flex h-6 w-6 items-center justify-center rounded-full text-ink-faint hover:bg-ink/5 hover:text-ink" aria-label={t("collapse")}><CaretDown size={14} /></button>
             </div>
           </div>
           <div className="grid max-h-72 grid-cols-2 gap-2 overflow-y-auto">
@@ -1729,24 +1742,24 @@ function BucketPanel({
                 <button
                   onClick={() => onRemove(it)}
                   className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-paper-dim text-[10px] leading-none text-ink-soft hover:bg-bad-tint hover:text-bad"
-                  aria-label="Remove from bucket"
+                  aria-label={t("removeFromBucket")}
                 ><Close size={10} /></button>
                 <button onClick={() => onOpen(it)} className="flex w-full flex-col items-center gap-1 text-center">
                   <ItemThumb item={it} size={44} />
-                  <span className="w-full truncate text-[11px] font-medium text-ink">{itemName(it)}</span>
-                  <span className="text-[10px] text-ink-faint">{garmentLabel(it.category)} · {it.size}</span>
+                  <span className="w-full truncate text-[11px] font-medium text-ink">{itemName(it, g.label)}</span>
+                  <span className="text-[10px] text-ink-faint">{g.label(it.category)} · {it.size}</span>
                 </button>
               </div>
             ))}
           </div>
-          <p className="mt-2 text-[10px] text-ink-faint">Held for side-by-side comparison — not a saved list.</p>
+          <p className="mt-2 text-[10px] text-ink-faint">{t("bucketNote")}</p>
         </div>
       ) : (
         <button
           onClick={() => setOpen(true)}
           className="flex h-11 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper shadow-lift"
         >
-          <Basket size={16} /> Bucket <span className="rounded-full bg-white/25 px-1.5">{items.length}</span>
+          <Basket size={16} /> {t("bucket")} <span className="rounded-full bg-white/25 px-1.5">{items.length}</span>
         </button>
       )}
     </div>
@@ -1774,23 +1787,13 @@ function BucketPanel({
  * the app for exactly this reason: it shows one decision at a time.
  * ------------------------------------------------------------------------ */
 
-const STEP_QUESTION: Record<AddStep, string> = {
-  brand: "What brand is it?",
-  category: "What kind of garment?",
-  size: "What size is on the label?",
-  fit: "How does it sit on you?",
-};
-
-// One line each, and each says what the answer buys. Asking for something
-// without saying why is most of what makes a form feel like homework.
-const STEP_WHY: Record<AddStep, string> = {
-  brand: "Sizing varies more between brands than between sizes — this is the most useful thing you can tell us.",
-  category: "A shirt and a coat are cut with different amounts of room.",
-  size: "Whatever the label says. Region conversions are handled for you.",
-  fit: "This is what moves a recommendation up or down a size for this brand.",
-};
+// Each step's question and one line on what the answer buys (closet.step.*).
+// Asking for something without saying why is most of what makes a form feel
+// like homework.
 
 function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => void; onClose?: () => void }) {
+  const t = useT("closet");
+  const g = useGarmentText();
   const [form, setForm] = useState({ ...BLANK });
   const [stepIndex, setStepIndex] = useState(0);
   const [saving, setSaving] = useState(false);
@@ -1819,7 +1822,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
   // What has been answered so far, so the flow never loses the user's place.
   const trail = [
     stepIndex > 0 && form.brand.trim(),
-    stepIndex > 1 && garmentLabel(form.category),
+    stepIndex > 1 && g.label(form.category),
     stepIndex > 2 && form.size,
   ].filter(Boolean).join(" · ");
 
@@ -1833,7 +1836,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ url: pasteUrl.trim() }),
       }).then((r) => r.json());
-      if (r.error) { setExtractNote("Couldn't read that URL — answer the questions instead."); return; }
+      if (r.error) { setExtractNote(t("extractFailed")); return; }
       setSizeRows(Array.isArray(r.sizeRows) ? r.sizeRows : []);
       setMeasuredFrom(typeof r.measuredFrom === "string" ? r.measuredFrom : null);
       setForm((f) => ({
@@ -1844,13 +1847,13 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
         gender: r.gender || f.gender,
         size: "", // sizes are offered, never chosen for the user
       }));
-      const bits = [r.brand, r.category && garmentLabel(r.category)].filter(Boolean).join(" · ");
-      setExtractNote(`Read ${bits || "details"} from ${r.source?.host ?? "the page"}.`);
+      const bits = [r.brand, r.category && g.label(r.category)].filter(Boolean).join(" · ");
+      setExtractNote(t("extractRead", { bits: bits || t("extractDetails"), host: r.source?.host ?? t("thePage") }));
       // The payoff for pasting a link is skipping the questions it answered.
       if (r.brand && r.category) setStepIndex(ADD_STEPS.indexOf("size"));
       else if (r.brand) setStepIndex(ADD_STEPS.indexOf("category"));
     } catch {
-      setExtractNote("Couldn't read that URL — answer the questions instead.");
+      setExtractNote(t("extractFailed"));
     } finally {
       setExtracting(false);
     }
@@ -1905,7 +1908,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
         areaNotesJson: form.areaNotes ? JSON.stringify({ notes: form.areaNotes }) : null,
       }),
     });
-    setJustAdded(`${form.brand} ${garmentLabel(form.category)} · ${form.size}`);
+    setJustAdded(`${form.brand} ${g.label(form.category)} · ${form.size}`);
     setForm({ ...BLANK });
     setStepIndex(0);
     setShowDetails(false);
@@ -1921,7 +1924,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
       {justAdded && (
         <p className="mb-4 flex items-center gap-2 rounded-lg bg-ok-tint px-3 py-2 text-sm text-ok">
           <Check size={16} className="flex-shrink-0" />
-          <span>Added <span className="font-medium">{justAdded}</span>. Add a photo on its card, or another piece below.</span>
+          <span>{t.rich("added", { b: (c) => <span className="font-medium">{c}</span> }, { item: justAdded })}</span>
         </p>
       )}
 
@@ -1929,11 +1932,11 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
       <div className="mb-4">
         <div className="mb-2 flex items-baseline justify-between gap-3">
           <p className="flex-shrink-0 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
-            Add an item · {stepIndex + 1} of {ADD_STEPS.length}
+            {t("stepOf", { n: stepIndex + 1, total: ADD_STEPS.length })}
           </p>
           {trail && <p className="min-w-0 truncate text-[11px] text-ink-soft">{trail}</p>}
           {onClose && !trail && (
-            <button type="button" onClick={onClose} className="-my-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-ink/5 hover:text-ink" aria-label="Close">
+            <button type="button" onClick={onClose} className="-my-1 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-ink/5 hover:text-ink" aria-label={t("close")}>
               <Close size={16} />
             </button>
           )}
@@ -1951,17 +1954,18 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
       {step === "brand" && (
         <div className="mb-4 rounded-xl border border-dashed border-line bg-paper-soft p-3">
           <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
-            Have a link? Skip ahead
+            {t("haveLink")}
           </p>
           <div className="flex flex-col gap-2 sm:flex-row">
             <input
               className={inputClass + " min-w-0 flex-1"}
-              placeholder="Paste a product URL…"
+              placeholder={t("pastePlaceholder")}
+              aria-label={t("pastePlaceholder")}
               value={pasteUrl}
               onChange={(e) => setPasteUrl(e.target.value)}
             />
             <Button type="button" variant="secondary" size="md" onClick={extractFromUrl} disabled={extracting || !pasteUrl.trim()}>
-              {extracting ? "Reading…" : "Auto-fill"}
+              {extracting ? t("reading") : t("autofill")}
             </Button>
           </div>
           {extractNote && <p className="mt-1.5 text-[11px] text-ink-soft">{extractNote}</p>}
@@ -1969,8 +1973,8 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
       )}
 
       <form onSubmit={onSubmit}>
-        <h3 className="text-base font-semibold text-ink">{STEP_QUESTION[step]}</h3>
-        <p className="mt-0.5 text-xs text-ink-soft">{STEP_WHY[step]}</p>
+        <h3 className="text-base font-semibold text-ink">{t(`step.${step}.q`)}</h3>
+        <p className="mt-0.5 text-xs text-ink-soft">{t(`step.${step}.why`)}</p>
 
         <div className="mt-3">
           {step === "brand" && (
@@ -1995,10 +1999,10 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
 
         <div className="mt-5 flex flex-wrap items-center gap-2">
           {stepIndex > 0 && (
-            <Button type="button" variant="ghost" onClick={() => setStepIndex(stepIndex - 1)}>Back</Button>
+            <Button type="button" variant="ghost" onClick={() => setStepIndex(stepIndex - 1)}>{t("back")}</Button>
           )}
           <Button type="submit" disabled={!ready || (isLast && (saving || !canAdd))}>
-            {isLast ? (saving ? "Adding…" : "Add to closet") : "Continue"}
+            {isLast ? (saving ? t("adding") : t("addToCloset")) : t("continue")}
           </Button>
         </div>
 
@@ -2011,16 +2015,14 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
               className="inline-flex items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink"
             >
               <CaretDown size={14} className={`transition-transform ${showDetails ? "rotate-180" : ""}`} />
-              {showDetails ? "Hide details" : "Add details (optional)"}
+              {showDetails ? t("hideDetails") : t("addDetails")}
             </button>
-            <p className="mt-1 text-[11px] text-ink-faint">
-              Photo, name, colour, notes. The fit engine doesn&apos;t read these — you can add them any time by editing the item.
-            </p>
+            <p className="mt-1 text-[11px] text-ink-faint">{t("detailsNote")}</p>
 
             {showDetails && (
               <div className="mt-3 grid gap-3 sm:grid-cols-6">
                 <div className="sm:col-span-6">
-                  <Field label="Photo" hint="optional · your own photo">
+                  <Field label={t("photo")} hint={t("photoHint")}>
                     <div className="flex items-center gap-3">
                       <label className="flex h-16 w-16 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-xl text-ink-faint hover:border-brand">
                         {form.imageDataUrl ? (
@@ -2030,33 +2032,33 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
                         <input type="file" accept="image/*" className="hidden" onChange={(e) => onPickImage(e.target.files?.[0])} />
                       </label>
                       {form.imageDataUrl
-                        ? <button type="button" onClick={() => setForm({ ...form, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-bad">remove photo</button>
-                        : <span className="min-w-0 text-xs text-ink-faint">Click to upload a picture of this item.</span>}
+                        ? <button type="button" onClick={() => setForm({ ...form, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-bad">{t("removePhoto")}</button>
+                        : <span className="min-w-0 text-xs text-ink-faint">{t("uploadHint")}</span>}
                     </div>
                   </Field>
                 </div>
                 <div className="sm:col-span-3">
-                  <Field label="Name" hint="optional">
-                    <input className={inputClass} placeholder="e.g. Blue Oxford"
+                  <Field label={t("name")} hint={t("optional")}>
+                    <input className={inputClass} placeholder={t("namePlaceholder")}
                       value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />
                   </Field>
                 </div>
                 <div className="sm:col-span-3">
-                  <Field label="Line" hint="optional">
+                  <Field label={t("lineLabel")} hint={t("optional")}>
                     <select className={inputClass} value={form.gender}
                       onChange={(e) => setForm({ ...form, gender: e.target.value })}>
-                      {GENDERS.map((g) => <option key={g.v} value={g.v}>{g.label}</option>)}
+                      {GENDERS.map((v) => <option key={v} value={v}>{g.line(v)}</option>)}
                     </select>
                   </Field>
                 </div>
                 <div className="sm:col-span-3">
-                  <Field label="Color" hint="optional">
+                  <Field label={t("color")} hint={t("optional")}>
                     <ColorPicker value={form.color} onChange={(v) => setForm({ ...form, color: v })} />
                   </Field>
                 </div>
                 <div className="sm:col-span-3">
-                  <Field label="Fit notes" hint="optional">
-                    <input className={inputClass} placeholder="e.g. shoulders perfect, sleeves long"
+                  <Field label={t("fitNotes")} hint={t("optional")}>
+                    <input className={inputClass} placeholder={t("notesPlaceholder")}
                       value={form.areaNotes} onChange={(e) => setForm({ ...form, areaNotes: e.target.value })} />
                   </Field>
                 </div>
@@ -2064,7 +2066,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
                   <label className="flex items-center gap-1.5 text-xs text-ink-soft">
                     <input type="checkbox" checked={!form.onlineAvailable} className="accent-brand"
                       onChange={(e) => setForm({ ...form, onlineAvailable: !e.target.checked })} />
-                    In-store only (not available online)
+                    {t("inStoreOnly")}
                   </label>
                 </div>
               </div>
@@ -2091,11 +2093,13 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
  * exists to preserve.
  */
 function GarmentMeasurements({ item }: { item: Item }) {
+  const t = useT("closet");
+  const tm = useT("check");
   const parts = [
-    item.garmentChestCm != null && `chest ${item.garmentChestCm}cm`,
-    item.garmentShoulderCm != null && `shoulder ${item.garmentShoulderCm}cm`,
-    item.garmentSleeveCm != null && `sleeve ${item.garmentSleeveCm}cm`,
-    item.garmentLengthCm != null && `length ${item.garmentLengthCm}cm`,
+    item.garmentChestCm != null && tm("measure.chest", { n: item.garmentChestCm }),
+    item.garmentShoulderCm != null && tm("measure.shoulder", { n: item.garmentShoulderCm }),
+    item.garmentSleeveCm != null && tm("measure.sleeve", { n: item.garmentSleeveCm }),
+    item.garmentLengthCm != null && tm("measure.length", { n: item.garmentLengthCm }),
   ].filter(Boolean) as string[];
   if (parts.length === 0) return null;
 
@@ -2106,13 +2110,9 @@ function GarmentMeasurements({ item }: { item: Item }) {
         className={`rounded px-1.5 py-0.5 text-[10px] font-semibold ${
           fromPage ? "bg-brand/10 text-brand-dark" : "bg-paper-dim text-ink-faint"
         }`}
-        title={
-          fromPage
-            ? "Read from the retailer's own size chart when you added this."
-            : "Estimated by the extractor — the page had no chart we could read."
-        }
+        title={fromPage ? t("measuredTitle") : t("estimatedTitle")}
       >
-        {fromPage ? "garment measured" : "garment estimated"}
+        {fromPage ? t("garmentMeasured") : t("garmentEstimated")}
       </span>
       {parts.map((t) => (
         <span key={t} className="min-w-0 truncate rounded bg-paper-soft px-1.5 py-0.5 text-[10px] tabular-nums text-ink-soft">

@@ -7,6 +7,7 @@
 
 import { inputClass } from "@/components/ui";
 import { garmentSections } from "@/lib/garments";
+import { useGarmentText } from "@/i18n/garment";
 
 export function CategoryPicker({
   value,
@@ -15,13 +16,14 @@ export function CategoryPicker({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const g = useGarmentText();
   return (
     <select className={inputClass} value={value} onChange={(e) => onChange(e.target.value)}>
       {garmentSections().map(({ section, items }) => (
-        <optgroup key={section} label={section}>
-          {items.map((g) => (
-            <option key={g.category} value={g.category}>
-              {g.label}
+        <optgroup key={section} label={g.section(section)}>
+          {items.map((item) => (
+            <option key={item.category} value={item.category}>
+              {g.label(item.category)}
             </option>
           ))}
         </optgroup>

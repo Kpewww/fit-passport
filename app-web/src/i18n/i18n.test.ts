@@ -23,6 +23,7 @@ const SAME_IN_BOTH = new Set([
   "common.enShort",
   "common.zhLong",
   "common.enLong",
+  "garment.line.none", // a dash
 ]);
 
 describe("the Chinese messages match the English ones", () => {

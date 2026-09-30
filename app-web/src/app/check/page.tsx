@@ -19,6 +19,7 @@ import { SafeBoundary } from "@/components/SafeBoundary";
 import { CONFIDENCE_WEIGHTS } from "@/lib/confidenceWeights";
 import { chestEaseCm } from "@/lib/bodyMesh";
 import { useT } from "@/i18n/client";
+import { useGarmentText } from "@/i18n/garment";
 
 // three.js only loads if someone opens the 3D view. Boundaried because a failed
 // chunk silently blanks its subtree rather than throwing.
@@ -588,6 +589,7 @@ function Result({
 }) {
   const t = useT("check");
   const tf = useT("fit");
+  const g = useGarmentText();
   const { product, source, result, body } = data;
   // The first two lines of the engine's explanation are the reasons; the rest is
   // the working, one tap away. Showing all of it at once buried the answer.
@@ -598,7 +600,7 @@ function Result({
     .filter((l) => l.trim());
   const lead = lines.slice(0, 2);
   const more = lines.slice(2);
-  const meta = [product.brand, product.category].filter(Boolean).join(" · ");
+  const meta = [product.brand, product.category && g.label(product.category)].filter(Boolean).join(" · ");
 
   return (
     <section className="mt-10 space-y-6 animate-fade-in-up">

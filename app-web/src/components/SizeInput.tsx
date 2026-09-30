@@ -15,15 +15,12 @@
 
 import { useState } from "react";
 import { inputClass } from "@/components/ui";
-import { domainForCategory, isValidSize, presetSizesFor, sizeHintFor } from "@/lib/sizeSystems";
+import { domainForCategory, isValidSize, presetSizesFor } from "@/lib/sizeSystems";
 import { SizeConverter } from "@/components/SizeConverter";
+import { useT } from "@/i18n/client";
 
-// Longer, plain-language explanation for domains whose numbers aren't obvious.
-const DOMAIN_EXPLAINER: Record<string, string> = {
-  bottom:
-    "Pants sizes are in inches. A single number is your waist — e.g. 32 means a 32-inch waist (≈ 81 cm). " +
-    "A pair like 32 × 34 means waist 32 in × inseam 34 in, where the inseam is the inner-leg length from crotch to hem.",
-};
+// Domains whose numbers need a plain-language explanation (sizeInput.explainBottom).
+const HAS_EXPLAINER = new Set(["bottom"]);
 
 export function SizeInput({
   category,
@@ -34,10 +31,12 @@ export function SizeInput({
   value: string;
   onChange: (v: string) => void;
 }) {
+  const t = useT("sizeInput");
   const presets = presetSizesFor(category);
-  const hint = sizeHintFor(category);
   const domain = domainForCategory(category);
-  const explainer = DOMAIN_EXPLAINER[domain];
+  // The same hint lib/sizeSystems.ts gives the server, in the reader's language.
+  const hint = t(`hint.${domain}`);
+  const explainer = HAS_EXPLAINER.has(domain) ? t("explainBottom") : null;
   const trimmed = value.trim();
   const invalid = trimmed.length > 0 && !isValidSize(category, trimmed);
   const [showExplainer, setShowExplainer] = useState(false);
@@ -76,7 +75,7 @@ export function SizeInput({
       {/* 3. One help line */}
       <div className="flex items-center gap-1.5 text-[11px]">
         {invalid ? (
-          <span className="text-bad">Not a recognized size — try {hint}.</span>
+          <span className="text-bad">{t("invalid", { hint })}</span>
         ) : (
           <span className="text-ink-faint">{hint}</span>
         )}
@@ -86,7 +85,7 @@ export function SizeInput({
             onClick={() => setShowExplainer((v) => !v)}
             className="text-brand hover:underline"
           >
-            {showExplainer ? "hide" : "what do these mean?"}
+            {showExplainer ? t("hide") : t("whatMean")}
           </button>
         )}
       </div>
