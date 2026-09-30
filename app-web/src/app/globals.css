@@ -39,6 +39,41 @@ body {
   letter-spacing: 0.24em;
 }
 
+/* ---- Chinese (Session 79) -------------------------------------------------
+   Latin stays in Inter / Fraunces; Chinese glyphs fall through to the reader's
+   own system fonts. Nothing is downloaded: a CJK font is megabytes, and the
+   self-hosting rule (layout.tsx) exists because a remote font once broke builds.
+   The heading stack avoids ending in SimSun — Windows' default serif, which is
+   poor at display sizes — by falling to the sans before the generic serif. */
+:lang(zh) .font-sans,
+:lang(zh).font-sans {
+  font-family: var(--font-sans), "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei",
+    "Noto Sans SC", "Source Han Sans SC", system-ui, sans-serif;
+}
+:lang(zh) .font-serif {
+  font-family: var(--font-serif), "Songti SC", "Noto Serif SC", "Source Han Serif SC",
+    "PingFang SC", "Microsoft YaHei", serif;
+  letter-spacing: 0;
+}
+/* Chinese has no italic; browsers fake one by slanting the glyphs, which reads
+   as a rendering fault. The accent keeps its colour. The wordmark is marked
+   lang="en" and keeps its italic. */
+:lang(zh) .italic {
+  font-style: normal;
+}
+/* Tight tracking pulls CJK glyphs into each other, and the Latin display
+   line-heights (0.95–1.02) clip their taller boxes on two-line headings. */
+:lang(zh) .tracking-tight {
+  letter-spacing: 0;
+}
+:lang(zh) h1.font-serif,
+:lang(zh) h2.font-serif {
+  line-height: 1.2;
+}
+:lang(zh) .eyebrow {
+  letter-spacing: 0.12em;
+}
+
 
 /* Dark "credential" glass panel — a translucent frosted interior on dark bands. */
 .glass-panel {

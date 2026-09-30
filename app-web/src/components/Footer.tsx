@@ -4,37 +4,43 @@
 
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
+import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { getT } from "@/i18n/server";
+import type { KeyIn } from "@/i18n/types";
 
-const COLUMNS: Array<{ title: string; links: Array<{ label: string; href: string }> }> = [
+type LinkKey = KeyIn<"footer"> & `links.${string}`;
+
+const COLUMNS: Array<{ title: KeyIn<"footer">; links: Array<{ label: LinkKey; href: string }> }> = [
   {
-    title: "Product",
+    title: "columns.product",
     links: [
-      { label: "Check a size", href: "/check" },
-      { label: "Browser extension", href: "/extension" },
-      { label: "Your closet", href: "/closet" },
-      { label: "Passport", href: "/passport" },
-      { label: "Outfits", href: "/outfits" },
+      { label: "links.check", href: "/check" },
+      { label: "links.extension", href: "/extension" },
+      { label: "links.closet", href: "/closet" },
+      { label: "links.passport", href: "/passport" },
+      { label: "links.outfits", href: "/outfits" },
     ],
   },
   {
-    title: "Community",
+    title: "columns.community",
     links: [
-      { label: "Directory", href: "/community" },
-      { label: "Badges", href: "/badges" },
-      { label: "Help & guide", href: "/help" },
+      { label: "links.directory", href: "/community" },
+      { label: "links.badges", href: "/badges" },
+      { label: "links.help", href: "/help" },
     ],
   },
   {
-    title: "Account",
+    title: "columns.account",
     links: [
-      { label: "Your account", href: "/account" },
-      { label: "Log in", href: "/login" },
-      { label: "Reset password", href: "/recover" },
+      { label: "links.account", href: "/account" },
+      { label: "links.login", href: "/login" },
+      { label: "links.recover", href: "/recover" },
     ],
   },
 ];
 
 export function Footer() {
+  const t = getT("footer");
   return (
     <footer className="mt-auto border-t border-line bg-paper">
       <div className="mx-auto max-w-6xl px-4 pb-10 pt-12 sm:px-6 sm:pt-14">
@@ -43,25 +49,21 @@ export function Footer() {
           <div className="col-span-2 sm:col-span-1">
             <Link href="/" className="flex items-center gap-2 text-ink">
               <Logo size={26} />
-              <span className="font-serif text-xl italic">Fit Passport</span>
+              <span lang="en" className="font-serif text-xl italic">Fit Passport</span>
             </Link>
-            <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">
-              One body. One fit identity. Any store. A consumer-owned fit layer —
-              you keep the profile, it works wherever you shop.
-            </p>
-            <p className="mt-4 text-xs text-ink-faint">
-              Precise measurements never leave your account.
-            </p>
+            <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">{t("tagline")}</p>
+            <p className="mt-4 text-xs text-ink-faint">{t("privacy")}</p>
+            <LanguageSwitch className="mt-5" />
           </div>
 
           {COLUMNS.map((c) => (
             <div key={c.title}>
-              <p className="eyebrow text-ink-faint">{c.title}</p>
+              <p className="eyebrow text-ink-faint">{t(c.title)}</p>
               <ul className="mt-4 space-y-2.5 text-[13px]">
                 {c.links.map((l) => (
                   <li key={l.href}>
                     <Link href={l.href} className="text-ink-soft transition-colors hover:text-ink">
-                      {l.label}
+                      {t(l.label)}
                     </Link>
                   </li>
                 ))}
@@ -73,10 +75,8 @@ export function Footer() {
         {/* closing line */}
         <div className="mt-12 flex flex-col gap-3 border-t border-line pt-6 text-xs text-ink-faint sm:flex-row sm:items-center sm:justify-between">
           <p>
-            <span className="rounded-full border border-line px-2 py-0.5 font-medium">DEMO</span>
-            <span className="ml-2">
-              A working prototype. Recommendations are explained, never guessed at silently.
-            </span>
+            <span className="rounded-full border border-line px-2 py-0.5 font-medium">{t("demo")}</span>
+            <span className="ml-2">{t("demoLine")}</span>
           </p>
           <p>Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang · © 2026</p>
         </div>

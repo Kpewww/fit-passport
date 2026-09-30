@@ -5,8 +5,10 @@
 // smooth-scrolled homepage and on ordinary pages alike.
 
 import { useEffect, useState } from "react";
+import { useT } from "@/i18n/client";
 
 export function BackToTop() {
+  const t = useT("common");
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -19,8 +21,8 @@ export function BackToTop() {
   return (
     <button
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      aria-label="Back to top"
-      title="Back to top"
+      aria-label={t("backToTop")}
+      title={t("backToTop")}
       className={`fixed bottom-4 left-3 z-40 flex h-11 w-11 items-center justify-center rounded-full border border-line bg-paper/90 text-ink shadow-lift backdrop-blur transition-all duration-300 hover:bg-white sm:bottom-6 sm:left-6 sm:bg-paper-soft ${
         show ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
       }`}

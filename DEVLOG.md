@@ -31,6 +31,74 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 79b — A Chinese version, and a switch that remembers
+
+The founder asked for a Chinese version with a 中/EN switch, its copy written the
+way Chinese product writing persuades — imaginative but on topic, classical
+phrasing allowed where it earns its place. Decided with the founder: the brand
+stays **Fit Passport** (no Chinese name); the first visit **follows the browser's
+language**, and a choice is remembered.
+
+**The foundation** (`app-web/src/i18n/`, no dependency):
+- `config.ts` — one decision: the extension's `x-fp-lang` header, then the
+  `fp-lang` cookie (the switch), then Accept-Language by q-value, then English.
+- `messages/en.ts` is the source of every key; `zh.ts` is typed from it, so a
+  missing key does not compile. Messages are plain strings (`{placeholders}`,
+  a few tags such as `<b>` and `<accent>`), so they travel to the browser as data.
+- `translator.tsx`: `t()`, `t.rich()` (tags mapped to elements at the call site),
+  `t.n()` for English plurals. Values are filled in after tags are split, so a
+  product name can never become markup.
+- Server components use `getT()`, client components `useT()`; the root layout
+  picks the language and hands down **only that language's** messages.
+- `i18n.test.ts`: same keys, same placeholders, same tags, nothing empty, **no
+  Chinese string left as the English**, and a space between Chinese and Latin
+  text (the copy spec's rule — it caught nothing yet, but guards every later string).
+
+**Translated in this push:** the shell (nav, footer, claim nudge, back-to-top,
+accuracy badge), the homepage, and `/extension`, plus per-language metadata. The
+switch (`LanguageSwitch`) sits in the desktop bar, the phone menu and the footer —
+44 px targets on the phone, each option named in its own language. Choosing sets
+the cookie and re-renders in place; `<html lang>` follows.
+
+**The copy** — `docs/design/chinese-copy.md` (glossary, typography, voice, and a
+budget of about three classical phrases). Hero: **尺码，不必再猜。** Two hooks from
+how Chinese shoppers actually buy: the folk rule "卡在两个码之间就买大一码"
+(answered: 卡在两个码之间时，我们直说，不让你赌) and Taobao's own "和您身材相似的
+买家购买了 XL" (answered: 不是“和你身材相似的人买了什么”，而是你的尺寸……). Closing
+line: **衣不在多，合身则灵。** — the one classical phrase used so far.
+
+**Chinese type:** the reader's system fonts (PingFang / YaHei; headings Songti /
+Noto Serif), never downloaded — the self-hosting rule exists because a remote font
+broke builds. Italics are off for Chinese (browsers fake them by slanting glyphs);
+the wordmark is marked `lang="en"` and keeps its italic. Tight tracking and the
+0.95 display line-height are relaxed for CJK.
+
+**A claim checked instead of recalled:** I wrote the install step from memory as
+"点击加载已解压的扩展程序". Chrome's own zh-CN resource pack says
+**加载未打包的扩展程序** (开发者模式 and Chrome 应用商店 confirmed the same way). Fixed
+before shipping.
+
+**Also:** a Taobao/Tmall troubleshooting item on `/extension`, both languages, from
+what 79a found (log in first; 尺码信息; the shopper's profile is never sent).
+
+**Costs, measured:** First Load JS unchanged (`/` 160 kB before and after). Routes
+that were static are now dynamic (ƒ) — reading the cookie is what lets the first
+byte arrive in the reader's language. Homepage HTML now 91 KB (21 KB gzipped)
+English, 92 KB (23 KB) Chinese; ⚠ the HTML size before this change was not
+measured, so the increase is not stated. The whole of one language's messages is
+sent with each full page load — to re-measure once every page is translated.
+
+**Checked by eye:** both languages at 390 and 1440 (no horizontal overflow); the
+switch on desktop and phone; the choice survives a reload; English is unchanged
+apart from the switch.
+
+Not yet translated: every other page, the engine's reasons, and the popup — the
+next pushes.
+
+615 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-09-29 · Session 79a — Tmall and Taobao pages read as products, not as "Detail"
 
 The founder showed the extension on a real Tmall item: size chart found (3 rows),

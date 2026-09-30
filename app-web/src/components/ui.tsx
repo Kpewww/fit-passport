@@ -360,14 +360,15 @@ export function ConfidenceRing({
 
 // ---------- Accuracy badge ----------
 
-export function AccuracyBadge({ tier }: { tier: "low" | "medium" | "high" }) {
-  const map = {
-    low: { label: "Basic accuracy", cls: "bg-warn-tint text-warn" },
-    medium: { label: "Good accuracy", cls: "bg-brand-tint text-brand-dark" },
-    high: { label: "High accuracy", cls: "bg-ok-tint text-ok" },
-  } as const;
-  const m = map[tier];
-  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${m.cls}`}>{m.label}</span>;
+// The label comes from the caller (common.accuracy.<tier>): this file is shared
+// by server and client components, so it cannot read the language itself.
+export function AccuracyBadge({ tier, label }: { tier: "low" | "medium" | "high"; label: string }) {
+  const cls = {
+    low: "bg-warn-tint text-warn",
+    medium: "bg-brand-tint text-brand-dark",
+    high: "bg-ok-tint text-ok",
+  }[tier];
+  return <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${cls}`}>{label}</span>;
 }
 
 // ---------- Fit stars ----------

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState, type ComponentType } from "react";
 import { Logo } from "@/components/Logo";
+import { LanguageSwitch } from "@/components/LanguageSwitch";
+import { useT } from "@/i18n/client";
 import {
   Board,
   BrowserIcon,
@@ -18,24 +20,26 @@ import {
   type IconProps,
 } from "@/components/Icon";
 
-type NavLink = { href: string; label: string; Icon: ComponentType<IconProps>; also?: string[] };
+type LinkKey = "check" | "extension" | "closet" | "passport" | "outfits" | "community" | "help" | "review";
+type NavLink = { href: string; label: LinkKey; Icon: ComponentType<IconProps>; also?: string[] };
 
 const LINKS: NavLink[] = [
-  { href: "/check", label: "Check", Icon: Ruler },
-  { href: "/extension", label: "Extension", Icon: BrowserIcon },
-  { href: "/closet", label: "Closet", Icon: Hanger },
-  { href: "/passport", label: "Passport", Icon: IdCard },
-  { href: "/outfits", label: "Outfits", Icon: Board },
+  { href: "/check", label: "check", Icon: Ruler },
+  { href: "/extension", label: "extension", Icon: BrowserIcon },
+  { href: "/closet", label: "closet", Icon: Hanger },
+  { href: "/passport", label: "passport", Icon: IdCard },
+  { href: "/outfits", label: "outfits", Icon: Board },
   // Questions live inside /community, so they get no tab of their own. Thread
   // pages sit at /ask/[id] and don't share the prefix, hence `also`.
-  { href: "/community", label: "Community", Icon: People, also: ["/ask"] },
-  { href: "/help", label: "Help", Icon: Question },
+  { href: "/community", label: "community", Icon: People, also: ["/ask"] },
+  { href: "/help", label: "help", Icon: Question },
 ];
 
 type Me = { claimed: boolean; username: string | null; role?: string };
 
 export function Nav() {
   const pathname = usePathname();
+  const t = useT("nav");
   const [me, setMe] = useState<Me | null>(null);
   // Below `sm` every nav link is hidden, and this panel IS the navigation
   // (build-state ㉔) — before it existed a phone could not get past the homepage.
@@ -58,7 +62,7 @@ export function Nav() {
     return () => window.removeEventListener("keydown", onKey);
   }, [menuOpen]);
 
-  const links: NavLink[] = [...LINKS, ...(me?.role === "ADMIN" ? [{ href: "/admin", label: "Review", Icon: Shield }] : [])];
+  const links: NavLink[] = [...LINKS, ...(me?.role === "ADMIN" ? [{ href: "/admin", label: "review" as const, Icon: Shield }] : [])];
   const isActive = (l: NavLink) =>
     [l.href, ...(l.also ?? [])].some((pfx) => pathname === pfx || pathname.startsWith(`${pfx}/`));
   const onAccount = pathname === "/account";
@@ -70,10 +74,12 @@ export function Nav() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4 sm:h-16 sm:px-6">
         <Link href="/" className="group flex min-h-[44px] items-center gap-2 text-ink">
           <Logo size={26} className="transition-transform duration-200 ease-out group-hover:-rotate-3" />
-          <span className="font-serif text-xl italic">Fit Passport</span>
+          {/* lang="en": the wordmark keeps its italic in the Chinese layout, where
+              italics are switched off for CJK text (globals.css). */}
+          <span lang="en" className="font-serif text-xl italic">Fit Passport</span>
         </Link>
 
-        <nav aria-label="Main" className="flex items-center gap-0.5 text-[13px]">
+        <nav aria-label={t("main")} className="flex items-center gap-0.5 text-[13px]">
           {/* Desktop tabs. Hidden on a phone, where the panel below takes over. */}
           {links.map((l) => {
             const active = isActive(l);
@@ -86,13 +92,14 @@ export function Nav() {
                   active ? "font-medium text-ink" : "text-ink-soft hover:text-ink"
                 }`}
               >
-                {l.label}
+                {t(l.label)}
                 {active && <span className="absolute inset-x-3 -bottom-px h-px bg-ink" aria-hidden />}
               </Link>
             );
           })}
 
           <span className="mx-2 hidden h-4 w-px bg-line sm:block" aria-hidden />
+          <LanguageSwitch compact className="mr-2 hidden sm:inline-flex" />
 
           {/* Account. Claimed: an initial in a hairline circle, plus the handle on
               wide screens. Unclaimed: the one ink action in the bar. Both keep a
@@ -100,7 +107,7 @@ export function Nav() {
           {me?.claimed ? (
             <Link
               href="/account"
-              aria-label={`Your account, @${me.username}`}
+              aria-label={t("yourAccount", { username: me.username ?? "" })}
               aria-current={onAccount ? "page" : undefined}
               className={`flex min-h-[44px] items-center gap-2 rounded-full px-1.5 transition-colors duration-200 sm:min-h-0 sm:py-1 lg:pr-3 ${
                 onAccount ? "text-ink" : "text-ink-soft hover:text-ink"
@@ -121,14 +128,14 @@ export function Nav() {
               href="/account"
               className="flex h-11 items-center rounded-full bg-ink px-4 text-xs font-medium tracking-wide text-paper transition-colors duration-200 hover:bg-black sm:h-8"
             >
-              Claim account
+              {t("claimAccount")}
             </Link>
           )}
 
           {/* Menu button — phones only. */}
           <button
             type="button"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
+            aria-label={menuOpen ? t("closeMenu") : t("openMenu")}
             aria-expanded={menuOpen}
             aria-controls="mobile-nav"
             onClick={() => setMenuOpen((v) => !v)}
@@ -142,7 +149,7 @@ export function Nav() {
       {/* Mobile navigation panel. Rendered inside the sticky header so it inherits
           the backdrop and can never be painted over by an in-page layer. */}
       {menuOpen && (
-        <nav id="mobile-nav" aria-label="Main" className="border-t border-line bg-paper sm:hidden">
+        <nav id="mobile-nav" aria-label={t("main")} className="border-t border-line bg-paper sm:hidden">
           <ul className="mx-auto max-w-6xl px-4 py-3">
             {links.map((l) => {
               const active = isActive(l);
@@ -156,13 +163,16 @@ export function Nav() {
                     }`}
                   >
                     <l.Icon size={22} className={active ? "text-ink" : "text-ink-faint"} />
-                    {l.label}
+                    {t(l.label)}
                     {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand" aria-hidden />}
                   </Link>
                 </li>
               );
             })}
           </ul>
+          <div className="mx-auto max-w-6xl border-t border-line px-4 py-3">
+            <LanguageSwitch />
+          </div>
         </nav>
       )}
     </header>

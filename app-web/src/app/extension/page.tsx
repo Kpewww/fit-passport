@@ -11,21 +11,26 @@ import Link from "next/link";
 import { Card, Page, PageHeader } from "@/components/ui";
 import { BrowserIcon, Download, Info, Lock, Shield } from "@/components/Icon";
 import { EXTENSION_DISTRIBUTION } from "@/lib/extensionDistribution";
+import { getT } from "@/i18n/server";
 
-export const metadata: Metadata = {
-  title: "Browser extension · Fit Passport",
-  description: "Check your size on the product page you're already looking at.",
-};
+export function generateMetadata(): Metadata {
+  const t = getT("extension");
+  return { title: t("metaTitle"), description: t("metaDescription") };
+}
 
 const dist = EXTENSION_DISTRIBUTION;
 
+const b = (c: string) => <b>{c}</b>;
+const code = (c: string) => <code className="rounded bg-paper-soft px-1.5 py-0.5 text-[0.9em]">{c}</code>;
+
 export default function ExtensionPage() {
+  const t = getT("extension");
   return (
     <Page width="read">
       <PageHeader
-        eyebrow="Browser extension"
-        title="Check your size on the page you're already on"
-        lede="Open any product page, click Fit Passport, and get the size — with the reasons and where every number came from."
+        eyebrow={t("eyebrow")}
+        title={t("title")}
+        lede={t("lede")}
       />
 
       {/* The one thing this page is for. */}
@@ -36,10 +41,11 @@ export default function ExtensionPage() {
               <BrowserIcon size={22} />
             </span>
             <div>
-              <p className="font-medium text-ink">Fit Passport for Chrome</p>
+              <p className="font-medium text-ink">{t("cardName")}</p>
               <p className="mt-0.5 text-sm text-ink-soft">
-                Version {dist.version}
-                {dist.kind === "zip" ? ` · ${dist.sizeKb} KB · free` : " · free"}
+                {dist.kind === "zip"
+                  ? t("versionZip", { version: dist.version, size: dist.sizeKb })
+                  : t("versionStore", { version: dist.version })}
               </p>
             </div>
           </div>
@@ -49,7 +55,7 @@ export default function ExtensionPage() {
               download
               className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-medium text-paper transition-colors hover:bg-ink/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
             >
-              <Download size={18} /> Download the extension
+              <Download size={18} /> {t("download")}
             </a>
           ) : (
             <a
@@ -58,37 +64,29 @@ export default function ExtensionPage() {
               rel="noopener noreferrer"
               className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full bg-ink px-6 text-sm font-medium text-paper transition-colors hover:bg-ink/85"
             >
-              <BrowserIcon size={18} /> Add to Chrome
+              <BrowserIcon size={18} /> {t("addToChrome")}
             </a>
           )}
         </div>
         {dist.kind === "zip" && (
           <p className="mt-5 flex gap-2 border-t border-line pt-4 text-sm text-ink-soft">
             <Info size={18} className="mt-0.5 flex-shrink-0 text-ink-faint" />
-            <span>
-              It isn&rsquo;t in the Chrome Web Store yet, so for now you add it yourself — four
-              steps, about a minute. It&rsquo;s the same extension either way. Tested in Chrome;
-              other Chromium browsers (Edge, Brave, Arc) accept the same steps, but we
-              haven&rsquo;t tested them.
-            </span>
+            <span>{t("notInStore")}</span>
           </p>
         )}
       </Card>
 
       {dist.kind === "zip" && (
         <section className="mt-12">
-          <h2 className="text-h3 font-semibold text-ink">Install it</h2>
+          <h2 className="text-h3 font-semibold text-ink">{t("installTitle")}</h2>
           <ol className="mt-5 space-y-4">
             {[
-              <>Download the file above and <b>unzip it</b>. Keep the folder somewhere it
-                won&rsquo;t be deleted — Chrome loads the extension from it.</>,
-              <>In Chrome, go to <code className="rounded bg-paper-soft px-1.5 py-0.5 text-[0.9em]">chrome://extensions</code> and
-                turn on <b>Developer mode</b> (top right).</>,
-              <>Click <b>Load unpacked</b> and choose the folder you unzipped.</>,
-              <>Open <Link href="/" className="underline underline-offset-2 hover:text-ink">Fit Passport</Link> once
-                in the same browser. That connects the extension to your passport — without it,
-                the extension will ask you to connect first rather than check against an empty
-                profile.</>,
+              t.rich("install.unzip", { b }),
+              t.rich("install.devMode", { b, code }),
+              t.rich("install.load", { b }),
+              t.rich("install.connect", {
+                link: (c) => <Link href="/" className="underline underline-offset-2 hover:text-ink">{c}</Link>,
+              }),
             ].map((step, i) => (
               <li key={i} className="flex gap-4">
                 <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-line text-sm tabular-nums text-ink-soft">
@@ -98,25 +96,15 @@ export default function ExtensionPage() {
               </li>
             ))}
           </ol>
-          <p className="mt-5 text-sm text-ink-faint">
-            Tip: click the puzzle-piece icon in Chrome&rsquo;s toolbar and pin Fit Passport, so
-            it&rsquo;s one click away.
-          </p>
+          <p className="mt-5 text-sm text-ink-faint">{t("pinTip")}</p>
         </section>
       )}
 
       <section className="mt-12">
-        <h2 className="text-h3 font-semibold text-ink">Using it</h2>
+        <h2 className="text-h3 font-semibold text-ink">{t("usingTitle")}</h2>
         <div className="mt-4 space-y-3 text-ink-soft">
-          <p>
-            Open a product page and click the Fit Passport icon. You&rsquo;ll see what it found on
-            the page before anything is sent; press <b>Check my size</b> to get the answer.
-          </p>
-          <p>
-            Many stores only load their size chart when you open their &ldquo;Size guide&rdquo;. If
-            the extension says it found no chart, open the size guide on the page, then press{" "}
-            <b>Re-scan</b>. It never clicks anything on the page for you.
-          </p>
+          <p>{t.rich("using1", { b })}</p>
+          <p>{t.rich("using2", { b })}</p>
         </div>
       </section>
 
@@ -124,45 +112,23 @@ export default function ExtensionPage() {
         <Card>
           <div className="flex items-center gap-2 text-ink">
             <Lock size={18} />
-            <h3 className="font-medium">What it reads</h3>
+            <h3 className="font-medium">{t("readsTitle")}</h3>
           </div>
-          <p className="mt-2 text-sm text-ink-soft">
-            Only the page you click it on, only when you click. It builds a small copy of the
-            product parts — name, size chart, size options — and leaves everything else behind:
-            your cart, your account, your address, forms. On a real product page that&rsquo;s{" "}
-            <b>11 KB out of 1.78 MB</b>.
-          </p>
+          <p className="mt-2 text-sm text-ink-soft">{t.rich("readsBody", { b })}</p>
         </Card>
         <Card>
           <div className="flex items-center gap-2 text-ink">
             <Shield size={18} />
-            <h3 className="font-medium">Why an extension</h3>
+            <h3 className="font-medium">{t("whyTitle")}</h3>
           </div>
-          <p className="mt-2 text-sm text-ink-soft">
-            Many large stores block our servers from reading their pages — pasting a link works on
-            some stores and not others. The extension reads the page in your own browser instead,
-            the page you&rsquo;re already looking at, so it works where a link can&rsquo;t.
-          </p>
+          <p className="mt-2 text-sm text-ink-soft">{t("whyBody")}</p>
         </Card>
       </section>
 
       <section className="mt-12">
-        <h2 className="text-h3 font-semibold text-ink">If something goes wrong</h2>
+        <h2 className="text-h3 font-semibold text-ink">{t("troubleTitle")}</h2>
         <dl className="mt-4 divide-y divide-line border-y border-line text-sm">
-          {[
-            [
-              "It says “connect Fit Passport first”.",
-              "Open Fit Passport once in this browser, then try again. If you block third-party cookies, the extension can't see that you're signed in — it asks you to connect rather than quietly checking against an empty profile.",
-            ],
-            [
-              "It found no size chart.",
-              "Open the store's size guide on the page, then press Re-scan. Some stores keep the chart on a separate page; for brands we've curated, Fit Passport falls back to the brand's published chart and says so.",
-            ],
-            [
-              "Chrome mentions a developer-mode extension.",
-              "That can happen with extensions added this way. It goes away once Fit Passport is in the Chrome Web Store.",
-            ],
-          ].map(([q, a]) => (
+          {(["connect", "noChart", "market", "devMode"] as const).map((k) => [t(`trouble.${k}Q`), t(`trouble.${k}A`)]).map(([q, a]) => (
             <div key={q} className="py-4">
               <dt className="font-medium text-ink">{q}</dt>
               <dd className="mt-1 text-ink-soft">{a}</dd>
