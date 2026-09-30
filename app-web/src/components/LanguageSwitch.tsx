@@ -3,9 +3,9 @@
 // 中 | EN. Sets the one cookie the server reads (i18n/config.ts) and re-renders the
 // page in place — the server renders the chosen language, so nothing flashes.
 //
-// Two sizes: `compact` for the desktop bar (32 px, beside other 32 px controls),
-// and the full row for the phone menu and the footer, where every target is 44 px
-// (design system rule).
+// Two sizes: `compact` for the desktop bar (drawn 28 px, target 32 px), and the
+// full row for the phone menu, where every target is 44 px (design system rule).
+// The footer no longer carries one (Session 80): one switch, in the header.
 
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
@@ -52,7 +52,10 @@ export function LanguageSwitch({ compact = false, className = "" }: { compact?: 
             lang={o.value === "zh" ? "zh-CN" : "en"}
             onClick={() => choose(o.value)}
             className={`rounded-full font-medium transition-colors duration-200 ${
-              compact ? "h-7 min-w-[2.25rem] px-2.5 text-xs" : "h-11 min-w-[5rem] px-4 text-sm"
+              compact
+                ? // Drawn 24 px tall; the ::after strip keeps the target 32 px (Session 80).
+                  "relative h-6 min-w-[2rem] px-2 text-[11px] after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']"
+                : "h-11 min-w-[5rem] px-4 text-[13px]"
             } ${on ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"}`}
           >
             {o.label}

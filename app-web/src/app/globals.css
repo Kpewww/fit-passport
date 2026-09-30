@@ -73,6 +73,11 @@ body {
 :lang(zh) .eyebrow {
   letter-spacing: 0.12em;
 }
+/* Two-character nav tabs read cramped at the English tracking; a little air,
+   done in CSS so the strings themselves never carry spaces (copy spec 00.1). */
+:lang(zh) .nav-tab {
+  letter-spacing: 0.08em;
+}
 /* The homepage hero is two lines in Chinese on every screen (copy spec 01.9 §8):
    「穿」越时空， is seven full-width glyphs, which at the phone size (60px) is
    wider than a 390px screen. Below the sm breakpoint the size follows the width. */

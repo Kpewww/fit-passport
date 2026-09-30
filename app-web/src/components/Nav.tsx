@@ -80,26 +80,31 @@ export function Nav() {
         </Link>
 
         <nav aria-label={t("main")} className="flex items-center gap-0.5 text-[13px]">
-          {/* Desktop tabs. Hidden on a phone, where the panel below takes over. */}
-          {links.map((l) => {
-            const active = isActive(l);
-            return (
-              <Link
-                key={l.href}
-                href={l.href}
-                aria-current={active ? "page" : undefined}
-                className={`relative hidden h-16 items-center px-3 tracking-[0.01em] transition-colors duration-200 sm:flex ${
-                  active ? "font-medium text-ink" : "text-ink-soft hover:text-ink"
-                }`}
-              >
-                {t(l.label)}
-                {active && <span className="absolute inset-x-3 -bottom-px h-px bg-ink" aria-hidden />}
-              </Link>
-            );
-          })}
+          {/* Desktop tabs, from lg: below 1024px the English row is wider than the
+              screen, so the menu panel takes over there. The row keeps the English
+              width in both languages (min-w, spread by justify-between), so switching
+              language moves neither the tabs' ends nor the controls beside them. */}
+          <div className="hidden lg:flex lg:min-w-[32.5rem] lg:justify-between">
+            {links.map((l) => {
+              const active = isActive(l);
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  aria-current={active ? "page" : undefined}
+                  className={`nav-tab relative flex h-16 items-center px-3 tracking-[0.01em] transition-colors duration-200 ${
+                    active ? "font-medium text-ink" : "text-ink-soft hover:text-ink"
+                  }`}
+                >
+                  {t(l.label)}
+                  {active && <span className="absolute inset-x-3 -bottom-px h-px bg-ink" aria-hidden />}
+                </Link>
+              );
+            })}
+          </div>
 
-          <span className="mx-2 hidden h-4 w-px bg-line sm:block" aria-hidden />
-          <LanguageSwitch compact className="mr-2 hidden sm:inline-flex" />
+          <span className="mx-2 hidden h-4 w-px bg-line lg:block" aria-hidden />
+          <LanguageSwitch compact className="mr-2 hidden lg:inline-flex" />
 
           {/* Account. Claimed: an initial in a hairline circle, plus the handle on
               wide screens. Unclaimed: the one ink action in the bar. Both keep a
@@ -109,7 +114,7 @@ export function Nav() {
               href="/account"
               aria-label={t("yourAccount", { username: me.username ?? "" })}
               aria-current={onAccount ? "page" : undefined}
-              className={`flex min-h-[44px] items-center gap-2 rounded-full px-1.5 transition-colors duration-200 sm:min-h-0 sm:py-1 lg:pr-3 ${
+              className={`flex min-h-[44px] items-center gap-2 rounded-full px-1.5 transition-colors duration-200 lg:min-h-0 lg:py-1 lg:pr-3 ${
                 onAccount ? "text-ink" : "text-ink-soft hover:text-ink"
               }`}
             >
@@ -126,7 +131,7 @@ export function Nav() {
           ) : (
             <Link
               href="/account"
-              className="flex h-11 items-center rounded-full bg-ink px-4 text-xs font-medium tracking-wide text-paper transition-colors duration-200 hover:bg-black sm:h-8"
+              className="flex h-11 items-center justify-center rounded-full bg-ink px-4 text-xs font-medium tracking-wide text-paper transition-colors duration-200 hover:bg-black lg:h-8 lg:min-w-[7.375rem]"
             >
               {t("claimAccount")}
             </Link>
@@ -139,7 +144,7 @@ export function Nav() {
             aria-expanded={menuOpen}
             aria-controls="mobile-nav"
             onClick={() => setMenuOpen((v) => !v)}
-            className="-mr-2 ml-1 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-ink/5 sm:hidden"
+            className="-mr-2 ml-1 flex h-11 w-11 items-center justify-center rounded-full text-ink hover:bg-ink/5 lg:hidden"
           >
             {menuOpen ? <Close size={22} /> : <Menu size={22} />}
           </button>
@@ -149,7 +154,7 @@ export function Nav() {
       {/* Mobile navigation panel. Rendered inside the sticky header so it inherits
           the backdrop and can never be painted over by an in-page layer. */}
       {menuOpen && (
-        <nav id="mobile-nav" aria-label={t("main")} className="border-t border-line bg-paper sm:hidden">
+        <nav id="mobile-nav" aria-label={t("main")} className="border-t border-line bg-paper lg:hidden">
           <ul className="mx-auto max-w-6xl px-4 py-3">
             {links.map((l) => {
               const active = isActive(l);

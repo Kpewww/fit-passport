@@ -22,8 +22,8 @@ const files = (d: string): string[] =>
 
 const ALLOWED = new Set([
   "Fit Passport",
-  // The team line in the footer: names.
-  "Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang · © 2026",
+  // The footer credit: the brand and the year.
+  "© 2026 Fit Passport",
   // Example input: a username, an email, an account code, a product URL.
   "alex_fits  ·  you@example.com  ·  FP-XXXX-XXXX-XXXXX",
   "alex_fits · you@example.com · FP-XXXX-XXXX-XXXXX",

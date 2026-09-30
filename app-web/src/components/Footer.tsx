@@ -4,7 +4,6 @@
 
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { LanguageSwitch } from "@/components/LanguageSwitch";
 import { getT } from "@/i18n/server";
 import type { KeyIn } from "@/i18n/types";
 
@@ -53,7 +52,6 @@ export function Footer() {
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-ink-soft">{t("tagline")}</p>
             <p className="mt-4 text-xs text-ink-faint">{t("privacy")}</p>
-            <LanguageSwitch className="mt-5" />
           </div>
 
           {COLUMNS.map((c) => (
@@ -78,7 +76,7 @@ export function Footer() {
             <span className="rounded-full border border-line px-2 py-0.5 font-medium">{t("demo")}</span>
             <span className="ml-2">{t("demoLine")}</span>
           </p>
-          <p>Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang · © 2026</p>
+          <p lang="en">© 2026 Fit Passport</p>
         </div>
       </div>
     </footer>

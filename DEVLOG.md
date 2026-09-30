@@ -31,6 +31,37 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-30 · Session 80b — One language switch, a header that holds still, a footer that credits the product
+
+Founder's requests: take the language switch out of the footer, make the header's
+switch smaller, drop the team names from the footer credit, and stop the navigation
+jumping when the language changes.
+
+- **Footer:** no language switch; the credit reads `© 2026 Fit Passport`. Every link
+  column stays. (The names remain in the README and project documents.)
+- **Header switch:** drawn 30 px tall instead of 34 (−12%), 70 px wide instead of 78,
+  11 px labels. The click target did not shrink with it: an invisible strip extends
+  each option 4 px up and down (measured: a point 3 px above the drawn option still
+  hits it). The phone menu's switch keeps its 44 px rows, text 14 → 13 px.
+- **Tabs hold their place across languages.** The tab row keeps the English row's width
+  (`min-w-[32.5rem]`, spread with `justify-between`); Chinese tabs get 0.08em tracking in
+  CSS, so no string carries a space; the "Claim account" button keeps its English width.
+  **Measured at 1024, 1280, 1440 and 1920: the first tab, the last tab, the switch and
+  the account button sit at the same x in both languages — Δ 0 px.** Before: the first
+  tab moved 192 px and the switch 36 px on every switch.
+- **Found while measuring, and fixed: the English header did not fit between 640 and
+  ~1000 px.** At 768 px the account button ended at x = 847, and since `body` clips
+  overflow it was simply cut off — "Claim account" was unreachable on an iPad in
+  portrait. The desktop tabs now start at `lg` (1024 px, where the English row fits)
+  and the existing menu covers everything below. Chinese had hidden the bug by being
+  shorter.
+
+Verified: header rectangles in both languages at four desktop widths; header and footer
+screenshots at 1440, 768 and 390; `mobile-audit.mjs` finds no horizontal overflow on
+any page. 637 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-09-30 · Session 80a — The founder's Chinese copy, everywhere it is read
 
 The founder sent a finished Chinese copy revision (`docs/design/chinese-copy-2026-09-30.md`,
