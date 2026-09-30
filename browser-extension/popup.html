@@ -8,15 +8,21 @@
 <body>
   <header class="bar">
     <img src="icons/icon32.png" alt="" width="18" height="18">
-    <span class="brand">Fit Passport</span>
+    <span class="brand" lang="en">Fit Passport</span>
+    <!-- Each option named in its own language, so a reader of either can find theirs. -->
+    <div id="lang" class="lang" role="group" aria-label="Language">
+      <button type="button" value="zh" lang="zh-CN">中</button>
+      <button type="button" value="en" lang="en">EN</button>
+    </div>
   </header>
   <main id="app" aria-live="polite"></main>
   <footer class="foot">
-    <label>Server
+    <label><span id="server-label">Server</span>
       <select id="origin"></select>
     </label>
   </footer>
   <script src="config.js"></script>
+  <script src="i18n.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

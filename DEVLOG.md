@@ -31,6 +31,39 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 79c — The popup speaks Chinese too
+
+Pulled ahead of the engine work (planned as 79e) because it completes the flow the
+founder started from: a Chinese shopper on a Tmall page now gets a Chinese popup.
+
+- `browser-extension/i18n.js` — the popup's words in English and Chinese, a classic
+  script like the rest of the extension. Its own 中 | EN switch in the popup's bar,
+  remembered in extension storage, defaulting to the browser's language.
+- Every check sends `x-fp-lang`, which the server already ranks above its cookie
+  (79b), so once the engine's text is bilingual (next) the reasons follow.
+- The popup now prefers a structured `alternative` field when the server sends one,
+  instead of finding "Alternative:" in English prose (arrives with the engine work).
+- Manifest description and tooltip via Chrome `_locales` (en, zh_CN); the name
+  stays Fit Passport.
+- `extensionI18n.test.ts`: same keys and placeholders, nothing empty or left as
+  English, the spacing rule, every key `popup.js` asks for present (a scan that
+  first mistook a CSS-class ternary for keys — narrowed to ternaries inside `t()`),
+  the manifest's messages present in both locales.
+
+**Seen, on the real Tmall DOM** (served from the dev server for one run, then
+deleted): the popup in English, then switched to 中 — 商品信息——我是大卫，来自页面的
+参数信息 · 尺码表——3 行 · 找到了尺码选项 · 商品介绍是图片——不影响尺码推荐. One
+sentence rewritten after seeing it: "只发 不到 1 KB" read badly because the slot was
+shaped for "11 KB"; now 只发送商品部分：{sent}，整页 {page}, which reads right for both.
+
+Extension **0.3.0** (80 KB). Production checked after 79a/79b: the homepage
+answers in English or Chinese by Accept-Language, the 0.2.0 zip and `/extension`
+serve.
+
+622 tests + 1 skip, exit 0; typecheck clean.
+
+---
+
 ## 2026-09-29 · Session 79b — A Chinese version, and a switch that remembers
 
 The founder asked for a Chinese version with a 中/EN switch, its copy written the

@@ -10,9 +10,31 @@
 
 (function () {
   var CFG = globalThis.FP_CONFIG;
+  var I18N = globalThis.FP_I18N;
+  var t = I18N.t;
   var app = document.getElementById("app");
   var originSelect = document.getElementById("origin");
   var ORIGIN_KEY = "fp-origin";
+
+  // ---- language: the popup's own switch (i18n.js) ----
+
+  var langSwitch = document.getElementById("lang");
+  function applyLang() {
+    document.documentElement.lang = I18N.lang() === "zh" ? "zh-CN" : "en";
+    document.getElementById("server-label").textContent = t("server");
+    langSwitch.setAttribute("aria-label", t("language"));
+    Array.prototype.forEach.call(langSwitch.querySelectorAll("button"), function (b) {
+      b.setAttribute("aria-pressed", String(b.value === I18N.lang()));
+    });
+  }
+  langSwitch.addEventListener("click", function (e) {
+    var b = e.target.closest("button");
+    if (!b || b.value === I18N.lang()) return;
+    I18N.setLang(b.value);
+    applyLang();
+    start(); // re-read and re-render in the chosen language; nothing is sent
+  });
+  applyLang();
 
   // ---- settings ----
 
@@ -75,7 +97,7 @@
   }
 
   function kb(chars) {
-    return chars < 1024 ? "under 1 KB" : Math.round(chars / 1024) + " KB";
+    return chars < 1024 ? t("underOneKb") : t("kb", { n: Math.round(chars / 1024) });
   }
 
   // ---- 1. read the page (nothing leaves the browser here) ----
@@ -97,26 +119,20 @@
   }
 
   async function start() {
-    show(el("p", { className: "muted", text: "Reading this page…" }));
+    show(el("p", { className: "muted", text: t("reading") }));
     var tab;
     try { tab = await activeTab(); } catch (e) { /* fall through */ }
     if (!tab || !/^https?:/i.test(tab.url || "")) {
-      return message(
-        "Open a product page, then click Fit Passport.",
-        "It reads the page you are looking at, when you click it — and this tab isn't a web page it can read."
-      );
+      return message(t("notPageTitle"), t("notPageBody"));
     }
     var cap;
     try {
       cap = await capture(tab.id);
     } catch (e) {
-      return message("This page can't be read.", "The browser doesn't let extensions read this page.");
+      return message(t("cantReadTitle"), t("cantReadBody"));
     }
     if (!cap || !cap.ok) {
-      return message(
-        "This page is too large to send.",
-        "Even reduced to its product parts it is over the limit, which usually means it is not a single product page."
-      );
+      return message(t("tooLargeTitle"), t("tooLargeBody"));
     }
     preview(cap, tab);
   }
@@ -130,25 +146,25 @@
     // publish no schema.org data; their details come from the page's parameter
     // list, and failing that the name alone — which still names the garment.
     var details = f.productData
-      ? (f.brand ? "Product details — " + f.brand + (f.attrs ? ", from the page's parameter list" : "") : "Product details")
+      ? (f.brand ? t(f.attrs ? "detailsFromAttrs" : "detailsWithBrand", { brand: f.brand }) : t("details"))
       : f.title
-        ? "Only the product name (the garment type is read from it)"
-        : "No product details (the page may still work)";
+        ? t("titleOnly")
+        : t("noDetails");
     var items = [
       [f.productData, details],
-      [f.sizeTables > 0, f.sizeTables > 0 ? "Size chart — " + f.sizeRows + " rows" : "No size chart on the page yet"],
-      [f.sizeOptions > 0, f.sizeOptions > 0 ? "Size options listed" : "No size options listed"],
+      [f.sizeTables > 0, f.sizeTables > 0 ? t("chart", { n: f.sizeRows }) : t("noChart")],
+      [f.sizeOptions > 0, f.sizeOptions > 0 ? t("options") : t("noOptions")],
     ];
     // An image only matters when there is no table: the server reads a table
     // first and goes to its image reader only when it finds none.
-    if (f.chartImages > 0 && f.sizeTables === 0) items.push([true, "A size-chart image the server can try to read"]);
+    if (f.chartImages > 0 && f.sizeTables === 0) items.push([true, t("chartImage")]);
     // Neutral, not a failure: a listing whose description is all pictures has no
     // product text to read, and the size does not depend on it.
-    if (f.pictureDescription) items.push(["info", "The description is pictures — sizing doesn't need it"]);
+    if (f.pictureDescription) items.push(["info", t("pictureDescription")]);
 
     var what = el("pre", { text: cap.html });
     show(
-      el("p", { className: "title", text: f.title || tab.title || "This page" }),
+      el("p", { className: "title", text: f.title || tab.title || t("thisPage") }),
       el("div", { className: "card" }, [
         el("ul", { className: "found" }, items.map(function (it) {
           var state = it[0] === "info" ? "info" : it[0] ? "yes" : "no";
@@ -158,26 +174,24 @@
           ]);
         })),
       ]),
-      hasChart ? null : el("p", {
-        className: "hint",
-        text: "If the page has a “Size guide” or “Size chart” link, open it, then press Re-scan — most charts only load once opened.",
-      }),
+      hasChart ? null : el("p", { className: "hint", text: t("openGuideHint") }),
       el("div", { className: "actions" }, [
-        button(hasChart ? "Check my size" : "Check anyway", function () { send(cap); }, true),
-        button("Re-scan", start),
+        button(hasChart ? t("check") : t("checkAnyway"), function () { send(cap); }, true),
+        button(t("rescan"), start),
       ]),
       el("p", {
         className: "small",
-        text:
-          "Only the product is sent (" + kb(cap.stats.payloadChars) + " of this " + kb(cap.stats.domChars) + " page" +
-          (cap.stats.masked ? ", " + cap.stats.masked + " contact detail" + (cap.stats.masked === 1 ? "" : "s") + " masked" : "") +
-          "). Nothing leaves your browser until you press Check.",
+        text: t("sentNote", {
+          sent: kb(cap.stats.payloadChars),
+          page: kb(cap.stats.domChars),
+          masked: cap.stats.masked ? t(cap.stats.masked === 1 ? "maskedOne" : "maskedOther", { n: cap.stats.masked }) : "",
+        }),
       }),
       el("details", {}, [
-        el("summary", { text: "Show exactly what would be sent" }),
+        el("summary", { text: t("showSent") }),
         what,
         el("div", { className: "actions" }, [
-          button("Save this capture (for the evaluation)", function () { saveCapture(cap); }),
+          button(t("saveCapture"), function () { saveCapture(cap); }),
         ]),
       ])
     );
@@ -209,7 +223,7 @@
   // ---- 3. send, and render whatever the API says ----
 
   async function send(cap) {
-    show(el("p", { className: "muted", text: "Checking your size…" }));
+    show(el("p", { className: "muted", text: t("checking") }));
     var res;
     var body = null;
     try {
@@ -218,16 +232,16 @@
         // Carries the Fit Passport session: Chrome treats this request as
         // same-site because the manifest grants host permission for the origin.
         credentials: "include",
-        headers: { "content-type": "application/json", "x-fp-client": "extension/" + CFG.version },
+        // x-fp-lang: the popup's language, so reasons and refusals come back in it.
+        headers: { "content-type": "application/json", "x-fp-client": "extension/" + CFG.version, "x-fp-lang": I18N.lang() },
         body: JSON.stringify({ url: cap.url, html: cap.html }),
       });
       try { body = await res.json(); } catch (e) { body = null; }
     } catch (e) {
       return message(
-        "Couldn't reach Fit Passport.",
-        "No answer from " + origin() + ". Check your connection" +
-          (origin().indexOf("localhost") >= 0 ? " — and that the development server is running." : "."),
-        [button("Try again", function () { send(cap); }, true)]
+        t("unreachableTitle"),
+        t(origin().indexOf("localhost") >= 0 ? "unreachableBodyDev" : "unreachableBody", { origin: origin() }),
+        [button(t("tryAgain"), function () { send(cap); }, true)]
       );
     }
     if (res.ok && body && body.result) return result(body);
@@ -235,32 +249,32 @@
   }
 
   var REFUSAL_TITLES = {
-    "no-chart-on-page": "No size chart on this page",
-    unreadable: "Couldn't read this page",
-    "not-apparel": "This doesn't look like a garment",
-    "unsupported-category": "Not a size we can check yet",
-    "not-connected": "Connect Fit Passport first",
+    "no-chart-on-page": "refusalNoChart",
+    unreadable: "refusalUnreadable",
+    "not-apparel": "refusalNotApparel",
+    "unsupported-category": "refusalUnsupported",
+    "not-connected": "refusalNotConnected",
   };
 
   function refusal(status, body, cap) {
     var code = typeof body.error === "string" ? body.error : "";
     if (status === 401) {
-      return message(REFUSAL_TITLES["not-connected"], body.message, [
-        button("Open Fit Passport", function () { openTab(origin()); }, true),
+      return message(t(REFUSAL_TITLES["not-connected"]), body.message, [
+        button(t("openFitPassport"), function () { openTab(origin()); }, true),
       ]);
     }
     if (status === 429) {
-      return message("Too many checks in a short time.", "Try again in a few minutes.");
+      return message(t("tooManyTitle"), t("tooManyBody"));
     }
     if (status === 422) {
-      return message(REFUSAL_TITLES[code] || "We can't size this", body.message, [
-        code === "no-chart-on-page" ? button("Re-scan", start, true) : null,
+      return message(REFUSAL_TITLES[code] ? t(REFUSAL_TITLES[code]) : t("cantSize"), body.message, [
+        code === "no-chart-on-page" ? button(t("rescan"), start, true) : null,
       ].filter(Boolean));
     }
     message(
-      "The check didn't go through.",
-      typeof body.message === "string" ? body.message : "The server answered " + status + ".",
-      [button("Try again", function () { send(cap); }, true)]
+      t("failedTitle"),
+      typeof body.message === "string" ? body.message : t("failedBody", { status: status }),
+      [button(t("tryAgain"), function () { send(cap); }, true)]
     );
   }
 
@@ -269,25 +283,25 @@
     if (!source) return "";
     var parts = [];
     if (source.sizesFrom === "page") {
-      var kind = source.measurementKind === "body" ? "Body measurements"
-        : source.measurementKind === "garment" ? "Garment measurements" : "Measurements";
-      var reader = {
-        table: "from this page's size table",
-        "llm-text": "read by AI from this page's text",
-        "llm-vision": "read by AI from a size-chart image",
-        "hao-xing": "from this page's Chinese size codes",
-      }[source.extractedBy] || "from this page";
-      parts.push(kind + " " + reader);
-      if (!source.measurementKind) parts.push("the page didn't say body or garment");
-      else if (source.measurementKindFrom === "table") parts.push("a range for each size, which is how body charts are written");
-      else if (source.measurementKindFrom === "brand") parts.push("body/garment as the brand's own guide states it");
+      var kind = source.measurementKind === "body" ? t("kindBody")
+        : source.measurementKind === "garment" ? t("kindGarment") : t("kindUnknown");
+      var reader = t({
+        table: "readerTable",
+        "llm-text": "readerLlmText",
+        "llm-vision": "readerLlmVision",
+        "hao-xing": "readerHaoXing",
+      }[source.extractedBy] || "readerPage");
+      parts.push(t("kindAndReader", { kind: kind, reader: reader }));
+      if (!source.measurementKind) parts.push(t("kindUnstated"));
+      else if (source.measurementKindFrom === "table") parts.push(t("kindFromTable"));
+      else if (source.measurementKindFrom === "brand") parts.push(t("kindFromBrand"));
     } else if (source.sizesFrom === "brand-chart") {
-      parts.push((brand || "The brand") + "'s published size guide, not this product's own chart" +
-        (source.chart ? " (read " + source.chart.capturedAt + ")" : ""));
+      var b = brand || t("theBrand");
+      parts.push(source.chart ? t("brandChartRead", { brand: b, date: source.chart.capturedAt }) : t("brandChart", { brand: b }));
     } else if (source.sizesFrom === "estimated") {
-      parts.push("The page lists sizes but no measurements");
+      parts.push(t("estimated"));
     }
-    if (source.fetch === "extension") parts.push("read in your browser");
+    if (source.fetch === "extension") parts.push(t("inBrowser"));
     return parts.join(" · ");
   }
 
@@ -300,36 +314,37 @@
       .map(function (l) { return l.replace(/^•\s*/, ""); })
       .slice(0, 3);
     // In a near-tie the engine names the runner-up — the line a low confidence
-    // most needs beside it.
-    var alternative = lines.filter(function (l) { return /^Alternative:/.test(l); })[0];
+    // most needs beside it. The structured field when the server sends it; the
+    // English prose line from a server that predates it.
+    var alternative = r.alternative || lines.filter(function (l) { return /^Alternative:/.test(l); })[0];
     var notes = [alternative, r.conflictNote, r.domainNote].filter(Boolean);
 
     var head = r.undetermined
       ? el("div", {}, [
-          el("p", { className: "title", text: "Can't tell these sizes apart yet" }),
+          el("p", { className: "title", text: t("undetermined") }),
           el("p", { className: "muted", text: r.explanation }),
         ])
       : el("div", {}, [
           el("div", { className: "size-line" }, [
             el("span", { className: "size", text: best.label }),
-            el("span", { className: "conf", text: Math.round((best.confidence || 0) * 100) + "% confidence" }),
+            el("span", { className: "conf", text: t("confidence", { pct: Math.round((best.confidence || 0) * 100) }) }),
             best.verdict ? el("span", { className: "chip", text: best.verdict }) : null,
           ]),
           reasons.length ? el("ul", { className: "reasons" }, reasons.map(function (t) { return el("li", { text: t }); })) : null,
         ]);
 
     show(
-      el("p", { className: "title", text: (data.product && data.product.productName) || "This product" }),
+      el("p", { className: "title", text: (data.product && data.product.productName) || t("thisProduct") }),
       el("div", { className: "card" }, [
         head,
         notes.length ? el("p", { className: "note", text: notes.join(" ") }) : null,
         el("p", { className: "source", text: provenance(data.source, data.product && data.product.brand) }),
       ]),
       el("div", { className: "actions" }, [
-        button("Open full explanation", function () {
+        button(t("openFull"), function () {
           openTab(origin() + "/check?product=" + encodeURIComponent(data.product.id));
         }, true),
-        button("Check again", start),
+        button(t("checkAgain"), start),
       ])
     );
   }

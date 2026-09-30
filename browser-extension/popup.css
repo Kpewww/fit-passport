@@ -24,7 +24,8 @@ body {
   width: 340px;
   background: var(--paper);
   color: var(--ink);
-  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Noto Sans SC", sans-serif;
 }
 
 .bar {
@@ -36,6 +37,16 @@ body {
   color: #fff;
 }
 .brand { font-weight: 600; letter-spacing: 0.01em; }
+
+/* 中 | EN — pushed to the bar's right edge. */
+.lang { margin-left: auto; display: inline-flex; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 999px; padding: 1px; }
+.lang button {
+  font: inherit; font-size: 11.5px; font-weight: 600; line-height: 1;
+  min-width: 30px; height: 22px; padding: 0 8px;
+  border: 0; border-radius: 999px; background: transparent; color: rgba(255, 255, 255, 0.7); cursor: pointer;
+}
+.lang button[aria-pressed="true"] { background: #fff; color: var(--ink); }
+.lang button:focus-visible { outline: 2px solid #fff; outline-offset: 1px; }
 
 main { padding: 12px 14px 4px; min-height: 120px; }
 

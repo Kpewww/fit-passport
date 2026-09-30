@@ -142,6 +142,18 @@ on a page with a parameter list, since nearly every product page has large photo
 The picture is not sent to the vision reader: picking the size chart out of thirty
 description images is unsolved (todo/engineering/10).
 
+## 6c. Language (Session 79c)
+
+The popup has its own 中 | EN switch (`i18n.js`), remembered in the extension's
+storage and defaulting to the browser's language — independent of the site's
+cookie, because the popup is used on other sites. Every check sends the choice as
+`x-fp-lang`, which the server ranks above its own cookie (`src/i18n/config.ts`), so
+reasons and refusals come back in the popup's language. The manifest's description
+and tooltip use Chrome's `_locales` (en, zh_CN); the name stays Fit Passport.
+`extensionI18n.test.ts` holds the popup to the site's rules: same keys and
+placeholders, nothing left in English, the spacing rule, and every key the popup
+asks for present.
+
 ## 7. Distribution
 
 Until the extension is on the Chrome Web Store it ships as a **zip on the website**
