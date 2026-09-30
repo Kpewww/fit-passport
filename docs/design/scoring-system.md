@@ -20,13 +20,13 @@ provenances:
 |---|---|---|
 | **measured** | Computed from data we hold, with the n stated | **1** |
 | **cited** | A published source states this value — not just the idea | **2** |
-| **assumed** | A judgement, usually hand-tuned against a handful of cases | **95** |
+| **assumed** | A judgement, usually hand-tuned against a handful of cases | **100** |
 
 `scoringConstants.test.ts` fails if a value has no provenance, if a provenance
 names no value, if a measured entry does not state its n, or if an assumed value
 is missing from the calibration table below.
 
-**Read the counts plainly.** 95 of 98 numbers are judgements. The
+**Read the counts plainly.** 100 of 103 numbers are judgements. The
 literature the engine cites supports the SHAPE of the model — fit as a bipolar
 ordinal (too small … too big), fit as a multi-measurement signal — and not a
 single one of its values. That is normal for a scorer before it has outcome data,
@@ -375,6 +375,11 @@ number we have not yet earned; the test fails if one is missing here.
 | `CONFIDENCE_CAPS.estimatedBody` | 0.4 | assumed | a regional average is a prior, not the wearer |
 | `CONFIDENCE_CAPS.provenance.estimated` | 0.5 | assumed | invented chart numbers; policy ceiling |
 | `CONFIDENCE_CAPS.provenance.brand-chart` | 0.75 | assumed | real brand numbers, but not this product's; policy ceiling |
+| `CONFIDENCE_CAPS.provenance.seller` | 0.75 | assumed | a seller's hand measurement of this very garment: real, but taken by tape, flat; set level with a brand chart |
+| `LISTING.flatNoiseCm` | 0.64 | assumed | rounding to the nearest half inch, the precision listings are written in: up to a quarter inch (0.64 cm) flat either way; hand-measuring error is not modelled — to calibrate against listings with known garment measurements |
+| `LISTING.confidence.strong` | 0.75 | assumed | a judgement resting on a measured garment you own, or your own chest, that holds under the seller's measuring error; level with the seller provenance cap |
+| `LISTING.confidence.moderate` | 0.55 | assumed | as strong, but near a verdict boundary, or resting on a garment with no fit report |
+| `LISTING.confidence.weak` | 0.35 | assumed | a regional-average chest, or a size label only |
 | `STABILITY.bodyNoiseCm` | 2 | assumed | typical error of a self-taken tape measurement; no source fetched — to calibrate |
 | `STABILITY.chartNoiseCm` | 1 | assumed | Uniqlo states its garments can vary by about 1 cm (seen in a search summary of uniqlo.com; primary page not fetched) |
 | `STABILITY.bodySteps` | 2 | assumed | grid resolution: five body offsets per dimension |

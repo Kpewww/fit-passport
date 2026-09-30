@@ -195,6 +195,10 @@ describe("pageParse — names and brands read from meta", () => {
     const html = `<meta property="og:title" content="Nike Dri-FIT Legend Men&#x27;s Fitness T-Shirt">`;
     expect(parsePage(html).productName).toBe("Nike Dri-FIT Legend Men's Fitness T-Shirt");
   });
+  it("decodes entities inside JSON-LD (eBay's names arrive as MEN&#039;S)", () => {
+    const html = `<script type="application/ld+json">{"@type":"Product","name":"FREE PLANET MEN&#039;S FLANNEL SHIRT"}</script>`;
+    expect(parsePage(html).productName).toBe("FREE PLANET MEN'S FLANNEL SHIRT");
+  });
   it("takes a site that names itself by domain as the brand without the domain", () => {
     expect(siteNameAsBrand("Nike.com")).toBe("Nike");
     expect(siteNameAsBrand("www.everlane.com")).toBe("everlane");

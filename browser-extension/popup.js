@@ -134,7 +134,49 @@
     if (!cap || !cap.ok) {
       return message(t("tooLargeTitle"), t("tooLargeBody"));
     }
+    // A listing's description frame (eBay): read it now if the user already allowed
+    // it once; otherwise the preview offers to.
+    if (cap.found.descFrame && await hasDescAccess()) await readDescription(tab.id, cap);
     preview(cap, tab);
+  }
+
+  // ---- the seller's description frame (Session 80) ----
+  //
+  // eBay shows the seller's description in a frame from itm.ebaydesc.com, which
+  // activeTab does not reach. With the user's one-time permission for that host
+  // only, the popup reads measurement lines from it (capture.js measureLines) —
+  // nothing else from the frame, and only on a click, like everything here.
+
+  var DESC_ORIGINS = ["https://*.ebaydesc.com/*"];
+
+  async function hasDescAccess() {
+    try { return await chrome.permissions.contains({ origins: DESC_ORIGINS }); } catch (e) { return false; }
+  }
+
+  function escHtml(text) {
+    return String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  async function readDescription(tabId, cap) {
+    var lines = [];
+    try {
+      await chrome.scripting.executeScript({ target: { tabId: tabId, allFrames: true }, files: ["capture.js"] });
+      var results = await chrome.scripting.executeScript({
+        target: { tabId: tabId, allFrames: true },
+        func: function () {
+          return /(^|\.)ebaydesc\.com$/i.test(location.hostname) ? globalThis.fpCapture.measureLines(document) : null;
+        },
+      });
+      (results || []).forEach(function (r) { if (r && Array.isArray(r.result)) lines = lines.concat(r.result); });
+    } catch (e) { /* the frame could not be read; the preview says so */ }
+    lines = lines.slice(0, 20);
+    if (lines.length) {
+      cap.html = cap.html.replace("</body></html>",
+        '<div data-fp="seller">' + lines.map(function (l) { return '<p data-fp="measure">' + escHtml(l) + "</p>"; }).join("") + "</div></body></html>");
+      cap.stats.payloadChars = cap.html.length;
+    }
+    cap.descRead = true;
+    cap.descLines = lines.length;
   }
 
   // ---- 2. show what was found, and exactly what would be sent ----
@@ -161,6 +203,14 @@
     // Neutral, not a failure: a listing whose description is all pictures has no
     // product text to read, and the size does not depend on it.
     if (f.pictureDescription) items.push(["info", t("pictureDescription")]);
+    // A one-off listing: its specifics, and the seller's description.
+    var listingPage = !!f.descFrame || f.specs > 0;
+    if (f.specs > 0) items.push([true, t("specsFound", { n: f.specs })]);
+    if (f.descFrame) {
+      items.push(cap.descRead
+        ? [cap.descLines > 0, cap.descLines > 0 ? t("descLines", { n: cap.descLines }) : t("descNoLines")]
+        : ["info", t("descNotRead")]);
+    }
 
     var what = el("pre", { text: cap.html });
     show(
@@ -174,9 +224,17 @@
           ]);
         })),
       ]),
-      hasChart ? null : el("p", { className: "hint", text: t("openGuideHint") }),
+      hasChart ? null : el("p", { className: "hint", text: listingPage ? t("listingHint") : t("openGuideHint") }),
       el("div", { className: "actions" }, [
-        button(hasChart ? t("check") : t("checkAnyway"), function () { send(cap); }, true),
+        button(hasChart || listingPage ? t("check") : t("checkAnyway"), function () { send(cap); }, true),
+        f.descFrame && !cap.descRead ? button(t("readDesc"), function () {
+          // The permission prompt must come straight from this click.
+          chrome.permissions.request({ origins: DESC_ORIGINS }).then(function (granted) {
+            if (!granted) { cap.descRead = true; cap.descLines = 0; return preview(cap, tab); }
+            show(el("p", { className: "muted", text: t("reading") }));
+            readDescription(tab.id, cap).then(function () { preview(cap, tab); });
+          });
+        }) : null,
         button(t("rescan"), start),
         button(t("saveToBuy"), function () { saveForm(cap, null, function () { preview(cap, tab); }); }),
       ]),
@@ -223,7 +281,7 @@
 
   // ---- 3. send, and render whatever the API says ----
 
-  async function send(cap) {
+  async function send(cap, seller) {
     show(el("p", { className: "muted", text: t("checking") }));
     var res;
     var body = null;
@@ -235,14 +293,14 @@
         credentials: "include",
         // x-fp-lang: the popup's language, so reasons and refusals come back in it.
         headers: { "content-type": "application/json", "x-fp-client": "extension/" + CFG.version, "x-fp-lang": I18N.lang() },
-        body: JSON.stringify({ url: cap.url, html: cap.html }),
+        body: JSON.stringify({ url: cap.url, html: cap.html, seller: seller || undefined }),
       });
       try { body = await res.json(); } catch (e) { body = null; }
     } catch (e) {
       return message(
         t("unreachableTitle"),
         t(origin().indexOf("localhost") >= 0 ? "unreachableBodyDev" : "unreachableBody", { origin: origin() }),
-        [button(t("tryAgain"), function () { send(cap); }, true)]
+        [button(t("tryAgain"), function () { send(cap, seller); }, true)]
       );
     }
     if (res.ok && body && body.result) return result(body, cap);
@@ -255,6 +313,7 @@
     "not-apparel": "refusalNotApparel",
     "unsupported-category": "refusalUnsupported",
     "not-connected": "refusalNotConnected",
+    "no-measurements-listing": "refusalNoMeasurements",
   };
 
   function refusal(status, body, cap) {
@@ -268,8 +327,11 @@
       return message(t("tooManyTitle"), t("tooManyBody"));
     }
     if (status === 422) {
+      var listingPage = cap && (cap.found.descFrame || cap.found.specs > 0);
       return message(REFUSAL_TITLES[code] ? t(REFUSAL_TITLES[code]) : t("cantSize"), body.message, [
-        code === "no-chart-on-page" ? button(t("rescan"), start, true) : null,
+        code === "no-measurements-listing" || (code === "no-chart-on-page" && listingPage)
+          ? button(t("enterMeasurements"), function () { measureForm(cap, null); }, true) : null,
+        code === "no-chart-on-page" ? button(t("rescan"), start, !listingPage) : null,
       ].filter(Boolean));
     }
     message(
@@ -299,6 +361,8 @@
     } else if (source.sizesFrom === "brand-chart") {
       var b = brand || t("theBrand");
       parts.push(source.chart ? t("brandChartRead", { brand: b, date: source.chart.capturedAt }) : t("brandChart", { brand: b }));
+    } else if (source.sizesFrom === "seller") {
+      parts.push(t(source.extractedBy === "seller-typed" ? "sellerTyped" : "sellerMeasured"));
     } else if (source.sizesFrom === "estimated") {
       parts.push(t("estimated"));
     }
@@ -308,6 +372,7 @@
 
   function result(data, cap) {
     var r = data.result;
+    if (r.judgement) return judgementView(data, cap);
     var best = r.best || {};
     var lines = String(r.explanation || "").split("\n").map(function (l) { return l.trim(); });
     var reasons = lines
@@ -347,6 +412,91 @@
         }, true),
         button(t("checkAgain"), start),
         cap ? button(t("saveToBuy"), function () { saveForm(cap, data, function () { result(data, cap); }); }) : null,
+      ])
+    );
+  }
+
+  // ---- a one-off listing's judgement (Session 80) ----
+  //
+  // A second-hand listing is one garment in one size, so the answer is a
+  // judgement — likely fits, may be tight, may be loose — with how sure it is, the
+  // reason, and the numbers it came from. The server decides all of it
+  // (listingJudgement.ts); this only lays it out.
+
+  var OUTCOME_KEYS = { "likely-fits": "outcomeFits", "may-be-tight": "outcomeTight", "may-be-loose": "outcomeLoose", "too-small": "outcomeTooSmall", "too-big": "outcomeTooBig", unknown: "outcomeUnknown" };
+  var STRENGTH_KEYS = { strong: "strengthStrong", moderate: "strengthModerate", weak: "strengthWeak" };
+  var BASIS_KEYS = { "closet-garment": "basisGarment", body: "basisBody", label: "basisLabel", none: "basisNone" };
+  var NEXT_KEYS = { "enter-chest": "nextEnterChest", "enter-waist": "nextEnterWaist", "add-body": "nextAddBody", "confirm-measure": "nextConfirm", "choose-category": "nextCategory" };
+
+  function judgementView(data, cap) {
+    var j = data.result.judgement;
+    var known = j.outcome !== "unknown";
+    var nexts = (j.next || []).map(function (n) {
+      if (n === "add-body") return button(t(NEXT_KEYS[n]), function () { openTab(origin() + "/passport"); });
+      return button(t(NEXT_KEYS[n]), function () { measureForm(cap, j); });
+    });
+    show(
+      el("p", { className: "title", text: (data.product && data.product.productName) || t("thisProduct") }),
+      el("div", { className: "card" }, [
+        el("div", { className: "size-line" }, [
+          el("span", { className: "verdict " + (known ? j.outcome : "unknown"), text: t(OUTCOME_KEYS[j.outcome]) }),
+          known ? el("span", { className: "chip", text: t(STRENGTH_KEYS[j.strength]) }) : null,
+        ]),
+        known ? el("p", { className: "small", text: t(BASIS_KEYS[j.basis]) + (j.sizeLabel ? " · " + t("labelled", { size: j.sizeLabel }) : "") }) : null,
+        (j.reasons || []).length ? el("ul", { className: "reasons" }, j.reasons.map(function (line) { return el("li", { text: line }); })) : null,
+        (j.notes || []).length ? el("p", { className: "note", text: j.notes.join(" ") }) : null,
+        (j.ambiguous || []).length ? el("p", { className: "note", text: t("ambiguousLine", { raw: j.ambiguous.map(function (a) { return a.raw; }).join("；") }) }) : null,
+        el("p", { className: "source", text: provenance(data.source, data.product && data.product.brand) }),
+      ]),
+      nexts.length ? el("div", { className: "actions" }, nexts) : null,
+      el("div", { className: "actions" }, [
+        button(t("openFull"), function () { openTab(origin() + "/check?product=" + encodeURIComponent(data.product.id)); }, !nexts.length),
+        cap ? button(t("saveToBuy"), function () { saveForm(cap, data, function () { result(data, cap); }); }) : null,
+        cap ? button(t("enterMeasurements"), function () { measureForm(cap, j); }) : null,
+      ])
+    );
+  }
+
+  // Type the seller's numbers from the listing — pit to pit, length, waist laid
+  // flat — and the garment kind when the page does not say. Only what is typed is
+  // sent; the server checks each number against what an adult garment can measure.
+  function measureForm(cap, j) {
+    var num = function () { return el("input", { type: "number", min: "1", max: "200", step: "0.25", inputmode: "decimal" }); };
+    var chestIn = num(), lengthIn = num(), waistIn = num();
+    var unitIn = el("select", {}, [el("option", { value: "in", text: t("unitIn") }), el("option", { value: "cm", text: t("unitCm") })]);
+    var catIn = el("select", {}, [
+      el("option", { value: "", text: t("categoryAuto") }),
+      el("option", { value: "top", text: t("categoryTop") }),
+      el("option", { value: "bottom", text: t("categoryBottom") }),
+    ]);
+    if (j && (j.next || []).indexOf("choose-category") >= 0) catIn.value = "top";
+    var err = el("p", { className: "note", text: "" });
+    show(
+      el("p", { className: "title", text: t("measureTitle") }),
+      el("p", { className: "muted", text: t("measureIntro") }),
+      el("div", { className: "card form" }, [
+        field(t("fieldChestFlat"), chestIn),
+        field(t("fieldWaistFlat"), waistIn),
+        field(t("fieldLength"), lengthIn),
+        field(t("fieldUnit"), unitIn),
+        field(t("fieldCategory"), catIn),
+        err,
+      ]),
+      el("div", { className: "actions" }, [
+        button(t("judge"), function () {
+          var unit = unitIn.value;
+          var typed = [];
+          var add = function (input, fieldName, flat) {
+            var v = parseFloat(input.value);
+            if (v > 0) typed.push({ field: fieldName, value: v, unit: unit, flat: flat });
+          };
+          add(chestIn, "chest", true);
+          add(waistIn, "waist", true);
+          add(lengthIn, "length", false);
+          if (!typed.length) { err.textContent = t("measureNeedOne"); return; }
+          send(cap, { typed: typed, category: catIn.value || undefined });
+        }, true),
+        button(t("back"), function () { start(); }),
       ])
     );
   }

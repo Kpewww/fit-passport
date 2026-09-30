@@ -170,8 +170,13 @@ store's key instead.
 ## 8. Limits — which are permanent and which are merely unbuilt
 
 **Permanent** (the platform does not allow it):
-- A chart inside a **cross-origin iframe** or a **closed shadow root** cannot be
-  read. Open shadow roots can.
+- A chart inside a **closed shadow root** cannot be read. Open shadow roots can.
+
+**Needs a permission** (corrected in Session 80): a **cross-origin iframe** is out
+of `activeTab`'s reach, but not out of the platform's — with host permission for
+the frame's origin, `executeScript({ allFrames: true })` reaches it. eBay puts the
+seller's description in an `itm.ebaydesc.com` frame; 0.5.0 asks for that one host,
+**optionally and on a click**, and reads only measurement lines from it.
 
 **Unbuilt** (would take work, no platform obstacle):
 - Size options offered as **radio buttons** rather than a `<select>` or swatch
@@ -188,3 +193,24 @@ store's key instead.
   button needs the user to open it and press **Re-scan**.
 - It never runs on a page the user did not click the icon on: `activeTab` +
   `scripting`, no always-on content scripts, no `<all_urls>`.
+
+## 9. One-off listings (Session 80)
+
+A second-hand listing is one garment in one size with no size chart; what it often
+has is the seller's tape measure. Measured on five real eBay shirts: four wrote
+pit-to-pit in the title (`24" Pit To Pit 30" Long`), one in the item specifics
+(`Chest Size: 25" Pit to Pit`), one had a length in the description frame — and the
+listing page also showed other sellers' items with their own pit-to-pit, so free
+text on the page is never read.
+
+| Page part | Read by | Rule |
+|---|---|---|
+| title / `<h1>` | already sent | server `sellerMeasurements.ts` |
+| item specifics | capture, **by label** (`SPEC_LABELS`) | measurement values kept here, unlike marketplace attributes |
+| description frame | capture's `measureLines`, injected with the optional permission | measurement lines only, masked, ≤ 20 |
+
+The server doubles a flat width into the garment's circumference (never the body's),
+drops what is ambiguous (a bare "Chest 22", "29x20") for the user to confirm, and
+answers with a **judgement** (`listingJudgement.ts`) on the engine's own target and
+verdict scale. Our server is refused by eBay (an "Error Page"), so on the website a
+listing is judged from measurements the user types.

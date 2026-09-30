@@ -133,7 +133,7 @@ export const CONFIDENCE_CAPS = {
   /** The wearer's own measurements are implausible together (PLAUSIBILITY). */
   implausibleBody: 0.4,
   /** By where the size chart came from (applied at the route). */
-  provenance: { estimated: 0.5, "brand-chart": 0.75 },
+  provenance: { estimated: 0.5, "brand-chart": 0.75, seller: 0.75 },
 } as const;
 
 /**
@@ -166,6 +166,23 @@ export const AGREEMENT = { oneStep: 0.8, twoPlusSteps: 0.65 } as const;
 
 /** Tie handling. */
 export const TIE = { epsilon: 1e-6, alternativeWithin: 0.08 } as const;
+
+/**
+ * One-off listings (Session 80, listingJudgement.ts): a seller's tape measure, and
+ * how sure a judgement may say it is. A judgement is not a ranking, so it has no
+ * margin to compute a confidence from; its strength comes from what it rests on.
+ */
+export const LISTING = {
+  /**
+   * How far a seller's flat width can be off by rounding alone, in cm, each way:
+   * listings are written to the nearest half inch (21.5", 22"), so up to a quarter
+   * inch. Tape error on top of that is not modelled — the judgement says so when
+   * it is close.
+   */
+  flatNoiseCm: 0.64,
+  /** The confidence stored for a judgement, by its strength. */
+  confidence: { strong: 0.75, moderate: 0.55, weak: 0.35 },
+} as const;
 
 // ---------------------------------------------------------------------------
 // EASE — how much room each stated preference means.
@@ -326,6 +343,11 @@ export const PROVENANCE: Record<string, ConstantSource> = {
   "CONFIDENCE_CAPS.estimatedBody": A("a regional average is a prior, not the wearer"),
   "CONFIDENCE_CAPS.provenance.estimated": A("invented chart numbers; policy ceiling"),
   "CONFIDENCE_CAPS.provenance.brand-chart": A("real brand numbers, but not this product's; policy ceiling"),
+  "CONFIDENCE_CAPS.provenance.seller": A("a seller's hand measurement of this very garment: real, but taken by tape, flat; set level with a brand chart"),
+  "LISTING.flatNoiseCm": A("rounding to the nearest half inch, the precision listings are written in: up to a quarter inch (0.64 cm) flat either way; hand-measuring error is not modelled — to calibrate against listings with known garment measurements"),
+  "LISTING.confidence.strong": A("a judgement resting on a measured garment you own, or your own chest, that holds under the seller's measuring error; level with the seller provenance cap"),
+  "LISTING.confidence.moderate": A("as strong, but near a verdict boundary, or resting on a garment with no fit report"),
+  "LISTING.confidence.weak": A("a regional-average chest, or a size label only"),
 
   "STABILITY.bodyNoiseCm": A("typical error of a self-taken tape measurement; no source fetched — to calibrate"),
   "STABILITY.chartNoiseCm": A("Uniqlo states its garments can vary by about 1 cm (seen in a search summary of uniqlo.com; primary page not fetched)"),

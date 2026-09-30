@@ -27,7 +27,9 @@ import {
   findSizeChartImages,
   parsePage,
   parseSizeLabels,
+  listingTexts,
 } from "./pageParse";
+import { readSeller } from "./sellerMeasurements";
 
 type Capture = {
   ok: boolean;
@@ -44,6 +46,8 @@ type Capture = {
     chartImages: number;
     sizes: string[];
     selectedSize: string | null;
+    specs: number;
+    descFrame: string | null;
   };
 };
 type FpCapture = ((doc: Document, loc: { href: string }) => Capture) & {
@@ -53,6 +57,7 @@ type FpCapture = ((doc: Document, loc: { href: string }) => Capture) & {
   CHART_IMG_TOKENS: string[];
   MEASURE_RE: RegExp;
   VISIBLE_ATTR: string;
+  measureLines: (doc: Document) => string[];
 };
 
 const REPO = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
@@ -330,6 +335,34 @@ describe("what the popup is told it found", () => {
     const chosenSwatch = capture(`<html><body><h1>Tee</h1>
       <div class="sizes"><button data-size="S" aria-pressed="false">S</button><button data-size="L" aria-pressed="true">L</button></div></body></html>`).found;
     expect(chosenSwatch.selectedSize).toBe("L");
+  });
+
+  it("reads an eBay listing's item specifics and notes its description frame — and nothing from other listings (Session 80)", () => {
+    // The shape of a real eBay item page (2026-09-30): specifics as nested label and
+    // value boxes, shipping rows among them, a related-items strip with OTHER
+    // sellers' pit-to-pit widths, and the seller's description in an iframe.
+    const spec = (k: string, v: string) =>
+      `<div class="ux-labels-values"><div class="ux-labels-values__labels"><div class="c"><div><span>${k}</span></div></div></div>` +
+      `<div class="ux-labels-values__values"><div class="c"><div><span>${v}</span></div></div></div></div>`;
+    const c = capture(`<html><body><h1>Free Planet Men's Relaxed Fit Flannel Shirt Size L</h1>
+      ${spec("Shipping:", "US $7.05 USPS Ground Advantage")}${spec("Chest Size", `25" Pit to Pit`)}${spec("Size", "L")}${spec("Sleeve Length", "Long Sleeve")}
+      <iframe id="desc_ifr" src="https://itm.ebaydesc.com/itmdesc/236823744791?t=0"></iframe>
+      <section class="related"><a>Simply Basic Womens Size Large Scrub Top Pit To Pit 26in (#117021693023)</a></section>
+      </body></html>`, "https://www.ebay.com/itm/236823744791");
+    expect(c.html).toContain('<dl data-fp="specs"><dt>Chest Size</dt><dd>25&quot; Pit to Pit</dd><dt>Size</dt><dd>L</dd><dt>Sleeve Length</dt><dd>Long Sleeve</dd></dl>');
+    expect(c.html).not.toContain("Shipping");
+    expect(c.html).not.toContain("26in");
+    expect(c.found.descFrame).toBe("itm.ebaydesc.com");
+    // And the server reads the seller's measurement back out of what was sent.
+    expect(readSeller(listingTexts(c.html)).measurements).toEqual([expect.objectContaining({ field: "chest", value: 25, flat: true, source: "specs" })]);
+  });
+
+  it("reads only measurement lines from a seller's description, masked", () => {
+    const doc = new DOMParser().parseFromString(`<html><body><p>Great flannel, barely worn!</p><p>Pit to pit: 22"<br>Length: 29"</p>
+      <p>Questions? mail me at seller@example.com</p><p>Chest pocket, 2 buttons missing? No, all 8 buttons</p></body></html>`, "text/html");
+    const lines = fpCapture.measureLines(doc);
+    expect(lines).toEqual(['Pit to pit: 22"', 'Length: 29"', "Chest pocket, 2 buttons missing? No, all 8 buttons"]);
+    expect(lines.join(" ")).not.toContain("@");
   });
 
   it("does not take a carousel's selected slide number for a size", () => {

@@ -26,8 +26,11 @@ import {
   parseChineseSizeCode,
   findSizeChartImages,
   looksBlocked,
+  listingTexts,
 } from "./pageParse";
 import { normalizeToAlpha } from "./sizing";
+import { domainForCategory } from "./sizeSystems";
+import { isResaleHost, readSeller, typedMeasurements, withTyped, type TypedMeasurement } from "./sellerMeasurements";
 
 // Garment categories worn on the torso, where a Chinese 号型 code's 型 girth is the
 // intended BODY chest (bust). For these we can turn "160/84A" into a real body-
@@ -514,6 +517,62 @@ function creditPage(
  *   4. Else use real offered labels / 号型 codes if present, else the URL-derived
  *      estimate (`sizesFrom: "estimated"`, except 号型 which yields real body cm).
  */
+export type SellerInput = { typed?: TypedMeasurement[]; category?: "top" | "bottom" };
+
+/**
+ * A one-off listing — one garment, one size, a seller's tape measure (Session 80).
+ * Null when the page is not one: not a resale marketplace, and no seller
+ * measurement found. `typedOnly` is the no-page case (blocked, or fetch disabled),
+ * where only what the user typed can make it a listing.
+ *
+ * The garment's chest is the seller's pit-to-pit doubled (sellerMeasurements.ts);
+ * it goes in the GARMENT field, never a body range (invariant ㊿).
+ */
+function listingFrom(out: ExtractedProduct, html: string, seller: SellerInput | undefined, typedOnly = false): ExtractedProduct | null {
+  const typed = typedMeasurements(seller?.typed ?? []);
+  if (typedOnly && typed.length === 0) return null;
+  let reading = readSeller(html ? listingTexts(html) : {});
+  if (typed.length) reading = withTyped(reading, typed);
+  // Off a resale marketplace, only a chest or waist measurement on a page that
+  // offers at most one size makes a listing: a shop's "Length: 28 in" beside a
+  // size picker describes one of its sizes, not a one-off garment.
+  if (!isResaleHost(out.source.host)) {
+    const sized = reading.measurements.some((m) => m.field === "chest" || m.field === "waist");
+    if (!sized || (html && parseSizeLabels(html).length > 1)) return null;
+  }
+
+  const next: ExtractedProduct = { ...out, source: { ...out.source, listing: true, seller: reading } };
+  // The kind of garment the user chose, when the page did not say one.
+  if (seller?.category && (out.source.categoryGuessed || domainForCategory(out.category) !== seller.category)) {
+    next.category = seller.category === "bottom" ? "pants" : "shirt";
+    next.source.categoryGuessed = false;
+    next.source.categoryFrom = "user";
+  }
+  const by = (f: string) => reading.measurements.find((m) => m.field === f);
+  const chest = by("chest"), waist = by("waist"), shoulder = by("shoulder"), length = by("length"), sleeve = by("sleeve");
+  const lead = chest ?? waist ?? shoulder ?? length;
+  delete next.source.chart; // a brand guide is not what this listing measured (invariant (56))
+  if (lead) {
+    next.sizes = [{ label: reading.sizeLabel ?? "—", chestCm: chest?.cm, waistCm: waist?.cm, shoulderCm: shoulder?.cm, lengthCm: length?.cm, sleeveCm: sleeve?.cm }];
+    next.source.sizesFrom = "seller";
+    next.source.measurementKind = "garment";
+    next.source.measurementKindFrom = "seller";
+    next.source.extractedBy = lead.source === "you" ? "seller-typed" : (`seller-${lead.source}` as "seller-title" | "seller-specs" | "seller-description");
+    delete next.source.sizesSynthesized;
+    return next;
+  }
+  if (reading.sizeLabel) {
+    // A printed size and no measurements: a real label, honestly unmeasured.
+    next.sizes = [{ label: reading.sizeLabel }];
+    if (next.source.sizesFrom !== "estimated") next.source.sizesFrom = "estimated";
+    delete next.source.sizesSynthesized;
+    return next;
+  }
+  // Nothing usable about its size: the ladder stays marked synthesized, and
+  // /api/check refuses it as a listing with no measurements.
+  return next;
+}
+
 export async function extractSmart(
   url: string,
   opts: {
@@ -538,6 +597,12 @@ export async function extractSmart(
      * each (Session 80).
      */
     noModel?: boolean;
+    /**
+     * Measurements the user typed from a one-off listing (the "enter the seller's
+     * measurements" form), and the garment kind they chose when the page did not
+     * say. Typed numbers win over anything read. Session 80.
+     */
+    seller?: SellerInput;
   } = {},
 ): Promise<ExtractedProduct> {
   const deterministic = extractFromUrl(url);
@@ -556,7 +621,7 @@ export async function extractSmart(
     }
     if (PAGE_FETCH_DISABLED) {
       deterministic.source.fetch = "skipped";
-      return deterministic;
+      return listingFrom(deterministic, "", opts.seller, true) ?? deterministic;
     }
   }
 
@@ -574,7 +639,9 @@ export async function extractSmart(
       // Two very different failures, recorded as such — see the `fetch` field's
       // comment in extractor.ts and docs/design/fetch-strategy.md §6.
       deterministic.source.fetch = fetched.blocked ? "blocked" : "unreachable";
-      return deterministic; // page unreachable → estimate
+      // A listing the user measured for us needs no page: the numbers are theirs,
+      // copied from the listing in their own browser (eBay refuses our server).
+      return listingFrom(deterministic, "", opts.seller, true) ?? deterministic; // page unreachable → estimate
     }
     // We DID get the page. Anything that still lands on "estimated" from here is an
     // extraction-quality problem, not a transport one.
@@ -627,6 +694,12 @@ export async function extractSmart(
     }
     return out; // real chart in hand — no need to spend an LLM call
   }
+
+  // 2b. A one-off listing (eBay …): no chart, but the seller's own tape measure,
+  // or at least the size it prints. Answered before any model call — a listing's
+  // measurements are a few words in its title, specifics or description.
+  const listing = listingFrom(out, html, opts.seller);
+  if (listing) return listing;
 
   // 3. No parseable table, but we can afford the LLM → let it read the page.
   if (process.env.ANTHROPIC_API_KEY && !opts.noModel) {

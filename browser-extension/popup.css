@@ -142,3 +142,10 @@ pre {
   border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; min-height: 32px; width: 100%;
 }
 .field input:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; }
+
+/* A one-off listing's judgement (Session 80) */
+.verdict { font-size: 22px; font-weight: 700; line-height: 1.15; }
+.verdict.likely-fits { color: var(--ok); }
+.verdict.may-be-tight, .verdict.may-be-loose { color: var(--warn, #8a5a12); }
+.verdict.too-small, .verdict.too-big { color: var(--bad, #9b2c2c); }
+.verdict.unknown { color: var(--ink); font-size: 16px; }

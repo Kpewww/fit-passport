@@ -31,6 +31,94 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-30 · Session 80e — Second-hand listings: a judgement from the seller's tape measure
+
+Founder's request: a second-hand listing (eBay …) has no size chart, but often a
+seller's flat measurements, a description, a size label or a measuring photo — the
+extension should still say whether it will fit, in plain words with a reason, instead
+of stopping at "no size chart".
+
+**What real listings look like — measured first** (five eBay flannel shirts, live, in a
+headed browser, measurement only): four put pit-to-pit in the **title**
+(`24" Pit To Pit 30" Long`, `24'' Pit To Pit`, `Pit To Pit 24in`, `Pit to Pit 29x20`),
+one in the **item specifics** (`Chest Size: 25" Pit to Pit`, a measurement in a field
+eBay names for a size), one had a length in the **description**, which lives in a
+cross-origin `itm.ebaydesc.com` frame. The listing page also shows **other sellers'
+items with their own pit-to-pit** ("… Pit To Pit 26in") — so free text on the page is
+never read. Our server gets eBay's "Error Page": on the website, only typed numbers work.
+
+**What was built**
+- `lib/sellerMeasurements.ts` reads the listing's title, allowlisted specifics and
+  description lines. **Pit to pit ×2 = the garment's circumference**, written to the
+  garment field, never compared with a body (invariant ㊿). Raw words, unit, "doubled"
+  and "unit inferred" travel with every number. Not used, and shown for the user to
+  settle: a bare "Chest 22" (flat or round? garment or body?), two numbers after one
+  label ("29x20"), readings that disagree. "Chest Size: 42R" is a size, not a measure.
+  Two passes (number-with-unit-then-label first) because on the real title the label
+  before `30" Long` otherwise took 30 as the pit-to-pit — caught by the first test run.
+- `extractSmart` gains a listing step (after the chart table, before any model call);
+  `sizesFrom: "seller"`, `extractedBy: seller-title | seller-specs | seller-description |
+  seller-typed`, `source.listing`, `source.seller`. Off a resale marketplace a page
+  becomes a listing only with a chest or waist measurement and at most one offered size.
+- `lib/listingJudgement.ts`: one garment, one size → **likely fits / may be tight / may be
+  loose / likely too small / too big**, with strength (well supported / some support /
+  rough guide), the basis and one or two reasons. Same target and verdict scale as the
+  engine — `easeFor` and `verdictFromDelta` are now exported and shared, and
+  `recommendService` routes a one-size listing to it for `/api/check` and `/api/recommend`
+  alike. Basis, strongest first: a measured garment of the same kind in the closet
+  (garment against garment, moved by its fit report as the engine moves an anchor), the
+  wearer's own chest/waist, a printed size against a closet size (always weak). Without
+  any: what would settle it (enter the pit to pit / waist, add measurements, choose top
+  or bottom, confirm an ambiguous measure).
+- Refusal `no-measurements-listing` replaces "open the size guide" on a listing with
+  nothing usable; the popup and `/check` offer a **"enter the seller's measurements"**
+  form (and on `/check`, for an eBay link our server cannot read).
+- Constants with provenance (invariant (73)): `CONFIDENCE_CAPS.provenance.seller` 0.75,
+  `LISTING.confidence` 0.75/0.55/0.35, `LISTING.flatNoiseCm` 0.64 — **rounding to the
+  nearest half inch**, not the full tape error: at ±1.3 cm flat (±2.5 cm round) every
+  judgement straddled the engine's 4 cm "true to size" band and the check said nothing.
+  Stated in the spec's calibration table.
+- Extension **0.5.0**: item specifics by label (eBay's pair sits three levels above the
+  label text); `found.descFrame`; `measureLines()` injected into the description frame
+  with an **optional** host permission `https://*.ebaydesc.com/*`, requested only on
+  "Read the seller's description". Judgement card, measure form, provenance lines.
+- Also fixed on the way: "Tommy **Jeans** … Flannel **Shirt**" was judged on the WAIST
+  (brand read as garment; same fault as "Denim Jacket" → jeans) — a jeans/denim word now
+  names the garment only when no top noun follows it; eBay and other resale hosts are
+  marketplaces, not brands; `guessBrand` matches whole host labels (poshmark was H&M,
+  costco would have been COS); JSON-LD names are entity-decoded (eBay's "MEN&#039;S");
+  eBay's error page is recognised as a block; `/check` no longer says "read from
+  ebay.com" for a page it never read; the confidence guide is hidden over a judgement.
+
+**Verified — and how, in three kinds:**
+- *Live:* the five listings above, read in a headed browser, then through the real
+  popup: Free Planet (specifics 25") → 127 vs 114 cm → **很可能太大 · 依据充分**; Gant (24")
+  → **很可能太大 · 有一定依据** with the close-to-the-line note; Hayes ("29x20") →
+  **暂时无法判断**, the ambiguous words shown; Coleman → eBay served the error page → an
+  honest "unreadable". Tommy Jeans came back as trousers — the bug fixed above. eBay then
+  began refusing this automated browser.
+- *Replayed:* the same five listings' real title, specifics and description lines,
+  served at their eBay URLs (page + description frame) by Playwright routing, through the
+  real popup, `capture.js`, frame injection, `/api/check`: all five judged, Tommy now a
+  shirt; Hayes with "20 in" typed → 101.6 cm → **很可能太小 · 依据充分**; the other
+  seller's "26in", the page header and the shipping rows were **not** in what was sent.
+  The extension here was a test copy with the description host pre-granted, because
+  automation cannot click Chrome's permission prompt.
+- *Automated tests:* parser on the real titles (13), judgement (18, incl. both
+  languages give identical numbers), capture on an eBay-shaped page (specifics, frame,
+  privacy), extractor → refusal paths, category and brand fixes.
+- *Website (live server fetch):* an eBay link on `/check` → refused (eBay blocks us) →
+  form → 24 in → **Likely too big · Some support**, in Chinese and English, no overflow
+  at 390 px.
+- Eval: B-brand-chart identical to `2026-09-29-run2`; S5 (extension captures, present on
+  this machine) 4 answered / 5 refused, guardrails 8/8. 700 tests + 1 skip, exit 0.
+
+**Not done, on purpose:** reading measuring *photos* — the vision reader is built for
+size-chart images, and a tape laid across a garment in a photo is not something it can
+be trusted with; the popup and form ask the user to copy the number instead.
+
+---
+
 ## 2026-09-30 · Session 80d — A to-buy list, kept out of the closet
 
 Founder's request: let the extension save the product on the page, first as "to buy"

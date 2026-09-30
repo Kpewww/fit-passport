@@ -53,6 +53,14 @@ const ARGS: Args = {
   refuseNoChartServer: null,
   notConnected: null,
   verdictName: ["snug"],
+  refuseListingNoMeasurements: null,
+  listingFlat: [{ field: "chest", value: 24, unit: "in", cm: 121.9, typed: false, unitInferred: true }],
+  listingVsGarment: [{ refLabel: "Uniqlo L", refCm: 118, dir: "snug", deltaCm: 3.9 }],
+  listingVsBody: [{ dim: "chest", targetCm: 110, bodyCm: 100, pref: "regular" }],
+  listingVsLabel: [{ label: "L", refLabel: "COS L", dir: null }],
+  listingEstimatedBody: null,
+  listingFragile: [2.6],
+  listingNothingToCompare: null,
 };
 
 function render(M: EngineText): Array<[string, string]> {

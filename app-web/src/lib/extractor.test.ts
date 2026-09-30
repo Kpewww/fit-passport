@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { extractFromUrl } from "./extractor";
+import { detectCategoryStrict, extractFromUrl } from "./extractor";
 
 describe("extractFromUrl — full-path parsing", () => {
   it("reads brand, category, gender and name from a Patagonia URL where the id is the last segment", () => {
@@ -244,5 +244,30 @@ describe("demo fixtures answer only their own demo links (Session 80)", () => {
     const uniqlo = extractFromUrl("https://www.uniqlo.com/us/en/products/E474244-000/00?colorDisplayCode=00");
     expect(uniqlo.source.sizesFrom).not.toBe("fixture");
     expect(extractFromUrl("https://www.levi.com/US/en_US/clothing/men/outerwear/trucker-jacket/p/723340146").source.sizesFrom).not.toBe("fixture");
+  });
+});
+
+describe("jeans and denim name the garment only when no top follows them (Session 80)", () => {
+  it("reads the brand or the fabric as such when a top is named after it", () => {
+    expect(detectCategoryStrict("Tommy Jeans Mens Large Orange Plaid Flannel Long Sleeve Shirt 24 Pit To Pit")).toBe("shirt");
+    expect(detectCategoryStrict("Levi's Vintage Denim Trucker Jacket")).toBe("jacket");
+    expect(detectCategoryStrict("Denim shirt, western snaps")).toBe("shirt");
+  });
+  it("still reads jeans as jeans", () => {
+    expect(detectCategoryStrict("Levi's 501 Original Fit Jeans 32x32")).toBe("jeans");
+    expect(detectCategoryStrict("Selvedge denim, raw")).toBe("jeans");
+  });
+});
+
+describe("a resale marketplace or a similar host is never a brand (Session 80)", () => {
+  it("leaves the brand empty on eBay until the listing says it", () => {
+    const x = extractFromUrl("https://www.ebay.com/itm/116649039485");
+    expect(x.retailer).toBe("eBay");
+    expect(x.brand).toBe("");
+  });
+  it("does not find a brand inside another word of the host", () => {
+    expect(extractFromUrl("https://poshmark.com/listing/Vintage-Trucker-Jacket-5f1").brand).not.toBe("H&M");
+    expect(extractFromUrl("https://www.costco.com/mens-shirt.product.1.html").brand).not.toBe("COS");
+    expect(extractFromUrl("https://www2.hm.com/en_us/productpage.0685816002.html").brand).toBe("H&M");
   });
 });

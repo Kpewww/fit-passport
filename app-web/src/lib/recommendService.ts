@@ -4,7 +4,10 @@
 
 import type { Locale } from "@/i18n/config";
 import { prisma } from "./db";
-import { recommend, type EngineInput, type EngineOutput, type OutcomeInput } from "./fitEngine";
+import { easeFor, recommend, type EngineInput, type EngineOutput, type OutcomeInput } from "./fitEngine";
+import { engineText } from "./engineText";
+import { judgeListing, type Judgement } from "./listingJudgement";
+import type { SellerReading } from "./sellerMeasurements";
 import type { FitPreference } from "./sizing";
 import { regionBodyPrior } from "./populationPrior";
 import { engineSizes } from "./engineInput";
@@ -13,7 +16,10 @@ type ProductWithSizes = {
   id: string;
   brand: string | null;
   category: string | null;
+  /** The extractor's payload; its `source` says whether this is a one-off listing. */
+  rawJson?: string | null;
   sizeOptions: Array<{
+    waistCm?: number | null;
     label: string;
     region: string | null;
     chestCm: number | null;
@@ -103,6 +109,35 @@ export async function computeRecommendation(
     })),
   };
 
+  // A one-off listing (Session 80): one garment, one size — a judgement, not a
+  // ranking. Same target and verdict scale as the engine (listingJudgement.ts).
+  const source = sourceOf(product.rawJson);
+  if (source?.listing && product.sizeOptions.length === 1) {
+    const M = engineText(locale);
+    const judgement = judgeListing(
+      {
+        option: product.sizeOptions[0],
+        category: product.category,
+        categoryGuessed: !!source.categoryGuessed,
+        profile: engineInput.profile as ListingProfile,
+        easeCm: easeFor(engineInput, M).easeCm,
+        knownGood: engineInput.knownGood,
+        seller: source.seller,
+      },
+      M,
+    );
+    return {
+      result: listingOutput(product.sizeOptions[0].label, judgement),
+      effectiveFit,
+      body: {
+        chestCm: engineInput.profile.chestCm ?? null,
+        waistCm: engineInput.profile.waistCm ?? null,
+        shoulderCm: engineInput.profile.shoulderCm ?? null,
+        estimated: !!engineInput.profile.chestIsEstimated,
+      },
+    };
+  }
+
   return {
     result: recommend(engineInput, { locale }),
     effectiveFit,
@@ -112,5 +147,44 @@ export async function computeRecommendation(
       shoulderCm: engineInput.profile.shoulderCm ?? null,
       estimated: !!engineInput.profile.chestIsEstimated,
     },
+  };
+}
+
+type ListingProfile = Parameters<typeof judgeListing>[0]["profile"];
+
+function sourceOf(rawJson: string | null | undefined): { listing?: boolean; categoryGuessed?: boolean; seller?: SellerReading } | null {
+  if (!rawJson) return null;
+  try {
+    return JSON.parse(rawJson)?.source ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * A judgement in the engine's output shape, so every caller that stores or shows a
+ * result (FitRecommendation, the popup, /check) keeps working. `judgement` carries
+ * what a ranking cannot say; `undetermined` is true when there is no judgement.
+ */
+function listingOutput(label: string, j: Judgement): EngineOutput & { judgement: Judgement } {
+  const size = {
+    label,
+    normalized: null,
+    score: j.outcome === "unknown" ? 0 : j.confidence,
+    confidence: j.confidence,
+    reasons: j.reasons.map((message) => ({ signal: "measurement-fit" as const, weight: 0, message })),
+    ...(j.verdict ? { verdict: j.verdict } : {}),
+  };
+  return {
+    ranked: [size],
+    best: size,
+    explanation: [...j.reasons, ...j.notes].map((l) => `• ${l}`).join("\n"),
+    undetermined: j.outcome === "unknown",
+    domainNote: null,
+    domainRelevance: "match",
+    conflictNote: j.notes.length ? j.notes.join(" ") : null,
+    stability: null,
+    alternative: null,
+    judgement: j,
   };
 }

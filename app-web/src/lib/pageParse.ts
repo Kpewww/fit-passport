@@ -110,8 +110,11 @@ function productFromJsonLd(html: string): ParsedPage {
   const node = jsonLdNodes(html).find((n) => typeMatches(n, "product"));
   if (!node) return {};
   const out: ParsedPage = {};
-  out.brand = asString(node.brand);
-  out.productName = asString(node.name);
+  // Some sites entity-encode inside JSON-LD (eBay: "MEN&#039;S"), which JSON does
+  // not undo; decode like every other string read off a page.
+  const decoded = (v: string | undefined) => (v ? decodeEntities(v) : v);
+  out.brand = decoded(asString(node.brand));
+  out.productName = decoded(asString(node.name));
   out.material = asString(node.material);
   const cat = asString(node.category);
   if (cat) out.category = cat;
@@ -215,6 +218,39 @@ function productAttrs(html: string): Map<string, string> {
     if (k && v && !out.has(k)) out.set(k, v);
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// 2c. One-off listings (eBay …): the listing's own words about its size — Session 80
+// ---------------------------------------------------------------------------
+
+/**
+ * The texts a seller's measurements are read from (sellerMeasurements.ts): the
+ * listing's title, its item specifics, and its description lines.
+ *
+ * Specifics come from the extension's `<dl data-fp="specs">` only: our server is
+ * refused by eBay (an "Error Page", measured Session 80), so there is no served
+ * markup to read and no parser for one was written blind. Description lines come only from
+ * the extension's `<p data-fp="measure">` — read inside the seller's description
+ * frame — never from the page's free text, which on eBay also lists OTHER sellers'
+ * items with their own pit-to-pit widths (measured, Session 80).
+ */
+export function listingTexts(html: string): { title: string | null; specs: Array<[string, string]>; lines: string[] } {
+  const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
+  const title =
+    (h1 && stripTags(h1[1]).replace(/\s+/g, " ").trim()) ||
+    metaContent(html, "og:title") ||
+    (html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)?.[1] ? stripTags(html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i)![1]).trim() : null) ||
+    null;
+  const specs: Array<[string, string]> = [];
+  const dl = html.match(/<dl\b[^>]*data-fp=["']specs["'][^>]*>([\s\S]*?)<\/dl>/i);
+  if (dl) {
+    for (const m of dl[1].matchAll(/<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/gi)) {
+      specs.push([stripTags(m[1]).trim(), stripTags(m[2]).trim()]);
+    }
+  }
+  const lines = [...html.matchAll(/<p\b[^>]*data-fp=["']measure["'][^>]*>([\s\S]*?)<\/p>/gi)].map((m) => stripTags(m[1]).trim()).filter(Boolean);
+  return { title: title ? title.slice(0, 300) : null, specs: specs.slice(0, 60), lines: lines.slice(0, 40) };
 }
 
 /** 适用性别 / 性别 / 适用对象 as a gender, when it says one. */
@@ -919,7 +955,7 @@ export function looksBlocked(status: number, html: string): boolean {
   if (status === 403 || status === 429 || status === 503) return true;
   const head = html.slice(0, 4000).toLowerCase();
   const enMarkers =
-    /captcha|are you a robot|verify you are (?:a )?human|access denied|request unsuccessful|enable javascript to continue|hang tight! routing to checkout|botfailover/;
+    /captcha|are you a robot|verify you are (?:a )?human|access denied|request unsuccessful|enable javascript to continue|hang tight! routing to checkout|botfailover|error page \| ebay/;
   const vendorMarkers =
     /px-captcha|cf-challenge|challenge-platform|distil_r_captcha|akamai|perimeterx/;
   const cnMarkers = /滑动验证|人机验证|访问被拒绝|安全验证|验证码/;

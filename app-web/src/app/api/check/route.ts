@@ -90,6 +90,25 @@ const Body = z.object({
         "that one), which typically removes about 80% of a page and none of the size chart",
     )
     .optional(),
+  // A one-off listing's measurements typed by the user from the listing, and the
+  // garment kind when the page did not say (Session 80). Typed numbers win over
+  // anything read; each is checked against what an adult garment can measure.
+  seller: z
+    .object({
+      typed: z
+        .array(
+          z.object({
+            field: z.enum(["chest", "waist", "shoulder", "length", "sleeve", "inseam"]),
+            value: z.number().positive().max(200),
+            unit: z.enum(["in", "cm"]),
+            flat: z.boolean(),
+          }),
+        )
+        .max(6)
+        .optional(),
+      category: z.enum(["top", "bottom"]).optional(),
+    })
+    .optional(),
 });
 
 export async function POST(req: Request) {
@@ -118,9 +137,9 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { url, html } = parsed.data;
+  const { url, html, seller } = parsed.data;
 
-  const extracted = await extractSmart(url, { html });
+  const extracted = await extractSmart(url, { html, seller });
 
   // Not clothing, a page we never saw, a category we cannot measure anyone
   // against, or an invented ladder on a page the browser handed us: say so, and

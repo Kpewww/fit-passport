@@ -64,8 +64,9 @@ For local development, pick **localhost:3000** under *Server* in the popup and r
 | `activeTab` | Read the tab you clicked on, once, when you click. No access to any other page, ever. |
 | `scripting` | Inject `capture.js` into that tab on the click. There are **no** always-on content scripts. |
 | host permission for Fit Passport's own origin | Lets the popup call the API. Chrome treats an extension's request to a site it holds host permission for as same-site, so your Fit Passport session cookie goes with it. |
+| *optional* `https://*.ebaydesc.com/*` (0.5.0) | eBay shows a seller's description in a frame from `itm.ebaydesc.com`, which `activeTab` does not reach. Asked for only when you press **Read the seller's description** on an eBay listing, and used only to read measurement lines from that frame (below). Never requested otherwise; revoke it any time in `chrome://extensions`. |
 
-**Not requested:** access to retailer sites, `<all_urls>`, `tabs`, `cookies`,
+**Not requested:** access to retailer sites (the eBay description host above is optional and asked for on a click), `<all_urls>`, `tabs`, `cookies`,
 `storage`, `webRequest`. If third-party cookies are blocked in your browser, the
 cookie is not sent and the server answers "connect Fit Passport first". It never
 quietly creates a new, empty account.
@@ -88,6 +89,7 @@ product:
   taken from its own element
 - the size `<select>`'s options, and short `data-size`/`data-value` swatch values
 - `<img>` tags that look like size-chart images: their address and alt text only
+- on a one-off listing (0.5.0): item specifics whose label is on a short allowlist (Size, Chest Size, Pit to Pit, Length, Waist, Inseam, Brand …), and — only with the optional permission — lines from the seller's description that name a measurement and hold a number (at most twenty, each at most 200 characters, masked). Free text on the listing page itself is never read: it also lists other sellers' items with their own measurements.
 
 **Never sent:** forms and their values, cart, account, header, navigation, footer,
 reviews, recommendations, iframes, scripts (other than the JSON-LD above), styles,

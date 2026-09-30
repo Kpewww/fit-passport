@@ -66,6 +66,20 @@ export interface EngineText {
   refuseNoChartServer: string;
   /** The extension's request carried no Fit Passport session (checkPolicy.sessionGate). */
   notConnected: string;
+  /** A one-off listing with no measurement and no printed size (Session 80). */
+  refuseListingNoMeasurements: string;
+  // ---- one-off listings (listingJudgement.ts, Session 80) ----
+  /** A flat width, doubled: "The seller measured 24 in pit to pit … about 122 cm round." */
+  listingFlat(p: { field: "chest" | "waist"; value: number; unit: "in" | "cm"; cm: number; typed: boolean; unitInferred: boolean }): string;
+  /** Against a garment the wearer owns and has measured. */
+  listingVsGarment(p: { refLabel: string; refCm: number; dir: DirectionKey | null; deltaCm: number }): string;
+  /** Against the wearer's own measurement and preferred fit. */
+  listingVsBody(p: { dim: "chest" | "waist"; targetCm: number; bodyCm: number; pref: FitPreference }): string;
+  /** Only a printed size to go on. */
+  listingVsLabel(p: { label: string; refLabel: string; dir: DirectionKey | null }): string;
+  listingEstimatedBody: string;
+  listingFragile(noiseCm: number): string;
+  listingNothingToCompare: string;
   // ---- words ----
   verdictName(v: Verdict): string;
 }
@@ -190,6 +204,25 @@ export const EN_TEXT: EngineText = {
     "browser (that's where your measurements and closet live), then check again. If you block " +
     "third-party cookies, the extension can't see your Fit Passport session.",
   verdictName: (v) => v,
+  refuseListingNoMeasurements:
+    "The seller hasn't given a measurement we could read, so we can't judge the fit yet. If the listing shows a " +
+    "pit-to-pit width — in the description or a photo — enter it below.",
+  listingFlat: ({ field, value, unit, cm, typed, unitInferred }) =>
+    `${typed ? "You entered" : "The seller measured"} ${value} ${unit} ${field === "chest" ? "pit to pit" : "across the waist"}, laid flat — ` +
+    `about ${cm} cm all the way round${unitInferred ? ` (no unit given; read as ${unit === "in" ? "inches" : "centimetres"})` : ""}.`,
+  listingVsGarment: ({ refLabel, refCm, dir, deltaCm }) => {
+    const ref = `your ${refLabel} (${refCm} cm)${dir ? `, which fits ${EN_DIRECTION[dir]}` : ""}`;
+    return Math.abs(deltaCm) < 1
+      ? `About the same as ${ref}.`
+      : `${Math.abs(deltaCm)} cm ${deltaCm > 0 ? "more" : "less"} than ${ref}.`;
+  },
+  listingVsBody: ({ dim, targetCm, bodyCm, pref }) =>
+    `For your ${bodyCm} cm ${dim} and ${art(pref)} ${pref} fit, the garment's ${dim} should be about ${targetCm} cm.`,
+  listingVsLabel: ({ label, refLabel, dir }) =>
+    `Labelled ${label}; the ${refLabel} in your closet${dir ? ` fits ${EN_DIRECTION[dir]}` : " fits you"}. Sizes vary between brands, so this is a rough guide.`,
+  listingEstimatedBody: "Your chest here is a regional average — add your own to firm this up.",
+  listingFragile: (noise) => `Close to the line: a hand-taken measurement can be off by about ${noise} cm.`,
+  listingNothingToCompare: "We have the garment's measurement, but nothing of yours to compare it with yet.",
 };
 
 // ------------------------------------------------------------------ Chinese
@@ -286,6 +319,22 @@ export const ZH_TEXT: EngineText = {
   notConnected:
     "当前浏览器尚未连接你的 Fit Passport。请在同一浏览器中打开一次 Fit Passport，让插件连接到你的身形数据和衣橱，再重新查询。若屏蔽了第三方 Cookie，插件将无法识别登录状态。",
   verdictName: (v) => ZH_VERDICT[v],
+  refuseListingNoMeasurements:
+    "卖家没有标注可读取的尺寸，暂时无法判断是否合身。如果商品描述或图片里有腋下平铺宽度，请在下方填写。",
+  listingFlat: ({ field, value, unit, cm, typed, unitInferred }) =>
+    `${typed ? "你填写的" : "卖家实测"}${field === "chest" ? "腋下平铺宽度" : "腰部平铺宽度"}为 ${value} ${unit === "in" ? "英寸" : "cm"}，换算为一圈约 ${cm} cm` +
+    `${unitInferred ? `（未注明单位，按${unit === "in" ? "英寸" : "厘米"}理解）` : ""}。`,
+  listingVsGarment: ({ refLabel, refCm, dir, deltaCm }) => {
+    const ref = `你那件${dir ? `穿着${ZH_DIRECTION[dir]}的` : ""} ${refLabel}（${refCm} cm）`;
+    return Math.abs(deltaCm) < 1 ? `与${ref}基本相同。` : `比${ref}${deltaCm > 0 ? "多" : "少"} ${Math.abs(deltaCm)} cm。`;
+  },
+  listingVsBody: ({ dim, targetCm, bodyCm, pref }) =>
+    `按你的${ZH_DIM[dim]} ${bodyCm} cm 和${ZH_PREF[pref]}版型，衣物${ZH_DIM[dim]}约 ${targetCm} cm 较理想。`,
+  listingVsLabel: ({ label, refLabel, dir }) =>
+    `这件标注 ${label}；你衣橱里的 ${refLabel} ${dir ? `穿着${ZH_DIRECTION[dir]}` : "穿着合身"}。不同品牌的尺码标签差异较大，仅供参考。`,
+  listingEstimatedBody: "这里的胸围是地区平均值，补充你自己的胸围后，判断会更可靠。",
+  listingFragile: (noise) => `接近分界：手量尺寸可能有约 ${noise} cm 的误差。`,
+  listingNothingToCompare: "已有衣物尺寸，但还缺少你的身形数据或同类衣物作对照。",
 };
 
 export function engineText(locale: Locale | undefined): EngineText {

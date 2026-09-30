@@ -526,6 +526,60 @@
     return pairs;
   }
 
+  // ---- One-off listings (eBay …), Session 80 ----
+  //
+  // Item specifics: a label and its value, the label from a short allowlist. On
+  // eBay the pair is two sibling boxes a few levels above the label's text, so the
+  // climb goes further than pairedValue's; each value is short and masked. Unlike
+  // the marketplace attributes above, a MEASUREMENT value is kept here — "Chest
+  // Size: 25\" Pit to Pit" is the seller's tape measure, which is the point.
+  var SPEC_LABELS = /^(size|size \((?:men'?s|women'?s|unisex)\)|size type|chest size|chest|bust|pit to pit|armpit to armpit|p2p|length|body length|total length|shoulders?|shoulder width|sleeve length|waist|waist size|inseam|brand|department|measurements?)$/i;
+  var SPEC_VALUE_CHARS = 120;
+  function listingSpecs(doc, mask) {
+    var pairs = [];
+    var done = Object.create(null);
+    var root = doc.body || doc.documentElement;
+    if (!root || !doc.createTreeWalker) return pairs;
+    var walker = doc.createTreeWalker(root, 4 /* NodeFilter.SHOW_TEXT */);
+    for (var node = walker.nextNode(); node && pairs.length < MAX_ATTRS; node = walker.nextNode()) {
+      var label = collapse(node.nodeValue || "").replace(/\s*:\s*$/, "");
+      if (!label || label.length > 30 || !SPEC_LABELS.test(label)) continue;
+      var key = label.toLowerCase();
+      if (done[key] || !node.parentElement || underNeverRead(node.parentElement) || insideTable(node.parentElement)) continue;
+      var value = "";
+      for (var e = node.parentElement, d = 0; e && e.parentElement && d < 5 && !value; e = e.parentElement, d++) {
+        var kids = e.parentElement.children;
+        if (kids.length === 2 && kids[0] === e && collapse(e.textContent || "").replace(/\s*:\s*$/, "") === label) value = collapse(kids[1].textContent || "");
+      }
+      if (!value || value.length > SPEC_VALUE_CHARS) continue;
+      done[key] = true;
+      pairs.push([label, mask(value)]);
+    }
+    return pairs;
+  }
+
+  // Measurement lines, for the seller's description frame — read only there, never
+  // on the listing page itself, which also lists OTHER sellers' items with their
+  // own pit-to-pit widths (measured on eBay, Session 80). A line must name a
+  // measurement and hold a number; it is short and masked; at most twenty.
+  var MEASURE_LINE_RE = /pit|p2p|ptp|armpit|chest|bust|length|long|shoulder|sleeve|waist|inseam|across|flat|胸|衣长|肩|袖|腰|平铺/i;
+  function measureLines(doc) {
+    var body = doc.body;
+    if (!body) return [];
+    var text = typeof body.innerText === "string" && body.innerText
+      ? body.innerText
+      : (body.innerHTML || "").replace(/<(?:br|\/p|\/div|\/li|\/tr|\/h\d)[^>]*>/gi, "\n").replace(/<[^>]+>/g, " ");
+    var out = [];
+    var maskLine = masker({ masked: 0 });
+    text.split(/\n+/).forEach(function (raw) {
+      var line = collapse(raw.replace(/&nbsp;/g, " "));
+      if (!line || line.length > 200 || !/\d/.test(line) || !MEASURE_LINE_RE.test(line) || out.length >= 20) return;
+      var m = maskLine(line);
+      if (out.indexOf(m) < 0) out.push(m);
+    });
+    return out;
+  }
+
   // Size buttons under a "尺码" / "Size" label, when they carry no data-size
   // attribute (Tmall: <span title="M">M</span>). From the label, climb to the
   // nearest SMALL box holding two or more options named by a title attribute.
@@ -570,6 +624,7 @@
     var stats = {
       version: VERSION,
       attrsKept: 0,
+      specsKept: 0,
       domChars: 0,
       payloadChars: 0,
       tablesSeen: 0,
@@ -636,6 +691,24 @@
         return "<dt>" + esc(p[0]) + "</dt><dd>" + esc(p[1]) + "</dd>";
       }).join("") + "</dl>");
       stats.attrsKept = attrs.length;
+    }
+    // A listing's item specifics (eBay …), allowlisted labels only.
+    var specs = listingSpecs(doc, mask);
+    if (specs.length) {
+      body.push('<dl data-fp="specs">' + specs.map(function (p) {
+        return "<dt>" + esc(p[0]) + "</dt><dd>" + esc(p[1]) + "</dd>";
+      }).join("") + "</dl>");
+      stats.specsKept = specs.length;
+    }
+    // The seller's description frame, when the page has one: its host only, so
+    // the popup can offer to read measurement lines from it.
+    var descFrame = null;
+    var frames = doc.querySelectorAll("iframe[src]");
+    for (var fi = 0; fi < frames.length && !descFrame; fi++) {
+      try {
+        var fh = new URL(frames[fi].getAttribute("src"), loc && loc.href ? loc.href : undefined).hostname;
+        if (/(^|\.)ebaydesc\.com$/i.test(fh)) descFrame = fh;
+      } catch (e) { /* not a URL */ }
     }
 
     // Size tables, rebuilt from their text. Identical tables (a mobile and a
@@ -783,6 +856,8 @@
         // For the popup's "Save to buy" form only; never sent on their own.
         sizes: popupSizes.slice(0, MAX_SWATCH_VALUES),
         selectedSize: selectedSize,
+        specs: stats.specsKept || 0,
+        descFrame: descFrame,
       },
     };
   }
@@ -812,6 +887,7 @@
     return null;
   }
 
+  fpCapture.measureLines = measureLines;
   fpCapture.VERSION = VERSION;
   fpCapture.VISIBLE_ATTR = VISIBLE_ATTR;
   fpCapture.KIND_BODY = KIND_BODY;

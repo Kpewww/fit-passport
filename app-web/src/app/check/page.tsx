@@ -5,6 +5,7 @@ import { Alert, ArrowRight, ArrowUpRight, BrowserIcon, CaretDown, Check, Globe, 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
+  Button,
   Card,
   ConfidenceRing,
   LinkButton,
@@ -20,6 +21,8 @@ import { CONFIDENCE_WEIGHTS } from "@/lib/confidenceWeights";
 import { chestEaseCm } from "@/lib/bodyMesh";
 import { useT } from "@/i18n/client";
 import { DEMO_PRODUCTS } from "@/lib/demoProducts";
+import { isResaleHost } from "@/lib/sellerMeasurements";
+import type { Judgement } from "@/lib/listingJudgement";
 import { useGarmentText } from "@/i18n/garment";
 
 // three.js only loads if someone opens the 3D view. Boundaried because a failed
@@ -78,14 +81,14 @@ type Source = {
   host: string;
   derived: boolean;
   slug?: string;
-  sizesFrom?: "fixture" | "page" | "brand-chart" | "estimated";
+  sizesFrom?: "fixture" | "page" | "brand-chart" | "seller" | "estimated";
   chart?: { sourceUrl: string; capturedAt: string };
   measurementKind?: "body" | "garment";
   measurementKindFrom?: "page" | "table" | "brand";
   /** "extension" = the page came from the user's own browser, not our fetch. */
   fetch?: "ok" | "blocked" | "unreachable" | "skipped" | "extension";
   /** Which reader produced page sizes — a table, or a model reading text/images. */
-  extractedBy?: "table" | "llm-text" | "llm-vision" | "hao-xing";
+  extractedBy?: "table" | "llm-text" | "llm-vision" | "hao-xing" | "seller-title" | "seller-specs" | "seller-description" | "seller-typed";
 };
 
 type Body = {
@@ -116,6 +119,8 @@ type CheckResponse = {
       bodyNoiseCm: number;
       chartNoiseCm: number;
     } | null;
+    /** A one-off listing's judgement (Session 80): present instead of a ranking. */
+    judgement?: Judgement;
   };
   effectiveFit: FitPref;
   /** Absent when a stored check is reopened (`?product=`) — that is a recompute. */
@@ -136,6 +141,9 @@ function CheckInner() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<CheckResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  // A refusal the user can answer by typing the seller's measurements (a listing
+  // with none, or one our server cannot read — eBay refuses it).
+  const [canMeasure, setCanMeasure] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
 
   // The fit currently being previewed on the result. Seeded from the saved
@@ -147,17 +155,23 @@ function CheckInner() {
     fetch("/api/status").then((r) => r.json()).then(setStatus).catch(() => {});
   }, []);
 
-  const runCheck = useCallback(async (targetUrl: string) => {
+  const runCheck = useCallback(async (targetUrl: string, seller?: SellerInput) => {
     setErr(null);
+    setCanMeasure(false);
     setLoading(true);
     setData(null);
     try {
       const r = await fetch("/api/check", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url: targetUrl }),
+        body: JSON.stringify({ url: targetUrl, seller }),
       });
       const j = await r.json();
+      const code = typeof j.error === "string" ? j.error : "";
+      const host = typeof j.source?.host === "string" ? j.source.host : null;
+      if (!r.ok && (code === "no-measurements-listing" || (isResaleHost(host) && (code === "unreadable" || code === "no-chart-on-page")))) {
+        setCanMeasure(true);
+      }
       // Prefer the API's human sentence over its machine code. A refusal here is
       // the product working correctly — "we don't size footwear yet, and here is
       // why" — and showing the raw slug `unsupported-category` instead throws away
@@ -318,7 +332,9 @@ function CheckInner() {
         {/* Guidance: a first-time visitor pasting a link gets a size based on
             almost nothing, so be honest about it and show exactly what would
             sharpen it. Shown above the result too, since that's when it matters. */}
-        {status && status.accuracy !== "high" && !loading && (
+        {/* Not for a one-off listing: a judgement's strength is not this arithmetic,
+            and its card says what would settle it. */}
+        {status && status.accuracy !== "high" && !loading && !data?.result.judgement && (
           <SignalGuide
             status={status}
             hasResult={!!data}
@@ -333,9 +349,12 @@ function CheckInner() {
             <p>{err}</p>
           </div>
         )}
+        {canMeasure && !loading && <SellerMeasureForm onSubmit={(seller) => runCheck(url, seller)} />}
 
         {loading && <LoadingResult />}
-        {data && !loading && (
+        {data && !loading && data.result.judgement ? (
+          <JudgementCard data={data} onMeasure={(seller) => runCheck(data.product.url, seller)} />
+        ) : data && !loading && (
           <Result data={data} fit={fit} onFit={rerank} reranking={reranking} />
         )}
       </div>
@@ -763,6 +782,131 @@ function Result({
   );
 }
 
+type SellerInput = { typed: Array<{ field: "chest" | "waist" | "length"; value: number; unit: "in" | "cm"; flat: boolean }>; category?: "top" | "bottom" };
+
+/**
+ * The seller's measurements, typed from the listing (Session 80). A second-hand
+ * listing rarely has a size chart, and eBay refuses our server outright, so this
+ * is how the website judges one: the shopper copies the pit to pit (and, if given,
+ * the waist and length) and the same judgement runs as for the extension.
+ */
+function SellerMeasureForm({ onSubmit, askCategory = false }: { onSubmit: (s: SellerInput) => void; askCategory?: boolean }) {
+  const t = useT("check");
+  const [chest, setChest] = useState("");
+  const [waist, setWaist] = useState("");
+  const [length, setLength] = useState("");
+  const [unit, setUnit] = useState<"in" | "cm">("in");
+  const [category, setCategory] = useState<"" | "top" | "bottom">(askCategory ? "top" : "");
+  const [need, setNeed] = useState(false);
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    const typed: SellerInput["typed"] = [];
+    const add = (v: string, field: "chest" | "waist" | "length", flat: boolean) => {
+      const n = parseFloat(v);
+      if (n > 0) typed.push({ field, value: n, unit, flat });
+    };
+    add(chest, "chest", true);
+    add(waist, "waist", true);
+    add(length, "length", false);
+    if (!typed.length) { setNeed(true); return; }
+    onSubmit({ typed, category: category || undefined });
+  }
+  const num = "w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm text-ink focus:border-ink/40 focus:outline-none";
+  return (
+    <Card className="mt-6">
+      <h2 className="text-h3 text-ink">{t("measureForm.title")}</h2>
+      <p className="mt-1 text-sm text-ink-soft">{t("measureForm.intro")}</p>
+      <form onSubmit={submit} className="mt-4 grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1 text-xs text-ink-soft">{t("measureForm.chestFlat")}
+          <input type="number" inputMode="decimal" min={1} max={200} step={0.25} className={num} value={chest} onChange={(e) => setChest(e.target.value)} />
+        </label>
+        <label className="grid gap-1 text-xs text-ink-soft">{t("measureForm.waistFlat")}
+          <input type="number" inputMode="decimal" min={1} max={200} step={0.25} className={num} value={waist} onChange={(e) => setWaist(e.target.value)} />
+        </label>
+        <label className="grid gap-1 text-xs text-ink-soft">{t("measureForm.length")}
+          <input type="number" inputMode="decimal" min={1} max={200} step={0.25} className={num} value={length} onChange={(e) => setLength(e.target.value)} />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="grid gap-1 text-xs text-ink-soft">{t("measureForm.unit")}
+            <select className={num} value={unit} onChange={(e) => setUnit(e.target.value as "in" | "cm")}>
+              <option value="in">{t("measureForm.inches")}</option>
+              <option value="cm">{t("measureForm.cm")}</option>
+            </select>
+          </label>
+          <label className="grid gap-1 text-xs text-ink-soft">{t("measureForm.category")}
+            <select className={num} value={category} onChange={(e) => setCategory(e.target.value as "" | "top" | "bottom")}>
+              <option value="">{t("measureForm.categoryAuto")}</option>
+              <option value="top">{t("measureForm.top")}</option>
+              <option value="bottom">{t("measureForm.bottom")}</option>
+            </select>
+          </label>
+        </div>
+        {need && <p role="alert" className="text-sm text-bad sm:col-span-2">{t("measureForm.needOne")}</p>}
+        <div className="sm:col-span-2">
+          <Button type="submit">{t("measureForm.submit")}</Button>
+        </div>
+      </form>
+    </Card>
+  );
+}
+
+/**
+ * A one-off listing's answer (Session 80): a judgement, not a ranking — the server
+ * decides it (listingJudgement.ts) with the engine's own target and verdict scale.
+ */
+function JudgementCard({ data, onMeasure }: { data: CheckResponse; onMeasure: (s: SellerInput) => void }) {
+  const t = useT("check");
+  const j = data.result.judgement!;
+  const known = j.outcome !== "unknown";
+  const [showForm, setShowForm] = useState(false);
+  const tone =
+    j.outcome === "likely-fits" ? "text-ok" : j.outcome === "may-be-tight" || j.outcome === "may-be-loose" ? "text-warn" : j.outcome === "unknown" ? "text-ink" : "text-bad";
+  const wantsForm = j.next.some((n) => n !== "add-body");
+  return (
+    <div className="mt-8 space-y-4">
+      <Card>
+        <p className="eyebrow text-ink-faint">{t("judge.eyebrow")}</p>
+        <p className="mt-2 break-words text-sm text-ink-soft">{[data.product.brand, data.product.productName].filter(Boolean).join(" · ")}</p>
+        <div className="mt-4 flex flex-wrap items-baseline gap-x-3 gap-y-2">
+          <h2 className={`font-serif text-h1 ${tone}`}>{t(`judge.outcome.${j.outcome}`)}</h2>
+          {known && <span className="rounded-full border border-line px-2.5 py-0.5 text-xs text-ink-soft">{t(`judge.strength.${j.strength}`)}</span>}
+        </div>
+        {known && (
+          <p className="mt-1 text-xs text-ink-faint">
+            {t(`judge.basis.${j.basis}`)}{j.sizeLabel ? ` · ${t("judge.labelled", { size: j.sizeLabel })}` : ""}
+          </p>
+        )}
+        {j.reasons.length > 0 && (
+          <ul className="mt-4 space-y-1.5 text-sm text-ink">
+            {j.reasons.map((r) => <li key={r} className="flex gap-2"><Check size={16} className="mt-0.5 flex-shrink-0 text-ink-faint" /><span>{r}</span></li>)}
+          </ul>
+        )}
+        {j.notes.length > 0 && <p className="mt-3 rounded-xl bg-warn-tint px-3.5 py-2.5 text-sm text-warn">{j.notes.join(" ")}</p>}
+        {j.ambiguous.length > 0 && (
+          <p className="mt-3 text-xs text-ink-soft">{t("judge.ambiguous", { raw: j.ambiguous.map((a) => a.raw).join("；") })}</p>
+        )}
+        {j.next.length > 0 && (
+          <div className="mt-4 flex flex-wrap gap-2">
+            {j.next.map((n) =>
+              n === "add-body" ? (
+                <LinkButton key={n} href="/passport" size="sm" variant="secondary">{t(`judge.next.${n}`)}</LinkButton>
+              ) : (
+                <Button key={n} size="sm" variant="secondary" onClick={() => setShowForm(true)}>{t(`judge.next.${n}`)}</Button>
+              ),
+            )}
+          </div>
+        )}
+        <div className="mt-5 border-t border-line pt-4">
+          <SourceRow product={data.product} source={data.source} />
+        </div>
+      </Card>
+      {(showForm || (!known && wantsForm)) && (
+        <SellerMeasureForm onSubmit={onMeasure} askCategory={j.next.includes("choose-category")} />
+      )}
+    </div>
+  );
+}
+
 /**
  * Where the numbers came from, as one row of plain statements with an icon
  * each. It used to be a row of coloured pills (green, sky, amber, stone) that
@@ -788,7 +932,9 @@ function SourceRow({ product, source }: { product: Product; source: Source }) {
             — so we say "identified", never "read". The extension hands us the
             page from the user's own browser, which is how we reach retailers
             our server is refused by. */}
-        {source.sizesFrom === "brand-chart" ? (
+        {source.sizesFrom === "brand-chart" || source.fetch === "blocked" || source.fetch === "unreachable" ? (
+          // Also when the store refused our server and the numbers are the
+          // user's own, typed from the listing: nothing was read (Session 80).
           <span className="inline-flex items-center gap-1.5"><LinkIcon size={16} className="text-ink-faint" />{t("source.identified")}</span>
         ) : source.fetch === "extension" ? (
           <span className="inline-flex items-center gap-1.5"><BrowserIcon size={16} className="text-ink-faint" />{t("source.readInBrowser", { host })}</span>
@@ -796,7 +942,11 @@ function SourceRow({ product, source }: { product: Product; source: Source }) {
           <span className="inline-flex items-center gap-1.5"><Globe size={16} className="text-ink-faint" />{t("source.readFrom", { host })}</span>
         )}
         {/* Where the SIZE CHART came from — three cases, three amounts of trust. */}
-        {source.sizesFrom === "brand-chart" ? (
+        {source.sizesFrom === "seller" ? (
+          <span className="inline-flex items-center gap-1.5">
+            <Ruler size={16} className="text-ink-faint" />{source.extractedBy === "seller-typed" ? t("source.sellerTyped") : t("source.seller")}
+          </span>
+        ) : source.sizesFrom === "brand-chart" ? (
           <span
             className="inline-flex items-center gap-1.5"
             title={t("source.brandGuideTitle")}
@@ -878,6 +1028,7 @@ function measurementLabel(
 ): string {
   if (sizesFrom === "estimated") return t("measure.estimated");
   if (sizesFrom === "fixture") return t("measure.demo");
+  if (sizesFrom === "seller") return t("measure.seller");
   const where = sizesFrom === "brand-chart" ? t("measure.whereBrand") : t("measure.wherePage");
   // A model reading prose or an image is a weaker claim than a parsed table, and
   // the reader deserves to know which one produced the numbers.

@@ -24,7 +24,8 @@ export type RefusalCode =
   | "unreadable"
   | "not-apparel"
   | "unsupported-category"
-  | "no-chart-on-page";
+  | "no-chart-on-page"
+  | "no-measurements-listing";
 
 export type Refusal = {
   error: RefusalCode;
@@ -99,6 +100,17 @@ export function refusalFor(extracted: ExtractedProduct, M: EngineText = EN_TEXT)
   // no measurements still goes through: a closet anchor can rank real labels
   // honestly, and with no evidence at all the engine already says "undetermined".
   // A curated brand chart also goes through — those numbers are the brand's.
+  // A one-off listing (Session 80) that says nothing usable about its size — no
+  // seller measurement, no printed size. "Open the size guide" would send the user
+  // looking for something a listing does not have; this asks for the seller's
+  // numbers instead, which the popup and /check then offer to take.
+  if (source.listing && source.sizesSynthesized) {
+    return {
+      error: "no-measurements-listing",
+      message: M.refuseListingNoMeasurements,
+    };
+  }
+
   if (source.fetch === "extension" && source.sizesSynthesized) {
     return {
       error: "no-chart-on-page",

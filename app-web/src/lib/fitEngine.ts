@@ -249,7 +249,7 @@ const gauss = (deltaCm: number, sigma: number) =>
 
 // Verdict thresholds (cm) on the CHEST delta from the preference-adjusted target.
 // Negative = garment smaller than you want; positive = roomier than you want.
-function verdictFromDelta(delta: number): FitVerdict {
+export function verdictFromDelta(delta: number): FitVerdict {
   if (delta <= VERDICT_CM.tooSmall) return "too small";
   if (delta < VERDICT_CM.snug) return "snug";
   if (delta < VERDICT_CM.relaxed) return "true to size";
@@ -763,6 +763,34 @@ export function isUndetermined(ranked: ReadonlyArray<{ score: number; reasons: R
   return !!best && best.reasons.length === 0 && ranked.length > 1 && ranked.every((r) => Math.abs(r.score - best.score) < TIE.epsilon);
 }
 
+/**
+ * The ease this wearer is scored with: their stated preference, or what their
+ * measured closet garments say they actually wear (personalEase.ts). One function,
+ * so the ranking and a one-off listing's judgement (listingJudgement.ts) aim at the
+ * same target.
+ */
+export function easeFor(input: EngineInput, M: EngineText = EN_TEXT) {
+  // What ease this wearer actually lives in, learned from closet garments whose
+  // own measurements we captured. Revealed preference beats stated preference —
+  // but only on measured garments, only past a minimum evidence bar, and never
+  // by more than one ladder step. See personalEase.ts for the full discipline.
+  //
+  // Uses the FULL closet, not `usableKnownGood`: that filter exists to stop
+  // cross-domain anchors moving a size, whereas an ease preference is a property
+  // of the person. It moves the target ease, never the ladder directly, so it
+  // cannot double-count with the anchor or with brand bias.
+  const learnedEase = personalEaseTarget(
+    input.knownGood.map((k) => ({
+      category: k.category,
+      garmentChestCm: k.garmentChestCm,
+      garmentMeasuredFrom: k.garmentMeasuredFrom,
+      fitDirection: k.fitDirection,
+    })),
+    input.profile.chestCm,
+  );
+  return resolveEase(input.profile.preferredFit, learnedEase, M);
+}
+
 export function recommend(
   input: EngineInput,
   /**
@@ -784,16 +812,7 @@ export function recommend(
   // cross-domain anchors moving a size, whereas an ease preference is a property
   // of the person. It moves the target ease, never the ladder directly, so it
   // cannot double-count with the anchor or with brand bias.
-  const learnedEase = personalEaseTarget(
-    input.knownGood.map((k) => ({
-      category: k.category,
-      garmentChestCm: k.garmentChestCm,
-      garmentMeasuredFrom: k.garmentMeasuredFrom,
-      fitDirection: k.fitDirection,
-    })),
-    profile.chestCm,
-  );
-  const easeUsed = resolveEase(profile.preferredFit, learnedEase, M);
+  const easeUsed = easeFor(input, M);
 
   // The closet the rest of the engine may learn from. When the measured reports
   // contradict each other with no consistent majority, the explanation tells the

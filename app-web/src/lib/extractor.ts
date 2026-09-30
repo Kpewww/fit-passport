@@ -24,6 +24,7 @@
 
 import { chartFor, chartToSizes } from "./brandCharts";
 import { DEMO_PRODUCTS, isDemoUrl } from "./demoProducts";
+import type { SellerReading } from "./sellerMeasurements";
 
 export type ExtractedSize = {
   label: string;
@@ -73,7 +74,7 @@ export type ExtractedProduct = {
     //                   slim or relaxed line. Ranks BELOW "page" for that reason
     //                   and far above "estimated", which is not measurement at all.
     //   "estimated"   — synthesized from the brand + category (no real chart found)
-    sizesFrom?: "fixture" | "page" | "brand-chart" | "estimated";
+    sizesFrom?: "fixture" | "page" | "brand-chart" | "seller" | "estimated";
     // WHY we ended up with the provenance above. `sizesFrom: "estimated"` has two
     // very different causes and they need very different fixes:
     //   "blocked"     — the retailer refused us (403/CAPTCHA/challenge). No model
@@ -130,7 +131,7 @@ export type ExtractedProduct = {
      * size guide, which is a sourced fact rather than a guess — but a weaker claim,
      * so it is labelled. Precedence lives in `pageParse.resolveMeasurementKind`.
      */
-    measurementKindFrom?: "page" | "table" | "brand";
+    measurementKindFrom?: "page" | "table" | "brand" | "seller";
     /**
      * True when `sizes` is the ladder `buildSizes()` synthesized from two
      * constants — numbers NO source ever stated. Cleared the moment anything real
@@ -151,7 +152,20 @@ export type ExtractedProduct = {
      * four very different levels of trust that the UI and the evaluation both
      * need to tell apart.
      */
-    extractedBy?: "table" | "llm-text" | "llm-vision" | "hao-xing";
+    extractedBy?: "table" | "llm-text" | "llm-vision" | "hao-xing" | "seller-title" | "seller-specs" | "seller-description" | "seller-typed";
+    /**
+     * A one-off listing (Session 80): one garment, one size, from one seller —
+     * eBay and the like. Its answer is a judgement ("likely fits", "may be
+     * tight"), not a ranking, because there is nothing to rank it against.
+     */
+    listing?: boolean;
+    /**
+     * What the seller wrote about its measurements, as read — raw words, unit,
+     * whether it was a flat width doubled, whether the unit was inferred — and
+     * the readings that were too uncertain to use. `sizesFrom: "seller"` when a
+     * measurement was usable. See sellerMeasurements.ts.
+     */
+    seller?: SellerReading;
   };
 };
 
@@ -253,9 +267,15 @@ const BRAND_TABLE: Record<string, BrandProfile> = {
 // least ambiguous patterns come first. Insulated outerwear ("down hoody",
 // "puffer") is matched as a jacket BEFORE the generic hoodie rule, since a
 // down-hoody is an insulated jacket with a hood, not a fleece hoodie.
-const CATEGORY_KEYWORDS: Array<{ cat: string; re: RegExp }> = [
+// A top named after the word "jeans" or "denim" is the garment; those words were
+// the brand or the fabric. English titles put the garment noun last: "Denim
+// Jacket", "Tommy Jeans Men's Flannel Shirt" (a real eBay listing, Session 80, that
+// was judged on the WAIST as a pair of jeans).
+const TOP_NOUN_AFTER = /\b(shirts?|overshirts?|tees?|t-?shirts?|jackets?|coats?|hood(?:ie|y)s?|sweaters?|sweatshirts?|polos?|blouses?|flannels?|trucker|vests?|cardigans?|tops?)\b/i;
+
+const CATEGORY_KEYWORDS: Array<{ cat: string; re: RegExp; unless?: (after: string) => boolean }> = [
   // Bottoms (before tops so "sweatpants" ≠ sweater, "board-shorts" ≠ shirt)
-  { cat: "jeans", re: /\b(jeans?|denim)\b/i },
+  { cat: "jeans", re: /\b(jeans?|denim)\b/i, unless: (after) => TOP_NOUN_AFTER.test(after) },
   // "short" alone is a real garment name ("Men's 7-inch Running Short"), but NOT
   // when it describes a sleeve. Bottoms are matched before tops, so without the
   // lookahead a short-sleeve shirt was classified as shorts and scored against the
@@ -388,9 +408,11 @@ function pickNameSlug(parts: string[]): string {
 }
 
 function guessBrand(host: string): BrandProfile | null {
-  const h = host.toLowerCase();
+  // Whole host labels, not substrings: "hm" is inside poshmark.com and "cos" inside
+  // costco.com, and both used to come back as those brands (Session 80).
+  const labels = host.toLowerCase().split(/[.-]/);
   for (const key of Object.keys(BRAND_TABLE)) {
-    if (h.includes(key)) return BRAND_TABLE[key];
+    if (labels.some((l) => l === key || l === `${key}s`)) return BRAND_TABLE[key];
   }
   return null;
 }
@@ -406,14 +428,17 @@ function guessBrand(host: string): BrandProfile | null {
  * answer, and this is the app's whole trust proposition.
  */
 export function detectCategoryStrict(text: string): string | null {
-  for (const { cat, re } of CATEGORY_KEYWORDS) {
-    if (re.test(text)) return cat;
+  for (const { cat, re, unless } of CATEGORY_KEYWORDS) {
+    const m = text.match(re);
+    if (!m) continue;
+    if (unless && unless(text.slice((m.index ?? 0) + m[0].length))) continue;
+    return cat;
   }
   return null;
 }
 
 /** Where the garment category was read from — see `resolveCategory`. */
-export type CategorySource = "page-structured" | "url" | "page-name";
+export type CategorySource = "page-structured" | "url" | "page-name" | "user";
 
 /**
  * The garment category, from everything we know, normalised to one of OUR keys.
@@ -498,6 +523,15 @@ const MARKETPLACES: Array<{ re: RegExp; name: string }> = [
   { re: /(^|\.)1688\.com$/i, name: "1688" },
   { re: /(^|\.)(pinduoduo|yangkeduo)\.com$/i, name: "Pinduoduo" },
   { re: /(^|\.)vip\.com$/i, name: "Vipshop" },
+  // One-off listings (Session 80): a seller, not a brand. eBay was measured; the
+  // rest share its shape and are untested.
+  { re: /(^|\.)ebay\.[a-z.]+$/i, name: "eBay" },
+  { re: /(^|\.)poshmark\.[a-z.]+$/i, name: "Poshmark" },
+  { re: /(^|\.)depop\.com$/i, name: "Depop" },
+  { re: /(^|\.)grailed\.com$/i, name: "Grailed" },
+  { re: /(^|\.)vinted\.[a-z.]+$/i, name: "Vinted" },
+  { re: /(^|\.)mercari\.com$/i, name: "Mercari" },
+  { re: /(^|\.)thredup\.com$/i, name: "thredUP" },
 ];
 
 export function marketplaceFor(host: string): string | null {
