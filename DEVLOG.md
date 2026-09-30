@@ -31,6 +31,33 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 79e — Signing in, in Chinese, down to the API's errors
+
+Login, password recovery, reset and the account page are translated — and so is
+what the API says back, which the pages show verbatim.
+
+- `src/lib/apiText.ts`: routes keep writing English and pass it through
+  `say(req, "…")`; a Chinese request gets the Chinese from one table. The English
+  stays the source for logs and tests. `apiText.test.ts` scans every route for
+  `say(req, "…")` and fails if a sentence has no Chinese, or if a Chinese entry
+  contains English words.
+- All auth errors go through it, and so does every 429: `tooMany()` now takes the
+  request (a mechanical edit at 19 call sites, each already had `req`).
+- The claim form used to send Zod's raw field errors ("String must contain at
+  least 2 character(s)"); it now sends one sentence per failing field, in the
+  requester's language.
+- A small fix found on the way: the change-password panel decided success by
+  comparing its message to the English "Password updated." — which would have
+  turned every Chinese success red. It is a state now.
+- Body types (娇小 … 大码) are translated where the account page shows them.
+
+Seen live at 390 px in Chinese: all four pages, no English left, no overflow; a
+wrong password answers "用户名、账号代码或密码不对。".
+
+631 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-09-29 · Session 79d — The engine explains itself in Chinese
 
 Every sentence the engine writes — reasons, notes beside the answer, the

@@ -6,8 +6,10 @@ import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Field, inputClass } from "@/components/ui";
+import { useT } from "@/i18n/client";
 
 function ResetInner() {
+  const t = useT("auth");
   const params = useSearchParams();
   const router = useRouter();
   const token = params.get("token") ?? "";
@@ -29,10 +31,10 @@ function ResetInner() {
         body: JSON.stringify({ userId, token, newPassword }),
       });
       const j = await r.json();
-      if (!r.ok) throw new Error(typeof j.error === "string" ? j.error : "reset failed");
+      if (!r.ok) throw new Error(typeof j.error === "string" ? j.error : t("resetFailed"));
       router.push("/closet");
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : "reset failed");
+      setErr(e instanceof Error ? e.message : t("resetFailed"));
     } finally {
       setBusy(false);
     }
@@ -41,25 +43,24 @@ function ResetInner() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
-        <h1 className="font-serif text-h1 text-ink">Set a new password</h1>
+        <h1 className="font-serif text-h1 text-ink">{t("resetTitle")}</h1>
         {invalidLink ? (
           <p className="mt-2 text-sm text-bad">
-            This reset link is missing information. Request a new one from{" "}
-            <Link href="/recover" className="text-brand hover:underline">the reset page</Link>.
+            {t.rich("resetMissing", { link: (c) => <Link href="/recover" className="text-brand hover:underline">{c}</Link> })}
           </p>
         ) : (
           <>
-            <p className="mt-2 text-ink-soft">Your account code stays the same — only the password changes.</p>
+            <p className="mt-2 text-ink-soft">{t("codeStays")}</p>
             <Card className="mt-6">
               <form onSubmit={submit} className="space-y-4">
-                <Field label="New password">
+                <Field label={t("newPassword")}>
                   <input type="password" className={inputClass} value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="at least 6 characters" autoComplete="new-password" />
+                    placeholder={t("atLeast6")} autoComplete="new-password" />
                 </Field>
                 {err && <p className="text-sm text-bad">{err}</p>}
                 <Button type="submit" size="lg" disabled={busy || newPassword.length < 6}>
-                  {busy ? "Saving…" : "Set password & sign in"}
+                  {busy ? t("saving") : t("resetSubmit")}
                 </Button>
               </form>
             </Card>
@@ -71,8 +72,9 @@ function ResetInner() {
 }
 
 export default function ResetPage() {
+  const t = useT("auth");
   return (
-    <Suspense fallback={<div className="mx-auto max-w-md px-4 sm:px-6 py-14">Loading…</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-md px-4 sm:px-6 py-14">{t("loading")}</div>}>
       <ResetInner />
     </Suspense>
   );

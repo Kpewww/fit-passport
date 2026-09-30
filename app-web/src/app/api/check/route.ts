@@ -107,10 +107,10 @@ export async function POST(req: Request) {
   }
 
   const byIp = await rateLimit(clientKey(req, "check"), PER_IP.limit, PER_IP.windowMs);
-  if (!byIp.ok) return tooMany(byIp.retryAfterSec);
+  if (!byIp.ok) return tooMany(byIp.retryAfterSec, req);
   if (session) {
     const byUser = await rateLimit(`check-user:${session.userId}`, PER_USER.limit, PER_USER.windowMs);
-    if (!byUser.ok) return tooMany(byUser.retryAfterSec);
+    if (!byUser.ok) return tooMany(byUser.retryAfterSec, req);
   }
 
   const user = await getCurrentUser();

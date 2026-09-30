@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowRight, CaretDown, Check, Warning } from "@/components/I
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Field, inputClass, LinkButton } from "@/components/ui";
+import { useT } from "@/i18n/client";
 
 type Me = {
   claimed: boolean;
@@ -19,20 +20,13 @@ type Me = {
 // The claim form REQUIRES an explicit pick — but "Prefer not to say" (empty
 // value) is a valid choice. Whether it's shown publicly is a separate checkbox.
 const CLAIM_PLACEHOLDER = "__pick__";
-const BODY_TYPES = [
-  { v: "", label: "Prefer not to say" },
-  { v: "petite", label: "Petite" },
-  { v: "slim", label: "Slim" },
-  { v: "lean", label: "Lean" },
-  { v: "average", label: "Average" },
-  { v: "athletic", label: "Athletic" },
-  { v: "curvy", label: "Curvy" },
-  { v: "broad", label: "Broad" },
-  { v: "tall", label: "Tall" },
-  { v: "plus", label: "Plus" },
-];
+// "" = prefer not to say; labels come from account.bodyType (messages).
+const BODY_TYPES = ["", "petite", "slim", "lean", "average", "athletic", "curvy", "broad", "tall", "plus"] as const;
+type BodyTypeKey = Exclude<(typeof BODY_TYPES)[number], ""> | "none";
 
 export default function AccountPage() {
+  const t = useT("account");
+  const bt = (v: string) => t(`bodyType.${(v || "none") as BodyTypeKey}`);
   const [me, setMe] = useState<Me | null>(null);
   const [form, setForm] = useState({
     username: "",
@@ -78,7 +72,7 @@ export default function AccountPage() {
             ? j.error
             : j.error?.fieldErrors
               ? Object.values(j.error.fieldErrors).flat().join(", ")
-              : "could not create account";
+              : t("couldNotCreate");
         throw new Error(msg);
       }
       setClaimResult({ accountCode: j.accountCode, hasEmail: j.hasEmail });
@@ -97,7 +91,7 @@ export default function AccountPage() {
   }
 
   if (!me) {
-    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-10 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-10 text-ink-faint">{t("loading")}</div></main>;
   }
 
   // Just claimed — show the account code.
@@ -105,14 +99,11 @@ export default function AccountPage() {
     return (
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
-          <h1 className="font-serif text-h1 text-ink">Your account is ready</h1>
-          <p className="mt-2 text-ink-soft">
-            You can log in later with your <strong>username</strong> or your
-            <strong> account code</strong>, plus your password.
-          </p>
+          <h1 className="font-serif text-h1 text-ink">{t("readyTitle")}</h1>
+          <p className="mt-2 text-ink-soft">{t.rich("readyLede", { b: (c) => <strong>{c}</strong> })}</p>
 
           <Card className="mt-6">
-            <p className="text-xs uppercase tracking-widest text-ink-faint">Account code (shareable)</p>
+            <p className="text-xs uppercase tracking-widest text-ink-faint">{t("codeLabel")}</p>
             <div className="mt-1 flex items-center gap-3">
               <code className="rounded-lg bg-brand-tint px-3 py-2 text-lg font-bold tracking-wider text-brand">
                 {claimResult.accountCode}
@@ -124,37 +115,30 @@ export default function AccountPage() {
                 }}
                 className="text-sm text-brand hover:underline"
               >
-                {copied ? <><Check size={14} className="-mt-px inline" /> Copied</> : "Copy"}
+                {copied ? <><Check size={14} className="-mt-px inline" /> {t("copied")}</> : t("copy")}
               </button>
             </div>
-            <p className="mt-2 text-xs text-ink-faint">
-              Anyone with your code can view your closet (read-only). Give it to
-              friends who want to browse.
-            </p>
+            <p className="mt-2 text-xs text-ink-faint">{t("codeNote")}</p>
           </Card>
 
           {!claimResult.hasEmail && (
             <Card className="mt-4 border-l-4 border-l-amber-400 bg-warn-tint">
               <p className="text-sm font-semibold text-warn">
-                <Warning size={16} className="mr-1.5 inline -mt-0.5" />You didn&apos;t add a recovery email
+                <Warning size={16} className="mr-1.5 inline -mt-0.5" />{t("noEmailTitle")}
               </p>
-              <p className="mt-1 text-sm text-warn">
-                Without one, there&apos;s <strong>no way</strong> to reset your password
-                if you forget it. You&apos;d permanently lose editing access to this
-                account. Consider adding an email later from your account page.
-              </p>
+              <p className="mt-1 text-sm text-warn">{t.rich("noEmailBody", { b: (c) => <strong>{c}</strong> })}</p>
             </Card>
           )}
 
           <div className="mt-6 flex flex-wrap gap-3">
             <LinkButton href="/passport">
-              View my passport <ArrowRight size={14} className="-mt-px inline" />
+              {t("viewPassport")} <ArrowRight size={14} className="-mt-px inline" />
             </LinkButton>
             <LinkButton href="/closet" variant="secondary">
-              My closet
+              {t("myCloset")}
             </LinkButton>
             <LinkButton href={`/u/${encodeURIComponent(claimResult.accountCode)}`} variant="secondary">
-              Preview public view
+              {t("previewPublic")}
             </LinkButton>
           </div>
         </div>
@@ -167,28 +151,28 @@ export default function AccountPage() {
     return (
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
-          <h1 className="font-serif text-h1 text-ink">Account</h1>
+          <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
           <Card className="mt-6 space-y-3">
-            <Row label="Username" value={me.username ?? "—"} />
-            <Row label="Account code" value={me.accountCode ?? "—"} mono />
-            <Row label="Recovery email" value={me.email ?? "none — can't reset password"} />
-            <Row label="Body type shared" value={me.bodyType ?? "not shared"} />
-            <Row label="Export by code" value={me.exportPolicy === "anyone" ? "anyone with code" : "only me"} />
+            <Row label={t("username")} value={me.username ?? "—"} />
+            <Row label={t("accountCode")} value={me.accountCode ?? "—"} mono />
+            <Row label={t("recoveryEmail")} value={me.email ?? t("noEmailValue")} />
+            <Row label={t("bodyTypeShared")} value={me.bodyType ? bt(me.bodyType) : t("notShared")} />
+            <Row label={t("exportByCode")} value={me.exportPolicy === "anyone" ? t("exportAnyone") : t("exportOnlyMe")} />
           </Card>
           <div className="mt-4 flex flex-wrap gap-3">
             <LinkButton href={`/u/${encodeURIComponent(me.accountCode ?? "")}`} variant="secondary">
-              View my public closet
+              {t("viewPublicCloset")}
             </LinkButton>
-            <Button variant="ghost" onClick={logout}>Log out</Button>
+            <Button variant="ghost" onClick={logout}>{t("logOut")}</Button>
           </div>
 
           <ChangePassword />
           <DangerZone />
 
           <p className="mt-6 text-xs text-ink-faint">
-            Anyone with your code can view your closet and body type (if shared),
-            but only someone with your password can edit it.{" "}
-            <Link href="/community" className="text-brand hover:underline">See the community <ArrowRight size={14} className="-mt-px inline" /></Link>
+            {t.rich("publicNote", {
+              link: (c) => <Link href="/community" className="text-brand hover:underline">{c} <ArrowRight size={14} className="-mt-px inline" /></Link>,
+            })}
           </p>
         </div>
       </main>
@@ -203,67 +187,64 @@ export default function AccountPage() {
             or closet before locking in an account. Nothing here is committed
             until "Claim my account code" is pressed. */}
         <div className="mb-4 flex items-center gap-4 text-sm">
-          <Link href="/passport" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> Edit my passport</Link>
-          <Link href="/closet" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> Edit my closet</Link>
+          <Link href="/passport" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> {t("editPassport")}</Link>
+          <Link href="/closet" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> {t("editCloset")}</Link>
         </div>
-        <h1 className="font-serif text-h1 text-ink">Claim your account</h1>
-        <p className="mt-2 text-ink-soft">
-          You&apos;ve been using a private, temporary account. Claim it to get a
-          shareable <strong>account code</strong> and lock editing behind a password.
-          Your passport and closet are already filled in — you can go back and
-          tweak them first; nothing is locked until you press claim.
-        </p>
+        <h1 className="font-serif text-h1 text-ink">{t("claimTitle")}</h1>
+        <p className="mt-2 text-ink-soft">{t.rich("claimLede", { b: (c) => <strong>{c}</strong> })}</p>
 
         <Card className="mt-6">
           <form onSubmit={claim} className="space-y-4">
-            <Field label="Username" hint="shown to people who view your closet">
+            <Field label={t("username")} hint={t("usernameHint")}>
               <input className={inputClass} value={form.username}
                 onChange={(e) => setForm({ ...form, username: e.target.value })}
-                placeholder="e.g. alex_fits" />
+                placeholder={t("usernamePlaceholder")} />
             </Field>
-            <Field label="Password" hint="needed to edit — this is your key">
+            <Field label={t("passwordLabel")} hint={t("passwordHint")}>
               <input type="password" className={inputClass} value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                placeholder="at least 6 characters" />
+                placeholder={t("atLeast6")} />
             </Field>
-            <Field label="Recovery email" hint="optional but strongly recommended">
+            <Field label={t("recoveryEmail")} hint={t("emailHint")}>
               <input type="email" className={inputClass} value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="you@example.com — so you can reset your password" />
+                placeholder={t("emailPlaceholder")} />
             </Field>
-            <Field label="Body type" hint="coarse only — precise measurements never shared">
+            <Field label={t("bodyTypeLabel")} hint={t("bodyTypeHint")}>
               <select className={inputClass} value={form.bodyType}
                 onChange={(e) => setForm({ ...form, bodyType: e.target.value })}>
-                <option value={CLAIM_PLACEHOLDER} disabled>Choose one…</option>
-                {BODY_TYPES.map((b) => <option key={b.v} value={b.v}>{b.label}</option>)}
+                <option value={CLAIM_PLACEHOLDER} disabled>{t("chooseOne")}</option>
+                {BODY_TYPES.map((v) => <option key={v} value={v}>{bt(v)}</option>)}
               </select>
               <label className="mt-2 flex items-center gap-1.5 text-xs text-ink-soft">
                 <input type="checkbox" checked={form.showBodyType} className="accent-brand"
                   onChange={(e) => setForm({ ...form, showBodyType: e.target.checked })} />
-                Show my body type on my public view (you can change this later)
+                {t("showBodyType")}
               </label>
             </Field>
-            <Field label="Who can export your closet by code?">
+            <Field label={t("exportLabel")}>
               <select className={inputClass} value={form.exportPolicy}
                 onChange={(e) => setForm({ ...form, exportPolicy: e.target.value as "owner" | "anyone" })}>
-                <option value="owner">Only me (recommended)</option>
-                <option value="anyone">Anyone with my code</option>
+                <option value="owner">{t("exportOwner")}</option>
+                <option value="anyone">{t("exportAnyoneOption")}</option>
               </select>
             </Field>
 
             {err && <p className="text-sm text-bad">{err}</p>}
 
             <Button type="submit" size="lg" disabled={saving || !form.username || form.password.length < 6 || form.bodyType === CLAIM_PLACEHOLDER}>
-              {saving ? "Creating…" : "Claim my account code"}
+              {saving ? t("creating") : t("claimSubmit")}
             </Button>
             {form.bodyType === CLAIM_PLACEHOLDER && (
-              <p className="text-xs text-ink-faint">Pick a body type (or &quot;Prefer not to say&quot;) to continue.</p>
+              <p className="text-xs text-ink-faint">{t("pickBodyType")}</p>
             )}
           </form>
         </Card>
 
         <p className="mt-4 text-xs text-ink-faint">
-          Already have a code? <Link href="/login" className="text-brand hover:underline">Log in <ArrowRight size={14} className="-mt-px inline" /></Link>
+          {t.rich("haveCode", {
+            link: (c) => <Link href="/login" className="text-brand hover:underline">{c} <ArrowRight size={14} className="-mt-px inline" /></Link>,
+          })}
         </p>
       </div>
     </main>
@@ -281,10 +262,14 @@ function Row({ label, value, mono }: { label: string; value: string; mono?: bool
 
 // Change password while logged in (account code stays the same).
 function ChangePassword() {
+  const t = useT("account");
+  const tAuth = useT("auth");
   const [open, setOpen] = useState(false);
   const [cur, setCur] = useState("");
   const [next, setNext] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  // Success is a state, not a comparison with the English sentence.
+  const [ok, setOk] = useState(false);
   const [busy, setBusy] = useState(false);
 
   async function save() {
@@ -295,27 +280,27 @@ function ChangePassword() {
     });
     const j = await r.json().catch(() => ({}));
     setBusy(false);
-    if (r.ok) { setMsg("Password updated."); setCur(""); setNext(""); }
-    else setMsg(typeof j.error === "string" ? j.error : "couldn't update password");
+    if (r.ok) { setOk(true); setMsg(t("passwordUpdated")); setCur(""); setNext(""); }
+    else { setOk(false); setMsg(typeof j.error === "string" ? j.error : t("couldNotUpdate")); }
   }
 
   return (
     <Card className="mt-4">
       <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between text-left">
-        <span className="text-sm font-semibold text-ink">Change password</span>
+        <span className="text-sm font-semibold text-ink">{t("changePassword")}</span>
         <CaretDown size={16} className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <div className="mt-3 space-y-3">
-          <p className="text-xs text-ink-faint">Your account code stays the same — only the password changes.</p>
-          <Field label="Current password">
+          <p className="text-xs text-ink-faint">{tAuth("codeStays")}</p>
+          <Field label={t("currentPassword")}>
             <input type="password" className={inputClass} value={cur} onChange={(e) => setCur(e.target.value)} autoComplete="current-password" />
           </Field>
-          <Field label="New password">
-            <input type="password" className={inputClass} value={next} onChange={(e) => setNext(e.target.value)} placeholder="at least 6 characters" autoComplete="new-password" />
+          <Field label={t("newPassword")}>
+            <input type="password" className={inputClass} value={next} onChange={(e) => setNext(e.target.value)} placeholder={t("atLeast6")} autoComplete="new-password" />
           </Field>
-          {msg && <p className={`text-sm ${msg === "Password updated." ? "text-ok" : "text-bad"}`}>{msg}</p>}
-          <Button onClick={save} disabled={busy || !cur || next.length < 6}>{busy ? "Saving…" : "Update password"}</Button>
+          {msg && <p className={`text-sm ${ok ? "text-ok" : "text-bad"}`}>{msg}</p>}
+          <Button onClick={save} disabled={busy || !cur || next.length < 6}>{busy ? t("saving") : t("updatePassword")}</Button>
         </div>
       )}
     </Card>
@@ -325,6 +310,7 @@ function ChangePassword() {
 // Deactivate the account (soft delete — data retained, hidden from everyone
 // external; support can reverse it).
 function DangerZone() {
+  const t = useT("account");
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -332,7 +318,7 @@ function DangerZone() {
   const [busy, setBusy] = useState(false);
 
   async function deactivate() {
-    if (!confirm("Deactivate your account? It will be hidden from everyone (public view, community, login). Your data is kept and support can restore it later.")) return;
+    if (!confirm(t("deactivateConfirm"))) return;
     setBusy(true); setMsg(null);
     const r = await fetch("/api/auth/deactivate", {
       method: "POST", headers: { "content-type": "application/json" },
@@ -341,27 +327,24 @@ function DangerZone() {
     const j = await r.json().catch(() => ({}));
     setBusy(false);
     if (r.ok) router.push("/");
-    else setMsg(typeof j.error === "string" ? j.error : "couldn't deactivate");
+    else setMsg(typeof j.error === "string" ? j.error : t("couldNotDeactivate"));
   }
 
   return (
     <Card className="mt-4 ring-bad/30">
       <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between text-left">
-        <span className="text-sm font-semibold text-bad">Deactivate account</span>
+        <span className="text-sm font-semibold text-bad">{t("deactivateTitle")}</span>
         <CaretDown size={16} className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
       {open && (
         <div className="mt-3 space-y-3">
-          <p className="text-xs text-ink-soft">
-            Hides your account from everyone external — public view, community, and login all stop working.
-            Your data isn&apos;t deleted; support can reactivate it. Confirm with your password.
-          </p>
-          <Field label="Password">
+          <p className="text-xs text-ink-soft">{t("deactivateBody")}</p>
+          <Field label={t("passwordLabel")}>
             <input type="password" className={inputClass} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
           </Field>
           {msg && <p className="text-sm text-bad">{msg}</p>}
           <Button onClick={deactivate} disabled={busy || !password} className="!bg-bad hover:!bg-bad">
-            {busy ? "…" : "Deactivate my account"}
+            {busy ? "…" : t("deactivateSubmit")}
           </Button>
         </div>
       )}

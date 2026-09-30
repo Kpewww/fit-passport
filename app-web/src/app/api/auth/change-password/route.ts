@@ -3,6 +3,7 @@
 // Verifies the current password, sets the new one. Account code is unchanged.
 
 import { NextResponse } from "next/server";
+import { say } from "@/lib/apiText";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, canEdit } from "@/lib/session";
@@ -16,14 +17,14 @@ const Body = z.object({
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user.claimed || !canEdit()) {
-    return NextResponse.json({ error: "not allowed" }, { status: 403 });
+    return NextResponse.json({ error: say(req, "not allowed") }, { status: 403 });
   }
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const ok = await verifySecret(parsed.data.currentPassword, user.passwordHash);
-  if (!ok) return NextResponse.json({ error: "current password is incorrect" }, { status: 401 });
+  if (!ok) return NextResponse.json({ error: say(req, "current password is incorrect") }, { status: 401 });
 
   await prisma.user.update({
     where: { id: user.id },

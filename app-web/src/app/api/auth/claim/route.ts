@@ -7,6 +7,7 @@
 // told plainly that a lost password means a lost account.
 
 import { NextResponse } from "next/server";
+import { say } from "@/lib/apiText";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
@@ -35,26 +36,37 @@ export async function POST(req: Request) {
   // so an unlimited claim endpoint would just move vote-farming one step along.
   // Five accounts per network per hour: generous for a household or a demo room.
   const rl = await rateLimit(clientKey(req, "claim"), 5, 60 * 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
   const user = await getCurrentUser();
   if (user.claimed) {
-    return NextResponse.json({ error: "account already claimed" }, { status: 409 });
+    return NextResponse.json({ error: say(req, "account already claimed") }, { status: 409 });
   }
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
+    // One sentence per field that failed, in the requester's language — Zod's own
+    // messages ("String must contain at least 2 character(s)") are not for people.
+    const failed = new Set(parsed.error.issues.map((i) => String(i.path[0])));
+    const lines = [
+      failed.has("username") && "username: 2–30 characters — letters, numbers, and . _ - only, and not an email address",
+      failed.has("password") && "password: at least 6 characters",
+      failed.has("email") && "email: that doesn't look like an email address",
+    ].filter((l): l is string => !!l);
+    return NextResponse.json(
+      { error: lines.length ? lines.map((l) => say(req, l)).join(" ") : say(req, "invalid request") },
+      { status: 400 },
+    );
   }
   const { username, password, bodyType, showBodyType, exportPolicy } = parsed.data;
   const email = parsed.data.email ? parsed.data.email.toLowerCase() : null;
 
   const taken = await prisma.user.findUnique({ where: { username } });
   if (taken) {
-    return NextResponse.json({ error: "username taken" }, { status: 409 });
+    return NextResponse.json({ error: say(req, "username taken") }, { status: 409 });
   }
   if (email) {
     const emailTaken = await prisma.user.findUnique({ where: { email } });
     if (emailTaken) {
-      return NextResponse.json({ error: "email already in use" }, { status: 409 });
+      return NextResponse.json({ error: say(req, "email already in use") }, { status: 409 });
     }
   }
 

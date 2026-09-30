@@ -65,7 +65,7 @@ export async function GET() {
 export async function POST(req: Request) {
   // Cheap abuse guard: follow-spam is the classic growth-hack vector.
   const rl = await rateLimit(clientKey(req, "follow"), 60, 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
 
   const user = await getCurrentUser();
   if (!user.claimed) {

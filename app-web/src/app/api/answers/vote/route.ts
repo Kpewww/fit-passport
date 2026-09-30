@@ -21,7 +21,7 @@ const Body = z.object({
 export async function POST(req: Request) {
   // Bounds scripted voting. Working value, not a measurement.
   const rl = await rateLimit(clientKey(req, "vote"), 60, 10 * 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
   const user = await getCurrentUser();
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {

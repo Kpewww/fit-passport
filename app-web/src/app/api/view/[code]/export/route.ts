@@ -13,7 +13,7 @@ export async function GET(
   { params }: { params: { code: string } },
 ) {
   const rl = await rateLimit(clientKey(req, "export"), 20, 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
 
   const code = normalizeAccountCode(decodeURIComponent(params.code));
   const user = await prisma.user.findUnique({

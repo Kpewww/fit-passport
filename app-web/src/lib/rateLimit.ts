@@ -16,6 +16,8 @@
 // open. A limiter outage shouldn't lock every user out, but it also shouldn't
 // silently remove all protection.
 
+import { say } from "./apiText";
+
 type Bucket = { count: number; resetAt: number };
 const buckets = new Map<string, Bucket>();
 
@@ -127,9 +129,11 @@ export function clientKey(req: Request, prefix: string): string {
 }
 
 /** Standard 429 response with Retry-After. */
-export function tooMany(retryAfterSec: number) {
+/** 429, worded in the requester's language when the request is given (apiText.ts). */
+export function tooMany(retryAfterSec: number, req?: Request) {
+  const msg = "Too many requests — slow down and try again shortly.";
   return new Response(
-    JSON.stringify({ error: "Too many requests — slow down and try again shortly." }),
+    JSON.stringify({ error: req ? say(req, msg) : msg }),
     { status: 429, headers: { "content-type": "application/json", "retry-after": String(retryAfterSec) } },
   );
 }

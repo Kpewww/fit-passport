@@ -19,7 +19,7 @@ export async function GET(
 ) {
   // Anti-scrape: 60 reads / min per IP.
   const rl = await rateLimit(clientKey(req, "view"), 60, 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
 
   const code = normalizeAccountCode(decodeURIComponent(params.code));
   const user = await prisma.user.findUnique({

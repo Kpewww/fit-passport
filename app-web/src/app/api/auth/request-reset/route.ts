@@ -9,6 +9,7 @@
 // (local/beta), we return the link directly so the flow is testable.
 
 import { NextResponse } from "next/server";
+import { say } from "@/lib/apiText";
 import { z } from "zod";
 import { randomBytes } from "crypto";
 import { prisma } from "@/lib/db";
@@ -24,11 +25,11 @@ function baseUrl(req: Request): string {
 
 export async function POST(req: Request) {
   const rl = await rateLimit(clientKey(req, "reqreset"), 5, 15 * 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
 
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: "invalid request" }, { status: 400 });
+    return NextResponse.json({ error: say(req, "invalid request") }, { status: 400 });
   }
   const id = parsed.data.identifier.trim();
   const looksLikeCode = /^FP-|^[A-Z0-9]{4}-/i.test(id);

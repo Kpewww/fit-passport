@@ -5,6 +5,7 @@
 // (Not a hard delete; support/internal can reverse it by flipping the flag.)
 
 import { NextResponse } from "next/server";
+import { say } from "@/lib/apiText";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, canEdit, clearSession } from "@/lib/session";
@@ -15,14 +16,14 @@ const Body = z.object({ password: z.string().min(1).max(200) });
 export async function POST(req: Request) {
   const user = await getCurrentUser();
   if (!user.claimed || !canEdit()) {
-    return NextResponse.json({ error: "not allowed" }, { status: 403 });
+    return NextResponse.json({ error: say(req, "not allowed") }, { status: 403 });
   }
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) {
-    return NextResponse.json({ error: "password required" }, { status: 400 });
+    return NextResponse.json({ error: say(req, "password required") }, { status: 400 });
   }
   const ok = await verifySecret(parsed.data.password, user.passwordHash);
-  if (!ok) return NextResponse.json({ error: "password is incorrect" }, { status: 401 });
+  if (!ok) return NextResponse.json({ error: say(req, "password is incorrect") }, { status: 401 });
 
   await prisma.user.update({
     where: { id: user.id },

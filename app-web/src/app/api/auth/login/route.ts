@@ -4,6 +4,7 @@
 // session with edit rights. Backward-compatible: still accepts { accountCode }.
 
 import { NextResponse } from "next/server";
+import { say } from "@/lib/apiText";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { setSession } from "@/lib/session";
@@ -24,7 +25,7 @@ const Body = z.object({
 export async function POST(req: Request) {
   // Brute-force guard: 10 attempts / 5 min per IP.
   const rl = await rateLimit(clientKey(req, "login"), 10, 5 * 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
 
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) {
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
 
   // Uniform error so we don't leak whether an identifier exists.
   const fail = () =>
-    NextResponse.json({ error: "invalid username/code or password" }, { status: 401 });
+    NextResponse.json({ error: say(req, "invalid username/code or password") }, { status: 401 });
 
   if (!user || !user.claimed || user.deactivated) return fail();
   const ok = await verifySecret(parsed.data.password, user.passwordHash);

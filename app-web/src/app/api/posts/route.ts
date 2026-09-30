@@ -107,7 +107,7 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   // Posting is the abuse surface here, so it's the tighter limit.
   const rl = await rateLimit(clientKey(req, "post-create"), 10, 10 * 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
 
   const user = await getCurrentUser();
   if (!user.claimed) {

@@ -10,6 +10,7 @@
 // send-email-with-token flow.
 
 import { NextResponse } from "next/server";
+import { say } from "@/lib/apiText";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { setSession } from "@/lib/session";
@@ -24,7 +25,7 @@ const Body = z.object({
 
 export async function POST(req: Request) {
   const rl = await rateLimit(clientKey(req, "recover"), 5, 15 * 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
 
   const parsed = Body.safeParse(await req.json());
   if (!parsed.success) {
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
   // Uniform error so we don't reveal whether the identifier or the email matched.
   const fail = () =>
     NextResponse.json(
-      { error: "we couldn't verify that account and email combination" },
+      { error: say(req, "we couldn't verify that account and email combination") },
       { status: 401 },
     );
 

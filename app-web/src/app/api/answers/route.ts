@@ -21,7 +21,7 @@ const CreateSchema = z.object({
 
 export async function POST(req: Request) {
   const rl = await rateLimit(clientKey(req, "answer-create"), 20, 10 * 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
 
   const user = await getCurrentUser();
   if (!user.claimed) {

@@ -69,7 +69,7 @@ export async function POST(req: Request) {
   // Closet reports feed the wearer's own ease and brand bias. Bounds a script
   // flooding them; a person adding clothes by hand never gets near it.
   const rl = await rateLimit(clientKey(req, "closet-write"), 120, 10 * 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
   const user = await getCurrentUser();
   const parsed = ItemSchema.safeParse(await req.json());
   if (!parsed.success) {
@@ -156,7 +156,7 @@ export async function PATCH(req: Request) {
   // Closet reports feed the wearer's own ease and brand bias. Bounds a script
   // flooding them; a person adding clothes by hand never gets near it.
   const rl = await rateLimit(clientKey(req, "closet-write"), 120, 10 * 60_000);
-  if (!rl.ok) return tooMany(rl.retryAfterSec);
+  if (!rl.ok) return tooMany(rl.retryAfterSec, req);
   const user = await getCurrentUser();
   const parsed = UpdateSchema.safeParse(await req.json());
   if (!parsed.success) {
