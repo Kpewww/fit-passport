@@ -2,6 +2,7 @@
 // /api/recommend (recompute with a fit-preference override). Keeps engine-input
 // assembly in one place so the two endpoints can't drift.
 
+import type { Locale } from "@/i18n/config";
 import { prisma } from "./db";
 import { recommend, type EngineInput, type EngineOutput, type OutcomeInput } from "./fitEngine";
 import type { FitPreference } from "./sizing";
@@ -32,6 +33,8 @@ export async function computeRecommendation(
   userId: string,
   product: ProductWithSizes,
   overrideFit?: FitPreference,
+  /** The language the explanation is written in; the numbers do not depend on it. */
+  locale?: Locale,
 ): Promise<{
   result: EngineOutput;
   effectiveFit: FitPreference;
@@ -101,7 +104,7 @@ export async function computeRecommendation(
   };
 
   return {
-    result: recommend(engineInput),
+    result: recommend(engineInput, { locale }),
     effectiveFit,
     body: {
       chestCm: engineInput.profile.chestCm ?? null,

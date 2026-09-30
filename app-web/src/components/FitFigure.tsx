@@ -25,6 +25,7 @@
 // pointer-driven visual re-rendered React 60-120x/second in this codebase.
 
 import { useMemo, useState } from "react";
+import { useT } from "@/i18n/client";
 
 export type FigureSize = {
   label: string;
@@ -79,6 +80,7 @@ export function FitFigure({
   className?: string;
 }) {
   // Only sizes with a garment chest can be drawn — the rest have nothing to show.
+  const t = useT("fitFigure");
   const drawable = useMemo(() => sizes.filter((s) => s.chestCm != null), [sizes]);
   const initial = drawable.find((s) => s.label === bestLabel) ?? drawable[0];
   const [selected, setSelected] = useState<string | null>(initial?.label ?? null);
@@ -109,7 +111,7 @@ export function FitFigure({
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
           className="h-44 w-auto shrink-0"
           role="img"
-          aria-label={`${current.label}: garment chest ${garmentChest} cm against your ${bodyChest} cm, ${formatEase(ease)} of room`}
+          aria-label={t("aria", { label: current.label, garment: garmentChest, body: bodyChest, ease: formatEase(ease) })}
         >
           {/* garment outline — the thing being considered */}
           <path
@@ -149,23 +151,24 @@ export function FitFigure({
 
         <div className="min-w-0 flex-1">
           <p className="text-[11px] uppercase tracking-editorial text-ink-faint">
-            Room in the chest
+            {t("roomInChest")}
           </p>
           <p className="mt-0.5 font-serif text-3xl text-ink">{formatEase(ease)}</p>
           <p className="mt-1 text-xs text-ink-soft">
-            {current.label} measures <span className="font-medium text-ink">{garmentChest} cm</span> around
-            the chest. {body.estimated ? "Estimated body" : "Yours"} is{" "}
-            <span className="font-medium text-ink">{bodyChest} cm</span>.
+            {t.rich(
+              body.estimated ? "measuresEstimated" : "measures",
+              { b: (c) => <span className="font-medium text-ink">{c}</span> },
+              { label: current.label, garment: garmentChest, body: bodyChest },
+            )}
           </p>
           {shoulderEase != null && (
             <p className="mt-1 text-xs text-ink-soft">
-              Shoulders: {formatEase(shoulderEase)} ({current.shoulderCm} cm vs {body.shoulderCm} cm).
+              {t("shoulders", { ease: formatEase(shoulderEase), garment: current.shoulderCm ?? "", body: body.shoulderCm ?? "" })}
             </p>
           )}
           {body.estimated && (
             <p className="mt-1.5 text-[11px] text-amber-700">
-              Your body numbers are a regional estimate, so this drawing is too. Add your
-              measurements to make it real.
+              {t("estimatedNote")}
             </p>
           )}
         </div>
@@ -195,8 +198,7 @@ export function FitFigure({
             })}
           </div>
           <p className="mt-1.5 text-[11px] text-ink-faint">
-            Tap a size to compare. Drawn to scale — the outline is the garment, the solid
-            shape is you. Not a preview of how it will look.
+            {t("tapToCompare")}
           </p>
         </div>
       )}

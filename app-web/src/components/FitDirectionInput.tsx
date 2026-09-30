@@ -23,6 +23,8 @@
 // See docs/design/closet-signal-and-interaction-cost.md §4bis.
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useT } from "@/i18n/client";
+import type { DirectionKey } from "@/lib/engineText";
 import {
   DIRECTION_OPTIONS,
   DIRECTION_MIN,
@@ -90,6 +92,7 @@ export function FitDirectionInput({
 }) {
   const { mode, setMode } = useFitScale();
   const onModeChange = setMode;
+  const t = useT("fitScale");
   return (
     <div>
       {mode === "descriptive" ? (
@@ -103,7 +106,7 @@ export function FitDirectionInput({
           onClick={() => onModeChange(mode === "descriptive" ? "numeric" : "descriptive")}
           className="mt-2 text-[11px] text-ink-faint underline decoration-line underline-offset-2 hover:text-ink-soft"
         >
-          {mode === "descriptive" ? "Use a number instead" : "Use words instead"}
+          {mode === "descriptive" ? t("useNumber") : t("useWords")}
         </button>
       )}
     </div>
@@ -121,8 +124,12 @@ function DescriptiveScale({
   id?: string;
 }) {
   const active = nearestOption(value);
+  const t = useT("fitScale");
+  const tf = useT("fit");
+  const label = (key: string) => tf(`direction.${key as DirectionKey}.label`);
+  const hint = (key: string) => tf(`direction.${key as DirectionKey}.hint`);
   return (
-    <div role="radiogroup" aria-label="How this garment fits" id={id}>
+    <div role="radiogroup" aria-label={t("groupLabel")} id={id}>
       <div className="grid grid-cols-5 gap-1">
         {DIRECTION_OPTIONS.map((o) => {
           const on = o.key === active.key;
@@ -133,19 +140,19 @@ function DescriptiveScale({
               role="radio"
               aria-checked={on}
               onClick={() => onChange(o.value)}
-              title={o.hint}
+              title={hint(o.key)}
               className={`rounded-lg border px-1.5 py-2 text-[11px] leading-tight transition-colors ${
                 on
                   ? "border-ink bg-ink text-paper font-medium"
                   : "border-line bg-paper-soft text-ink-soft hover:bg-ink/5"
               }`}
             >
-              {o.label}
+              {label(o.key)}
             </button>
           );
         })}
       </div>
-      <p className="mt-1.5 text-[11px] text-ink-faint">{active.hint}</p>
+      <p className="mt-1.5 text-[11px] text-ink-faint">{hint(active.key)}</p>
     </div>
   );
 }
@@ -179,22 +186,24 @@ function NumericScale({
   }, []);
 
   const pct = ((clampDirection(value) - DIRECTION_MIN) / TRACK_STEPS) * 100;
-  const label = nearestOption(value).label;
+  const t = useT("fitScale");
+  const tf = useT("fit");
+  const label = tf(`direction.${nearestOption(value).key as DirectionKey}.label`);
 
   return (
     <div id={id}>
       <div className="flex items-baseline justify-between text-[11px] text-ink-faint">
-        <span>Too tight</span>
+        <span>{t("tooTight")}</span>
         <span className="font-mono text-ink-soft">
           {value > 0 ? `+${value}` : value}
         </span>
-        <span>Too loose</span>
+        <span>{t("tooLoose")}</span>
       </div>
       <div
         ref={trackRef}
         role="slider"
         tabIndex={0}
-        aria-label="How this garment fits, from -10 too tight to +10 too loose"
+        aria-label={t("sliderLabel")}
         aria-valuemin={DIRECTION_MIN}
         aria-valuemax={DIRECTION_MAX}
         aria-valuenow={clampDirection(value)}
@@ -233,7 +242,7 @@ function NumericScale({
         />
       </div>
       <p className="mt-1.5 text-[11px] text-ink-faint">
-        Tap the line, or use the arrow keys. <span className="text-ink-soft">0 = just right.</span>
+        {t.rich("sliderHelp", { em: (c) => <span className="text-ink-soft">{c}</span> })}
       </p>
     </div>
   );

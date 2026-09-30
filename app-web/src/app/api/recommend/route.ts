@@ -12,6 +12,7 @@
 // just shown beside the "sizes estimated" warning.
 
 import { NextResponse } from "next/server";
+import { localeFromRequest } from "@/i18n/request";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
@@ -39,7 +40,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "product not found" }, { status: 404 });
   }
 
-  const computed = await computeRecommendation(user.id, product, preferredFit);
+  const computed = await computeRecommendation(user.id, product, preferredFit, localeFromRequest(req));
   // Where this product's sizes came from, as recorded when it was checked.
   const source = sourceFromRawJson(product.rawJson);
   const result = applyProvenanceCap(computed.result, source?.sizesFrom);

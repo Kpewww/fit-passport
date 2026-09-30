@@ -20,6 +20,8 @@
 // `lib/checkPolicy.ts`, so /api/recommend applies the same ones.
 
 import { NextResponse } from "next/server";
+import { localeFromRequest } from "@/i18n/request";
+import { engineText } from "@/lib/engineText";
 import { z } from "zod";
 import { normalizeUrl } from "@/lib/normalizeUrl";
 import { prisma } from "@/lib/db";
@@ -28,7 +30,6 @@ import { extractSmart } from "@/lib/extractorLLM";
 import { computeRecommendation } from "@/lib/recommendService";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import {
-  NOT_CONNECTED_MESSAGE,
   applyProvenanceCap,
   isExtensionRequest,
   refusalFor,
@@ -92,12 +93,17 @@ const Body = z.object({
 });
 
 export async function POST(req: Request) {
+  // The language the answer is written in — the extension's own switch first
+  // (x-fp-lang), then the site's. Words only: every number is the same.
+  const locale = localeFromRequest(req);
+  const M = engineText(locale);
+
   // Decide on the session BEFORE anything can create one: `getCurrentUser()`
   // mints an anonymous account for a request without a cookie, which for the
   // extension would mean a silent check against an empty profile.
   const session = readSession();
   if (sessionGate(isExtensionRequest(req.headers), session != null) === "not-connected") {
-    return NextResponse.json({ error: "not-connected", message: NOT_CONNECTED_MESSAGE }, { status: 401 });
+    return NextResponse.json({ error: "not-connected", message: M.notConnected }, { status: 401 });
   }
 
   const byIp = await rateLimit(clientKey(req, "check"), PER_IP.limit, PER_IP.windowMs);
@@ -119,7 +125,7 @@ export async function POST(req: Request) {
   // Not clothing, a page we never saw, a category we cannot measure anyone
   // against, or an invented ladder on a page the browser handed us: say so, and
   // write no Product row. See checkPolicy.ts for each rule and the case behind it.
-  const refusal = refusalFor(extracted);
+  const refusal = refusalFor(extracted, M);
   if (refusal) {
     return NextResponse.json({ ...refusal, source: extracted.source }, { status: 422 });
   }
@@ -158,7 +164,7 @@ export async function POST(req: Request) {
     include: { sizeOptions: true },
   });
 
-  const computed = await computeRecommendation(user.id, product);
+  const computed = await computeRecommendation(user.id, product, undefined, locale);
   const { effectiveFit, body } = computed;
 
   // Honesty gate: the engine is pure and never learns where the chart came from,

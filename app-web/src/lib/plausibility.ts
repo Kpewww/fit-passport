@@ -13,6 +13,7 @@
 // odd together, so the wearer can fix a typo.
 
 import { PLAUSIBILITY } from "./scoringConstants";
+import { EN_TEXT, type EngineText } from "./engineText";
 
 export type BodyForPlausibility = {
   chestCm?: number | null;
@@ -21,18 +22,18 @@ export type BodyForPlausibility = {
 };
 
 /** Plain-language issues; empty when nothing looks wrong. */
-export function bodyPlausibility(b: BodyForPlausibility): string[] {
+export function bodyPlausibility(b: BodyForPlausibility, M: EngineText = EN_TEXT): string[] {
   const issues: string[] = [];
   const { chestCm: c, waistCm: w, shoulderCm: s } = b;
   if (c != null && w != null) {
     if (w - c > PLAUSIBILITY.waistOverChestCm || c - w > PLAUSIBILITY.chestOverWaistCm) {
-      issues.push(`chest ${c} cm with waist ${w} cm`);
+      issues.push(M.implausibleChestWaist(c, w));
     }
   }
   if (c != null && s != null) {
     const share = s / c;
     if (share < PLAUSIBILITY.shoulderShareMin || share > PLAUSIBILITY.shoulderShareMax) {
-      issues.push(`shoulder ${s} cm with chest ${c} cm`);
+      issues.push(M.implausibleShoulderChest(s, c));
     }
   }
   return issues;

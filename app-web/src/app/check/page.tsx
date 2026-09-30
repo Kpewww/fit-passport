@@ -18,6 +18,7 @@ import { FitFigure } from "@/components/FitFigure";
 import { SafeBoundary } from "@/components/SafeBoundary";
 import { CONFIDENCE_WEIGHTS } from "@/lib/confidenceWeights";
 import { chestEaseCm } from "@/lib/bodyMesh";
+import { useT } from "@/i18n/client";
 
 // three.js only loads if someone opens the 3D view. Boundaried because a failed
 // chunk silently blanks its subtree rather than throwing.
@@ -122,12 +123,7 @@ type CheckResponse = {
 type Status = { hasBody: boolean; hasChest: boolean; closetCount: number; accuracy: "low" | "medium" | "high"; claimed?: boolean };
 
 type FitPref = "slim" | "regular" | "relaxed" | "oversized";
-const FIT_LABELS: Record<FitPref, string> = {
-  slim: "Slim",
-  regular: "Regular",
-  relaxed: "Relaxed",
-  oversized: "Oversized",
-};
+const FIT_PREFS: FitPref[] = ["slim", "regular", "relaxed", "oversized"];
 
 const DEMO_URLS = [
   { label: "Uniqlo AIRism T-Shirt", url: "https://www.uniqlo.com/us/en/products/airism-cotton-t-shirt" },
@@ -137,6 +133,7 @@ const DEMO_URLS = [
 ];
 
 function CheckInner() {
+  const t = useT("check");
   const params = useSearchParams();
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -172,17 +169,17 @@ function CheckInner() {
         throw new Error(
           typeof j.message === "string" ? j.message
             : typeof j.error === "string" ? j.error
-            : "check failed",
+            : t("checkFailed"),
         );
       }
       setData(j);
       setFit(j.effectiveFit as FitPref);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : "check failed");
+      setErr(e instanceof Error ? e.message : t("checkFailed"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   // Reopen a check that was already run — the browser extension's "Open full
   // explanation" lands here. It cannot re-run the check from the URL: the whole
@@ -202,20 +199,18 @@ function CheckInner() {
       const j = await r.json();
       if (!r.ok || !j.product || !j.result) {
         throw new Error(
-          r.status === 404
-            ? "We couldn't find that check. It belongs to the Fit Passport session in the browser that ran it."
-            : "We couldn't reopen that check.",
+          r.status === 404 ? t("notFound") : t("reopenFailed"),
         );
       }
       setData({ product: j.product, source: j.source ?? {}, result: j.result, body: j.body, effectiveFit: j.effectiveFit });
       setUrl(j.product.url ?? "");
       setFit(j.effectiveFit as FitPref);
     } catch (e: unknown) {
-      setErr(e instanceof Error ? e.message : "We couldn't reopen that check.");
+      setErr(e instanceof Error ? e.message : t("reopenFailed"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     const stored = params.get("product");
@@ -251,6 +246,8 @@ function CheckInner() {
     [data],
   );
 
+  const tc = useT("common");
+
   function submit(e: React.FormEvent) {
     e.preventDefault();
     if (url) runCheck(url);
@@ -261,22 +258,17 @@ function CheckInner() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         {/* Centered hero — mirrors the homepage composition. */}
         <div className="text-center">
-          <p className="eyebrow text-ink-faint">Size check</p>
-          <h1 className="mx-auto mt-4 max-w-3xl font-serif text-display text-ink [text-wrap:balance]">What size should I buy?</h1>
-          <p className="mx-auto mt-5 max-w-lg text-ink-soft">
-            Paste a product URL. We&apos;ll read the page, extract its sizing, and recommend a
-            size — with the reasons, so you can see exactly what it&apos;s based on.
-          </p>
+          <p className="eyebrow text-ink-faint">{t("eyebrow")}</p>
+          <h1 className="mx-auto mt-4 max-w-3xl font-serif text-display text-ink [text-wrap:balance]">{t("title")}</h1>
+          <p className="mx-auto mt-5 max-w-lg text-ink-soft">{t("lede")}</p>
           {/* Said once, plainly: many large retailers refuse our servers (measured,
               Sessions 70–75d), so a link that fails here is usually not the
               shopper's mistake. */}
           <p className="mx-auto mt-2 max-w-lg text-xs text-ink-faint">
-            <span className="mr-1.5 rounded-full border border-line px-1.5 py-px text-[10px] uppercase tracking-wider">Beta</span>
-            Links work on some stores; many large ones block our servers.{" "}
-            <Link href="/extension" className="underline underline-offset-2 hover:text-ink">
-              The browser extension
-            </Link>{" "}
-            reads the page in your own browser instead.
+            <span className="mr-1.5 rounded-full border border-line px-1.5 py-px text-[10px] uppercase tracking-wider">{tc("beta")}</span>
+            {t.rich("betaNote", {
+              link: (c) => <Link href="/extension" className="underline underline-offset-2 hover:text-ink">{c}</Link>,
+            })}
           </p>
 
           {/* Same pill field family as the homepage hero, in the light palette. */}
@@ -288,7 +280,8 @@ function CheckInner() {
               type="text"
               inputMode="url"
               required
-              placeholder="Paste a product URL…"
+              placeholder={t("placeholder")}
+              aria-label={t("placeholder")}
               value={url}
               onChange={(e) => setUrl(e.target.value)}
               /* min-w-0 — see the note on the homepage form; same trap. */
@@ -299,12 +292,12 @@ function CheckInner() {
               disabled={loading}
               className="flex min-h-[44px] flex-shrink-0 items-center gap-2 rounded-full bg-ink px-4 text-sm font-medium text-paper transition-colors hover:bg-black disabled:opacity-50 sm:min-h-0 sm:px-5 sm:py-2.5"
             >
-              {loading ? "Reading…" : <>Get my size <ArrowRight size={16} /></>}
+              {loading ? t("reading") : <>{t("submit")} <ArrowRight size={16} /></>}
             </button>
           </form>
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
-            <span className="text-ink-faint">Try:</span>
+            <span className="text-ink-faint">{t("try")}</span>
             {DEMO_URLS.map((d) => (
               <button
                 key={d.url}
@@ -356,13 +349,14 @@ function CheckInner() {
 // A live size converter: pick a garment kind, type the size you normally wear,
 // and every regional equivalent updates as you type. Pure client-side maths from
 // lib/sizeConvert — no request, no waiting.
-const CONV_KINDS: Array<{ label: string; domain: SizeDomain }> = [
-  { label: "Tops", domain: "top" },
-  { label: "Bottoms", domain: "bottom" },
-  { label: "Shoes", domain: "shoe" },
+const CONV_KINDS: Array<{ label: "tops" | "bottoms" | "shoes"; domain: SizeDomain }> = [
+  { label: "tops", domain: "top" },
+  { label: "bottoms", domain: "bottom" },
+  { label: "shoes", domain: "shoe" },
 ];
 
 function LiveConverter() {
+  const t = useT("check");
   const [domain, setDomain] = useState<SizeDomain>("top");
   const [raw, setRaw] = useState("M");
   const [scaleId, setScaleId] = useState<string | null>(null);
@@ -382,12 +376,12 @@ function LiveConverter() {
     <div className="mt-12 rounded-2xl bg-white p-6 ring-1 ring-line sm:p-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="eyebrow text-ink-faint">Size converter</p>
-          <h2 className="mt-1.5 font-serif text-2xl text-ink">Know your size in every system</h2>
+          <p className="eyebrow text-ink-faint">{t("converter.eyebrow")}</p>
+          <h2 className="mt-1.5 font-serif text-2xl text-ink">{t("converter.title")}</h2>
         </div>
         <Segmented
-          label="Garment kind"
-          options={CONV_KINDS.map((k) => ({ value: k.domain, label: k.label }))}
+          label={t("converter.kindLabel")}
+          options={CONV_KINDS.map((k) => ({ value: k.domain, label: t(`converter.${k.label}`) }))}
           value={domain}
           onChange={pickDomain}
         />
@@ -395,7 +389,7 @@ function LiveConverter() {
 
       <div className="mt-5 flex flex-wrap items-end gap-3">
         <label className="text-sm">
-          <span className="mb-1.5 block font-medium text-ink">Size you wear</span>
+          <span className="mb-1.5 block font-medium text-ink">{t("converter.youWear")}</span>
           <input
             value={raw}
             onChange={(e) => setRaw(e.target.value)}
@@ -404,13 +398,13 @@ function LiveConverter() {
           />
         </label>
         <label className="text-sm">
-          <span className="mb-1.5 block font-medium text-ink">In system</span>
+          <span className="mb-1.5 block font-medium text-ink">{t("converter.inSystem")}</span>
           <select
             value={from ?? ""}
             onChange={(e) => setScaleId(e.target.value || null)}
             className={inputClass + " w-44"}
           >
-            <option value="">Auto-detect</option>
+            <option value="">{t("converter.auto")}</option>
             {scales.map((s) => (
               <option key={s.id} value={s.id}>{s.label}</option>
             ))}
@@ -435,10 +429,7 @@ function LiveConverter() {
         })}
       </div>
 
-      <p className="mt-4 text-[11px] text-ink-faint">
-        Indicative conversions only — brands differ. Paste a product link above for a
-        recommendation that also weighs your body and the clothes you already own.
-      </p>
+      <p className="mt-4 text-[11px] text-ink-faint">{t("converter.note")}</p>
     </div>
   );
 }
@@ -467,7 +458,8 @@ function SignalGuide({
   // top-2 margin, signal agreement, and two hard caps), every one of which can
   // only SHRINK it. A flat "+35" would have been an overclaim, and a test caught
   // it — a bare floor case measures 0.18, not the 0.30 the constant alone implies.
-  const pts = (w: number) => `up to +${Math.round(w * 100)} points`;
+  const t = useT("check");
+  const pts = (w: number) => t("guide.upTo", { n: Math.round(w * 100) });
 
   const steps = [
     {
@@ -475,29 +467,28 @@ function SignalGuide({
       // awarded for a chest (computeConfidence), so ticking this for someone who
       // entered a waist would quietly withdraw an offer that is still open.
       done: status.hasChest,
-      label: status.hasBody ? "Add your chest measurement" : "Add your measurements",
-      why: `Lets us compare you to the product's actual size chart — worth ${pts(
-        CONFIDENCE_WEIGHTS.measurements,
-      )} of confidence when the chart states a chest.`,
+      key: "chest",
+      label: status.hasBody ? t("guide.chestLabelMore") : t("guide.chestLabelAll"),
+      why: t("guide.chestWhy", { pts: pts(CONFIDENCE_WEIGHTS.measurements) }),
       href: "/onboarding",
-      cta: status.hasBody ? "Add chest" : "Add measurements",
+      cta: status.hasBody ? t("guide.chestCtaMore") : t("guide.chestCtaAll"),
     },
     {
       done: status.closetCount >= 3,
-      label: "Add 3 clothes that fit you well",
-      why: `The strongest signal there is — we learn how each brand runs on you. One garment of the same type is worth ${pts(
-        CONFIDENCE_WEIGHTS.closetAnchor,
-      )}.`,
+      key: "closet",
+      label: t("guide.closetLabel"),
+      why: t("guide.closetWhy", { pts: pts(CONFIDENCE_WEIGHTS.closetAnchor) }),
       href: "/closet",
-      cta: "Add to closet",
-      progress: status.closetCount > 0 ? `${status.closetCount}/3 added` : undefined,
+      cta: t("guide.closetCta"),
+      progress: status.closetCount > 0 ? t("guide.closetProgress", { n: status.closetCount }) : undefined,
     },
     {
       done: !!status.claimed,
-      label: "Create an account",
-      why: "Keeps your profile, badges and closet — and lets you share a passport.",
+      key: "account",
+      label: t("guide.accountLabel"),
+      why: t("guide.accountWhy"),
       href: "/account",
-      cta: "Claim account",
+      cta: t("guide.accountCta"),
     },
   ];
   const remaining = steps.filter((s) => !s.done);
@@ -508,10 +499,10 @@ function SignalGuide({
       <div className="border-b border-line bg-paper-soft px-6 py-4">
         <p className="eyebrow text-ink-faint">
           {undetermined
-            ? "Why there's no answer yet"
+            ? t("guide.eyebrowUndetermined")
             : hasResult
-              ? "How to sharpen this recommendation"
-              : "Before you paste a link"}
+              ? t("guide.eyebrowResult")
+              : t("guide.eyebrowBefore")}
         </p>
         {/* The invitation is grounded in the answer just given. Generic copy here
             would waste the one moment the person can actually SEE what the missing
@@ -519,26 +510,27 @@ function SignalGuide({
             check run on an empty profile. */}
         <h3 className="mt-2 font-serif text-2xl leading-tight text-ink">
           {undetermined
-            ? "Every size scored the same."
+            ? t("guide.titleUndetermined")
             : confidence != null
-              ? `That answer is ${Math.round(confidence * 100)}% confident.`
+              ? t("guide.titleConfidence", { pct: Math.round(confidence * 100) })
               : status.closetCount === 0 && !status.hasBody
-                ? "Right now we'd be guessing."
-                : "Good start — here's what's still missing."}
+                ? t("guide.titleGuessing")
+                : t("guide.titleMissing")}
         </h3>
         <p className="mt-2 max-w-xl text-sm text-ink-soft">
           {undetermined
-            ? "That isn't a low score, it's a tie — we had nothing about you to break it with. Either of the first two below turns this into a real recommendation."
+            ? t("guide.bodyUndetermined")
             : confidence != null
-              ? "Confidence is arithmetic here, not a feeling: it starts at 30 and rises with each piece of evidence we actually have. Here's what's still on the table."
+              // The floor from the engine's own constant, so the sentence cannot drift from it.
+              ? t("guide.bodyConfidence", { floor: Math.round(CONFIDENCE_WEIGHTS.floor * 100) })
               : status.closetCount === 0 && !status.hasBody
-                ? "We can read any product page, but with nothing about you we can only fall back on the brand's own chart. Two minutes of setup changes the answer completely."
-                : "Each of these makes the engine measurably more confident — and every recommendation still shows its reasoning."}
+                ? t("guide.bodyGuessing")
+                : t("guide.bodyMissing")}
         </p>
       </div>
       <ul className="divide-y divide-line">
         {steps.map((s) => (
-          <li key={s.label} className="flex items-center gap-4 px-6 py-4">
+          <li key={s.key} className="flex items-center gap-4 px-6 py-4">
             <span
               className={`flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold ${
                 s.done ? "bg-ok text-white" : "bg-paper-dim text-ink-faint"
@@ -594,6 +586,8 @@ function Result({
   onFit: (f: FitPref) => void;
   reranking: boolean;
 }) {
+  const t = useT("check");
+  const tf = useT("fit");
   const { product, source, result, body } = data;
   // The first two lines of the engine's explanation are the reasons; the rest is
   // the working, one tap away. Showing all of it at once buried the answer.
@@ -613,7 +607,7 @@ function Result({
         <div className="flex items-start gap-3 rounded-2xl bg-warn-tint px-5 py-4 text-sm">
           <Warning size={20} className="mt-px flex-shrink-0 text-warn" />
           <div>
-            <p className="font-medium text-warn">Low-confidence recommendation</p>
+            <p className="font-medium text-warn">{t("result.lowConfidence")}</p>
             <p className="mt-0.5 text-ink-soft">{result.domainNote}</p>
           </div>
         </div>
@@ -627,7 +621,7 @@ function Result({
         <div className="flex items-start gap-3 rounded-2xl bg-paper-soft px-5 py-4 text-sm ring-1 ring-line">
           <Scales size={20} className="mt-px flex-shrink-0 text-ink-faint" />
           <div>
-            <p className="font-medium text-ink">Why confidence is lower here</p>
+            <p className="font-medium text-ink">{t("result.whyLower")}</p>
             <p className="mt-0.5 text-ink-soft">{result.conflictNote}</p>
           </div>
         </div>
@@ -649,14 +643,14 @@ function Result({
               exact failure this product exists to avoid. */}
           {result.undetermined ? (
             <div className="mt-6">
-              <p className="eyebrow text-ink-faint">No recommendation</p>
-              <p className="mt-2 font-serif text-h2 text-ink">All {result.ranked.length} sizes scored the same.</p>
-              <p className="mt-2 text-sm text-ink-soft">Here&apos;s what would break the tie.</p>
+              <p className="eyebrow text-ink-faint">{t("result.noRecommendation")}</p>
+              <p className="mt-2 font-serif text-h2 text-ink">{t("result.allSame", { n: result.ranked.length })}</p>
+              <p className="mt-2 text-sm text-ink-soft">{t("result.breakTie")}</p>
             </div>
           ) : (
             <div className="mt-6 flex items-end justify-between gap-6">
               <div className="min-w-0">
-                <p className="eyebrow text-brand">Recommended size</p>
+                <p className="eyebrow text-brand">{t("result.recommended")}</p>
                 <p className={`mt-2 font-serif text-display text-ink transition-opacity duration-200 ${reranking ? "opacity-40" : ""}`}>
                   {result.best.label}
                 </p>
@@ -669,23 +663,23 @@ function Result({
                     answer; the fragile case adds its own sentence in conflictNote. */}
                 {result.stability?.holdsForChestCm && (
                   <p className="mt-2 text-sm text-ink-soft">
-                    Holds for a chest of {result.stability.holdsForChestCm[0]}–{result.stability.holdsForChestCm[1]} cm
+                    {t("result.holds", { lo: result.stability.holdsForChestCm[0], hi: result.stability.holdsForChestCm[1] })}
                   </p>
                 )}
               </div>
               <div className="flex flex-shrink-0 flex-col items-center">
                 <ConfidenceRing value={result.best.confidence} size={84} />
-                <p className="mt-1.5 text-xs text-ink-faint">confidence</p>
+                <p className="mt-1.5 text-xs text-ink-faint">{t("result.confidence")}</p>
               </div>
             </div>
           )}
 
           {/* Fit preference — default from the profile; preview others live. */}
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="text-xs text-ink-faint">Preview as</span>
+            <span className="text-xs text-ink-faint">{t("result.previewAs")}</span>
             <Segmented
-              label="Fit preference"
-              options={(Object.keys(FIT_LABELS) as FitPref[]).map((f) => ({ value: f, label: FIT_LABELS[f] }))}
+              label={t("result.fitPrefLabel")}
+              options={FIT_PREFS.map((f) => ({ value: f, label: tf(`pref.${f}`) }))}
               value={fit}
               onChange={(f) => { if (!reranking) onFit(f); }}
             />
@@ -706,7 +700,7 @@ function Result({
             <details className="group mt-3">
               <summary className="inline-flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-ink-soft hover:text-ink">
                 <CaretDown size={14} className="transition-transform group-open:rotate-180" />
-                The full working
+                {t("result.fullWorking")}
               </summary>
               <div className="mt-2 space-y-1 text-ink-soft">
                 {more.map((line, i) => <p key={i}>{line}</p>)}
@@ -721,8 +715,8 @@ function Result({
         </div>
 
         <div className="flex flex-col gap-3 border-t border-line px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
-          <p className="text-xs text-ink-faint">Recording how it fit makes the next recommendation smarter.</p>
-          <LinkButton href="/history" variant="secondary" size="sm" icon={<Check size={16} />}>I bought it — record the fit</LinkButton>
+          <p className="text-xs text-ink-faint">{t("result.recordNote")}</p>
+          <LinkButton href="/history" variant="secondary" size="sm" icon={<Check size={16} />}>{t("result.recordCta")}</LinkButton>
         </div>
       </div>
 
@@ -734,10 +728,8 @@ function Result({
           rendered this card with a heading and nothing under it. */}
       {body?.chestCm != null && product.sizeOptions.some((o) => o.chestCm != null) && (
         <Card>
-          <h3 className="text-h3 font-semibold text-ink">What the numbers look like</h3>
-          <p className="mb-4 mt-0.5 text-xs text-ink-faint">
-            The room each size leaves you through the chest.
-          </p>
+          <h3 className="text-h3 font-semibold text-ink">{t("result.figureTitle")}</h3>
+          <p className="mb-4 mt-0.5 text-xs text-ink-faint">{t("result.figureSub")}</p>
           <FitFigure
             body={body}
             bestLabel={result.best.label}
@@ -753,8 +745,8 @@ function Result({
 
       {/* Ranked sizes — interactive */}
       <Card>
-        <h3 className="text-h3 font-semibold text-ink">Every size, ranked</h3>
-        <p className="mb-4 mt-0.5 text-xs text-ink-faint">Tap a size to see what its score is based on.</p>
+        <h3 className="text-h3 font-semibold text-ink">{t("result.rankedTitle")}</h3>
+        <p className="mb-4 mt-0.5 text-xs text-ink-faint">{t("result.rankedSub")}</p>
         <div className={`space-y-2 transition-opacity duration-200 ${reranking ? "opacity-40" : ""}`}>
           {result.ranked.map((s, idx) => (
             <SizeRow
@@ -780,10 +772,12 @@ function Result({
  * the rules are unchanged from the pills they replaced.
  */
 function SourceRow({ product, source }: { product: Product; source: Source }) {
+  const t = useT("check");
   const reader =
-    source.extractedBy === "llm-text" ? "read by AI from the page's text"
-      : source.extractedBy === "llm-vision" ? "read by AI from a chart image"
+    source.extractedBy === "llm-text" ? t("source.sizesAiText")
+      : source.extractedBy === "llm-vision" ? t("source.sizesAiImage")
       : null;
+  const host = source.host || t("source.thePage");
   return (
     <div className="space-y-2 text-xs text-ink-soft">
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
@@ -792,31 +786,31 @@ function SourceRow({ product, source }: { product: Product; source: Source }) {
             page from the user's own browser, which is how we reach retailers
             our server is refused by. */}
         {source.sizesFrom === "brand-chart" ? (
-          <span className="inline-flex items-center gap-1.5"><LinkIcon size={16} className="text-ink-faint" />Identified from the link</span>
+          <span className="inline-flex items-center gap-1.5"><LinkIcon size={16} className="text-ink-faint" />{t("source.identified")}</span>
         ) : source.fetch === "extension" ? (
-          <span className="inline-flex items-center gap-1.5"><BrowserIcon size={16} className="text-ink-faint" />Read in your browser from {source.host || "the page"}</span>
+          <span className="inline-flex items-center gap-1.5"><BrowserIcon size={16} className="text-ink-faint" />{t("source.readInBrowser", { host })}</span>
         ) : (
-          <span className="inline-flex items-center gap-1.5"><Globe size={16} className="text-ink-faint" />Read from {source.host || "the page"}</span>
+          <span className="inline-flex items-center gap-1.5"><Globe size={16} className="text-ink-faint" />{t("source.readFrom", { host })}</span>
         )}
         {/* Where the SIZE CHART came from — three cases, three amounts of trust. */}
         {source.sizesFrom === "brand-chart" ? (
           <span
             className="inline-flex items-center gap-1.5"
-            title="These are the brand's own published size-guide measurements, not this product page's. We couldn't read the page itself, so we can't confirm which sizes this item comes in or whether it's a slim or relaxed cut."
+            title={t("source.brandGuideTitle")}
           >
-            <Ruler size={16} className="text-ink-faint" />{product.brand}&rsquo;s published size guide
+            <Ruler size={16} className="text-ink-faint" />{t("source.brandGuide", { brand: product.brand ?? "" })}
           </span>
         ) : source.sizesFrom === "estimated" ? (
           <span
             className="inline-flex items-center gap-1.5 font-medium text-warn"
-            title="We couldn't find a real size chart on the page, so these measurements are estimated from the brand and category. Check them against the retailer's chart, or add the real numbers."
+            title={t("source.estimatedTitle")}
           >
-            <Warning size={16} />Sizes estimated — confirm the chart
+            <Warning size={16} />{t("source.estimated")}
           </span>
         ) : (
           <span className="inline-flex items-center gap-1.5">
             {reader ? <Robot size={16} className="text-ink-faint" /> : <Ruler size={16} className="text-ink-faint" />}
-            Sizes {reader ?? "read from the page"}
+            {reader ?? t("source.sizesRead")}
           </span>
         )}
       </div>
@@ -824,27 +818,25 @@ function SourceRow({ product, source }: { product: Product; source: Source }) {
           numbers came from, and date it, because a size guide goes stale. */}
       {source.sizesFrom === "brand-chart" && source.chart ? (
         <p className="text-ink-faint">
-          {source.measurementKind === "body"
-            ? "Body measurements — the chest each size is cut to fit, as the brand states them."
-            : "The garment's flat measurements, as the brand states them."}{" "}
+          {source.measurementKind === "body" ? t("source.brandBody") : t("source.brandGarment")}{" "}
           <a href={source.chart.sourceUrl} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">
-            Check the brand&rsquo;s size guide
+            {t("source.checkGuide")}
           </a>{" "}
-          · read {source.chart.capturedAt}
+          {t("source.readOn", { date: source.chart.capturedAt })}
         </p>
       ) : null}
       <details className="group">
         <summary className="inline-flex cursor-pointer list-none items-center gap-1 font-medium text-ink-soft hover:text-ink">
           <CaretDown size={14} className="transition-transform group-open:rotate-180" />
-          Product details
+          {t("source.productDetails")}
         </summary>
         <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
-          <Detail label="Retailer" value={product.retailer} />
-          <Detail label="Brand" value={product.brand} />
-          <Detail label="Category" value={product.category} />
-          <Detail label="Material" value={product.material} />
-          <Detail label="Sizes found" value={`${product.sizeOptions.length} options`} />
-          <Detail label="Fit note" value={product.fitNotes} />
+          <Detail label={t("source.retailer")} value={product.retailer} />
+          <Detail label={t("source.brand")} value={product.brand} />
+          <Detail label={t("source.category")} value={product.category} />
+          <Detail label={t("source.material")} value={product.material} />
+          <Detail label={t("source.sizesFound")} value={t("source.sizesFoundValue", { n: product.sizeOptions.length })} />
+          <Detail label={t("source.fitNote")} value={product.fitNotes} />
         </dl>
         <a href={product.url} target="_blank" rel="noopener noreferrer" title={product.url}
           className="mt-3 inline-flex max-w-full items-center gap-1 truncate text-brand hover:underline">
@@ -875,21 +867,22 @@ function Detail({ label, value }: { label: string; value: string | null }) {
  * than picking the likelier answer and presenting it as fact.
  */
 function measurementLabel(
+  t: ReturnType<typeof useT<"check">>,
   sizesFrom: Source["sizesFrom"],
   kind: Source["measurementKind"],
   extractedBy?: Source["extractedBy"],
 ): string {
-  if (sizesFrom === "estimated") return "Measurements estimated — not from the page";
-  const where = sizesFrom === "brand-chart" ? "the brand's size guide" : "the page";
+  if (sizesFrom === "estimated") return t("measure.estimated");
+  const where = sizesFrom === "brand-chart" ? t("measure.whereBrand") : t("measure.wherePage");
   // A model reading prose or an image is a weaker claim than a parsed table, and
   // the reader deserves to know which one produced the numbers.
   const reader =
-    extractedBy === "llm-text" ? " (read by AI from its text)"
-      : extractedBy === "llm-vision" ? " (read by AI from a chart image)"
+    extractedBy === "llm-text" ? t("measure.readerText")
+      : extractedBy === "llm-vision" ? t("measure.readerImage")
       : "";
-  if (kind === "body") return `Body measurements from ${where}${reader}`;
-  if (kind === "garment") return `Garment measurements from ${where}${reader}`;
-  return `Measurements from ${where}${reader} — it didn't say body or flat`;
+  if (kind === "body") return t("measure.body", { where, reader });
+  if (kind === "garment") return t("measure.garment", { where, reader });
+  return t("measure.unknown", { where, reader });
 }
 
 function SizeRow({
@@ -911,6 +904,9 @@ function SizeRow({
   extractedBy?: Source["extractedBy"];
 }) {
   const [open, setOpen] = useState(isBest);
+  const t = useT("check");
+  const tf = useT("fit");
+  const chips = measurementChips(t, option);
   return (
     <div
       className={`overflow-hidden rounded-xl border transition-colors ${
@@ -928,12 +924,12 @@ function SizeRow({
           )}
           {isBest && (
             <span className="rounded-full bg-ink px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-paper">
-              pick
+              {t("row.pick")}
             </span>
           )}
           {score.verdict && (
             <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${VERDICT_STYLE[score.verdict] ?? "bg-paper-dim text-ink-faint"}`}>
-              {score.verdict}
+              {tf(`verdict.${score.verdict}`)}
             </span>
           )}
         </div>
@@ -948,7 +944,7 @@ function SizeRow({
           {/* Reasons */}
           <div>
             <p className="mb-1 text-[11px] uppercase tracking-widest text-ink-faint">
-              What this is based on
+              {t("row.basedOn")}
             </p>
             {score.reasons.length > 0 ? (
               <ul className="space-y-1.5">
@@ -961,7 +957,7 @@ function SizeRow({
                     />
                     <span className="text-ink-soft">
                       <span className="mr-1.5 rounded bg-paper-dim px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-ink-faint">
-                        {r.signal}
+                        {tf(`signal.${r.signal as "measurement-fit"}`)}
                       </span>
                       {r.message}
                       <span className={`ml-1.5 text-xs tabular-nums ${r.weight < 0 ? "text-bad" : "text-ok"}`}>
@@ -973,7 +969,7 @@ function SizeRow({
               </ul>
             ) : (
               <p className="text-ink-faint">
-                No qualifying signal for this size — its score reflects the missing-data floor.
+                {t("row.noSignal")}
               </p>
             )}
           </div>
@@ -985,17 +981,17 @@ function SizeRow({
           {option && (
             <div>
               <p className="mb-1 text-[11px] uppercase tracking-widest text-ink-faint">
-                {measurementLabel(sizesFrom, measurementKind, extractedBy)}
+                {measurementLabel(t, sizesFrom, measurementKind, extractedBy)}
               </p>
               <div className="flex flex-wrap gap-1.5">
-                {measurementChips(option).length > 0 ? (
-                  measurementChips(option).map((m) => (
+                {chips.length > 0 ? (
+                  chips.map((m) => (
                     <span key={m} className="rounded-lg bg-paper-dim px-2 py-0.5 text-xs tabular-nums text-ink-soft">
                       {m}
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-ink-faint">Only a size label was published.</span>
+                  <span className="text-xs text-ink-faint">{t("row.onlyLabel")}</span>
                 )}
               </div>
             </div>
@@ -1003,8 +999,8 @@ function SizeRow({
 
           {/* Score + confidence footer */}
           <div className="flex gap-6 border-t border-line pt-2 text-xs text-ink-faint">
-            <span>match score <b className="text-ink">{Math.round(score.score * 100)}</b>/100</span>
-            <span>confidence <b className="text-ink">{Math.round(score.confidence * 100)}%</b></span>
+            <span>{t.rich("row.matchScore", { b: (c) => <b className="text-ink">{c}</b> }, { n: Math.round(score.score * 100) })}</span>
+            <span>{t.rich("row.confidence", { b: (c) => <b className="text-ink">{c}</b> }, { pct: Math.round(score.confidence * 100) })}</span>
           </div>
         </div>
       )}
@@ -1012,19 +1008,20 @@ function SizeRow({
   );
 }
 
-function measurementChips(o: SizeOption): string[] {
+function measurementChips(t: ReturnType<typeof useT<"check">>, o?: SizeOption): string[] {
+  if (!o) return [];
   const chips: string[] = [];
-  if (o.chestCm != null) chips.push(`chest ${o.chestCm}cm`);
-  if (o.shoulderCm != null) chips.push(`shoulder ${o.shoulderCm}cm`);
-  if (o.sleeveCm != null) chips.push(`sleeve ${o.sleeveCm}cm`);
-  if (o.lengthCm != null) chips.push(`length ${o.lengthCm}cm`);
+  if (o.chestCm != null) chips.push(t("measure.chest", { n: o.chestCm }));
+  if (o.shoulderCm != null) chips.push(t("measure.shoulder", { n: o.shoulderCm }));
+  if (o.sleeveCm != null) chips.push(t("measure.sleeve", { n: o.sleeveCm }));
+  if (o.lengthCm != null) chips.push(t("measure.length", { n: o.lengthCm }));
   if (o.bodyChestMinCm != null && o.bodyChestMaxCm != null)
-    chips.push(`fits body chest ${o.bodyChestMinCm}–${o.bodyChestMaxCm}cm`);
+    chips.push(t("measure.bodyChest", { lo: o.bodyChestMinCm, hi: o.bodyChestMaxCm }));
   // Waist is scored now (Session 78), so it has to be shown: a number the engine
   // weighed that the screen never mentions is the Session 69 failure again.
-  if (o.waistCm != null) chips.push(`waist ${o.waistCm}cm`);
+  if (o.waistCm != null) chips.push(t("measure.waist", { n: o.waistCm }));
   if (o.bodyWaistMinCm != null && o.bodyWaistMaxCm != null)
-    chips.push(`fits body waist ${o.bodyWaistMinCm}–${o.bodyWaistMaxCm}cm`);
+    chips.push(t("measure.bodyWaist", { lo: o.bodyWaistMinCm, hi: o.bodyWaistMaxCm }));
   return chips;
 }
 
@@ -1043,8 +1040,9 @@ function ScoreBar({ score }: { score: number }) {
 }
 
 export default function CheckPage() {
+  const t = useT("check");
   return (
-    <Suspense fallback={<div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">Loading…</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">{t("loading")}</div>}>
       <CheckInner />
     </Suspense>
   );
@@ -1072,6 +1070,7 @@ function EaseIn3D({
   product: Product;
   bestLabel: string;
 }) {
+  const t = useT("check");
   const drawable = product.sizeOptions.filter((o) => o.chestCm != null);
   const [open, setOpen] = useState(false);
   const [label, setLabel] = useState(bestLabel);
@@ -1090,7 +1089,7 @@ function EaseIn3D({
         onClick={() => setOpen(true)}
         className="mt-3 inline-flex min-h-[44px] items-center gap-1 text-xs font-medium text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand sm:min-h-0"
       >
-        See it around your shape in 3D <ArrowRight size={14} />
+        {t("threeD.open")} <ArrowRight size={14} />
       </button>
     );
   }
@@ -1100,9 +1099,7 @@ function EaseIn3D({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
         <SafeBoundary
           fallback={
-            <p className="text-xs text-ink-faint">
-              The 3D view couldn&apos;t start on this device — the diagram above is unaffected.
-            </p>
+            <p className="text-xs text-ink-faint">{t("threeD.cantStart")}</p>
           }
         >
           <Suspense fallback={<div className="h-[220px] w-[220px] animate-pulse rounded-xl bg-paper-dim" />}>
@@ -1142,21 +1139,18 @@ function EaseIn3D({
                 {ease > 0 ? `+${ease.toFixed(1)}` : ease.toFixed(1)} cm
               </span>{" "}
               <span className="text-ink-soft">
-                {ease >= 0
-                  ? "of room through the chest, over your own measurement."
-                  : "— this size measures smaller than you do through the chest."}
+                {ease >= 0 ? t("threeD.room") : t("threeD.smaller")}
               </span>
             </p>
           )}
 
           <p className="mt-3 text-[11px] leading-relaxed text-ink-faint">
-            The {ease != null && ease < 0 ? "amber" : "blue"} shell is drawn at{" "}
-            <strong>{current.label}</strong>&apos;s stated chest
-            {current.shoulderCm != null ? " and shoulder" : ""}. Below the chest it holds that
-            circumference straight down, because a size chart states a length but never a waist —
-            that part is an assumption, not a measurement. No collar, no sleeves, no fabric: this
-            is the ease, not a preview of how it will look.
-            {body.estimated && " Your own figure here is from regional averages — add your chest to make it yours."}
+            {t.rich(
+              ease != null && ease < 0 ? "threeD.shellAmber" : "threeD.shellBlue",
+              { b: (c) => <strong>{c}</strong> },
+              { label: current.label, shoulder: current.shoulderCm != null ? t("threeD.andShoulder") : "" },
+            )}
+            {body.estimated && t("threeD.estimated")}
           </p>
         </div>
       </div>

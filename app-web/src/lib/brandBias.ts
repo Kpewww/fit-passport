@@ -32,6 +32,7 @@
 // Nothing about this depends on the LLM; it's a small deterministic function.
 
 import { BRAND_BIAS, DIRECTION } from "./scoringConstants";
+import { EN_TEXT, type EngineText } from "./engineText";
 import { alphaIndex, normalizeToAlpha } from "./sizing";
 
 export type OutcomeSignal = {
@@ -123,6 +124,7 @@ export function biasForBrand(
   outcomes: OutcomeSignal[],
   closet: ClosetSignal[] = [],
   excludeCategory?: string | null,
+  M: EngineText = EN_TEXT,
 ): BrandBias {
   const same = outcomes.filter(
     (o) => o.productBrand && o.productBrand.toLowerCase() === brand.toLowerCase(),
@@ -155,13 +157,13 @@ export function biasForBrand(
       direction: "big",
       evidence,
       shift: -1,
-      reason: `You've reported ${big} ${brand} item${big === 1 ? "" : "s"} running big — sized down one.`,
+      reason: M.brandRuns(true, big, brand),
     };
   }
   return {
     direction: "small",
     evidence,
     shift: 1,
-    reason: `You've reported ${small} ${brand} item${small === 1 ? "" : "s"} running small — sized up one.`,
+    reason: M.brandRuns(false, small, brand),
   };
 }

@@ -16,6 +16,7 @@ import type { ExtractedProduct } from "./extractor";
 import type { EngineOutput } from "./fitEngine";
 import { SCOREABLE_DOMAINS, domainForCategory, domainLabel } from "./sizeSystems";
 import { CONFIDENCE_CAPS } from "./scoringConstants";
+import { EN_TEXT, type EngineText } from "./engineText";
 
 type Source = ExtractedProduct["source"];
 
@@ -39,7 +40,7 @@ export type Refusal = {
  * Order matters when several apply: "that isn't clothing" and "we don't size
  * footwear" are truer answers about a page than "we found no chart on it".
  */
-export function refusalFor(extracted: ExtractedProduct): Refusal | null {
+export function refusalFor(extracted: ExtractedProduct, M: EngineText = EN_TEXT): Refusal | null {
   const { source } = extracted;
 
   // REFUSE when we never got the page at all — invariant ㊼.
@@ -53,9 +54,7 @@ export function refusalFor(extracted: ExtractedProduct): Refusal | null {
   if ((source.fetch === "unreachable" || source.fetch === "blocked") && source.sizesFrom === "estimated") {
     return {
       error: "unreadable",
-      message:
-        "We couldn't read that page — the retailer didn't serve it to us, so we have no size chart. " +
-        "Anything we showed you here would be our guess rather than their numbers.",
+      message: M.refuseUnreadable,
     };
   }
 
@@ -67,8 +66,7 @@ export function refusalFor(extracted: ExtractedProduct): Refusal | null {
   if (source.categoryGuessed && source.sizesFrom === "estimated") {
     return {
       error: "not-apparel",
-      message:
-        "We couldn't find a clothing item on that page. Paste a link to a specific garment — a product page for a shirt, jacket, trousers and so on.",
+      message: M.refuseNotApparel,
     };
   }
 
@@ -82,11 +80,7 @@ export function refusalFor(extracted: ExtractedProduct): Refusal | null {
   if (!SCOREABLE_DOMAINS.includes(domain)) {
     return {
       error: "unsupported-category",
-      message:
-        `We don't size ${domainLabel(domain)} yet. The engine works by comparing your ` +
-        `measurements to the garment's, and we don't hold the measurement that would ` +
-        `need — so anything we told you here would be a guess dressed up as an answer. ` +
-        `Tops and bottoms work today.`,
+      message: M.refuseUnsupported(domain),
       category: extracted.category,
     };
   }
@@ -108,10 +102,7 @@ export function refusalFor(extracted: ExtractedProduct): Refusal | null {
   if (source.fetch === "extension" && source.sizesSynthesized) {
     return {
       error: "no-chart-on-page",
-      message:
-        "We didn't find a size chart on this page, so any sizes we showed you would be made up " +
-        "rather than the retailer's. If the page has a \"Size guide\" or \"Size chart\" link, " +
-        "open it and check again — the chart often only loads once it's opened.",
+      message: M.refuseNoChartExtension,
     };
   }
 
@@ -129,11 +120,7 @@ export function refusalFor(extracted: ExtractedProduct): Refusal | null {
   if (source.sizesSynthesized && source.categoryFrom && source.categoryFrom !== "url") {
     return {
       error: "no-chart-on-page",
-      message:
-        "We found the garment on this page but no size chart we could read, so any sizes we " +
-        "showed you would be made up rather than the retailer's. Many stores only load the chart " +
-        "when you open their size guide — the Fit Passport browser extension can read it once " +
-        "it's open.",
+      message: M.refuseNoChartServer,
     };
   }
 
@@ -207,7 +194,4 @@ export function sessionGate(fromExtension: boolean, hasSession: boolean): "proce
   return fromExtension && !hasSession ? "not-connected" : "proceed";
 }
 
-export const NOT_CONNECTED_MESSAGE =
-  "This browser isn't connected to your Fit Passport yet. Open Fit Passport once in this " +
-  "browser (that's where your measurements and closet live), then check again. If you block " +
-  "third-party cookies, the extension can't see your Fit Passport session.";
+export const NOT_CONNECTED_MESSAGE = EN_TEXT.notConnected;

@@ -28,6 +28,7 @@
 //     one size on its own — the same ceiling brandBias uses.
 //   • EXPLAINABILITY. Every applied target carries a plain-language reason.
 
+import { EN_TEXT, type EngineText } from "./engineText";
 import { easeAdjustForCategory, type FitPreference, easeChestCm } from "./sizing";
 import { DIRECTION_MAX, clampDirection, directionToLadderShift } from "./fitDirection";
 import { EASE_CM, PERSONAL_EASE } from "./scoringConstants";
@@ -218,17 +219,14 @@ export type ResolvedEase = {
  * move a recommendation by two sizes on its own is a liability, and this is the
  * same ceiling `brandBias` applies for the same reason.
  */
-export function resolveEase(pref: FitPreference, learned: PersonalEase): ResolvedEase {
+export function resolveEase(pref: FitPreference, learned: PersonalEase, M: EngineText = EN_TEXT): ResolvedEase {
   const stated = easeChestCm(pref);
   if (learned.contradiction) {
     return {
       easeCm: stated,
       personalised: false,
       reason: null,
-      contradiction:
-        `Your fit reports on ${learned.evidence} measured garments contradict each other — ` +
-        `some say you want more room than others give you — so we used your stated ` +
-        `${pref} fit instead of learning from them. Re-rating one or two would settle it.`,
+      contradiction: M.easeContradiction(learned.evidence, pref),
     };
   }
   if (learned.targetCm == null || learned.weight <= 0) {
@@ -248,19 +246,17 @@ export function resolveEase(pref: FitPreference, learned: PersonalEase): Resolve
     return { easeCm: stated, personalised: false, reason: null, contradiction: null };
   }
 
-  const dir = capped > stated ? "more room" : "less room";
   return {
     easeCm: capped,
     personalised: true,
-    reason:
-      `Adjusted to the ${dir} you actually wear — from ${learned.evidence} ` +
-      `garment${learned.evidence === 1 ? "" : "s"} in your closet whose own ` +
-      `measurements we have (${capped.toFixed(1)}cm target vs ${stated}cm for ${pref})` +
-      (learned.excluded > 0
-        ? `; ${learned.excluded} garment${learned.excluded === 1 ? "" : "s"} left out because ` +
-          `${learned.excluded === 1 ? "its report contradicts" : "their reports contradict"} the others ` +
-          `or ${learned.excluded === 1 ? "its measurements look" : "their measurements look"} wrong.`
-        : "."),
+    reason: M.easeAdjusted({
+      more: capped > stated,
+      garments: learned.evidence,
+      targetCm: capped.toFixed(1),
+      statedCm: stated,
+      pref,
+      excluded: learned.excluded,
+    }),
     contradiction: null,
   };
 }

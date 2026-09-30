@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import { Button, Card, EmptyState, Field, LinkButton, inputClass } from "@/components/ui";
 import { ArrowRight } from "@/components/Icon";
 import { FitDirectionInput } from "@/components/FitDirectionInput";
-import { describeDirection } from "@/lib/fitDirection";
+import { nearestOption } from "@/lib/fitDirection";
+import { useT } from "@/i18n/client";
+import type { DirectionKey } from "@/lib/engineText";
 
 type Outcome = {
   id: string;
@@ -21,6 +23,11 @@ type Outcome = {
 type Product = { id: string; brand: string | null; productName: string | null };
 
 export default function HistoryPage() {
+  const t = useT("history");
+  const tf = useT("fit");
+  // The fit a record states, in the reader's language ("a bit snug" / "略紧").
+  const fitWord = (n: number | null) =>
+    n == null ? null : tf(`direction.${nearestOption(n).key as DirectionKey}.label`).toLowerCase();
   const [outcomes, setOutcomes] = useState<Outcome[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [form, setForm] = useState({
@@ -73,18 +80,15 @@ export default function HistoryPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
-        <h1 className="font-serif text-h1 text-ink">Fit history</h1>
-        <p className="mt-2 text-ink-soft">
-          Record what actually happened. Every keep, return, or exchange becomes ground
-          truth that sharpens your future recommendations.
-        </p>
+        <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
+        <p className="mt-2 text-ink-soft">{t("lede")}</p>
 
         {noProducts ? (
           <div className="mt-6">
             <EmptyState
-              title="Nothing to record yet"
-              body="Check a product first — then come back here to log whether the recommended size actually fit."
-              action={<LinkButton href="/check">Check a product <ArrowRight size={14} className="-mt-px inline" /></LinkButton>}
+              title={t("emptyTitle")}
+              body={t("emptyBody")}
+              action={<LinkButton href="/check">{t("emptyCta")} <ArrowRight size={14} className="-mt-px inline" /></LinkButton>}
             />
           </div>
         ) : (
@@ -92,32 +96,32 @@ export default function HistoryPage() {
             <form onSubmit={submit} className="space-y-3">
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="sm:col-span-2">
-                  <Field label="Product">
+                  <Field label={t("product")}>
                     <select className={inputClass} value={form.productId}
                       onChange={(e) => setForm({ ...form, productId: e.target.value })}>
-                      <option value="">Pick a product you checked…</option>
+                      <option value="">{t("pickProduct")}</option>
                       {products.map((p) => (
                         <option key={p.id} value={p.id}>{p.brand} · {p.productName}</option>
                       ))}
                     </select>
                   </Field>
                 </div>
-                <Field label="Size purchased">
+                <Field label={t("sizePurchased")}>
                   <input className={inputClass} placeholder="M" value={form.purchasedSize}
                     onChange={(e) => setForm({ ...form, purchasedSize: e.target.value })} />
                 </Field>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <Field label="Decision">
+                <Field label={t("decision")}>
                   <select className={inputClass} value={form.decision}
                     onChange={(e) => setForm({ ...form, decision: e.target.value as typeof form.decision })}>
-                    <option value="keep">Kept</option>
-                    <option value="return">Returned</option>
-                    <option value="exchange">Exchanged</option>
+                    <option value="keep">{t("kept")}</option>
+                    <option value="return">{t("returned")}</option>
+                    <option value="exchange">{t("exchanged")}</option>
                   </select>
                 </Field>
-                <Field label="Exchanged for">
+                <Field label={t("exchangedFor")}>
                   <input className={inputClass} placeholder="L" value={form.exchangedForSize}
                     disabled={form.decision !== "exchange"}
                     onChange={(e) => setForm({ ...form, exchangedForSize: e.target.value })} />
@@ -130,9 +134,9 @@ export default function HistoryPage() {
                   good fit and a return never said which way it was wrong. */}
               <div>
                 <p className="mb-1.5 text-sm font-medium text-ink">
-                  How did it fit?
+                  {t("howFit")}
                   {form.decision !== "keep" && !form.fitChosen && (
-                    <span className="ml-2 font-normal text-ink-faint">— choose one, so we know which way to adjust</span>
+                    <span className="ml-2 font-normal text-ink-faint">{t("chooseOne")}</span>
                   )}
                 </p>
                 <FitDirectionInput
@@ -143,7 +147,7 @@ export default function HistoryPage() {
 
               <fieldset className="rounded-xl border border-line p-3">
                 <legend className="px-1 text-xs uppercase tracking-widest text-ink-faint">
-                  Area issues (optional)
+                  {t("areaIssues")}
                 </legend>
                 <div className="grid gap-3 sm:grid-cols-4">
                   {([
@@ -153,12 +157,13 @@ export default function HistoryPage() {
                     ["length", "areaLength"],
                   ] as const).map(([area, key]) => (
                     <label key={area} className="text-sm">
-                      <span className="mb-1 block capitalize text-ink-soft">{area}</span>
+                      <span className="mb-1 block capitalize text-ink-soft">{t(`area.${area}`)}</span>
                       <select className={inputClass} value={form[key]}
                         onChange={(e) => setForm({ ...form, [key]: e.target.value })}>
                         <option value="">—</option>
-                        {["tight", "ok", "loose", "short", "long"].map((v) => (
-                          <option key={v} value={v}>{v}</option>
+                        {(["tight", "ok", "loose", "short", "long"] as const).map((v) => (
+                          // The stored value stays the English word brand bias reads.
+                          <option key={v} value={v}>{t(`areaValue.${v}`)}</option>
                         ))}
                       </select>
                     </label>
@@ -166,10 +171,10 @@ export default function HistoryPage() {
                 </div>
               </fieldset>
 
-              <Field label="Notes">
+              <Field label={t("notes")}>
                 <textarea className={inputClass} rows={2} value={form.notes}
                   onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                  placeholder="Anything the size labels can't capture." />
+                  placeholder={t("notesPlaceholder")} />
               </Field>
 
               <Button
@@ -180,7 +185,7 @@ export default function HistoryPage() {
                   (form.decision === "exchange" && !form.exchangedForSize.trim())
                 }
               >
-                Record outcome
+                {t("submit")}
               </Button>
             </form>
           </Card>
@@ -190,24 +195,30 @@ export default function HistoryPage() {
         {outcomes.length > 0 && (
           <div className="mt-8 space-y-2">
             <h2 className="text-h3 font-semibold text-ink">
-              Recorded outcomes
+              {t("recorded")}
             </h2>
             {outcomes.map((o) => (
               <Card key={o.id} className="!p-4 animate-fade-in-up">
                 <div className="flex items-center justify-between">
                   <div className="font-medium text-ink">
-                    {o.product.brand} · {o.product.productName} · size {o.purchasedSize}
+                    {t("sizeLine", {
+                      product: [o.product.brand, o.product.productName].filter(Boolean).join(" · "),
+                      size: o.purchasedSize,
+                    })}
                   </div>
                   <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
                     o.decision === "keep" ? "bg-ok-tint text-ok"
                       : o.decision === "return" ? "bg-bad-tint text-bad"
                         : "bg-warn-tint text-warn"
                   }`}>
-                    {o.decision}{o.exchangedForSize ? ` for ${o.exchangedForSize}` : ""}
+                    {(() => {
+                      const d = t(o.decision === "keep" ? "decisionKeep" : o.decision === "return" ? "decisionReturn" : "decisionExchange");
+                      return o.exchangedForSize ? t("forSize", { decision: d, size: o.exchangedForSize }) : d;
+                    })()}
                   </span>
                 </div>
-                {describeDirection(o.fitDirection) && (
-                  <p className="mt-1 text-sm text-ink-soft">Fit: {describeDirection(o.fitDirection)}</p>
+                {fitWord(o.fitDirection) && (
+                  <p className="mt-1 text-sm text-ink-soft">{t("fitLine", { fit: fitWord(o.fitDirection)! })}</p>
                 )}
                 {o.notes && <p className="mt-1 text-sm text-ink-soft">{o.notes}</p>}
                 <p className="mt-1 text-xs text-ink-faint">

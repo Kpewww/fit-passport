@@ -31,7 +31,9 @@ import {
 } from "./sizing";
 import { domainForCategory } from "./sizeSystems";
 import { biasForBrand, type BrandBias } from "./brandBias";
-import { directionToLadderShift, describeDirection, isDirectional } from "./fitDirection";
+import { directionToLadderShift, isDirectional, nearestOption } from "./fitDirection";
+import { EN_TEXT, engineText, type DirectionKey, type Dim, type EngineText, type SignalName } from "./engineText";
+import type { Locale } from "@/i18n/config";
 import { reportConsistency } from "./closetConsistency";
 import { isMeasuredReport, personalEaseTarget, resolveEase, type ResolvedEase } from "./personalEase";
 import { CONFIDENCE_WEIGHTS } from "./confidenceWeights";
@@ -186,6 +188,12 @@ export type EngineOutput = {
    * range over which the answer holds. Null when there was nothing to compare.
    */
   stability: Stability | null;
+  /**
+   * The runner-up line ("Alternative: M is close — …"), or null. Also the last
+   * line of `explanation`; separate so a client need not find it in prose, which
+   * stopped being possible once the prose had two languages (Session 79).
+   */
+  alternative?: string | null;
 };
 
 // ------------ Engine ------------
@@ -310,13 +318,15 @@ function scoreMeasurementFit(
   W: Weights,
   /** Ease to score with — the stated preference, possibly moved by the closet. */
   resolvedEase?: ResolvedEase,
+  /** How to word the reason (engineText.ts). */
+  M: EngineText = EN_TEXT,
 ): { score: number; reason: Reason | null; verdict?: FitVerdict } {
   // `resolvedEase` is optional so every existing caller and test keeps the exact
   // behaviour it had: with nothing learned, this is `easeChestCm(pref)` verbatim.
   const ease = (resolvedEase?.easeCm ?? easeChestCm(pref)) + easeAdjustForCategory(category);
 
-  type Dim = { key: string; sub: number; delta: number; weight: number; sigma: number };
-  const dims: Dim[] = [];
+  type DimScore = { key: Dim; sub: number; delta: number; weight: number; sigma: number };
+  const dims: DimScore[] = [];
 
   // ---- Chest (primary) ----
   let chestDelta: number | null = null;
@@ -365,20 +375,14 @@ function scoreMeasurementFit(
   // clearly worse, name it as the binding constraint.
   const worst = dims.slice().sort((a, b) => a.sub - b.sub)[0];
   const chest = dims.find((d) => d.key === "chest");
-  const est = profile.chestIsEstimated ? " (regional averages — add yours for accuracy)" : "";
   let msg: string;
   if (chest && Math.abs(chest.delta) < BINDING.chestNearCm && (worst.key === "chest" || worst.sub > BINDING.strongSub)) {
-    msg = `Matches a ${pref} fit for ${dims.map((d) => d.key).join(" + ")}${est}`;
+    msg = M.matchesFit(pref, dims.map((d) => d.key), !!profile.chestIsEstimated);
   } else if (worst.key !== "chest" && worst.sub < BINDING.weakSub) {
-    const side = worst.delta > 0 ? "roomy" : "narrow";
-    msg = `Chest works, but the ${worst.key} runs ${Math.abs(worst.delta).toFixed(1)}cm ${side}`;
+    msg = M.bindingDimension(worst.key, Math.abs(worst.delta).toFixed(1), worst.delta > 0);
   } else {
     const d = chest?.delta ?? worst.delta;
-    const dimName = chest ? "Chest" : worst.key.charAt(0).toUpperCase() + worst.key.slice(1);
-    msg =
-      d > 0
-        ? `${dimName} ${d.toFixed(1)}cm larger than your ${pref} target`
-        : `${dimName} ${(-d).toFixed(1)}cm smaller than your ${pref} target`;
+    msg = M.versusTarget(chest ? "chest" : worst.key, Math.abs(d).toFixed(1), d > 0, pref);
   }
 
   return {
@@ -441,6 +445,7 @@ function scoreKnownGood(
   W: Weights,
   /** The full ladder, so an anchor can be placed by measurement rather than label. */
   allSizes: SizeOptionInput[] = [],
+  M: EngineText = EN_TEXT,
 ): { score: number; reason: Reason | null } {
   if (knownGood.length === 0) return { score: 0, reason: null };
   const sizeAlpha = normalizeToAlpha(size.label);
@@ -498,25 +503,26 @@ function scoreKnownGood(
     if (s > best) {
       best = s;
       const label = `${kg.brand} ${kg.size}`;
-      const dirWord = isDirectional(kg.fitDirection) ? describeDirection(kg.fitDirection) : null;
+      const dirWord: DirectionKey | null =
+        isDirectional(kg.fitDirection) && kg.fitDirection != null ? (nearestOption(kg.fitDirection).key as DirectionKey) : null;
       // Prefer the direction in the explanation when there is one — "runs snug"
       // is a fact the reader recognises, where "1 step from your Uniqlo M" is a
       // conclusion they have to take on trust.
       if (dirWord) {
         bestMsg =
           dist === 0
-            ? `Your ${label} runs ${dirWord}, so this is the size that should sit right`
-            : `${dist.toFixed(dist % 1 === 0 ? 0 : 1)} step${dist > 1 ? "s" : ""} from your ${label}, which runs ${dirWord}`;
+            ? M.anchorRunsHere(label, dirWord)
+            : M.anchorRunsSteps(dist.toFixed(dist % 1 === 0 ? 0 : 1), dist > 1, label, dirWord);
       } else if (strong && preferenceShift(pref) !== 0) {
         // Explain that we shifted from the true-fit anchor for the preference.
         bestMsg =
           dist === 0
-            ? `Sized ${preferenceShift(pref) > 0 ? "up" : "down"} from your ${label} for a ${pref} fit`
-            : `${dist} step${dist > 1 ? "s" : ""} from your ${pref}-adjusted ${label}`;
+            ? M.anchorShifted(preferenceShift(pref) > 0, label, pref)
+            : M.anchorAdjustedSteps(dist, label, pref);
       } else if (dist === 0) {
-        bestMsg = `Matches your ${label} (${kg.category})`;
+        bestMsg = M.anchorMatches(label, kg.category);
       } else {
-        bestMsg = `${dist} step${dist > 1 ? "s" : ""} from your ${label}`;
+        bestMsg = M.anchorSteps(dist, label);
       }
     }
   }
@@ -534,6 +540,7 @@ function scoreOutcome(
   product: EngineInput["product"],
   outcomes: OutcomeInput[],
   W: Weights,
+  M: EngineText = EN_TEXT,
 ): { score: number; reason: Reason | null } {
   if (outcomes.length === 0) return { score: 0, reason: null };
   const sIdx = alphaIndex(normalizeToAlpha(size.label));
@@ -550,7 +557,7 @@ function scoreOutcome(
       product.category &&
       o.productCategory?.toLowerCase() === product.category.toLowerCase();
     const mult = sameBrand && sameCat ? OUTCOME.mult.sameBrandCategory : sameCat ? OUTCOME.mult.sameCategory : OUTCOME.mult.other;
-    const where = o.productBrand ?? "similar";
+    const where = o.productBrand ?? null;
     const d = o.fitDirection;
     const directional = d != null && Math.abs(d) >= DIRECTION.directional;
 
@@ -562,12 +569,12 @@ function scoreOutcome(
         const dist = Math.abs(sIdx - eIdx);
         if (dist <= 1) {
           const b = (1 - dist * OUTCOME.perStep) * mult;
-          if (b > bestBoost) { bestBoost = b; msg = `You exchanged a ${o.purchasedSize} for a ${o.exchangedForSize} in ${where}`; }
+          if (b > bestBoost) { bestBoost = b; msg = M.exchanged(o.purchasedSize, o.exchangedForSize, where); }
         }
       }
       if (sIdx === pIdx && mult > bestPenalty) {
         bestPenalty = mult;
-        msg = `You exchanged a ${o.purchasedSize} for a ${o.exchangedForSize} in ${where}`;
+        msg = M.exchanged(o.purchasedSize, o.exchangedForSize, where);
       }
       continue;
     }
@@ -583,8 +590,7 @@ function scoreOutcome(
         const p = (1 - dist * OUTCOME.perStep) * mult;
         if (p > bestPenalty) {
           bestPenalty = p;
-          const how = directional ? (d! < 0 ? "too tight" : "too loose") : "fit issue";
-          msg = `You returned a ${o.purchasedSize} in ${where} (${how})`;
+          msg = M.returned(o.purchasedSize, where, directional ? (d! < 0 ? "tight" : "loose") : "unknown");
         }
       }
       continue;
@@ -597,7 +603,7 @@ function scoreOutcome(
     const dist = Math.abs(sIdx - pIdx);
     if (fitWell && dist <= 1) {
       const b = (1 - dist * OUTCOME.perStep) * mult * OUTCOME.keepBoost;
-      if (b > bestBoost) { bestBoost = b; msg = `You kept a ${o.purchasedSize} in ${where} with a good fit`; }
+      if (b > bestBoost) { bestBoost = b; msg = M.kept(o.purchasedSize, where); }
     }
   }
   const net = bestBoost - bestPenalty;
@@ -645,16 +651,6 @@ function computeConfidence(size: SizeOptionInput, hasKnownGood: boolean, hasChes
   return Math.min(1, c);
 }
 
-/** Plain-language name for a signal, for the conflict note. */
-function humanSignal(signal: string): string {
-  switch (signal) {
-    case "measurement-fit": return "your measurements";
-    case "known-good": return "a garment you already own";
-    case "outcome": return "what you kept or returned before";
-    case "brand-bias": return "how this brand has run for you";
-    default: return signal;
-  }
-}
 
 type Disagreement = { distance: number; signal: string; pickedLabel: string };
 
@@ -758,10 +754,15 @@ function scoreBrandBiasForSize(
 
 export function recommend(
   input: EngineInput,
-  /** skipStability: set by the stability grid's own runs, which need only the pick. */
-  opts: { skipStability?: boolean } = {},
+  /**
+   * skipStability: set by the stability grid's own runs, which need only the pick.
+   * locale: the language the explanation is written in (engineText.ts). Only the
+   * wording changes — every number, weight and pick is identical in both.
+   */
+  opts: { skipStability?: boolean; locale?: Locale } = {},
 ): EngineOutput {
   const { profile, product, sizes, outcomes } = input;
+  const M = engineText(opts.locale);
 
   // What ease this wearer actually lives in, learned from closet garments whose
   // own measurements we captured. Revealed preference beats stated preference —
@@ -781,7 +782,7 @@ export function recommend(
     })),
     profile.chestCm,
   );
-  const easeUsed = resolveEase(profile.preferredFit, learnedEase);
+  const easeUsed = resolveEase(profile.preferredFit, learnedEase, M);
 
   // The closet the rest of the engine may learn from. When the measured reports
   // contradict each other with no consistent majority, the explanation tells the
@@ -817,6 +818,7 @@ export function recommend(
           fitDirection: k.fitDirection ?? null,
         })),
         product.category ?? null,
+        M,
       )
     : { direction: "neutral", evidence: 0, shift: 0, reason: null };
   const refIdx = brandBias.shift !== 0
@@ -862,11 +864,11 @@ export function recommend(
 
   const ranked: SizeScore[] = sizes.map((size) => {
     const reasons: Reason[] = [];
-    const fit = scoreMeasurementFit(size, profile, profile.preferredFit, product.category, W, easeUsed);
+    const fit = scoreMeasurementFit(size, profile, profile.preferredFit, product.category, W, easeUsed, M);
     if (fit.reason) reasons.push(fit.reason);
-    const kg = scoreKnownGood(size, product, usableKnownGood, profile.preferredFit, W, sizes);
+    const kg = scoreKnownGood(size, product, usableKnownGood, profile.preferredFit, W, sizes, M);
     if (kg.reason) reasons.push(kg.reason);
-    const outc = scoreOutcome(size, product, outcomes, W);
+    const outc = scoreOutcome(size, product, outcomes, W, M);
     if (outc.reason) reasons.push(outc.reason);
     const bias = scoreBrandBiasForSize(size, brandBias, refIdx);
     if (bias) reasons.push(bias);
@@ -920,23 +922,14 @@ export function recommend(
   const disagreement = signalDisagreement(ranked, ladder);
   const conflictParts: string[] = [];
   if (easeUsed.contradiction) conflictParts.push(easeUsed.contradiction);
-  const implausible = bodyPlausibility(profile);
-  if (implausible.length) {
-    conflictParts.push(
-      `Your measurements look unusual together (${implausible.join("; ")}). If one is a ` +
-        `typo, fixing it on your passport will sharpen this.`,
-    );
-  }
+  const implausible = bodyPlausibility(profile, M);
+  if (implausible.length) conflictParts.push(M.implausible(implausible));
   // A pick that the wearer's own tape-measure error could flip must say so: the
   // confidence already fell (stabilityFactor), and a lower number with no reason
   // would break the explainability invariant.
   if (stability && stability.agreement < STABILITY.fragileBelow && stability.holdsForChestCm) {
     const [lo, hi] = stability.holdsForChestCm;
-    conflictParts.push(
-      `This one is close: it holds for a chest between ${lo} and ${hi} cm, and a ` +
-        `${stability.bodyNoiseCm} cm difference in how you measure could change it — ` +
-        `measuring again is worth it.`,
-    );
+    conflictParts.push(M.fragile(lo, hi, stability.bodyNoiseCm));
   }
   if (disagreement) {
     // One ladder step apart is ordinary tension; two or more means the signals
@@ -945,11 +938,7 @@ export function recommend(
     for (const r of ranked) r.confidence = Math.round(r.confidence * agreement * 100) / 100;
     // Phrased without a verb agreeing with the signal name, so every signal
     // reads correctly ("your measurements" is plural, "a garment you own" isn't).
-    conflictParts.push(
-      `Your signals disagree — by ${humanSignal(disagreement.signal)}, ` +
-        `${disagreement.pickedLabel}; by the strongest overall evidence, ` +
-        `${ranked[0].label}.`,
-    );
+    conflictParts.push(M.disagree(disagreement.signal as SignalName, disagreement.pickedLabel, ranked[0].label));
   }
 
   // A size our own measurement model calls plainly wrong cannot be a confident
@@ -961,15 +950,11 @@ export function recommend(
     }
   }
   if (ranked[0].verdict === "too small" || ranked[0].verdict === "too big") {
-    conflictParts.push(
-      `On your measurements alone ${ranked[0].label} reads "${ranked[0].verdict}" — ` +
-        `we're recommending it on other evidence, so treat this as a starting point ` +
-        `and check the chart.`,
-    );
+    conflictParts.push(M.verdictOff(ranked[0].label, ranked[0].verdict));
   }
   // A lowered confidence must always say why — a smaller number with no reason is
   // just a worse number, which would break the explainability invariant.
-  if (consistency.note) conflictParts.push(consistency.note);
+  if (consistency.note) conflictParts.push(M.closetScattered);
 
   const conflictNote = conflictParts.length > 0 ? conflictParts.join(" ") : null;
 
@@ -1020,11 +1005,10 @@ export function recommend(
         .filter((v): v is number => v != null);
       const maxChest = Math.max(...chestVals);
       const minChest = Math.min(...chestVals);
-      const art = /^[aeiou]/i.test(profile.preferredFit) ? "an" : "a";
       if (target > bestSize.chestCm && bestSize.chestCm === maxChest) {
-        edgeNote = `\n• This is the largest size offered — for ${art} ${profile.preferredFit} fit you're at the top of the range.`;
+        edgeNote = `\n• ${M.largestSize(profile.preferredFit)}`;
       } else if (target < bestSize.chestCm && bestSize.chestCm === minChest) {
-        edgeNote = `\n• This is the smallest size offered — for ${art} ${profile.preferredFit} fit you're at the bottom of the range.`;
+        edgeNote = `\n• ${M.smallestSize(profile.preferredFit)}`;
       }
     }
   }
@@ -1039,46 +1023,29 @@ export function recommend(
 
   // Suppress the "alternative" line when everything ties — calling the second
   // rung "close" implies the first was ahead of it, and it wasn't.
-  const alt =
+  const alternative =
     !undetermined && !edgeNote && ranked[1] && ranked[1].score > best.score - TIE.alternativeWithin
-      ? `\nAlternative: ${ranked[1].label} is close — consider it if you prefer ${profile.preferredFit === "slim" ? "extra room" : "a snugger fit"}.`
-      : "";
+      ? M.alternative(ranked[1].label, profile.preferredFit)
+      : null;
   const explanation = undetermined
     // The UI's own heading already states that the sizes tied. This says the one
     // thing it does not: what is missing. Four sentences repeating the tie made
     // the screen read as an apology instead of an instruction.
-    ? "Add your chest measurement, or one garment of this type that fits you well — " +
-      "either one turns this into a real answer."
+    ? M.undeterminedHelp
     : [
-        ...(topReasons.length > 0
-          ? topReasons
-          : ["Limited product data — recommendation based on your closet and preference."]),
+        ...(topReasons.length > 0 ? topReasons : [M.limitedData]),
         ...contextReasons,
       ].join("\n") +
       edgeNote +
-      alt;
+      (alternative ? `\n${alternative}` : "");
 
   // Cross-domain disclaimer: the closet is all a different garment domain than
   // what we're sizing, so warn the user plainly.
   let domainNote: string | null = null;
   if (domainRelevance === "cross" && productDomain) {
-    const closetList = Array.from(closetDomains).map(humanDomain).join(" & ");
-    domainNote =
-      `Your closet is ${closetList}, but this is a ${humanDomain(productDomain)} item. ` +
-      `Sizing across garment types is unreliable — we're going mostly on your ` +
-      `measurements and preference. Add a ${humanDomain(productDomain)} you own for a real recommendation.`;
+    domainNote = M.crossDomain(Array.from(closetDomains), productDomain);
   }
 
-  return { ranked, best, explanation, undetermined, domainNote, domainRelevance, conflictNote, stability };
+  return { ranked, best, explanation, undetermined, domainNote, domainRelevance, conflictNote, stability, alternative };
 }
 
-/** Human name for a size domain, for disclaimers. */
-function humanDomain(d: ReturnType<typeof domainForCategory>): string {
-  switch (d) {
-    case "top": return "top";
-    case "bottom": return "bottoms";
-    case "shoe": return "footwear";
-    case "sock": return "socks";
-    case "accessory": return "accessory";
-  }
-}

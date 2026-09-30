@@ -31,6 +31,48 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 79d — The engine explains itself in Chinese
+
+Every sentence the engine writes — reasons, notes beside the answer, the
+explanation, refusals, the "connect first" message — is now built in one place,
+`src/lib/engineText.ts`: an `EngineText` interface with an English and a Chinese
+implementation. The scorers compute numbers and call `M.something(values)`; they
+no longer hold prose. `recommend(input, { locale })` picks the set; the routes read
+the language from `x-fp-lang` (the popup), then the `fp-lang` cookie, then the
+browser (`localeFromRequest`).
+
+**The English did not change by one character.** Every existing engine test
+asserts on the wording and all passed without an edit — the check that the move
+was a pure move.
+
+**The Chinese is guarded** (`engineText.test.ts`):
+- the arguments table is typed from the interface, so a new message cannot compile
+  until it is listed there and therefore tested;
+- no English words in any message (brands, size labels and units excepted), the
+  spacing rule, and every message different from its English;
+- **choosing Chinese changes only the words**: the same scenario in both languages
+  gives identical sizes, scores, confidences, verdicts and stability.
+The spacing test caught a real fault on its first run: "你把Uniqlo 的 M 换成了 L".
+
+The engine output gains `alternative` (the runner-up line), so the popup no longer
+finds "Alternative:" in English prose. `/check` and `/history` are translated,
+with the fit-feeling control (太紧 … 太松), the ease figure, verdict chips and signal
+chips; the confidence floor in "starts at 30" now comes from the engine's constant.
+History's area values are still stored as the English words brand bias reads —
+only their labels are translated.
+
+**Seen live** (dev server, a body of 100/86/46 and region CN): COS Oxford in
+Chinese — EU 48 · 把握 59% · "按常规版型，胸围、肩宽都合适" · the fragile note
+"这个码卡在临界附近：胸围在 98–101.5 cm 之间都选它…" — the same pick and number as
+English.
+
+Not yet: category names (the meta line still reads "COS · SHIRT") go with the
+closet, which uses them everywhere; the remaining pages are next.
+
+628 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-09-29 · Session 79c — The popup speaks Chinese too
 
 Pulled ahead of the engine work (planned as 79e) because it completes the flow the
