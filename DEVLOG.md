@@ -31,6 +31,68 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 79a — Tmall and Taobao pages read as products, not as "Detail"
+
+The founder showed the extension on a real Tmall item: size chart found (3 rows),
+but **"No product details (the page may still work)"** — and guessed the
+picture-only description was the cause.
+
+**What was actually wrong** (from the real page, captured in the founder's own
+logged-in browser — they logged in themselves in a window I opened; the DOM stays
+in the session scratchpad and is not committed):
+- the popup's product line is JSON-LD only, and Tmall publishes none — nor
+  `og:title` nor `<h1>`, the server's other two sources of a name;
+- so the server named the **brand "Detail"** (from the host `detail.tmall.com`)
+  and the **product "Detail T-shirt"**, with `categoryGuessed: true`;
+- the real brand (我是大卫) and gender (男士) sat unread in the 参数信息 list;
+- "Size options listed ✓" was a false positive: the only value found was a
+  `data-value="item"`.
+The chart itself was read correctly (garment 胸围 109/114/119), and a 100 cm chest
+got M at 63%. The pictures were a symptom of nothing.
+
+**Fixed** (capture.js + pageParse.ts + extractor.ts; `docs/design/browser-extension.md` §6b):
+- product parameters read **by label** from an allowlist (`ATTR_LABELS`, shared and
+  drift-tested) — class names are hashed; a label pairs with a value only as two
+  children of one box (or dt/dd, th/td);
+- the cleaned `<title>` is the last-resort name (`cleanTitle`, suffix regex shared);
+- a marketplace host is never a brand (`marketplaceFor`); empty brand stored as null;
+- gender from 适用性别, then Taobao title forms ("T恤男", "男女同款");
+- size buttons under a "尺码" label, from `title` attributes, in a small box only;
+  swatch values must be size-shaped;
+- a neutral popup line when a listing's description is all pictures.
+
+**Found by testing against the real page, each fixed with a test that reproduces it:**
+1. **Privacy.** The size section prints the shopper's own profile — "我的档案：177
+   厘米 69 公斤" — beside the chart. On this page it was not sent only because of
+   layout; my fixture put it in the chart's box and **the old capture sent it as
+   context**. Now dropped (`PERSONAL_RE`), test red then green.
+2. The page's first "尺码" is the image gallery's tab; the first size-group reader
+   climbed from it and collected "4.9", "168", "108" as 12 sizes. Now: title
+   attributes only, box ≤ 400 characters. Real page: exactly M / L / XL.
+3. I misread the 版型 line as the shopper's preference. It is the product's own fit
+   scale (紧身 … 超宽, 宽松 marked active); the first version sent all five words.
+   Now a scale sends only its marked option. My guard for it was also too broad
+   (it hid the scale for sitting next to the profile box) and was narrowed.
+4. The size picker's "衣长: 72.5cm" was sent as a product attribute. Measurements
+   now never are.
+5. "Description is pictures" would have fired on any shop with a photo gallery; now
+   only on a listing with a parameter list.
+
+**Verified on the real DOM, end to end:** brand 我是大卫 · the full name · tshirt from
+the page's name · mens · retailer Tmall · M at 63% · no profile data in the 1.2 KB
+payload. The real popup rendered in headed Chromium against that DOM (served from
+the dev server for one run, then deleted): "Product details — 我是大卫, from the
+page's parameter list", 3-row chart, 3 size options, and the picture line (22 live
+images ≥ 700 px).
+
+Extension **0.2.0**, zip repacked (69.0 KB). New board items:
+`todo/engineering/10` (a chart that is one of the description's pictures) and `11`
+(the per-size 身高/体重 range as a weak signal).
+
+603 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-09-29 · Session 78h — Close out Session 78
 
 Board and memory only; no code.

@@ -126,22 +126,34 @@
   function preview(cap, tab) {
     var f = cap.found;
     var hasChart = f.sizeTables > 0 || f.chartImages > 0;
+    // Three states for the product line. Marketplace pages (Tmall, Taobao, JD)
+    // publish no schema.org data; their details come from the page's parameter
+    // list, and failing that the name alone — which still names the garment.
+    var details = f.productData
+      ? (f.brand ? "Product details — " + f.brand + (f.attrs ? ", from the page's parameter list" : "") : "Product details")
+      : f.title
+        ? "Only the product name (the garment type is read from it)"
+        : "No product details (the page may still work)";
     var items = [
-      [f.productData, f.productData ? "Product details" : "No product details (the page may still work)"],
+      [f.productData, details],
       [f.sizeTables > 0, f.sizeTables > 0 ? "Size chart — " + f.sizeRows + " rows" : "No size chart on the page yet"],
       [f.sizeOptions > 0, f.sizeOptions > 0 ? "Size options listed" : "No size options listed"],
     ];
     // An image only matters when there is no table: the server reads a table
     // first and goes to its image reader only when it finds none.
     if (f.chartImages > 0 && f.sizeTables === 0) items.push([true, "A size-chart image the server can try to read"]);
+    // Neutral, not a failure: a listing whose description is all pictures has no
+    // product text to read, and the size does not depend on it.
+    if (f.pictureDescription) items.push(["info", "The description is pictures — sizing doesn't need it"]);
 
     var what = el("pre", { text: cap.html });
     show(
       el("p", { className: "title", text: f.title || tab.title || "This page" }),
       el("div", { className: "card" }, [
         el("ul", { className: "found" }, items.map(function (it) {
-          return el("li", { className: it[0] ? "yes" : "no" }, [
-            el("span", { className: "mark", text: it[0] ? "✓" : "–" }),
+          var state = it[0] === "info" ? "info" : it[0] ? "yes" : "no";
+          return el("li", { className: state }, [
+            el("span", { className: "mark", text: state === "yes" ? "✓" : state === "info" ? "·" : "–" }),
             el("span", { text: it[1] }),
           ]);
         })),

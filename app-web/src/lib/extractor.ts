@@ -476,8 +476,29 @@ function buildSizes(profile: BrandProfile, category: string): ExtractedSize[] {
 }
 
 function guessRetailerName(host: string): string {
+  const market = marketplaceFor(host);
+  if (market) return market;
   const core = host.replace(/^www\./, "").split(".")[0];
   return core ? core.charAt(0).toUpperCase() + core.slice(1) : "Unknown retailer";
+}
+
+/**
+ * Marketplaces sell many brands, so their host names none of them. Before this,
+ * detail.tmall.com became the brand "Detail" and the product "Detail T-shirt"
+ * (measured, Session 79a). On these hosts the brand stays empty until the page
+ * itself says it (pageParse reads the 参数信息 list's 品牌).
+ */
+const MARKETPLACES: Array<{ re: RegExp; name: string }> = [
+  { re: /(^|\.)tmall\.(com|hk)$/i, name: "Tmall" },
+  { re: /(^|\.)taobao\.com$/i, name: "Taobao" },
+  { re: /(^|\.)jd\.(com|hk)$/i, name: "JD.com" },
+  { re: /(^|\.)1688\.com$/i, name: "1688" },
+  { re: /(^|\.)(pinduoduo|yangkeduo)\.com$/i, name: "Pinduoduo" },
+  { re: /(^|\.)vip\.com$/i, name: "Vipshop" },
+];
+
+export function marketplaceFor(host: string): string | null {
+  return MARKETPLACES.find((m) => m.re.test(host))?.name ?? null;
 }
 
 // ------------ Public API ------------
@@ -581,6 +602,25 @@ export function extractFromUrl(url: string): ExtractedProduct {
 
   // Unknown brand: still derive as much as we can from the URL itself.
   const retailer = guessRetailerName(host) || "Unknown retailer";
+  if (marketplaceFor(host)) {
+    // A marketplace URL says nothing about the product: no brand, no name — and
+    // a ladder built on an invented brand would only be refused later. Empty
+    // until the page says (extractSmart); `categoryGuessed` stays true.
+    return {
+      retailer,
+      brand: "",
+      productName: "",
+      category,
+      gender,
+      material: "Unknown",
+      fitNotes: "",
+      sizes: buildSizes({ brand: retailer, system: "alpha", chestBaseCm: 102, stepCm: 5, fitNotes: "" }, category),
+      source: {
+        url, host, derived: true, slug, sizesFrom: "estimated",
+        categoryGuessed: detected == null, ...(detected ? { categoryFrom: "url" as const } : {}), sizesSynthesized: true,
+      },
+    };
+  }
   const genericProfile: BrandProfile = {
     brand: retailer,
     system: "alpha",

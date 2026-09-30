@@ -130,8 +130,10 @@ export async function POST(req: Request) {
       userId: user.id,
       url,
       retailer: extracted.retailer,
-      brand: extracted.brand,
-      productName: extracted.productName,
+      // Empty means unknown (a marketplace page that never named it) — stored as
+      // null, which every reader already treats as "no brand".
+      brand: extracted.brand || null,
+      productName: extracted.productName || null,
       category: extracted.category,
       material: extracted.material,
       fitNotes: extracted.fitNotes,

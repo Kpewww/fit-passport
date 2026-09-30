@@ -143,11 +143,92 @@ function openGraph(html: string): ParsedPage {
 }
 
 // ---------------------------------------------------------------------------
+// 2b. Chinese marketplaces: the <title>, and the 参数信息 list (Session 79a)
+// ---------------------------------------------------------------------------
+//
+// Tmall, Taobao and JD publish no JSON-LD, no og:title and no <h1>. The product's
+// name is in <title> with the marketplace appended, and its brand and gender are
+// in a list of label/value pairs the extension sends as <dl data-fp="attrs">.
+// Found on a real Tmall item, where the server had named the brand "Detail" (the
+// host) and the product "Detail T-shirt".
+
+/**
+ * A marketplace's name appended to a title — "-tmall.com天猫", "-淘宝网", "-京东" —
+ * and JD's "【行情 报价 价格 评测】" before it. Shared with the extension, which
+ * shows the same cleaned name in its popup (drift test in marketplaceCapture).
+ */
+export const TITLE_SUFFIX_RE =
+  /\s*(?:【[^】]{0,40}】)?\s*[-–—_|]\s*(?:tmall\.com天猫|天猫tmall\.com|天猫|淘宝网|淘宝|京东|jd\.com|拼多多|唯品会|得物)\s*$/i;
+
+/** The title without the marketplace — or the title unchanged when it names none. */
+export function cleanTitle(title: string): string {
+  return title.replace(TITLE_SUFFIX_RE, "").trim();
+}
+
+/**
+ * The only parameter labels the extension sends — an ALLOWLIST, like the rest
+ * of the capture. Enough to identify the garment and who it is cut for; item
+ * numbers, prices and everything else stay on the page. Shared with capture.js.
+ */
+export const ATTR_LABELS = [
+  "品牌",
+  "适用性别",
+  "性别",
+  "适用对象",
+  "版型",
+  "版型分类",
+  "服装版型",
+  "袖长",
+  "衣长",
+  "衣长类型",
+  "领型",
+  "材质",
+  "材质成分",
+  "面料",
+  "成分含量",
+  "厚薄",
+  "适用季节",
+  "款式",
+];
+
+/** A value that says nothing: "其他", "other", "无". */
+const EMPTY_ATTR = /^(其他|其它|other|others|无|none|n\/a|-+)$/i;
+
+/** The label/value pairs the extension sent, first value per label. */
+function productAttrs(html: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const dl = html.match(/<dl\b[^>]*data-fp=["']attrs["'][^>]*>([\s\S]*?)<\/dl>/i);
+  if (!dl) return out;
+  const re = /<dt\b[^>]*>([\s\S]*?)<\/dt>\s*<dd\b[^>]*>([\s\S]*?)<\/dd>/gi;
+  for (const m of dl[1].matchAll(re)) {
+    const k = stripTags(m[1]).trim();
+    const v = stripTags(m[2]).trim();
+    if (k && v && !out.has(k)) out.set(k, v);
+  }
+  return out;
+}
+
+/** 适用性别 / 性别 / 适用对象 as a gender, when it says one. */
+function genderFromAttr(v: string | undefined): Gender | undefined {
+  if (!v) return undefined;
+  if (/男女|通用|中性|情侣/.test(v)) return "unisex";
+  if (/女/.test(v)) return "womens";
+  if (/男/.test(v)) return "mens";
+  return undefined;
+}
+
+// ---------------------------------------------------------------------------
 // 3. Gender / category inference from visible text (fallback only)
 // ---------------------------------------------------------------------------
 
 export function inferGender(text: string): Gender | undefined {
   const t = text.toLowerCase();
+  // Marketplace titles put the gender AFTER the garment ("短袖T恤男", "T恤女"),
+  // and "男女同款" / 情侣装 mean both. Checked first, because "T恤男女同款"
+  // contains "T恤男". No \b: it never matches at a CJK boundary (invariant ⑫).
+  if (/男女同款|男女通用|情侣装|情侣款/.test(t)) return "unisex";
+  if (/(?:t恤|短袖|长袖|衬衫|衬衣|卫衣|外套|夹克|毛衣|针织衫|polo衫|背心|裤)女(?!装)/.test(t)) return "womens";
+  if (/(?:t恤|短袖|长袖|衬衫|衬衣|卫衣|外套|夹克|毛衣|针织衫|polo衫|背心|裤)男(?![女装])/.test(t)) return "mens";
   // Women before men: "women" contains "men", so the men test must exclude it.
   if (/\b(women|women's|womens|ladies|female)\b|女装|女士|女款/.test(t)) return "womens";
   if (/\b(men|men's|mens|male)\b|男装|男士|男款/.test(t)) return "mens";
@@ -180,7 +261,9 @@ export const MEASURE_MAP: Array<{ re: RegExp; field: keyof ExtractedSize }> = [
   { re: /length|body\s*length|衣长|总长|后中长/i, field: "lengthCm" },
 ];
 
-const SIZE_LABEL_RE = /^(XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|\d{1,3}(?:\.\d)?|EU\s?\d{2}|US\s?\d{1,2}|UK\s?\d{1,2})$/i;
+/** What a size label looks like. Shared with the extension, which counts only
+ *  size-shaped values as size options (a swatch valued "item" is not a size). */
+export const SIZE_LABEL_RE = /^(XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|\d{1,3}(?:\.\d)?|EU\s?\d{2}|US\s?\d{1,2}|UK\s?\d{1,2})$/i;
 
 /** Which measurement field (if any) a header cell names. */
 function fieldFor(cell: string): keyof ExtractedSize | null {
@@ -862,15 +945,31 @@ export function parsePage(html: string, kindFallback?: "body" | "garment"): Pars
 
   const h1 = html.match(/<h1\b[^>]*>([\s\S]*?)<\/h1>/i);
   const headline = h1 ? stripTags(h1[1]).replace(/\s+/g, " ").trim().slice(0, 200) || undefined : undefined;
+  // The last resort for a name: the <title>, without a marketplace appended.
+  const titleTag = html.match(/<title\b[^>]*>([\s\S]*?)<\/title>/i);
+  const titleName = titleTag ? cleanTitle(decodeEntities(stripTags(titleTag[1])).replace(/\s+/g, " ")).slice(0, 200) || undefined : undefined;
+  const attrs = productAttrs(html);
+  const attr = (...keys: string[]) => {
+    for (const k of keys) {
+      const v = attrs.get(k);
+      if (v && !EMPTY_ATTR.test(v) && !/^其他材质/.test(v)) return v;
+    }
+    return undefined;
+  };
 
+  const productName = ld.productName || og.productName || headline || titleName;
   const merged: ParsedPage = {
-    brand: ld.brand || og.brand,
-    productName: ld.productName || og.productName || headline,
+    // The page's own 品牌 outranks og:site_name, which on a marketplace names the
+    // marketplace, not the brand.
+    brand: ld.brand || attr("品牌") || og.brand,
+    productName,
     headline,
     category: ld.category,
-    material: ld.material,
+    material: ld.material || attr("材质成分", "面料", "成分含量", "材质"),
     fitNotes: og.fitNotes,
-    gender: inferGender(`${ld.productName ?? ""} ${og.productName ?? ""} ${text}`),
+    gender:
+      genderFromAttr(attr("适用性别", "性别", "适用对象")) ??
+      inferGender(`${ld.productName ?? ""} ${og.productName ?? ""} ${productName ?? ""} ${text}`),
   };
 
   const chart = parseSizeChart(html, kindFallback);

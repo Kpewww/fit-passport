@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Fit Passport",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Check your size on the product page you are looking at, using your Fit Passport — with the reasons and where every number came from.",
   "permissions": [
     "activeTab",

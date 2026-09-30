@@ -56,6 +56,8 @@ main { padding: 12px 14px 4px; min-height: 120px; }
 .found .mark { width: 14px; flex-shrink: 0; font-weight: 700; }
 .found .yes .mark { color: var(--ok); }
 .found .no .mark { color: var(--ink-faint); }
+.found .info { color: var(--ink-soft); }
+.found .info .mark { color: var(--ink-faint); }
 
 .hint {
   background: var(--warn-bg);

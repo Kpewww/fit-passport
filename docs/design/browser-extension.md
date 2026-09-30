@@ -109,6 +109,39 @@ most rows, so a hidden one could win. The capture marks each table it keeps with
 visible chart over any hidden one, falling back to row count only among equals. A
 server-fetched page carries no marks and behaves exactly as before.
 
+## 6b. Marketplace listings — Tmall, Taobao, JD (Session 79a)
+
+Found on a real Tmall item, captured by the founder in their own logged-in
+browser (the capture stays local): the popup said **"No product details"**, and
+the server named the brand **"Detail"** (from the host `detail.tmall.com`) and the
+product **"Detail T-shirt"**. The size chart itself was read correctly.
+
+The cause was not the picture-only description (图文详情) the founder suspected.
+These pages publish no JSON-LD, no `og:title`, no `<h1>` — the three places the
+name and brand were read from. What they do have, and what is read now:
+
+| Page part | Read by | Rule |
+|---|---|---|
+| `<title>` with "-tmall.com天猫" / "-淘宝网" / "【…】-京东" | server `cleanTitle`; popup title | the product's name when nothing better exists |
+| 参数信息 label/value pairs (hashed class names) | capture, **by label** | allowlist `ATTR_LABELS` only; a label pairs with a value only as the two children of one box, or dt/dd, th/td — so a "品牌" link in a navigation bar never pairs with a neighbour |
+| a scale value (版型: 紧身 … 超宽, one marked active) | capture | only the marked option; none marked means nothing is sent |
+| size buttons under a "尺码" label | capture | `title` attributes only, in a box of ≤ 400 characters — the page's first "尺码" is the image gallery's tab, and reading text around it collected a rating and prices as sizes |
+| 适用性别 / "T恤男" / "男女同款" | server | the parameter wins; then the title's marketplace forms |
+
+Never read: **the shopper's own size profile** that the size section shows
+("我的档案：177 厘米 69 公斤", "和您身材相似的买家购买了 XL"). It is the user's data,
+not the product's, and is dropped from context text; a test puts it in the same box
+as the chart and requires it absent. Nor a measurement as an attribute (the size
+picker's "衣长: 72.5cm" describes one size, not the product).
+
+A marketplace host is never a brand: `marketplaceFor(host)` names the retailer
+(Tmall, Taobao, JD.com …) and leaves the brand empty until the page says it.
+
+The popup adds a neutral line when a listing's description is all pictures — only
+on a page with a parameter list, since nearly every product page has large photos.
+The picture is not sent to the vision reader: picking the size chart out of thirty
+description images is unsolved (todo/engineering/10).
+
 ## 7. Distribution
 
 Until the extension is on the Chrome Web Store it ships as a **zip on the website**

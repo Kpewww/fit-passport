@@ -17,10 +17,16 @@
 //   • every table that mentions a measurement, rebuilt as plain-text cells, plus
 //     a little text from the dialog or section holding it
 //   • any sentence saying the chart is body or garment measurements
-//   • the page's size <select> options and data-size swatch values
+//   • the page's size <select> options, data-size swatch values, and size buttons
+//     under a "尺码"/"Size" label — size-shaped values only
 //   • <img> tags that look like size-chart images (address and alt text)
+//   • on marketplace listings (Tmall, Taobao, JD), an ALLOWLIST of product
+//     parameters found by their labels — 品牌, 适用性别, 材质成分 … (ATTR_LABELS);
+//     never item numbers, prices, or a measurement of one selected size
 // Never: forms or their values, cart, account, header, nav, footer, reviews,
-// iframes, scripts (other than the JSON-LD above), styles, cookies, storage.
+// iframes, scripts (other than the JSON-LD above), styles, cookies, storage — nor
+// the SHOPPER's own size profile that marketplaces print beside the chart
+// ("我的档案：177 厘米 69 公斤", "和您身材相似的买家购买了").
 // Emails, phone numbers and card-like numbers that slip into kept TEXT are
 // masked, and the popup shows the user exactly what will be sent before any of it
 // is.
@@ -33,7 +39,7 @@
 (function (root) {
   "use strict";
 
-  var VERSION = "0.1.0";
+  var VERSION = "0.2.0";
 
   // The server refuses supplied markup over 1,000,000 characters. A capture this
   // big means something went wrong, and the popup says so instead of sending it.
@@ -45,6 +51,12 @@
   var SNIPPET_RADIUS = 100;
   var MAX_SWATCH_VALUES = 100;
   var MAX_CHART_IMAGES = 10;
+  var MAX_ATTRS = 20;
+  var ATTR_VALUE_CHARS = 60;
+  // An image this wide is page content, not an icon — used to notice a
+  // description that is all pictures (Taobao/Tmall 图文详情).
+  var LARGE_IMAGE_PX = 700;
+  var PICTURE_DESCRIPTION_MIN = 3;
 
   // ---- Must equal the server parser. Checked by extensionCapture.test.ts. ----
 
@@ -85,6 +97,34 @@
 
   var MEASURE_RE =
     /chest|bust|waist|hip|shoulder|sleeve|arm\s*length|length|inseam|width|pit\s*to\s*pit|胸围|胸|腰围|腰|臀|肩宽|肩|袖长|袖|衣长|总长|后中长|身幅|着丈|裄丈|肩幅/i;
+
+  // pageParse.ts SIZE_LABEL_RE — what a size label looks like.
+  var SIZE_LABEL_RE = /^(XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|\d{1,3}(?:\.\d)?|EU\s?\d{2}|US\s?\d{1,2}|UK\s?\d{1,2})$/i;
+  // pageParse.ts TITLE_SUFFIX_RE — a marketplace appended to the <title>.
+  var TITLE_SUFFIX_RE =
+    /\s*(?:【[^】]{0,40}】)?\s*[-–—_|]\s*(?:tmall\.com天猫|天猫tmall\.com|天猫|淘宝网|淘宝|京东|jd\.com|拼多多|唯品会|得物)\s*$/i;
+  // pageParse.ts ATTR_LABELS — the only product parameters sent (Tmall/Taobao/JD
+  // 参数信息). An allowlist: item numbers, prices and the rest stay on the page.
+  var ATTR_LABELS = [
+    "品牌",
+    "适用性别",
+    "性别",
+    "适用对象",
+    "版型",
+    "版型分类",
+    "服装版型",
+    "袖长",
+    "衣长",
+    "衣长类型",
+    "领型",
+    "材质",
+    "材质成分",
+    "面料",
+    "成分含量",
+    "厚薄",
+    "适用季节",
+    "款式",
+  ];
 
   // ---- Allowlists ----
 
@@ -174,7 +214,7 @@
     while (stack.length) {
       var n = stack.pop();
       if (typeof n === "string") { out.push(n); continue; } // a closing tag
-      if (n.nodeType === 3) { out.push(n.nodeValue); continue; }
+      if (n.nodeType === 3) { if (!(skip && skip(n))) out.push(n.nodeValue); continue; }
       if (n.nodeType === 1) {
         if (SKIP_TEXT[tagOf(n)] || (skip && n !== el && skip(n))) { out.push(" "); continue; }
       } else if (n.nodeType !== 9 && n.nodeType !== 11) {
@@ -239,7 +279,17 @@
   // first stretch of a whole page can be a greeting with the user's name in it.
   // Never climbs past <main> or <body>.
   var BOX_MAX_CHARS = 3000;
-  var SKIP_IN_CONTEXT = function (n) { return !!SKIP_CONTEXT[tagOf(n)]; };
+
+  // The SHOPPER'S OWN size profile, which marketplaces print beside the chart
+  // ("我的档案：177 厘米 69 公斤", "和您身材相似的买家购买了 XL"). It is the user's
+  // data, not the product's, and never goes out as context. Only short runs are
+  // tested, so a long block that merely mentions it is not dropped whole.
+  var PERSONAL_RE = /我的档案|我的尺码|我的身材|身材相似|买家购买了|my size profile|your size profile/i;
+  function isPersonal(n) {
+    var t = n.nodeType === 3 ? n.nodeValue : n.textContent;
+    return !!t && t.length <= 200 && PERSONAL_RE.test(t);
+  }
+  var SKIP_IN_CONTEXT = function (n) { return !!SKIP_CONTEXT[tagOf(n)] || isPersonal(n); };
 
   function contextFor(table) {
     var dialog = null;
@@ -379,6 +429,139 @@
     return JSON.stringify(value).replace(/<\//g, "<\\/");
   }
 
+  // ---- Marketplace pages: parameters and size buttons, found by their labels ----
+
+  function underNeverRead(el) {
+    for (var e = el; e; e = e.parentElement) {
+      var tag = tagOf(e);
+      if (NEVER_READ[tag] || SKIP_TEXT[tag]) return true;
+    }
+    return false;
+  }
+
+  // Is this label's own pair inside a box showing the shopper's profile (我的档案,
+  // 身材相似…)? Then it describes the shopper, not the product, and is not read.
+  // Only the pair's own box and the one around it: a profile box NEXT to a
+  // product's fit scale must not hide the scale (it did, in the first version).
+  var PERSONAL_BOX_CHARS = 400;
+  function inPersonalBox(el) {
+    for (var e = el, d = 0; e && d < 3; e = e.parentElement, d++) {
+      var t = e.textContent || "";
+      if (t.length <= PERSONAL_BOX_CHARS && PERSONAL_RE.test(t)) return true;
+    }
+    return false;
+  }
+
+  function insideTable(el) {
+    for (var e = el; e; e = e.parentElement) if (tagOf(e) === "TABLE") return true;
+    return false;
+  }
+
+  // The value paired with a label element. Tmall writes each pair as a small box
+  // holding exactly the label and the value; a definition list or a table row
+  // pairs dt/dd and th/td. Anything looser is not trusted: a "品牌" link in a
+  // navigation bar sits among many siblings and is never paired with one of them.
+  function pairedValue(label) {
+    var tag = tagOf(label);
+    var next = label.nextElementSibling;
+    if ((tag === "DT" && tagOf(next) === "DD") || ((tag === "TH" || tag === "TD") && tagOf(next) === "TD")) {
+      return valueOf(next);
+    }
+    for (var e = label, d = 0; e && e.parentElement && d < 2; e = e.parentElement, d++) {
+      var kids = e.parentElement.children;
+      if (kids.length === 2 && kids[0] === e) return valueOf(kids[1]);
+    }
+    return "";
+  }
+
+  // A value box's text — unless it is a SCALE: several short options with one
+  // marked as this product's (Tmall's 版型 line: 紧身 修身 常规 宽松 超宽, 宽松
+  // marked). Then only the marked option; with none marked the value is
+  // ambiguous and nothing is sent.
+  var ACTIVE_RE = /active|selected|current|checked/i;
+  function valueOf(box) {
+    var leaves = [];
+    var all = box.querySelectorAll("*");
+    for (var i = 0; i < all.length; i++) {
+      if (!all[i].children.length && collapse(all[i].textContent || "")) leaves.push(all[i]);
+    }
+    if (leaves.length < 3) return textOf(box);
+    var marked = leaves.filter(function (el) {
+      return ACTIVE_RE.test(el.getAttribute("class") || "") ||
+        el.getAttribute("aria-selected") === "true" || el.getAttribute("aria-checked") === "true";
+    });
+    return marked.length === 1 ? textOf(marked[0]) : "";
+  }
+
+  // Measurements belong to the size chart, never to the product's attributes:
+  // the size picker's "衣长: 72.5cm" describes one size, not the product.
+  var MEASUREMENT_VALUE_RE = /\d\s*(?:cm|厘米|mm|in|英寸|"|kg|公斤)/i;
+
+  function productAttrs(doc, mask) {
+    var pairs = [];
+    var done = Object.create(null);
+    var root = doc.body || doc.documentElement;
+    if (!root || !doc.createTreeWalker) return pairs;
+    var walker = doc.createTreeWalker(root, 4 /* NodeFilter.SHOW_TEXT */);
+    for (var node = walker.nextNode(); node && pairs.length < MAX_ATTRS; node = walker.nextNode()) {
+      var t = collapse(node.nodeValue || "");
+      if (!t || t.length > 70) continue;
+      var label = null;
+      var value = "";
+      var bare = t.replace(/\s*[：:]\s*$/, "");
+      var inline = t.match(/^([^：:]{1,8})\s*[：:]\s*(.+)$/); // JD: "品牌：某某"
+      if (ATTR_LABELS.indexOf(bare) >= 0) {
+        label = bare;
+      } else if (inline && ATTR_LABELS.indexOf(inline[1].trim()) >= 0) {
+        label = inline[1].trim();
+        value = inline[2];
+      } else continue;
+      if (done[label] || !node.parentElement || underNeverRead(node.parentElement) || inPersonalBox(node.parentElement)) continue;
+      if (!value) value = pairedValue(node.parentElement);
+      value = collapse(value);
+      if (!value || value.length > ATTR_VALUE_CHARS || ATTR_LABELS.indexOf(value) >= 0 || MEASUREMENT_VALUE_RE.test(value)) continue;
+      done[label] = true;
+      pairs.push([label, mask(value)]);
+    }
+    return pairs;
+  }
+
+  // Size buttons under a "尺码" / "Size" label, when they carry no data-size
+  // attribute (Tmall: <span title="M">M</span>). From the label, climb to the
+  // nearest SMALL box holding two or more options named by a title attribute.
+  // Title attributes only, never bare text: on the real Tmall page the first
+  // "尺码" is the image gallery's tab, and reading text from around it collected
+  // a rating and prices ("4.9", "168", "108") as sizes. A size group is small —
+  // a label, its options, a line about the selected one — so a box past
+  // SIZE_GROUP_CHARS is page layout, and the climb stops.
+  var SIZE_GROUP_LABELS = { "尺码": 1, "尺寸": 1, "码数": 1, "size": 1, "sizes": 1 };
+  var SIZE_GROUP_CHARS = 400;
+
+  function sizeGroupValues(doc) {
+    var root = doc.body || doc.documentElement;
+    if (!root || !doc.createTreeWalker) return [];
+    var walker = doc.createTreeWalker(root, 4);
+    for (var node = walker.nextNode(); node; node = walker.nextNode()) {
+      var t = collapse(node.nodeValue || "").replace(/\s*[：:]\s*$/, "").toLowerCase();
+      if (!SIZE_GROUP_LABELS[t]) continue;
+      var start = node.parentElement;
+      if (!start || insideTable(start) || underNeverRead(start)) continue;
+      for (var box = start.parentElement, d = 0; box && d < 4; box = box.parentElement, d++) {
+        var tag = tagOf(box);
+        if (tag === "BODY" || tag === "HTML" || tag === "MAIN") break;
+        if ((box.textContent || "").length > SIZE_GROUP_CHARS) break;
+        var found = [];
+        var titled = box.querySelectorAll("[title]");
+        for (var i = 0; i < titled.length; i++) {
+          var v = collapse(titled[i].getAttribute("title") || "");
+          if (SIZE_LABEL_RE.test(v) && !insideTable(titled[i]) && found.indexOf(v) < 0) found.push(v);
+        }
+        if (found.length >= 2) return found.slice(0, MAX_SWATCH_VALUES);
+      }
+    }
+    return [];
+  }
+
   // ---- The capture ----
 
   function fpCapture(doc, loc, options) {
@@ -386,6 +569,7 @@
     var withContext = !(options && options.withoutContext);
     var stats = {
       version: VERSION,
+      attrsKept: 0,
       domChars: 0,
       payloadChars: 0,
       tablesSeen: 0,
@@ -410,6 +594,7 @@
 
     var title = collapse(doc.title || "");
     if (title) head.push("<title>" + esc(mask(title.slice(0, 300))) + "</title>");
+    var hasDescription = false;
 
     // Product meta tags.
     var metas = doc.querySelectorAll("meta[property], meta[name]");
@@ -420,6 +605,7 @@
       if (META_KEYS.indexOf(key) < 0 || !content) continue;
       content = mask(collapse(content).slice(0, 1000));
       if (key === "og:title") ogTitle = content;
+      if (key === "og:description" || key === "description") hasDescription = true;
       head.push('<meta property="' + esc(key) + '" content="' + esc(content) + '">');
     }
 
@@ -432,6 +618,7 @@
       var kept = ldNodes(data).filter(ldTypeIs).map(function (n) { return pruneLd(n, mask); });
       if (!kept.length) continue;
       if (kept.some(function (n) { return ldTypes(n).indexOf("product") >= 0; })) hasLdProduct = true;
+      if (kept.some(function (n) { return typeof n.description === "string" && n.description.trim(); })) hasDescription = true;
       head.push('<script type="application/ld+json">' + scriptJson(kept.length === 1 ? kept[0] : kept) + "</script>");
       stats.ldJsonKept += kept.length;
     }
@@ -439,6 +626,17 @@
     var h1 = doc.querySelector("h1");
     var h1Text = h1 ? mask(textOf(h1).slice(0, 300)) : "";
     if (h1Text) body.push("<h1>" + esc(h1Text) + "</h1>");
+
+    // Marketplace product parameters (参数信息), allowlisted labels only.
+    var attrs = productAttrs(doc, mask);
+    var brandAttr = "";
+    if (attrs.length) {
+      body.push('<dl data-fp="attrs">' + attrs.map(function (p) {
+        if (p[0] === "品牌" && !/^(其他|其它|other|无)$/i.test(p[1])) brandAttr = p[1];
+        return "<dt>" + esc(p[0]) + "</dt><dd>" + esc(p[1]) + "</dd>";
+      }).join("") + "</dl>");
+      stats.attrsKept = attrs.length;
+    }
 
     // Size tables, rebuilt from their text. Identical tables (a mobile and a
     // desktop copy of the same chart) are sent once.
@@ -501,11 +699,18 @@
         var v = swatches[w].getAttribute(a);
         if (v == null) return;
         v = v.trim();
-        if (!v || v.length > 8 || seenValue[v] || values.length >= MAX_SWATCH_VALUES) return;
+        // Only size-shaped values: a swatch valued "item" is not a size, and the
+        // popup must not tell the shopper it found size options when it did not.
+        if (!v || !SIZE_LABEL_RE.test(v) || seenValue[v] || values.length >= MAX_SWATCH_VALUES) return;
         seenValue[v] = true;
         values.push(v);
       });
     }
+    sizeGroupValues(doc).forEach(function (v) {
+      if (seenValue[v] || values.length >= MAX_SWATCH_VALUES) return;
+      seenValue[v] = true;
+      values.push(v);
+    });
     if (values.length) {
       body.push('<div data-fp="labels">' + values.map(function (v) {
         return '<span data-size="' + esc(v) + '"></span>';
@@ -516,6 +721,13 @@
     // Images that look like a size chart, for the server's vision reader.
     var IMG_ATTRS = ["src", "data-src", "data-original", "srcset", "alt", "class", "id", "title"];
     var imgs = doc.querySelectorAll("img");
+    // Counted, never sent: a description made of pictures explains a page with
+    // no product text, and says the sizing does not depend on it.
+    var largeImages = 0;
+    for (var li = 0; li < imgs.length; li++) {
+      var width = imgs[li].naturalWidth || Number(imgs[li].getAttribute("width")) || 0;
+      if (width >= LARGE_IMAGE_PX) largeImages++;
+    }
     for (var im = 0; im < imgs.length && stats.chartImagesKept < MAX_CHART_IMAGES; im++) {
       var img = imgs[im];
       var hay = IMG_ATTRS.map(function (a) { return img.getAttribute(a) || ""; }).join(" ").toLowerCase();
@@ -547,8 +759,13 @@
       stats: stats,
       // What the popup tells the user it found, before anything is sent.
       found: {
-        title: h1Text || ogTitle || title,
-        productData: hasLdProduct,
+        title: h1Text || ogTitle || title.replace(TITLE_SUFFIX_RE, "").trim(),
+        productData: hasLdProduct || attrs.length > 0,
+        attrs: attrs.length,
+        brand: brandAttr,
+        // Only on a marketplace listing (it has a parameter list): nearly every
+        // product page has large photos, and there they are not the description.
+        pictureDescription: attrs.length > 0 && !hasDescription && largeImages >= PICTURE_DESCRIPTION_MIN,
         sizeTables: stats.tablesKept,
         sizeRows: biggest,
         sizeOptions: stats.optionsKept + stats.swatchValuesKept,
@@ -564,5 +781,8 @@
   fpCapture.SIZE_SELECT_RE = SIZE_SELECT_RE;
   fpCapture.CHART_IMG_TOKENS = CHART_IMG_TOKENS;
   fpCapture.MEASURE_RE = MEASURE_RE;
+  fpCapture.SIZE_LABEL_RE = SIZE_LABEL_RE;
+  fpCapture.TITLE_SUFFIX_RE = TITLE_SUFFIX_RE;
+  fpCapture.ATTR_LABELS = ATTR_LABELS;
   root.fpCapture = fpCapture;
 })(typeof globalThis !== "undefined" ? globalThis : this);
