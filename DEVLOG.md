@@ -31,6 +31,27 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-29 · Session 79g — The passport, onboarding and refresh in Chinese
+
+The body-profile pages are translated: the passport (edit and view), the metal
+card and its exported PNG, onboarding, and the fit-refresh card stack.
+
+- The body type is composed per language from the same volume band and torso
+  shape `lib/bodyType.ts` derives (倒三角身形, 标准 · 直筒 …), and its sizing notes
+  are worded from the same condition — the derivation itself is unchanged.
+- The exported card's printed labels (HOLDER, PASSPORT NO. …) were fixed English
+  inside `lib/cardExport.ts`; they are now an optional `labels` field that
+  defaults to exactly the old English.
+- Card editions have names in both languages (Lapis Edition / 青金石版 …).
+- Left in Latin on purpose: the brand, and the passport's machine-readable line,
+  which on a real passport is always Latin letters.
+
+Seen in Chinese at 1440 and 390 with the demo closet: no overflow, no stray English.
+
+631 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-09-29 · Session 79f — The closet in Chinese
 
 The closet (2,124 lines, the largest page) and its inputs — category picker, size

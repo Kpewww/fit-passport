@@ -21,6 +21,9 @@ import { MetalCard, CardField, resolveTheme, CARD_THEMES } from "@/components/Me
 import { downloadCardPng } from "@/lib/cardExport";
 import { garmentLabel } from "@/lib/garments";
 import type { OutfitView } from "@/components/OutfitCard";
+import { useT } from "@/i18n/client";
+import { useGarmentText } from "@/i18n/garment";
+import type { Translator } from "@/i18n/translator";
 
 // three.js is ~150kB of runtime nobody needs unless they open the 3D view, and a
 // failed chunk silently blanks its subtree, so this is lazy AND boundaried —
@@ -62,10 +65,15 @@ const FITS: Fit[] = ["slim", "regular", "relaxed", "oversized"];
 const MAX_FITS = 3;
 const REGIONS = ["US", "EU", "UK", "JP", "CN"] as const;
 const SHOPS = ["mens", "womens", "unisex"] as const;
-const REGION_HELP =
-  "Which country's size labels you shop most. It sets the default scale we show " +
-  "(US = S/M/L, EU = 46/48…). You can still check products from any region — this " +
-  "just picks the labels shown first.";
+
+/** The body-type label deriveBodyType composes, in the reader's language. */
+function bodyLabel(t: Translator<"passport">, bt: ReturnType<typeof deriveBodyType>): string {
+  if (bt.volume != null) {
+    const v = t(`vol.${bt.volume}`);
+    return bt.shape !== "unknown" ? t("volShape", { volume: v, shape: t(`shape.${bt.shape}`) }) : v;
+  }
+  return bt.shape !== "unknown" ? t(`shapeBuild.${bt.shape}`) : t("notEnough");
+}
 
 // Parse/serialize the CSV preferredFit.
 function fitList(csv: string): Fit[] {
@@ -83,6 +91,9 @@ function hasContent(p: Profile): boolean {
 }
 
 export default function PassportPage() {
+  const t = useT("passport");
+  const g = useGarmentText();
+  const tf = useT("fit");
   const [profile, setProfile] = useState<Profile | null>(null);
   const [me, setMe] = useState<Me | null>(null);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -171,12 +182,12 @@ export default function PassportPage() {
   }
 
   if (!profile || !me) {
-    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-2xl px-4 sm:px-6 py-14 text-ink-faint">{t("loading")}</div></main>;
   }
 
   const initials = (me.username ?? "you").slice(0, 2).toUpperCase();
-  const holder = me.claimed ? me.username : "TEMPORARY BEARER";
-  const idLine = me.claimed ? me.accountCode : "UNCLAIMED";
+  const holder = me.claimed ? me.username : t("tempBearer");
+  const idLine = me.claimed ? me.accountCode : t("unclaimed");
   const bt = deriveBodyType({
     heightCm: profile.heightCm, weightKg: profile.weightKg,
     chestCm: profile.chestCm, waistCm: profile.waistCm, hipCm: profile.hipCm,
@@ -192,7 +203,7 @@ export default function PassportPage() {
         holder={holder ?? "—"}
         idLine={idLine ?? "—"}
         memberNo={me.memberNo}
-        bodyLabel={bt.label}
+        bodyLabel={bodyLabel(t, bt)}
         figureKey={bt.figureKey}
         shape={bt.shape}
         showBodyType={showBodyType}
@@ -224,21 +235,17 @@ export default function PassportPage() {
       <div className="mx-auto max-w-2xl px-4 sm:px-6">
         <div className="mb-3 flex items-center justify-between">
           <button onClick={() => setMode("view")} className="text-sm text-ink-faint hover:text-brand">
-            <ArrowLeft size={14} className="-mt-px inline" /> Back to my passport
+            <ArrowLeft size={14} className="-mt-px inline" /> {t("backToPassport")}
           </button>
-          <Button size="md" onClick={() => setMode("view")}>Done editing</Button>
+          <Button size="md" onClick={() => setMode("view")}>{t("doneEditing")}</Button>
         </div>
 
         {isEmptyPassport && (
           <div className="mb-4 rounded-2xl border border-line bg-paper-soft px-5 py-4">
-            <p className="font-serif text-lg text-ink">Starting from nothing?</p>
-            <p className="mt-1 text-sm text-ink-soft">
-              There&apos;s a guided version of this — three questions, one at a time, and
-              every measurement optional. Or fill in whatever you know below; the two
-              write to the same passport.
-            </p>
+            <p className="font-serif text-lg text-ink">{t("startingTitle")}</p>
+            <p className="mt-1 text-sm text-ink-soft">{t("startingBody")}</p>
             <div className="mt-3">
-              <LinkButton href="/onboarding" size="md">Take me through it <ArrowRight size={14} className="-mt-px inline" /></LinkButton>
+              <LinkButton href="/onboarding" size="md">{t("takeMe")} <ArrowRight size={14} className="-mt-px inline" /></LinkButton>
             </div>
           </div>
         )}
@@ -249,12 +256,10 @@ export default function PassportPage() {
             {/* subtle shine */}
             <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,transparent_20%,rgba(255,255,255,0.08)_40%,transparent_60%)]" />
             <div className="relative">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.3em] opacity-80">
+              <p lang="en" className="text-[10px] font-semibold uppercase tracking-[0.3em] opacity-80">
                 Fit Passport
               </p>
-              <p className="mt-1 text-lg font-semibold tracking-wide">
-                International Sizing Identity
-              </p>
+              <p className="mt-1 text-lg font-semibold tracking-wide">{t("coverSub")}</p>
             </div>
           </div>
 
@@ -266,37 +271,37 @@ export default function PassportPage() {
               onChange={(v) => update("avatarDataUrl", v)}
             />
             <div className="min-w-0 space-y-2">
-              <Line label="Holder" value={holder ?? "—"} mono />
-              <Line label="Passport no." value={idLine ?? "—"} mono />
-              <Line label="Region of issue" value={profile.region} mono />
-              <Line label="Preferred fit" value={fitList(profile.preferredFit).join(", ").toUpperCase() || "—"} mono />
+              <Line label={t("holder")} value={holder ?? "—"} mono />
+              <Line label={t("passportNo")} value={idLine ?? "—"} mono />
+              <Line label={t("regionOfIssue")} value={profile.region} mono />
+              <Line label={t("preferredFit")} value={fitList(profile.preferredFit).map((f) => tf(`pref.${f}`)).join(", ").toUpperCase() || "—"} mono />
             </div>
           </div>
 
           {/* MRZ-like details block — always editable */}
           <div className="space-y-4 px-6 py-6">
-            <Section title="Sizing reference">
+            <Section title={t("sizingReference")}>
               <div className="grid gap-3 sm:grid-cols-2">
                 <FieldChips
-                  label="Sex (biological)"
+                  label={t("sex")}
                   value={profile.sex}
                   options={[
-                    { v: "male", label: "M" },
-                    { v: "female", label: "F" },
-                    { v: "unspecified", label: "X" },
+                    { v: "male", label: t("sexOpt.male") },
+                    { v: "female", label: t("sexOpt.female") },
+                    { v: "unspecified", label: t("sexOpt.unspecified") },
                   ]}
                   onChange={(v) => update("sex", v as Sex)}
                 />
                 <FieldMultiChips
-                  label="Shops in"
+                  label={t("shopsIn")}
                   value={profile.shopsFor}
-                  options={SHOPS.map((s) => ({ v: s, label: s }))}
+                  options={SHOPS.map((s) => ({ v: s, label: g.line(s) }))}
                   onChange={(v) => update("shopsFor", v)}
                 />
               </div>
             </Section>
 
-            <Section title="Preferred fit" subtitle="pick up to 3 · first is your default">
+            <Section title={t("preferredFit")} subtitle={t("fitSubtitle")}>
               <div className="grid grid-cols-4 gap-2">
                 {FITS.map((f) => {
                   const list = fitList(profile.preferredFit);
@@ -321,46 +326,43 @@ export default function PassportPage() {
                         active ? "border-brand bg-brand-tint font-semibold text-brand" : "border-line text-ink hover:border-ink/30"
                       }`}
                     >
-                      {f}
+                      {tf(`pref.${f}`)}
                       {idx === 0 && (
                         <span className="absolute -right-1 -top-1 rounded-full bg-brand px-1 text-[8px] font-bold text-white">
-                          1st
+                          {t("first")}
                         </span>
                       )}
                     </button>
                   );
                 })}
               </div>
-              <p className="mt-1.5 text-[11px] text-ink-faint">
-                Your recommendations default to the 1st pick. On the Check page you
-                can preview any of the others.
-              </p>
+              <p className="mt-1.5 text-[11px] text-ink-faint">{t("fitNote")}</p>
             </Section>
 
-            <Section title="Measurements" subtitle="all optional">
+            <Section title={t("measurements")} subtitle={t("allOptional")}>
               <div className="mb-3 flex items-center gap-4">
                 <UnitToggle
-                  label="Lengths"
+                  label={t("lengths")}
                   options={["cm", "in"]}
                   value={lengthUnit}
                   onChange={(u) => setLengthUnit(u as "cm" | "in")}
                 />
                 <UnitToggle
-                  label="Weight"
+                  label={t("weight")}
                   options={["kg", "lb"]}
                   value={weightUnit}
                   onChange={(u) => setWeightUnit(u as "kg" | "lb")}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <LenField label="Chest" hint="most useful" unit={lengthUnit} valueCm={profile.chestCm} onCommitCm={(v) => update("chestCm", v)} />
-                <LenField label="Waist" unit={lengthUnit} valueCm={profile.waistCm} onCommitCm={(v) => update("waistCm", v)} />
-                <LenField label="Hip" unit={lengthUnit} valueCm={profile.hipCm} onCommitCm={(v) => update("hipCm", v)} />
-                <LenField label="Shoulder" unit={lengthUnit} valueCm={profile.shoulderCm} onCommitCm={(v) => update("shoulderCm", v)} />
-                <LenField label="Sleeve" unit={lengthUnit} valueCm={profile.sleeveCm} onCommitCm={(v) => update("sleeveCm", v)} />
-                <LenField label="Inseam" unit={lengthUnit} valueCm={profile.inseamCm} onCommitCm={(v) => update("inseamCm", v)} />
-                <LenField label="Height" unit={lengthUnit} valueCm={profile.heightCm} onCommitCm={(v) => update("heightCm", v)} />
-                <WeightField label="Weight" unit={weightUnit} valueKg={profile.weightKg} onCommitKg={(v) => update("weightKg", v)} />
+                <LenField label={t("m.chest")} hint={t("mostUseful")} unit={lengthUnit} valueCm={profile.chestCm} onCommitCm={(v) => update("chestCm", v)} />
+                <LenField label={t("m.waist")} unit={lengthUnit} valueCm={profile.waistCm} onCommitCm={(v) => update("waistCm", v)} />
+                <LenField label={t("m.hip")} unit={lengthUnit} valueCm={profile.hipCm} onCommitCm={(v) => update("hipCm", v)} />
+                <LenField label={t("m.shoulder")} unit={lengthUnit} valueCm={profile.shoulderCm} onCommitCm={(v) => update("shoulderCm", v)} />
+                <LenField label={t("m.sleeve")} unit={lengthUnit} valueCm={profile.sleeveCm} onCommitCm={(v) => update("sleeveCm", v)} />
+                <LenField label={t("m.inseam")} unit={lengthUnit} valueCm={profile.inseamCm} onCommitCm={(v) => update("inseamCm", v)} />
+                <LenField label={t("m.height")} unit={lengthUnit} valueCm={profile.heightCm} onCommitCm={(v) => update("heightCm", v)} />
+                <WeightField label={t("m.weight")} unit={weightUnit} valueKg={profile.weightKg} onCommitKg={(v) => update("weightKg", v)} />
               </div>
             </Section>
 
@@ -377,7 +379,7 @@ export default function PassportPage() {
               }}
             />
 
-            <Section title="Region" subtitle="which size labels to show first">
+            <Section title={t("region")} subtitle={t("regionSubtitle")}>
               <div className="flex flex-wrap gap-2">
                 {REGIONS.map((r) => {
                   const active = profile.region === r;
@@ -392,14 +394,14 @@ export default function PassportPage() {
                   );
                 })}
               </div>
-              <p className="mt-1.5 text-[11px] text-ink-faint">{REGION_HELP}</p>
+              <p className="mt-1.5 text-[11px] text-ink-faint">{t("regionHelp")}</p>
             </Section>
 
-            <Section title="Memo" subtitle="a short note about your fit / style">
+            <Section title={t("memo")} subtitle={t("memoSubtitle")}>
               <TextField
                 value={profile.notes ?? ""}
                 onCommit={(v) => update("notes", v || null)}
-                placeholder="e.g. long torso, broad shoulders, prefer soft cotton, minimalist style"
+                placeholder={t("memoPlaceholder")}
               />
             </Section>
           </div>
@@ -417,18 +419,16 @@ export default function PassportPage() {
           <div className="mt-4 flex items-center gap-3 rounded-2xl border border-brand/30 bg-brand-tint px-4 py-3 animate-fade-in-up">
             <Refresh size={20} className="flex-shrink-0 text-brand" />
             <div className="flex-1 text-sm text-ink">
-              <p className="font-semibold">Your measurements changed</p>
-              <p className="text-xs text-ink-soft">
-                Clothes may fit differently now. Do a quick fit refresh to update how they feel.
-              </p>
+              <p className="font-semibold">{t("changedTitle")}</p>
+              <p className="text-xs text-ink-soft">{t("changedBody")}</p>
             </div>
             <Link
               href="/refresh?collections=all"
               className="whitespace-nowrap rounded-full bg-ink px-3.5 py-1.5 text-xs font-medium text-paper hover:bg-black"
             >
-              Refresh <ArrowRight size={14} className="-mt-px inline" />
+              {t("refresh")} <ArrowRight size={14} className="-mt-px inline" />
             </Link>
-            <button onClick={() => setBodyChanged(false)} className="-mr-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-ink/5 hover:text-ink" aria-label="Dismiss"><Close size={16} /></button>
+            <button onClick={() => setBodyChanged(false)} className="-mr-2 flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-ink-faint hover:bg-ink/5 hover:text-ink" aria-label={t("dismiss")}><Close size={16} /></button>
           </div>
         )}
 
@@ -444,12 +444,10 @@ export default function PassportPage() {
             <SaveDot status={status} />
             <div className="leading-tight">
               <p className="font-medium text-ink">
-                {status === "saving" ? "Saving…" : status === "error" ? "Save failed — check connection" : "Changes save automatically"}
+                {status === "saving" ? t("saving") : status === "error" ? t("saveFailed") : t("autosave")}
               </p>
               <p className="text-[11px] text-ink-faint">
-                {me.claimed
-                  ? "Edits are saved to your account as you type."
-                  : "Saved to this device. Claim an account to keep it safe & shareable."}
+                {me.claimed ? t("savedAccount") : t("savedDevice")}
               </p>
             </div>
           </div>
@@ -458,11 +456,11 @@ export default function PassportPage() {
               than letting it scroll into reach. Wrap instead of refusing to. */}
           <div className="flex flex-wrap gap-2 sm:flex-shrink-0 sm:flex-nowrap">
             <Link href="/closet" className="flex min-h-[44px] items-center rounded-lg border border-line px-3 text-xs font-medium text-ink-soft hover:border-ink/30 sm:min-h-0 sm:py-1.5">
-              Closet <ArrowRight size={14} className="-mt-px inline" />
+              {t("closet")} <ArrowRight size={14} className="-mt-px inline" />
             </Link>
             {!me.claimed && (
               <Link href="/account" className="flex min-h-[44px] items-center rounded-full bg-ink px-3.5 text-xs font-medium text-paper hover:bg-black sm:min-h-0 sm:py-1.5">
-                Save — claim account <ArrowRight size={14} className="-mt-px inline" />
+                {t("saveClaim")} <ArrowRight size={14} className="-mt-px inline" />
               </Link>
             )}
           </div>
@@ -522,7 +520,12 @@ function ViewBook({
   onSetCardMetal: (metal: string | null) => void;
   onEdit: () => void;
 }) {
-  const fits = fitList(profile.preferredFit);
+  const t = useT("passport");
+  const tf = useT("fit");
+  const g = useGarmentText();
+  const fits = fitList(profile.preferredFit).map((f) => tf(`pref.${f}`));
+  const themeLabel = (key: string) => t(`theme.${key as "lapis"}`);
+  const tHome = useT("home");
   // Seal glyph = the highest pinned badge, else the classic "FP".
   const sealBadge = pinnedBadges.map(badgeById).find(Boolean);
   const signature = outfits.find((o) => o.id === signatureOutfitId) ?? null;
@@ -557,12 +560,21 @@ function ViewBook({
                   region: profile.region || "—",
                   preferredFit: fits.join(" · ").toUpperCase() || "—",
                   avatarDataUrl: profile.avatarDataUrl,
+                  labels: {
+                    theme: themeLabel(theme.key).toUpperCase(),
+                    issued: t("issued").toUpperCase(),
+                    holder: t("holder").toUpperCase(),
+                    passportNo: t("passportNo").toUpperCase(),
+                    region: t("region2").toUpperCase(),
+                    preferredFit: t("preferredFit").toUpperCase(),
+                    tagline: tHome("hero.eyebrow").toUpperCase(),
+                  },
                 })
               }
             >
-              <Download size={16} /> Export card
+              <Download size={16} /> {t("exportCard")}
             </Button>
-            <Button size="md" variant="secondary" onClick={onEdit} icon={<Pencil size={16} />}>Edit passport</Button>
+            <Button size="md" variant="secondary" onClick={onEdit} icon={<Pencil size={16} />}>{t("editPassport")}</Button>
           </div>
         </div>
 
@@ -572,14 +584,14 @@ function ViewBook({
           {/* top row: wordmark + issued */}
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="font-serif text-[26px] italic leading-none">Fit Passport</p>
-              <p className="mt-2 text-[9px] uppercase tracking-[0.3em] opacity-60">{theme.label}</p>
+              <p lang="en" className="font-serif text-[26px] italic leading-none">Fit Passport</p>
+              <p className="mt-2 text-[9px] uppercase tracking-[0.3em] opacity-60">{themeLabel(theme.key)}</p>
             </div>
             <div className="flex flex-col items-end gap-2">
               {/* Membership number, embossed like a charge card's. Issued when the
                   account is claimed, so an anonymous bearer hasn't got one. */}
               <span className="font-mono text-[13px] tracking-[0.22em] opacity-85">{memberLabel}</span>
-              <span className="text-[9px] uppercase tracking-[0.24em] opacity-60">Issued 2026</span>
+              <span className="text-[9px] uppercase tracking-[0.24em] opacity-60">{t("issued")}</span>
               {sealBadge && <BadgeSeal id={sealBadge.id} metal={sealBadge.metal} size={40} title={sealBadge.title} />}
             </div>
           </div>
@@ -593,22 +605,22 @@ function ViewBook({
               <Avatar src={profile.avatarDataUrl} initials={initials} size={72} ring={false} />
             </div>
             <div className="min-w-0 pb-1">
-              <p className="text-[9px] uppercase tracking-[0.24em] opacity-55">Holder</p>
+              <p className="text-[9px] uppercase tracking-[0.24em] opacity-55">{t("holder")}</p>
               <p className="truncate font-serif text-2xl leading-tight">{holder}</p>
             </div>
           </div>
 
           {/* card-style detail row */}
           <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-4 sm:grid-cols-3">
-            <CardField label="Passport no." value={idLine} mono />
-            <CardField label="Region" value={profile.region || "—"} mono />
-            <CardField label="Preferred fit" value={fits.join(" · ").toUpperCase() || "—"} />
+            <CardField label={t("passportNo")} value={idLine} mono />
+            <CardField label={t("region2")} value={profile.region || "—"} mono />
+            <CardField label={t("preferredFit")} value={fits.join(" · ").toUpperCase() || "—"} />
           </div>
 
           {/* bottom: verification + logo slot */}
           <div className="mt-9 flex items-end justify-between gap-4 border-t border-white/15 pt-4">
             <div className="min-w-0">
-              <p className="text-[8px] uppercase tracking-[0.24em] opacity-50">Verification</p>
+              <p className="text-[8px] uppercase tracking-[0.24em] opacity-50">{t("verification")}</p>
               <p className="truncate font-mono text-[10px] tracking-[0.2em] opacity-75">{mrz(profile, me)}</p>
             </div>
             <Logo size={34} className="flex-shrink-0 opacity-80" />
@@ -620,27 +632,27 @@ function ViewBook({
           {/* Achievements */}
           <div className="rounded-2xl bg-white p-6 ring-1 ring-line">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Achievements</p>
-              {earnedBadges.length > 0 && <span className="text-[10px] text-ink-faint">tilt a medallion to catch the light</span>}
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">{t("achievements")}</p>
+              {earnedBadges.length > 0 && <span className="text-[10px] text-ink-faint">{t("tilt")}</span>}
             </div>
             {earnedBadges.length > 0 ? (
               <EarnedSealRow earnedIds={earnedBadges} pinnedIds={pinnedBadges} size={52} />
             ) : (
-              <Link href="/badges" className="text-sm text-brand hover:underline">Earn badges and pin up to 3 here <ArrowRight size={14} className="-mt-px inline" /></Link>
+              <Link href="/badges" className="text-sm text-brand hover:underline">{t("earnBadges")} <ArrowRight size={14} className="-mt-px inline" /></Link>
             )}
           </div>
 
           {/* Signature look */}
           <div className="rounded-2xl bg-white p-6 ring-1 ring-line">
             <div className="mb-3 flex items-center justify-between">
-              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Signature look</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">{t("signatureLook")}</p>
               {outfits.length > 0 && (
                 <select
                   value={signatureOutfitId ?? ""}
                   onChange={(e) => onSetSignature(e.target.value || null)}
                   className="rounded-md border border-line bg-paper-soft px-2 py-1 text-xs text-ink-soft"
                 >
-                  <option value="">None</option>
+                  <option value="">{t("none")}</option>
                   {outfits.map((o) => (
                     <option key={o.id} value={o.id}>{o.title}</option>
                   ))}
@@ -661,43 +673,39 @@ function ViewBook({
                   <p className="font-semibold text-ink">{signature.title}</p>
                   {signature.occasion && <p className="text-xs text-brand">{signature.occasion}</p>}
                   <p className="mt-0.5 text-xs text-ink-faint">
-                    {signature.items.map((it) => garmentLabel(it.category)).join(" · ")}
+                    {signature.items.map((it) => g.label(it.category)).join(" · ")}
                   </p>
                   <p className="mt-0.5 flex items-center gap-1 text-xs text-ink-faint"><Heart size={12} weight="fill" /> {signature.likeCount}</p>
                 </div>
               </div>
             ) : outfits.length > 0 ? (
-              <p className="text-sm text-ink-soft">Pick one of your outfits above to feature it here.</p>
+              <p className="text-sm text-ink-soft">{t("pickOutfit")}</p>
             ) : (
-              <Link href="/outfits" className="text-sm text-brand hover:underline">Compose an outfit to feature as your signature look <ArrowRight size={14} className="-mt-px inline" /></Link>
+              <Link href="/outfits" className="text-sm text-brand hover:underline">{t("composeOutfit")} <ArrowRight size={14} className="-mt-px inline" /></Link>
             )}
           </div>
 
           {/* Body type — text only; the figure is kept off the card for cleanliness */}
           <div className="rounded-2xl bg-white p-6 ring-1 ring-line">
-            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">Body type</p>
-            <p className="mt-1 text-lg font-semibold text-ink">{showBodyType ? bodyLabel : "Hidden"}</p>
-            <p className="mt-0.5 text-xs text-ink-faint">
-              {showBodyType
-                ? "Precise measurements stay private — never shared by code."
-                : "You've hidden your body type from your public view."}
-            </p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">{t("bodyType")}</p>
+            <p className="mt-1 text-lg font-semibold text-ink">{showBodyType ? bodyLabel : t("hidden")}</p>
+            <p className="mt-0.5 text-xs text-ink-faint">{showBodyType ? t("privateNote") : t("hiddenNote")}</p>
           </div>
         </div>
 
         {/* actions */}
         <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm">
           <div className="flex gap-4">
-            <Link href="/closet" className="text-ink-soft hover:text-brand">My closet <ArrowRight size={14} className="-mt-px inline" /></Link>
-            <Link href="/badges" className="text-ink-soft hover:text-brand">Badge library <ArrowRight size={14} className="-mt-px inline" /></Link>
+            <Link href="/closet" className="text-ink-soft hover:text-brand">{t("myCloset")} <ArrowRight size={14} className="-mt-px inline" /></Link>
+            <Link href="/badges" className="text-ink-soft hover:text-brand">{t("badgeLibrary")} <ArrowRight size={14} className="-mt-px inline" /></Link>
           </div>
           {me.claimed ? (
             <Link href={`/u/${encodeURIComponent(me.accountCode ?? "")}`} className="text-ink-soft hover:text-brand">
-              Preview public view <ArrowRight size={14} className="-mt-px inline" />
+              {t("previewPublic")} <ArrowRight size={14} className="-mt-px inline" />
             </Link>
           ) : (
             <Link href="/account" className="font-medium text-brand hover:underline">
-              Claim account to save &amp; share <ArrowRight size={14} className="-mt-px inline" />
+              {t("claimToSave")} <ArrowRight size={14} className="-mt-px inline" />
             </Link>
           )}
         </div>
@@ -720,19 +728,21 @@ function CardMetalPicker({
   auto: string | null;
   onPick: (metal: string | null) => void;
 }) {
+  const tp = useT("passport");
+  const label = (key: string) => tp(`theme.${key as "lapis"}`);
   const all = Object.keys(CARD_THEMES).filter((k) => k !== "lapis");
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">Finish</span>
+      <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">{tp("finish")}</span>
       {/* automatic = lapis, or your highest earned metal */}
       <button
         onClick={() => onPick(null)}
-        title={auto ? `Automatic — currently ${CARD_THEMES[auto]?.label ?? auto}` : "Automatic — Lapis Edition"}
+        title={auto ? tp("autoCurrently", { theme: CARD_THEMES[auto] ? label(auto) : auto }) : tp("autoLapis")}
         className={`h-6 rounded-full border px-2 text-[10px] font-medium ${
           !value ? "border-ink bg-ink text-paper" : "border-line text-ink-soft hover:border-ink"
         }`}
       >
-        Auto
+        {tp("auto")}
       </button>
       {all.map((k) => {
         const t = CARD_THEMES[k];
@@ -742,7 +752,7 @@ function CardMetalPicker({
             key={k}
             disabled={!unlocked}
             onClick={() => onPick(k)}
-            title={unlocked ? t.label : `${t.label} — locked, earn a ${k} badge`}
+            title={unlocked ? label(k) : tp("locked", { theme: label(k), metal: label(k).replace(/ Edition$|版$/, "") })}
             className={`h-6 w-6 rounded-full ring-offset-1 transition-transform ${
               value === k ? "ring-2 ring-ink" : ""
             } ${unlocked ? "hover:scale-110" : "cursor-not-allowed opacity-25 grayscale"}`}
@@ -987,6 +997,7 @@ function PortraitUpload({
   value: string | null;
   onChange: (v: string | null) => void;
 }) {
+  const t = useT("passport");
   const [busy, setBusy] = useState(false);
 
   async function onFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -1009,21 +1020,21 @@ function PortraitUpload({
       <label className="group relative h-24 w-20 cursor-pointer overflow-hidden rounded-md border-2 border-ink bg-paper-soft">
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={value} alt="portrait" className="h-full w-full object-cover" />
+          <img src={value} alt={t("portrait")} className="h-full w-full object-cover" />
         ) : (
           <span className="flex h-full w-full items-center justify-center font-mono text-2xl font-bold text-ink">
             {initials}
           </span>
         )}
         <span className="absolute inset-x-0 bottom-0 bg-black/50 py-0.5 text-center text-[8px] uppercase tracking-wider text-white opacity-0 transition-opacity group-hover:opacity-100">
-          {busy ? "…" : "change"}
+          {busy ? "…" : t("change")}
         </span>
         <input type="file" accept="image/*" onChange={onFile} className="hidden" />
       </label>
-      <p className="mt-1 text-[9px] uppercase tracking-widest text-ink-faint">portrait</p>
+      <p className="mt-1 text-[9px] uppercase tracking-widest text-ink-faint">{t("portrait")}</p>
       {value && (
         <button onClick={() => onChange(null)} className="mt-0.5 text-[9px] text-ink-faint hover:text-bad">
-          remove
+          {t("remove")}
         </button>
       )}
     </div>
@@ -1089,6 +1100,7 @@ function BodyTypeSection({
   showBodyType: boolean;
   onToggleShow: (v: boolean) => void;
 }) {
+  const t = useT("passport");
   const bt = deriveBodyType({
     heightCm: profile.heightCm,
     weightKg: profile.weightKg,
@@ -1096,6 +1108,8 @@ function BodyTypeSection({
     waistCm: profile.waistCm,
     hipCm: profile.hipCm,
   });
+  // Same condition deriveBodyType uses for its note, worded here.
+  const scopeNote = bt.volume === "extended" ? t("scopeExtended") : bt.volume === "petite" ? t("scopePetite") : null;
   const anyData = bt.have.volume || bt.have.shape;
 
   // The 3D view is driven by the RAW measurements, not by `deriveBodyType`'s six
@@ -1115,36 +1129,31 @@ function BodyTypeSection({
   const [show3d, setShow3d] = useState(false);
 
   return (
-    <Section title="Body type" subtitle="derived from your measurements">
+    <Section title={t("bodyType")} subtitle={t("bodySubtitle")}>
       <div className="flex items-center gap-4 rounded-xl border border-line bg-paper-soft px-4 py-3">
         <BodyFigure volume={bt.figureKey} shape={bt.shape} size={80} />
         <div className="min-w-0 flex-1">
-          <p className="text-lg font-semibold text-ink">{bt.label}</p>
+          <p className="text-lg font-semibold text-ink">{bodyLabel(t, bt)}</p>
           {!anyData && (
-            <p className="mt-1 text-xs text-ink-faint">
-              Add height + weight above to derive a body type; add chest + waist
-              to refine the build.
-            </p>
+            <p className="mt-1 text-xs text-ink-faint">{t("addHeightWeight")}</p>
           )}
           {anyData && !bt.have.shape && (
-            <p className="mt-1 text-xs text-ink-faint">
-              Add chest + waist to derive build (tapered / straight / full-waist).
-            </p>
+            <p className="mt-1 text-xs text-ink-faint">{t("addChestWaist")}</p>
           )}
-          {bt.scopeNote && (
+          {scopeNote && (
             <p className="mt-2 rounded-lg border border-warn/30 bg-warn-tint px-3 py-2 text-xs text-warn">
-              <span className="font-semibold">Sizing note:</span> {bt.scopeNote}
+              <span className="font-semibold">{t("sizingNote")}</span> {scopeNote}
             </p>
           )}
           <label className="mt-2 flex items-center gap-1.5 text-[11px] text-ink-soft">
             <input type="checkbox" checked={showBodyType} className="accent-brand"
               onChange={(e) => onToggleShow(e.target.checked)} />
-            Show my body type on my passport &amp; public view
+            {t("showBodyType")}
           </label>
           {can3d && !show3d && (
             <button type="button" onClick={() => setShow3d(true)}
               className="mt-2 text-[11px] font-semibold text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand">
-              See it in 3D <ArrowRight size={14} className="-mt-px inline" />
+              {t("see3d")} <ArrowRight size={14} className="-mt-px inline" />
             </button>
           )}
         </div>
@@ -1157,9 +1166,7 @@ function BodyTypeSection({
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
             <SafeBoundary
               fallback={
-                <p className="text-xs text-ink-faint">
-                  The 3D view couldn&apos;t start on this device — the figure above is unaffected.
-                </p>
+                <p className="text-xs text-ink-faint">{t("cant3d")}</p>
               }
             >
               <Suspense fallback={<div className="h-[240px] w-[240px] animate-pulse rounded-xl bg-paper-dim" />}>
@@ -1178,24 +1185,21 @@ function BodyTypeSection({
             </SafeBoundary>
 
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-ink">Built from your measurements</p>
-              <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                Each ring below is drawn at the circumference you entered, so the volume
-                is yours. Drag to turn it.
-              </p>
+              <p className="text-sm font-semibold text-ink">{t("built")}</p>
+              <p className="mt-1 text-xs leading-relaxed text-ink-soft">{t("builtBody")}</p>
               <dl className="mt-3 space-y-1">
                 {sections
                   .slice()
                   .reverse()
                   .map((sec) => (
                     <div key={sec.key} className="flex items-baseline gap-2 text-xs">
-                      <dt className="w-20 flex-shrink-0 capitalize text-ink-soft">{sec.key}</dt>
+                      <dt className="w-20 flex-shrink-0 capitalize text-ink-soft">{t(`ring.${sec.key}`)}</dt>
                       <dd className="min-w-0 tabular-nums text-ink">
                         {sec.circumferenceCm != null ? (
                           `${Math.round(sec.circumferenceCm)} cm`
                         ) : (
                           <span className="text-ink-faint">
-                            {sec.estimated ? "inferred — add it to make this yours" : "from your shoulder width"}
+                            {sec.estimated ? t("inferred") : t("fromShoulder")}
                           </span>
                         )}
                       </dd>
@@ -1203,11 +1207,7 @@ function BodyTypeSection({
                   ))}
               </dl>
               <p className="mt-3 border-t border-line pt-2 text-[11px] leading-relaxed text-ink-faint">
-                <span className="font-semibold text-ink-soft">{measuredPct}% measured.</span>{" "}
-                Rings you haven&apos;t given us are inferred from the ones you have, and the
-                front-to-back depth is a drawing convention rather than something we know about
-                you. It is a form study of your numbers — not a scan, and not a preview of how
-                clothes will look.
+                {t.rich("measuredPct", { b: (c) => <span className="font-semibold text-ink-soft">{c}</span> }, { pct: measuredPct })}
               </p>
             </div>
           </div>

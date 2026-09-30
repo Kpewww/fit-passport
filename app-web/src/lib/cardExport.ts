@@ -20,7 +20,29 @@ export type CardExportData = {
   preferredFit: string;
   /** Optional portrait as a data URL (already client-resized). */
   avatarDataUrl?: string | null;
+  /** The card's printed labels in the reader's language; English when absent. */
+  labels?: Partial<CardLabels>;
 };
+
+export type CardLabels = {
+  theme: string;
+  issued: string;
+  holder: string;
+  passportNo: string;
+  region: string;
+  preferredFit: string;
+  tagline: string;
+};
+
+const EN_LABELS = (theme: string): CardLabels => ({
+  theme: theme.toUpperCase(),
+  issued: "ISSUED 2026",
+  holder: "HOLDER",
+  passportNo: "PASSPORT NO.",
+  region: "REGION",
+  preferredFit: "PREFERRED FIT",
+  tagline: "ONE BODY · ONE FIT IDENTITY · ANY STORE",
+});
 
 const W = 1600;
 const H = 1000;
@@ -32,6 +54,7 @@ function esc(s: string): string {
 /** Build the card as an SVG string at export resolution. */
 export function cardSvg(d: CardExportData): string {
   const t = d.theme;
+  const L: CardLabels = { ...EN_LABELS(t.label), ...d.labels };
   const veins = t.veined
     ? `<g opacity="0.35" fill="none" stroke="#fff" stroke-linecap="round">
          <path d="M-20,230 C300,120 500,370 870,250 C1200,150 1430,330 1700,200" stroke-opacity="0.7" stroke-width="9"/>
@@ -79,32 +102,32 @@ export function cardSvg(d: CardExportData): string {
     <text x="96" y="150" font-size="72" font-style="italic">Fit Passport</text>
   </g>
   <g fill="${t.text}" font-family="Helvetica, Arial, sans-serif">
-    <text x="98" y="196" font-size="24" letter-spacing="7" opacity="0.6">${esc(t.label.toUpperCase())}</text>
+    <text x="98" y="196" font-size="24" letter-spacing="7" opacity="0.6">${esc(L.theme)}</text>
     ${d.memberNo ? `<text x="${W - 96}" y="146" font-size="34" letter-spacing="8" opacity="0.85" text-anchor="end" font-family="'Courier New', monospace">${esc(d.memberNo)}</text>` : ""}
-    <text x="${W - 96}" y="196" font-size="24" letter-spacing="6" opacity="0.6" text-anchor="end">ISSUED 2026</text>
+    <text x="${W - 96}" y="196" font-size="24" letter-spacing="6" opacity="0.6" text-anchor="end">${esc(L.issued)}</text>
   </g>
 
   ${portrait}
 
   <g font-family="Helvetica, Arial, sans-serif" fill="${t.text}">
-    <text x="316" y="440" font-size="22" letter-spacing="6" opacity="0.55">HOLDER</text>
+    <text x="316" y="440" font-size="22" letter-spacing="6" opacity="0.55">${esc(L.holder)}</text>
   </g>
   <text x="316" y="505" font-size="60" font-family="Georgia, 'Times New Roman', serif" fill="${t.text}">${esc(d.holder)}</text>
 
   <g font-family="Helvetica, Arial, sans-serif" fill="${t.text}">
-    <text x="96" y="700" font-size="20" letter-spacing="6" opacity="0.55">PASSPORT NO.</text>
+    <text x="96" y="700" font-size="20" letter-spacing="6" opacity="0.55">${esc(L.passportNo)}</text>
     <text x="96" y="742" font-size="30" font-family="'Courier New', monospace">${esc(d.passportNo)}</text>
 
-    <text x="640" y="700" font-size="20" letter-spacing="6" opacity="0.55">REGION</text>
+    <text x="640" y="700" font-size="20" letter-spacing="6" opacity="0.55">${esc(L.region)}</text>
     <text x="640" y="742" font-size="30" font-family="'Courier New', monospace">${esc(d.region)}</text>
 
-    <text x="1040" y="700" font-size="20" letter-spacing="6" opacity="0.55">PREFERRED FIT</text>
+    <text x="1040" y="700" font-size="20" letter-spacing="6" opacity="0.55">${esc(L.preferredFit)}</text>
     <text x="1040" y="742" font-size="30">${esc(d.preferredFit)}</text>
   </g>
 
   <line x1="96" y1="838" x2="${W - 96}" y2="838" stroke="${t.text}" stroke-opacity="0.25" stroke-width="2"/>
   <g font-family="Helvetica, Arial, sans-serif" fill="${t.text}" opacity="0.65">
-    <text x="96" y="900" font-size="20" letter-spacing="5">ONE BODY · ONE FIT IDENTITY · ANY STORE</text>
+    <text x="96" y="900" font-size="20" letter-spacing="5">${esc(L.tagline)}</text>
   </g>
 
   <!-- logo mark: passport arch + F/P monogram -->

@@ -24,6 +24,7 @@ const SAME_IN_BOTH = new Set([
   "common.zhLong",
   "common.enLong",
   "garment.line.none", // a dash
+  "passport.volShape", // only placeholders and a dot
 ]);
 
 describe("the Chinese messages match the English ones", () => {

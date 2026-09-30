@@ -24,6 +24,9 @@ import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionIn
 import { DIRECTION_DEFAULT, DIRECTION_OPTIONS, nearestOption } from "@/lib/fitDirection";
 import { colorHex, iconToneOn } from "@/lib/colors";
 import { ArrowLeft, Check } from "@/components/Icon";
+import { useT } from "@/i18n/client";
+import { useGarmentText } from "@/i18n/garment";
+import type { DirectionKey } from "@/lib/engineText";
 
 type Item = {
   id: string;
@@ -45,6 +48,10 @@ const COMMIT_DIST = 105; // px past which a release commits
 const COMMIT_VELOCITY = 0.6; // px/ms flick that commits regardless of distance
 
 function RefreshInner() {
+  const t = useT("refresh");
+  const tf = useT("fit");
+  const g = useGarmentText();
+  const dirLabel = (n: number) => tf(`direction.${nearestOption(n).key as DirectionKey}.label`).toLowerCase();
   const params = useSearchParams();
   const initialParam = params.get("collections") ?? "all";
 
@@ -179,16 +186,13 @@ function RefreshInner() {
       <main className="flex-1 bg-paper">
         <div className="mx-auto max-w-md px-4 sm:px-6 py-10">
           <div className="mb-4 flex items-center justify-between text-sm">
-            <Link href="/closet" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> Closet</Link>
+            <Link href="/closet" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> {t("closet")}</Link>
           </div>
-          <h1 className="font-serif text-h1 text-ink">Fit refresh</h1>
-          <p className="mt-1 text-sm text-ink-soft">
-            Pick what to re-rate. As your body changes, clothes fit differently —
-            a quick refresh keeps your recommendations honest.
-          </p>
+          <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
+          <p className="mt-1 text-sm text-ink-soft">{t("lede")}</p>
 
           {collections === null ? (
-            <p className="mt-8 text-sm text-ink-faint">Loading…</p>
+            <p className="mt-8 text-sm text-ink-faint">{t("loading")}</p>
           ) : (
             <>
               <div className="mt-6 space-y-2">
@@ -199,8 +203,8 @@ function RefreshInner() {
                     allSelected ? "border-brand bg-brand-tint ring-1 ring-brand/30" : "border-line bg-white hover:border-line"
                   }`}
                 >
-                  <span className="font-medium text-ink">Everything</span>
-                  <span className="text-xs text-ink-faint">{totalAll} {totalAll === 1 ? "item" : "items"}</span>
+                  <span className="font-medium text-ink">{t("everything")}</span>
+                  <span className="text-xs text-ink-faint">{t.n("items", totalAll)}</span>
                 </button>
 
                 {collections.filter((c) => c.itemCount > 0).map((c) => {
@@ -225,9 +229,9 @@ function RefreshInner() {
                         <span className={`flex h-4 w-4 items-center justify-center rounded border text-[10px] ${on ? "border-brand bg-brand text-white" : "border-line"}`}>
                           {on && <Check size={12} />}
                         </span>
-                        {c.name}
+                        {g.folder(c.name)}
                       </span>
-                      <span className="text-xs text-ink-faint">{c.itemCount} {c.itemCount === 1 ? "item" : "items"}</span>
+                      <span className="text-xs text-ink-faint">{t.n("items", c.itemCount)}</span>
                     </button>
                   );
                 })}
@@ -235,7 +239,7 @@ function RefreshInner() {
 
               <div className="mt-6">
                 <Button onClick={startRefresh} disabled={!canStart} className="w-full">
-                  {canStart ? `Start refresh · ${pickedCount} item${pickedCount === 1 ? "" : "s"}` : "Pick something to refresh"}
+                  {canStart ? t.n("start", pickedCount) : t("pickSomething")}
                 </Button>
               </div>
             </>
@@ -247,7 +251,7 @@ function RefreshInner() {
 
   // ---------- CARDS phase ----------
   if (!items) {
-    return <main className="flex-1"><div className="mx-auto max-w-md px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-md px-4 sm:px-6 py-14 text-ink-faint">{t("loading")}</div></main>;
   }
 
   if (items.length === 0) {
@@ -255,9 +259,9 @@ function RefreshInner() {
       <main className="flex-1">
         <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
           <EmptyState
-            title="Nothing to refresh"
-            body="No clothes in the selection you picked. Add some to your closet, or choose another collection."
-            action={<Button variant="secondary" onClick={() => setPhase("pick")}><ArrowLeft size={14} className="-mt-px inline" /> Change selection</Button>}
+            title={t("nothingTitle")}
+            body={t("nothingBody")}
+            action={<Button variant="secondary" onClick={() => setPhase("pick")}><ArrowLeft size={14} className="-mt-px inline" /> {t("changeSelection")}</Button>}
           />
         </div>
       </main>
@@ -274,7 +278,7 @@ function RefreshInner() {
       <div className="mx-auto max-w-md px-4 sm:px-6 py-8">
         {/* Progress */}
         <div className="mb-4 flex items-center justify-between text-sm">
-          <button onClick={() => setPhase("pick")} className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> Change selection</button>
+          <button onClick={() => setPhase("pick")} className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> {t("changeSelection")}</button>
           <span className="text-ink-soft">
             {Math.min(idx + (done ? 0 : 1), items.length)} / {items.length}
           </span>
@@ -286,14 +290,11 @@ function RefreshInner() {
         {done ? (
           <Card className="text-center animate-fade-in-up">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-ok-tint text-ok"><Check size={24} /></div>
-            <h2 className="text-xl font-semibold text-ink">Fit refresh complete</h2>
-            <p className="mt-1 text-sm text-ink-soft">
-              Updated {saved} · skipped {skipped}. Your closet reflects how things
-              feel today.
-            </p>
+            <h2 className="text-xl font-semibold text-ink">{t("completeTitle")}</h2>
+            <p className="mt-1 text-sm text-ink-soft">{t("completeBody", { saved, skipped })}</p>
             <div className="mt-5 flex justify-center gap-3">
-              <LinkButton href="/closet">Back to closet</LinkButton>
-              <LinkButton href="/check" variant="secondary">Check a product</LinkButton>
+              <LinkButton href="/closet">{t("backToCloset")}</LinkButton>
+              <LinkButton href="/check" variant="secondary">{t("checkProduct")}</LinkButton>
             </div>
           </Card>
         ) : (
@@ -329,34 +330,33 @@ function RefreshInner() {
                   <span
                     className="rounded-lg border-2 border-ink/30 px-2 py-1 text-sm font-bold uppercase text-ink-faint"
                     style={{ opacity: dragX < -20 ? progress : 0, transform: `scale(${0.8 + (dragX < 0 ? progress : 0) * 0.4})` }}
-                  >Skip</span>
+                  >{t("skip")}</span>
                   <span
                     className="rounded-lg border-2 border-ok px-2 py-1 text-sm font-bold uppercase text-ok"
                     style={{ opacity: dragX > 20 ? progress : 0, transform: `scale(${0.8 + (dragX > 0 ? progress : 0) * 0.4})` }}
-                  >Save</span>
+                  >{t("save")}</span>
                 </div>
 
-                <p className="text-xs uppercase tracking-widest text-ink-faint">{current!.collectionName}</p>
+                <p className="text-xs uppercase tracking-widest text-ink-faint">{g.folder(current!.collectionName)}</p>
                 <div className="mt-4 flex items-center gap-3">
                   <GarmentThumb item={current!} />
                   <div className="min-w-0">
                     <h2 className="truncate text-xl font-semibold text-ink">{current!.brand}</h2>
                     <p className="text-sm text-ink-soft">
-                      {garmentLabel(current!.category)} · size {current!.size}
-                      {current!.color ? ` · ${current!.color}` : ""}
+                      {t("sizeLine", { category: g.label(current!.category), size: current!.size })}
+                      {current!.color ? ` · ${g.color(current!.color)}` : ""}
                     </p>
                   </div>
                 </div>
 
                 <div className="mt-8" onPointerDown={(e) => e.stopPropagation()}>
-                  <p className="text-sm font-medium text-ink">How does it sit now?</p>
+                  <p className="text-sm font-medium text-ink">{t("howNow")}</p>
                   <div className="mt-3">
                     <FitDirectionInput value={direction} onChange={setDirection} />
                   </div>
                   {current!.currentDirection != null && direction !== current!.currentDirection && (
                     <p className="mt-2 text-xs text-brand">
-                      Changed from {nearestOption(current!.currentDirection).label.toLowerCase()} to{" "}
-                      {nearestOption(direction).label.toLowerCase()}
+                      {t("changed", { from: dirLabel(current!.currentDirection), to: dirLabel(direction) })}
                     </p>
                   )}
                 </div>
@@ -365,11 +365,11 @@ function RefreshInner() {
 
             {/* Buttons */}
             <div className="mt-6 flex items-center justify-center gap-3">
-              <Button variant="secondary" onClick={() => commit("skip")} icon={<ArrowLeft size={16} />}>Skip</Button>
-              <Button onClick={() => commit("save")} arrow>Save</Button>
+              <Button variant="secondary" onClick={() => commit("skip")} icon={<ArrowLeft size={16} />}>{t("skip")}</Button>
+              <Button onClick={() => commit("save")} arrow>{t("save")}</Button>
             </div>
             <p className="mt-3 text-center text-xs text-ink-faint">
-              Swipe or flick the card, use the buttons, or press the arrow keys · number keys 1–5 pick tight to loose
+              {t("help")}
             </p>
           </>
         )}
@@ -382,12 +382,13 @@ function RefreshInner() {
 // Placeholder garment thumbnail (color swatch + type glyph). A real product
 // image / web lookup can slot in here later without changing the card layout.
 function GarmentThumb({ item }: { item: Item }) {
+  const g = useGarmentText();
   const hex = colorHex(item.color);
   return (
     <div
       className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl border border-line ${iconToneOn(hex) === "light" ? "text-white/90" : "text-ink-soft"}`}
       style={{ backgroundColor: hex ?? "#f5f5f5" }}
-      title={item.color ?? undefined}
+      title={item.color ? g.color(item.color) : undefined}
     >
       <GarmentIcon category={item.category} size={28} />
     </div>
@@ -395,8 +396,9 @@ function GarmentThumb({ item }: { item: Item }) {
 }
 
 export default function RefreshPage() {
+  const t = useT("refresh");
   return (
-    <Suspense fallback={<div className="mx-auto max-w-md px-4 sm:px-6 py-14">Loading…</div>}>
+    <Suspense fallback={<div className="mx-auto max-w-md px-4 sm:px-6 py-14">{t("loading")}</div>}>
       <RefreshInner />
     </Suspense>
   );
