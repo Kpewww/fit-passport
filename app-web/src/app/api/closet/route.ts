@@ -34,7 +34,7 @@ const ItemSchema = z
     garmentShoulderCm: z.coerce.number().min(5).max(120).optional().nullable(),
     garmentSleeveCm: z.coerce.number().min(1).max(150).optional().nullable(),
     garmentLengthCm: z.coerce.number().min(5).max(250).optional().nullable(),
-    garmentMeasuredFrom: z.enum(["page", "estimated", "fixture"]).optional().nullable(),
+    garmentMeasuredFrom: z.enum(["page", "brand-chart", "fixture", "seller", "estimated"]).optional().nullable(),
   })
   // Guard the size against the category's size system so junk can't be stored.
   .refine((d) => isValidSize(d.category, d.size), {

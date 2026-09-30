@@ -305,6 +305,7 @@ export const en = {
     },
     source: {
       identified: "Identified from the link",
+      demo: "Demo data — a sample product, not read from this page",
       readInBrowser: "Read in your browser from {host}",
       readFrom: "Read from {host}",
       thePage: "the page",
@@ -330,6 +331,7 @@ export const en = {
     },
     measure: {
       estimated: "Measurements estimated — not from the page",
+      demo: "Sample measurements (demo)",
       wherePage: "the page",
       whereBrand: "the brand's size guide",
       readerText: " (read by AI from its text)",
@@ -927,6 +929,10 @@ export const en = {
     extractFailed: "Couldn't read that URL — answer the questions instead.",
     extractRead: "Read {bits} from {host}.",
     extractDetails: "details",
+    extractDemo: "Demo sample for {bits} — not read from a page.",
+    sizesOnPage: "Sizes on the page",
+    sizesInDemo: "Sizes in the sample",
+    addFailed: "Couldn't add that — nothing was saved. Try again.",
     thePage: "the page",
     added: "Added <b>{item}</b>. Add a photo on its card, or another piece below.",
     stepOf: "Add an item · {n} of {total}",

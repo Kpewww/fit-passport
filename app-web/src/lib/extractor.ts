@@ -23,6 +23,7 @@
 // synthesized ladder was a problem worth solving.
 
 import { chartFor, chartToSizes } from "./brandCharts";
+import { DEMO_PRODUCTS, isDemoUrl } from "./demoProducts";
 
 export type ExtractedSize = {
   label: string;
@@ -156,9 +157,11 @@ export type ExtractedProduct = {
 
 // ------------ Layer 1: curated fixtures (demo-safe) ------------
 
-const FIXTURES: Array<{ match: RegExp; data: Omit<ExtractedProduct, "source"> }> = [
+// Each answers exactly one demo link (demoProducts.ts) — never a real product that
+// merely shares words with it (Session 80: a J.Crew oxford came back as COS).
+const FIXTURES: Array<{ url: string; data: Omit<ExtractedProduct, "source"> }> = [
   {
-    match: /uniqlo.*airism|uniqlo.*t-?shirt|airism-cotton/i,
+    url: DEMO_PRODUCTS[0].url,
     data: {
       retailer: "Uniqlo",
       brand: "Uniqlo",
@@ -177,7 +180,7 @@ const FIXTURES: Array<{ match: RegExp; data: Omit<ExtractedProduct, "source"> }>
     },
   },
   {
-    match: /cos\.com.*shirt|cos.*oxford|oxford-shirt/i,
+    url: DEMO_PRODUCTS[1].url,
     data: {
       retailer: "COS",
       brand: "COS",
@@ -196,7 +199,7 @@ const FIXTURES: Array<{ match: RegExp; data: Omit<ExtractedProduct, "source"> }>
     },
   },
   {
-    match: /levi.*trucker|levi.*jacket|vintage-fit-trucker/i,
+    url: DEMO_PRODUCTS[2].url,
     data: {
       retailer: "Levi's",
       brand: "Levi's",
@@ -517,7 +520,7 @@ export function extractFromUrl(url: string): ExtractedProduct {
 
   // Layer 1: curated fixture (exact demo products).
   for (const f of FIXTURES) {
-    if (f.match.test(url)) {
+    if (isDemoUrl(url, f.url)) {
       return { ...f.data, source: { url, host, derived: false, slug, sizesFrom: "fixture" } };
     }
   }

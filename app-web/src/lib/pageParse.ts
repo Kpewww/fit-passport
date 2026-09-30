@@ -52,7 +52,9 @@ function decodeEntities(s: string): string {
     .replace(/&quot;/g, '"')
     .replace(/&#0?39;|&apos;|&rsquo;/g, "'")
     .replace(/&nbsp;/g, " ")
-    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10)));
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(parseInt(n, 10)))
+    // Hex references too: nike.com writes Men&#x27;s in og:title (Session 80).
+    .replace(/&#x([0-9a-f]+);/gi, (_, n) => String.fromCharCode(parseInt(n, 16)));
 }
 
 function stripTags(s: string): string {
@@ -133,10 +135,17 @@ function metaContent(html: string, key: string): string | undefined {
   return undefined;
 }
 
+/** og:site_name is the site, and some sites name themselves by domain ("Nike.com"). */
+export function siteNameAsBrand(site: string | undefined): string | undefined {
+  if (!site) return undefined;
+  const bare = site.replace(/^www\./i, "").replace(/\.(?:com|net|co(?:\.[a-z]{2})?|com\.[a-z]{2}|[a-z]{2})$/i, "");
+  return /^[^\s.]+(?:\s[^\s.]+)*$/.test(bare) && bare !== site ? bare : site;
+}
+
 function openGraph(html: string): ParsedPage {
   const out: ParsedPage = {};
   out.productName = metaContent(html, "og:title");
-  out.brand = metaContent(html, "product:brand") || metaContent(html, "og:site_name");
+  out.brand = metaContent(html, "product:brand") || siteNameAsBrand(metaContent(html, "og:site_name"));
   const desc = metaContent(html, "og:description") || metaContent(html, "description");
   if (desc) out.fitNotes = desc;
   return out;
@@ -910,7 +919,7 @@ export function looksBlocked(status: number, html: string): boolean {
   if (status === 403 || status === 429 || status === 503) return true;
   const head = html.slice(0, 4000).toLowerCase();
   const enMarkers =
-    /captcha|are you a robot|verify you are (?:a )?human|access denied|request unsuccessful|enable javascript to continue/;
+    /captcha|are you a robot|verify you are (?:a )?human|access denied|request unsuccessful|enable javascript to continue|hang tight! routing to checkout|botfailover/;
   const vendorMarkers =
     /px-captcha|cf-challenge|challenge-platform|distil_r_captcha|akamai|perimeterx/;
   const cnMarkers = /滑动验证|人机验证|访问被拒绝|安全验证|验证码/;

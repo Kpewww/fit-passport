@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectMeasurementKind, parsePage, parseSizeTables, parseSizeLabels, parseChineseSizeCode, findSizeChartImages, looksBlocked, inferGender } from "./pageParse";
+import { detectMeasurementKind, parsePage, parseSizeTables, parseSizeLabels, parseChineseSizeCode, findSizeChartImages, looksBlocked, inferGender, siteNameAsBrand } from "./pageParse";
 
 describe("pageParse — JSON-LD", () => {
   it("reads brand/name/material from a schema.org Product block", () => {
@@ -180,6 +180,27 @@ describe("pageParse — bot-block detection", () => {
   });
   it("does NOT flag a normal product page", () => {
     expect(looksBlocked(200, "<html><body><h1>Wool Coat</h1><table>...</table></body></html>")).toBe(false);
+  });
+  it("flags patagonia.com's bot-failover page, served with a 200", () => {
+    // Measured 2026-09-30: the page's title became the product name ("Hang Tight!
+    // Routing to checkout...") and the fetch was recorded as "ok".
+    const page = `<!-- saved from url=(0055)file:///Users/x/Downloads/botfailover%20(5).html -->
+      <html><head><title>Hang Tight! Routing to checkout...</title></head><body></body></html>`;
+    expect(looksBlocked(200, page)).toBe(true);
+  });
+});
+
+describe("pageParse — names and brands read from meta", () => {
+  it("decodes hex character references (nike.com's og:title)", () => {
+    const html = `<meta property="og:title" content="Nike Dri-FIT Legend Men&#x27;s Fitness T-Shirt">`;
+    expect(parsePage(html).productName).toBe("Nike Dri-FIT Legend Men's Fitness T-Shirt");
+  });
+  it("takes a site that names itself by domain as the brand without the domain", () => {
+    expect(siteNameAsBrand("Nike.com")).toBe("Nike");
+    expect(siteNameAsBrand("www.everlane.com")).toBe("everlane");
+    expect(siteNameAsBrand("J.Crew")).toBe("J.Crew");
+    expect(siteNameAsBrand("Levi's")).toBe("Levi's");
+    expect(siteNameAsBrand("Abercrombie & Fitch")).toBe("Abercrombie & Fitch");
   });
 });
 

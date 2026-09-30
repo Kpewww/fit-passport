@@ -1809,6 +1809,12 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
   // centimetres was not computable. See docs/design/3d-body-and-tryon.md §8.
   const [sizeRows, setSizeRows] = useState<SizeRow[]>([]);
   const [measuredFrom, setMeasuredFrom] = useState<string | null>(null);
+  // Labels the page itself listed, offered as one-tap answers to the size question
+  // (never chosen for the user), and the link, kept on the item it came from.
+  const [sizeLabels, setSizeLabels] = useState<string[]>([]);
+  const [productUrl, setProductUrl] = useState<string | null>(null);
+  const [fromDemo, setFromDemo] = useState(false);
+  const [saveFailed, setSaveFailed] = useState(false);
 
   const step = ADD_STEPS[stepIndex];
   const isLast = stepIndex === ADD_STEPS.length - 1;
@@ -1836,9 +1842,14 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ url: pasteUrl.trim() }),
       }).then((r) => r.json());
-      if (r.error) { setExtractNote(t("extractFailed")); return; }
+      // lib/closetExtract.ts decides what counts as read. A page we never saw
+      // pre-fills nothing: the questions below are the whole flow, not a fallback.
+      if (r.error || r.result !== "read") { setExtractNote(t("extractFailed")); return; }
       setSizeRows(Array.isArray(r.sizeRows) ? r.sizeRows : []);
       setMeasuredFrom(typeof r.measuredFrom === "string" ? r.measuredFrom : null);
+      setSizeLabels(Array.isArray(r.sizeLabels) ? r.sizeLabels : []);
+      setProductUrl(pasteUrl.trim());
+      setFromDemo(r.demo === true);
       setForm((f) => ({
         ...f,
         brand: r.brand || f.brand,
@@ -1847,10 +1858,12 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
         gender: r.gender || f.gender,
         size: "", // sizes are offered, never chosen for the user
       }));
-      const bits = [r.brand, r.category && g.label(r.category)].filter(Boolean).join(" · ");
-      setExtractNote(t("extractRead", { bits: bits || t("extractDetails"), host: r.source?.host ?? t("thePage") }));
-      // The payoff for pasting a link is skipping the questions it answered.
-      if (r.brand && r.category) setStepIndex(ADD_STEPS.indexOf("size"));
+      const bits = [r.brand, r.category && g.label(r.category)].filter(Boolean).join(" · ") || t("extractDetails");
+      setExtractNote(r.demo ? t("extractDemo", { bits }) : t("extractRead", { bits, host: r.host ?? t("thePage") }));
+      // The payoff for pasting a link is skipping the questions it answered — but
+      // only the ones the PAGE answered. A category guessed from words in the URL
+      // is pre-selected and still asked.
+      if (r.brand && r.category && r.categoryFromPage) setStepIndex(ADD_STEPS.indexOf("size"));
       else if (r.brand) setStepIndex(ADD_STEPS.indexOf("category"));
     } catch {
       setExtractNote(t("extractFailed"));
@@ -1895,6 +1908,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
     }
     if (!canAdd || saving) return;
     setSaving(true);
+    setSaveFailed(false);
     const res = await fetch("/api/closet", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -1904,16 +1918,20 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
         fitRating: form.fitRating, fitDirection: form.fitDirection, color: form.color || null,
         onlineAvailable: form.onlineAvailable,
         ...garmentMeasurementsFor(form.size),
+        productUrl: productUrl || undefined,
         imageDataUrl: form.imageDataUrl || null,
         areaNotesJson: form.areaNotes ? JSON.stringify({ notes: form.areaNotes }) : null,
       }),
-    });
+    }).catch(() => null);
+    // Say "added" only when it was. The form stays filled on a failure, so
+    // nothing the user typed is lost.
+    if (!res || !res.ok) { setSaving(false); setSaveFailed(true); return; }
     setJustAdded(`${form.brand} ${g.label(form.category)} · ${form.size}`);
     setForm({ ...BLANK });
     setStepIndex(0);
     setShowDetails(false);
     setPasteUrl(""); setExtractNote(null);
-    setSizeRows([]); setMeasuredFrom(null);
+    setSizeRows([]); setMeasuredFrom(null); setSizeLabels([]); setProductUrl(null); setFromDemo(false);
     setSaving(false);
     const created = await res.json().catch(() => null);
     onAdded(typeof created?.item?.id === "string" ? created.item.id : null);
@@ -1948,6 +1966,12 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
           />
         </div>
       </div>
+
+      {/* What the link gave us stays in view once the flow has moved past step 1 —
+          a demo sample in particular must say so where its answers are used. */}
+      {step !== "brand" && extractNote && (
+        <p className="mb-4 text-[11px] text-ink-soft">{extractNote}</p>
+      )}
 
       {/* The shortcut sits on the first step only — it answers the first
           questions, so offering it later would be offering to redo them. */}
@@ -1987,7 +2011,19 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
             />
           )}
           {step === "size" && (
-            <SizeInput category={form.category} value={form.size} onChange={(v) => setForm({ ...form, size: v })} />
+            <>
+              {sizeLabels.length > 0 && (
+                <div className="mb-3">
+                  <p className="mb-1.5 text-[11px] text-ink-faint">{fromDemo ? t("sizesInDemo") : t("sizesOnPage")}</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {sizeLabels.map((l) => (
+                      <Chip key={l} selected={form.size === l} onClick={() => setForm({ ...form, size: l })}>{l}</Chip>
+                    ))}
+                  </div>
+                </div>
+              )}
+              <SizeInput category={form.category} value={form.size} onChange={(v) => setForm({ ...form, size: v })} />
+            </>
           )}
           {step === "fit" && (
             <FitDirectionInput
@@ -1997,6 +2033,7 @@ function AddItemFlow({ onAdded, onClose }: { onAdded: (id: string | null) => voi
           )}
         </div>
 
+        {saveFailed && <p role="alert" className="mt-4 text-sm text-bad">{t("addFailed")}</p>}
         <div className="mt-5 flex flex-wrap items-center gap-2">
           {stepIndex > 0 && (
             <Button type="button" variant="ghost" onClick={() => setStepIndex(stepIndex - 1)}>{t("back")}</Button>

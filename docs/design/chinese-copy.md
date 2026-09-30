@@ -90,6 +90,7 @@ Each is a rule above winning over the revision's text, not a new wording:
 | `extension.install.load` | 加载未打包的扩展程序 | Chrome's exact label |
 | `ask.kind.RECOMMEND.example` | T恤 → T 恤 | spacing; the revision's own 04.9 spelling |
 | `check.placeholder`, `closet.pastePlaceholder`, `closet.colorPlaceholder` | … → …… | ellipsis |
+| `closet.extractRead` | 读取{bits} → 读取：{bits} | spacing: {bits} is usually a Latin brand ("UNIQLO · T 恤"), and a colon keeps the rule for either (Session 80c) |
 | `closet.listSeparator` | kept 、 | the revision's reference quotes "—" (the line dropdown's dash), but the key's English is ", " — a list joiner; lists join with 、 |
 
 Checked on the way in: every one of the revision's code references was compared

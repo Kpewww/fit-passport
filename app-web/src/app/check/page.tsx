@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, lazy, useCallback, useEffect, useState } from "react";
-import { Alert, ArrowRight, ArrowUpRight, BrowserIcon, CaretDown, Check, Globe, LinkIcon, Robot, Ruler, Scales, Warning } from "@/components/Icon";
+import { Alert, ArrowRight, ArrowUpRight, BrowserIcon, CaretDown, Check, Globe, Info, LinkIcon, Robot, Ruler, Scales, Warning } from "@/components/Icon";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
@@ -19,6 +19,7 @@ import { SafeBoundary } from "@/components/SafeBoundary";
 import { CONFIDENCE_WEIGHTS } from "@/lib/confidenceWeights";
 import { chestEaseCm } from "@/lib/bodyMesh";
 import { useT } from "@/i18n/client";
+import { DEMO_PRODUCTS } from "@/lib/demoProducts";
 import { useGarmentText } from "@/i18n/garment";
 
 // three.js only loads if someone opens the 3D view. Boundaried because a failed
@@ -126,12 +127,7 @@ type Status = { hasBody: boolean; hasChest: boolean; closetCount: number; accura
 type FitPref = "slim" | "regular" | "relaxed" | "oversized";
 const FIT_PREFS: FitPref[] = ["slim", "regular", "relaxed", "oversized"];
 
-const DEMO_URLS = [
-  { label: "Uniqlo AIRism T-Shirt", url: "https://www.uniqlo.com/us/en/products/airism-cotton-t-shirt" },
-  { label: "COS Oxford Shirt", url: "https://www.cos.com/en_usd/oxford-shirt" },
-  { label: "Levi's Trucker Jacket", url: "https://www.levi.com/US/en_US/clothing/men/outerwear/vintage-fit-trucker-jacket" },
-  { label: "Zara Knit Sweater", url: "https://www.zara.com/us/en/wool-blend-knit-sweater-p12345.html" },
-];
+const DEMO_URLS = DEMO_PRODUCTS;
 
 function CheckInner() {
   const t = useT("check");
@@ -782,6 +778,11 @@ function SourceRow({ product, source }: { product: Product; source: Source }) {
   const host = source.host || t("source.thePage");
   return (
     <div className="space-y-2 text-xs text-ink-soft">
+      {/* A demo link is answered from a curated sample, not from any page — say so
+          and make no claim about reading (Session 80). */}
+      {source.sizesFrom === "fixture" ? (
+        <p className="inline-flex items-center gap-1.5 font-medium text-ink"><Info size={16} className="text-ink-faint" />{t("source.demo")}</p>
+      ) : (
       <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
         {/* Who read it. A brand chart means this product's page was never opened
             — so we say "identified", never "read". The extension hands us the
@@ -816,6 +817,7 @@ function SourceRow({ product, source }: { product: Product; source: Source }) {
           </span>
         )}
       </div>
+      )}
       {/* The chart is checkable or it is not trustworthy — link the page the
           numbers came from, and date it, because a size guide goes stale. */}
       {source.sizesFrom === "brand-chart" && source.chart ? (
@@ -875,6 +877,7 @@ function measurementLabel(
   extractedBy?: Source["extractedBy"],
 ): string {
   if (sizesFrom === "estimated") return t("measure.estimated");
+  if (sizesFrom === "fixture") return t("measure.demo");
   const where = sizesFrom === "brand-chart" ? t("measure.whereBrand") : t("measure.wherePage");
   // A model reading prose or an image is a weaker claim than a parsed table, and
   // the reader deserves to know which one produced the numbers.

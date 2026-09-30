@@ -151,8 +151,7 @@ describe("layer 2a — the brand's own published size chart", () => {
   });
 
   it("falls through to the synthesized ladder for a brand with no chart", () => {
-    // adidas: in BRAND_TABLE, but no curated chart and no fixture. (Levi's, COS,
-    // Uniqlo and Zara all hit demo fixtures — fixtures match by URL substring.)
+    // adidas: in BRAND_TABLE, but no curated chart and no fixture.
     const out = extractFromUrl("https://www.adidas.com/us/mens-hoodie/AB1234.html");
     expect(out.source.sizesFrom).toBe("estimated");
     expect(out.source.chart).toBeUndefined();
@@ -229,5 +228,21 @@ describe("t-shirts are t-shirts", () => {
     expect(cat("https://shop.test/p/mens-button-down-shirt")).toBe("shirt");
     expect(cat("https://shop.test/p/mens-oxford-button-up")).toBe("shirt");
     expect(cat("https://www.patagonia.com/product/mens-down-sweater/84675.html")).toBe("jacket");
+  });
+});
+
+describe("demo fixtures answer only their own demo links (Session 80)", () => {
+  it("serve the sample for the demo link, query string or not", () => {
+    expect(extractFromUrl("https://www.cos.com/en_usd/oxford-shirt").source.sizesFrom).toBe("fixture");
+    expect(extractFromUrl("https://cos.com/en_usd/oxford-shirt/?ref=x").source.sizesFrom).toBe("fixture");
+  });
+  it("never answer a real product that shares words with a demo", () => {
+    // Measured before the fix: this J.Crew link came back as \"COS Oxford Cotton Shirt\".
+    const jcrew = extractFromUrl("https://www.jcrew.com/p/mens/categories/clothing/shirts/oxford/broken-in-organic-cotton-oxford-shirt/BE996");
+    expect(jcrew.source.sizesFrom).not.toBe("fixture");
+    expect(jcrew.brand).not.toBe("COS");
+    const uniqlo = extractFromUrl("https://www.uniqlo.com/us/en/products/E474244-000/00?colorDisplayCode=00");
+    expect(uniqlo.source.sizesFrom).not.toBe("fixture");
+    expect(extractFromUrl("https://www.levi.com/US/en_US/clothing/men/outerwear/trucker-jacket/p/723340146").source.sizesFrom).not.toBe("fixture");
   });
 });

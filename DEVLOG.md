@@ -31,6 +31,59 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-30 · Session 80c — Adding by link says only what it read
+
+Founder's question: does the closet's "have a link?" box actually work, and if not, fix
+it or remove it — never return a sample product after a failed read.
+
+**Measured first, real links through the local server on the real network:**
+
+| Link | Before | After |
+|---|---|---|
+| H&M, Arc'teryx (blocked), Allbirds (unreachable) | 200 with a brand guessed from the domain and five **invented** chest measurements; "Read … from {host}" | unreadable: nothing pre-filled, the questions continue |
+| Taobao (login wall) | invented sizes, no name | unreadable |
+| Patagonia | `fetch: "ok"` — it was the bot-failover page, and "Hang Tight! Routing to checkout..." became the product name | unreadable: the page is now recognised as a block |
+| Everlane, Uniqlo | name read; **invented** sizes offered and stored as "estimated" measurements | name read; no sizes offered; category from the URL is pre-selected but still asked (Uniqlo's comes from the page, so it is skipped) |
+| Nike | brand "Nike.com", name `Men&#x27;s …` | brand "Nike", name decoded; brand-guide labels are not called "sizes on the page" |
+| J.Crew oxford shirt | **"COS Oxford Cotton Shirt"** — a demo fixture | J.Crew's own shirt, read from its page |
+| cos.com shirt | the COS demo sample | unreadable (COS refuses us) |
+
+**Verdict: the feature is real** — it reads Nike, Uniqlo, Everlane, J.Crew — so it stays,
+with its answers made honest. The rules are one pure function, `lib/closetExtract.ts`:
+nothing from a page we never read; a size label only if the page listed it and it is
+valid for the category; a garment measurement only from a real chart, with its
+provenance; the category question skipped only when the page named the garment.
+
+**Demo samples answer only demo links.** Fixtures matched by URL substring, so any
+Uniqlo t-shirt got the AIRism sample and any "oxford-shirt" became COS. The four "Try:"
+links now live in `lib/demoProducts.ts`, fixtures match those exact pages, and a sample is
+labelled wherever it is shown: "Demo data — a sample product, not read from this page" on
+/check (which used to claim "Read from {host}" and "Sizes read from the page"), and
+"Demo sample … — not read from a page" plus "Sizes in the sample" in the closet.
+
+**Also fixed on the way:**
+- Saving never checked the response: a rejected item still said "Added". It now shows
+  "Couldn't add that — nothing was saved" and keeps the form filled.
+- The link is now saved with the item (`productUrl`), which the API always accepted.
+- The note about what the link gave stays visible after the flow skips ahead (a demo
+  label that disappeared on the next step would not be a label).
+- `garmentMeasuredFrom` accepts `brand-chart` (and `seller`, for the next phase).
+- The route is rate-limited like /api/check — it can spend on the LLM and vision steps.
+- It no longer returns an `imageUrl` from the product page (always null in practice;
+  brand imagery is never used — invariant ③).
+- Chinese: "已从 {host} 读取：{bits}。" — the colon keeps the spacing rule when {bits} is
+  a Latin brand (logged in `chinese-copy.md`).
+
+Verified: the table above, run before and after; in the browser in Chinese — a blocked
+link leaves you on the brand question with the failure line; a Uniqlo link lands on the
+size question with "已从 uniqlo.com 读取：UNIQLO · T 恤。"; the demo link offers its sizes as
+"示例中的尺码", and saving it stores `productUrl`, the chart's chest and provenance
+`fixture`. New tests: `closetExtract.test.ts` (8), exact fixture matching, the Patagonia
+block page, hex entities, `siteNameAsBrand`. 650 tests + 1 skip, exit 0; typecheck and
+build clean.
+
+---
+
 ## 2026-09-30 · Session 80b — One language switch, a header that holds still, a footer that credits the product
 
 Founder's requests: take the language switch out of the footer, make the header's
