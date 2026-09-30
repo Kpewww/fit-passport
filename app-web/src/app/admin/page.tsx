@@ -14,6 +14,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Card, EmptyState, LinkButton } from "@/components/ui";
 import { ArrowRight } from "@/components/Icon";
+import { useT } from "@/i18n/client";
 
 type Item = {
   kind: "POST" | "ANSWER" | "OUTFIT";
@@ -35,7 +36,19 @@ type Item = {
 
 type Queue = { admin: { username: string | null }; threshold: number; items: Item[] };
 
+/** The author's name, linked to their public closet when they have a code. */
+function authorLink(item: Item, name: React.ReactNode) {
+  const code = item.target.user.accountCode;
+  if (!code) return name;
+  return (
+    <Link href={`/u/${encodeURIComponent(code)}`} className="hover:text-ink hover:underline">
+      {name}
+    </Link>
+  );
+}
+
 export default function AdminPage() {
+  const t = useT("admin");
   const [data, setData] = useState<Queue | null>(null);
   const [denied, setDenied] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -53,7 +66,7 @@ export default function AdminPage() {
   useEffect(() => { load(); }, [load]);
 
   async function act(item: Item, action: "hide" | "unhide" | "delete") {
-    if (action === "delete" && !confirm("Delete this permanently? This can't be undone.")) return;
+    if (action === "delete" && !confirm(t("deleteConfirm"))) return;
     setBusy(item.targetId);
     await fetch("/api/admin/reports", {
       method: "POST",
@@ -69,9 +82,9 @@ export default function AdminPage() {
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-14">
           <EmptyState
-            title="No such page"
-            body="Nothing to see here."
-            action={<LinkButton href="/">Go home</LinkButton>}
+            title={t("notFoundTitle")}
+            body={t("notFoundBody")}
+            action={<LinkButton href="/">{t("goHome")}</LinkButton>}
           />
         </div>
       </main>
@@ -79,27 +92,23 @@ export default function AdminPage() {
   }
 
   if (!data) {
-    return <main className="flex-1"><div className="mx-auto max-w-3xl px-4 sm:px-6 py-14 text-ink-faint">Loading…</div></main>;
+    return <main className="flex-1"><div className="mx-auto max-w-3xl px-4 sm:px-6 py-14 text-ink-faint">{t("loading")}</div></main>;
   }
 
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
-        <h1 className="font-serif text-h1 text-ink">Review queue</h1>
+        <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
         <p className="mt-2 text-ink-soft">
-          Signed in as <strong className="text-ink">{data.admin.username}</strong>. Content
-          auto-hides at <strong>{data.threshold}</strong> distinct reports — that&apos;s a
-          blunt rule, and this page is where a person overrides it.
+          {t.rich("signedIn", { strong: (c) => <strong className="text-ink">{c}</strong> }, { username: data.admin.username ?? "", threshold: data.threshold })}
         </p>
         <p className="mt-2 text-xs text-ink-faint">
-          Restoring clears the reports on an item, so the same three can&apos;t re-hide it.
-          Nothing here exposes anyone&apos;s measurements — that isn&apos;t a permission,
-          it&apos;s a property of the data model.
+          {t("restoreNote")}
         </p>
 
         {data.items.length === 0 ? (
           <Card className="mt-6 bg-paper-soft text-center">
-            <p className="text-sm text-ink-soft">Nothing reported. Quiet is good.</p>
+            <p className="text-sm text-ink-soft">{t("nothingReported")}</p>
           </Card>
         ) : (
           <div className="mt-6 space-y-3">
@@ -107,12 +116,12 @@ export default function AdminPage() {
               <Card key={`${item.kind}:${item.targetId}`} className="!p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-full bg-paper-soft px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-soft ring-1 ring-line">
-                    {item.kind}
+                    {t(`kind.${item.kind}`)}
                   </span>
-                  <span className="text-xs font-semibold text-bad">{item.count} report{item.count === 1 ? "" : "s"}</span>
+                  <span className="text-xs font-semibold text-bad">{t.n("reports", item.count)}</span>
                   {item.target.hidden && (
                     <span className="rounded-full bg-warn-tint px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-warn">
-                      Hidden
+                      {t("hidden")}
                     </span>
                   )}
                   <span className="text-xs text-ink-faint">{item.reasons.join(" · ")}</span>
@@ -124,29 +133,22 @@ export default function AdminPage() {
                 )}
                 {item.notes.length > 0 && (
                   <p className="mt-1.5 text-xs italic text-ink-faint">
-                    Reporter notes: {item.notes.join(" | ")}
+                    {t("reporterNotes", { notes: item.notes.join(" | ") })}
                   </p>
                 )}
 
                 <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-faint">
                   <span>
-                    by{" "}
-                    {item.target.user.accountCode ? (
-                      <Link href={`/u/${encodeURIComponent(item.target.user.accountCode)}`} className="hover:text-ink hover:underline">
-                        {item.target.user.username}
-                      </Link>
-                    ) : (
-                      item.target.user.username
-                    )}
+                    {t.rich("by", { link: (c) => authorLink(item, c) }, { username: item.target.user.username ?? "" })}
                     {item.target.user.memberNo != null &&
-                      ` · No. ${String(item.target.user.memberNo).padStart(8, "0")}`}
+                      ` · ${t("memberNo", { n: String(item.target.user.memberNo).padStart(8, "0") })}`}
                   </span>
                   {item.kind !== "OUTFIT" && (
                     <Link
                       href={`/ask/${encodeURIComponent(item.kind === "ANSWER" ? (item.target.postId ?? "") : item.targetId)}`}
                       className="text-brand hover:underline"
                     >
-                      Open thread <ArrowRight size={14} className="-mt-px inline" />
+                      {t("openThread")} <ArrowRight size={14} className="-mt-px inline" />
                     </Link>
                   )}
                 </div>
@@ -158,7 +160,7 @@ export default function AdminPage() {
                       onClick={() => act(item, "unhide")}
                       className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-ok hover:text-ok disabled:opacity-50"
                     >
-                      Restore
+                      {t("restore")}
                     </button>
                   ) : (
                     <button
@@ -166,7 +168,7 @@ export default function AdminPage() {
                       onClick={() => act(item, "hide")}
                       className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-warn hover:text-warn disabled:opacity-50"
                     >
-                      Hide
+                      {t("hide")}
                     </button>
                   )}
                   <button
@@ -174,7 +176,7 @@ export default function AdminPage() {
                     onClick={() => act(item, "delete")}
                     className="rounded-lg border border-line px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-bad hover:text-bad disabled:opacity-50"
                   >
-                    Delete permanently
+                    {t("deletePermanently")}
                   </button>
                 </div>
               </Card>

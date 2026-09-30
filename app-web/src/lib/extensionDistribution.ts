@@ -22,8 +22,8 @@ export type ExtensionDistribution =
 
 export const EXTENSION_DISTRIBUTION: ExtensionDistribution = {
   kind: "zip",
-  href: "/downloads/fit-passport-extension-0.3.0.zip",
-  version: "0.3.0",
+  href: "/downloads/fit-passport-extension-0.3.1.zip",
+  version: "0.3.1",
   sizeKb: 80,
 };
 

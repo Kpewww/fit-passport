@@ -68,6 +68,15 @@ export function extensionVersion(dir = EXT_DIR) {
   return JSON.parse(readFileSync(join(dir, "manifest.json"), "utf8")).version;
 }
 
+/** Text files ship with LF endings. A Windows checkout with core.autocrlf holds
+ *  them as CRLF, and packing those bytes gave a different zip on every such
+ *  machine — the committed download looked stale on a clean clone. */
+const TEXT_EXT = /\.(js|json|html|css|md|txt)$/i;
+function shippedBytes(path, data) {
+  if (!TEXT_EXT.test(path)) return data;
+  return Buffer.from(data.toString("utf8").replace(/\r\n/g, "\n"), "utf8");
+}
+
 /** Build the archive in memory. Pure: same directory contents → same bytes. */
 export function buildExtensionZip(dir = EXT_DIR) {
   const locals = [];
@@ -75,7 +84,7 @@ export function buildExtensionZip(dir = EXT_DIR) {
   let offset = 0;
 
   for (const path of extensionFiles(dir)) {
-    const data = readFileSync(join(dir, path));
+    const data = shippedBytes(path, readFileSync(join(dir, path)));
     const name = Buffer.from(path, "utf8");
     const crc = crc32(data);
 

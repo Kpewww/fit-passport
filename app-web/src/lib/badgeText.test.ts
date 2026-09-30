@@ -25,7 +25,8 @@ describe("badges in Chinese", () => {
     expect(lines.length).toBeGreaterThan(15);
     const untranslated = lines.filter((l) => zhProgress(l) == null);
     expect(untranslated).toEqual([]);
-    expect(zhProgress("2/20 items · 1/4 collections")).toBe("2/20 件 · 1/4 个分组");
+    expect(zhProgress("2/20 items · 1/4 collections")).toBe("2／20 件衣物 · 1／4 个分组");
+    expect(zhProgress("12/250 likes on your best look")).toBe("最受欢迎的搭配：12／250 次点赞");
   });
 
   it("leave English exactly as badges.ts writes it", () => {

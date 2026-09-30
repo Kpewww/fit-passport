@@ -65,11 +65,11 @@ function render(M: EngineText): Array<[string, string]> {
 
 // Words that are the same in both languages: brands and codes from the args
 // above, size labels, units, and the product's own name.
-const SAME_IN_BOTH = new Set(["Uniqlo", "COS", "XL", "XXL", "cm", "POLO", "AI", "Fit", "Passport", "Cookie"]);
+const SAME_IN_BOTH = new Set(["Uniqlo", "COS", "XL", "XXL", "cm", "Polo", "AI", "Fit", "Passport", "Cookie"]);
 const englishWords = (s: string) => (s.match(/[A-Za-z]{2,}/g) ?? []).filter((w) => !SAME_IN_BOTH.has(w));
-// "T恤" is written without a space in Chinese; it is a word, not a Latin letter
+// The copy spec writes "T 恤" and "Polo 衫" with the space, like every Latin letter
 // beside a Chinese one.
-const tightSpacing = (s: string) => /[一-鿿][A-Za-z0-9]|[A-Za-z0-9][一-鿿]/.test(s.replace(/T恤/g, "恤"));
+const tightSpacing = (s: string) => /[一-鿿][A-Za-z0-9]|[A-Za-z0-9][一-鿿]/.test(s);
 
 describe("the engine's Chinese", () => {
   it("says every message without English words", () => {

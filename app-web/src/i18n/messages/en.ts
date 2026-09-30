@@ -1159,7 +1159,7 @@ export const en = {
     download: "Download the extension",
     addToChrome: "Add to Chrome",
     notInStore:
-      "It isn’t in the Chrome Web Store yet, so for now you add it yourself — four steps, about a minute. It’s the same extension either way. Tested in Chrome; other Chromium browsers (Edge, Brave, Arc) accept the same steps, but we haven’t tested them.",
+      "It isn’t in the Chrome Web Store yet, so for now you add it yourself — four steps, about a minute. Tested in Chrome; other Chromium browsers (Edge, Brave, Arc) install it the same way.",
     installTitle: "Install it",
     install: {
       unzip: "Download the file above and <b>unzip it</b>. Keep the folder somewhere it won’t be deleted — Chrome loads the extension from it.",
@@ -1194,5 +1194,30 @@ export const en = {
       devModeQ: "Chrome mentions a developer-mode extension.",
       devModeA: "That can happen with extensions added this way. It goes away once Fit Passport is in the Chrome Web Store.",
     },
+  },
+
+  // /admin — the moderation queue. English is exactly what the page printed before.
+  admin: {
+    deleteConfirm: "Delete this permanently? This can't be undone.",
+    notFoundTitle: "No such page",
+    notFoundBody: "Nothing to see here.",
+    goHome: "Go home",
+    loading: "Loading…",
+    title: "Review queue",
+    signedIn:
+      "Signed in as <strong>{username}</strong>. Content auto-hides at <strong>{threshold}</strong> distinct reports — that's a blunt rule, and this page is where a person overrides it.",
+    restoreNote:
+      "Restoring clears the reports on an item, so the same three can't re-hide it. Nothing here exposes anyone's measurements — that isn't a permission, it's a property of the data model.",
+    nothingReported: "Nothing reported. Quiet is good.",
+    reports: { one: "{n} report", other: "{n} reports" },
+    hidden: "Hidden",
+    reporterNotes: "Reporter notes: {notes}",
+    by: "by <link>{username}</link>",
+    memberNo: "No. {n}",
+    openThread: "Open thread",
+    restore: "Restore",
+    hide: "Hide",
+    deletePermanently: "Delete permanently",
+    kind: { POST: "POST", ANSWER: "ANSWER", OUTFIT: "OUTFIT" },
   },
 } as const;

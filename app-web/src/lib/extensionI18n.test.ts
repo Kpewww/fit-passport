@@ -71,7 +71,7 @@ describe("choosing the popup's language", () => {
 
   it("fills values, and falls back to English for an unknown key rather than a blank", () => {
     I18N.setLang("zh");
-    expect(I18N.t("confidence", { pct: 72 })).toBe("把握 72%");
+    expect(I18N.t("confidence", { pct: 72 })).toBe("可信度 72%");
     I18N.setLang("en");
     expect(I18N.t("chart", { n: 3 })).toBe("Size chart — 3 rows");
   });

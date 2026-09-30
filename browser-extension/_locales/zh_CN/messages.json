@@ -1,8 +1,8 @@
 {
   "extDescription": {
-    "message": "在你正看着的商品页上，用你的 Fit Passport 查尺码——附带理由，每个数字从哪来都写得清清楚楚。"
+    "message": "在正在浏览的商品页，查看你的推荐尺码、判断依据，以及每项数据的来源。"
   },
   "actionTitle": {
-    "message": "用 Fit Passport 查我的尺码"
+    "message": "用 Fit Passport 查看推荐"
   }
 }

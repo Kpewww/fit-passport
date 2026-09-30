@@ -6,8 +6,7 @@
 // written as string literals, and fails on two or more Latin words in a row: the
 // shape of an English phrase someone forgot to route through t(). A single word
 // ("cm", "EU", a size label) passes; so do the allowlisted strings below, which
-// are names or example input, the same in both languages. /admin is internal and
-// stays English.
+// are names or example input, the same in both languages.
 
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
@@ -55,7 +54,7 @@ function englishIn(source: string): string[] {
 
 describe("the interface has no English outside the messages", () => {
   const ui = [...files(join(SRC, "app")), ...files(join(SRC, "components"))].filter(
-    (f) => !/[\\/](admin|api)[\\/]/.test(f),
+    (f) => !/[\\/]api[\\/]/.test(f),
   );
 
   it("scans the pages and components", () => {

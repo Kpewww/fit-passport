@@ -213,7 +213,7 @@ function Hero({
         className="mx-auto max-w-5xl px-4 pb-20 pt-20 text-center sm:px-6 sm:pb-28 sm:pt-28"
       >
         <p className="eyebrow text-paper/60 animate-rise">{t("hero.eyebrow")}</p>
-        <h1 className="mx-auto mt-7 max-w-4xl font-serif text-6xl font-semibold leading-[0.95] tracking-tight animate-rise sm:text-8xl" style={{ animationDelay: "60ms" }}>
+        <h1 className="hero-title mx-auto mt-7 max-w-4xl font-serif text-6xl font-semibold leading-[0.95] tracking-tight animate-rise sm:text-8xl" style={{ animationDelay: "60ms" }}>
           {t.rich("hero.title", { accent: (c) => <span className="italic font-normal text-brand">{c}</span> })}
         </h1>
         <p className="mx-auto mt-8 max-w-lg text-base leading-relaxed text-paper/65 animate-rise sm:text-lg" style={{ animationDelay: "120ms" }}>

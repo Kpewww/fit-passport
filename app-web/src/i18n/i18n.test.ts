@@ -24,6 +24,10 @@ const SAME_IN_BOTH = new Set([
   "common.zhLong",
   "common.enLong",
   "garment.line.none", // a dash
+  "garment.lineShort.mens", // M / W / U, the line initials printed on a card
+  "garment.lineShort.womens",
+  "garment.lineShort.unisex",
+  "passport.sexOpt.unspecified", // X, as a passport prints it
   "passport.volShape", // only placeholders and a dot
 ]);
 

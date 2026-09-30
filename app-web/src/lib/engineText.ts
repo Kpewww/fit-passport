@@ -194,92 +194,97 @@ export const EN_TEXT: EngineText = {
 
 // ------------------------------------------------------------------ Chinese
 
+// Wording: docs/design/chinese-copy-2026-09-30.md §02.14–02.15 and the words of
+// §04.9 / §05.1–05.4, so a reason names a garment or a fit exactly as the page does.
 const ZH_PREF: Record<FitPreference, string> = { slim: "修身", regular: "常规", relaxed: "宽松", oversized: "超宽松" };
 const ZH_DIM: Record<Dim, string> = { chest: "胸围", waist: "腰围", shoulder: "肩宽" };
 const ZH_SIGNAL: Record<SignalName, string> = {
-  "measurement-fit": "你的尺寸",
-  "known-good": "你已有的一件衣服",
-  outcome: "你以前留下或退掉的衣服",
-  "brand-bias": "这个牌子在你身上的表现",
-  preference: "偏好",
-  completeness: "完整度",
+  "measurement-fit": "你的身形数据",
+  "known-good": "你已有的衣物",
+  outcome: "你曾留下或退回的衣物",
+  "brand-bias": "这个品牌在你身上的版型表现",
+  preference: "版型偏好",
+  completeness: "信息完整度",
 };
 const ZH_DIRECTION: Record<DirectionKey, string> = {
   "too-tight": "太紧",
-  snug: "略紧",
+  snug: "稍紧",
   "just-right": "刚好",
-  roomy: "略松",
+  roomy: "稍松",
   "too-loose": "太松",
 };
 const ZH_VERDICT: Record<Verdict, string> = {
-  "too small": "太小",
+  "too small": "过小",
   snug: "略紧",
-  "true to size": "正合适",
-  relaxed: "略宽松",
-  "too big": "太大",
+  "true to size": "大小合适",
+  relaxed: "宽松",
+  "too big": "过大",
 };
-const ZH_DOMAIN: Record<SizeDomain, string> = { top: "上装", bottom: "下装", shoe: "鞋", sock: "袜子", accessory: "配饰" };
+const ZH_DOMAIN: Record<SizeDomain, string> = { top: "上装", bottom: "下装", shoe: "鞋履", sock: "袜子", accessory: "配饰" };
 const ZH_CATEGORY: Record<string, string> = {
-  tshirt: "T恤", shirt: "衬衫", polo: "POLO 衫", sweater: "毛衣", hoodie: "卫衣", jacket: "夹克", coat: "大衣",
-  pants: "裤子", jeans: "牛仔裤", shorts: "短裤", skirt: "半身裙", dress: "连衣裙",
+  tshirt: "T 恤", shirt: "衬衫", polo: "Polo 衫", sweater: "毛衣", hoodie: "连帽衫", jacket: "夹克／外套", coat: "大衣",
+  pants: "长裤", jeans: "牛仔裤", shorts: "短裤", skirt: "裙装", dress: "连衣裙",
 };
-// "你那件 Uniqlo M" / "同类商品的 M": whose garment, with the spacing rule.
-const owner = (brand: string | null) => (brand ? ` ${brand} 的` : "同类商品的");
+// "你曾将 Uniqlo 的 M…" / "你曾将相似品牌的 M…": whose garment, with the spacing rule.
+const brandText = (brand: string | null) => (brand ? ` ${brand} ` : "相似品牌");
 
 export const ZH_TEXT: EngineText = {
   matchesFit: (pref, dims, est) =>
-    `按${ZH_PREF[pref]}版型，${dims.map((d) => ZH_DIM[d]).join("、")}${dims.length > 1 ? "都" : ""}合适` +
-    (est ? "（用的是地区平均尺寸，填上你自己的会更准）" : ""),
-  bindingDimension: (dim, cm, roomy) => `胸围合适，但${ZH_DIM[dim]}${roomy ? "大了" : "小了"} ${cm} cm`,
-  versusTarget: (dim, cm, larger, pref) => `${ZH_DIM[dim]}比你的${ZH_PREF[pref]}目标${larger ? "大" : "小"} ${cm} cm`,
-  anchorRunsHere: (label, dir) => `你那件 ${label} 穿着${ZH_DIRECTION[dir]}，所以这个码应该正合适`,
-  anchorRunsSteps: (steps, _plural, label, dir) => `和你那件穿着${ZH_DIRECTION[dir]}的 ${label} 差 ${steps} 个码`,
-  anchorShifted: (up, label, pref) => `照你想要的${ZH_PREF[pref]}版型，比你那件 ${label} ${up ? "大" : "小"}一码`,
-  anchorAdjustedSteps: (steps, label, pref) => `和按${ZH_PREF[pref]}版型调整后的 ${label} 差 ${steps} 个码`,
-  anchorMatches: (label, category) => `和你那件 ${label}（${ZH_CATEGORY[category] ?? "衣服"}）一致`,
-  anchorSteps: (steps, label) => `和你那件 ${label} 差 ${steps} 个码`,
-  exchanged: (from, to, brand) => `你把${owner(brand)} ${from} 换成了 ${to}`,
+    `${dims.map((d) => ZH_DIM[d]).join("、")}符合你偏好的${ZH_PREF[pref]}版型。` +
+    (est ? "（采用地区平均数据；补充你的身形数据，可提高推荐准确度。）" : ""),
+  bindingDimension: (dim, cm, roomy) => `胸围合适，${ZH_DIM[dim]}则${roomy ? "偏宽" : "偏窄"} ${cm} cm。`,
+  versusTarget: (dim, cm, larger, pref) => `相较你偏好的${ZH_PREF[pref]}版型，${ZH_DIM[dim]}${larger ? "多" : "少"} ${cm} cm。`,
+  anchorRunsHere: (label, dir) => `你已有的 ${label} 穿着${ZH_DIRECTION[dir]}，据此推荐这个尺码。`,
+  anchorRunsSteps: (steps, _plural, label, dir) =>
+    `与你已有的 ${label} 相差 ${steps} 个尺码等级；那件衣物穿着${ZH_DIRECTION[dir]}。`,
+  anchorShifted: (up, label, pref) =>
+    `以你已有的 ${label} 为参照，${up ? "上调" : "下调"}一个尺码等级，以贴近${ZH_PREF[pref]}版型。`,
+  anchorAdjustedSteps: (steps, label, pref) => `按${ZH_PREF[pref]}版型调整后，与已有的 ${label} 相差 ${steps} 个尺码等级。`,
+  anchorMatches: (label, category) => `与已有的 ${label}（${ZH_CATEGORY[category] ?? "衣物"}）尺码相符。`,
+  anchorSteps: (steps, label) => `与已有的 ${label} 相差 ${steps} 个尺码等级。`,
+  exchanged: (from, to, brand) => `你曾将${brandText(brand)}的 ${from} 换成 ${to}。`,
   returned: (size, brand, how) =>
-    `你退过${owner(brand)} ${size}（${how === "tight" ? "太紧" : how === "loose" ? "太松" : "不合身"}）`,
-  kept: (size, brand) => `你留下了${owner(brand)} ${size}，穿着合身`,
+    `你曾退回${brandText(brand)}的 ${size}，原因是${how === "tight" ? "太紧" : how === "loose" ? "太松" : "合身度不合适"}。`,
+  kept: (size, brand) => `你曾留下${brandText(brand)}的 ${size}，穿着合身。`,
   implausible: (issues) =>
-    `你的几个尺寸放在一起有点反常（${issues.join("；")}）。如果是填错了，在身材档案里改过来，推荐会更准。`,
-  implausibleChestWaist: (c, w) => `胸围 ${c} cm 配腰围 ${w} cm`,
-  implausibleShoulderChest: (sh, c) => `肩宽 ${sh} cm 配胸围 ${c} cm`,
+    `这些身形数据放在一起，可能需要核对（${issues.join("；")}）。若有输入错误，请在合身护照中更正，让推荐更有依据。`,
+  implausibleChestWaist: (c, w) => `胸围 ${c} cm，腰围 ${w} cm`,
+  implausibleShoulderChest: (sh, c) => `肩宽 ${sh} cm，胸围 ${c} cm`,
   fragile: (lo, hi, noise) =>
-    `这个码卡在临界附近：胸围在 ${lo}–${hi} cm 之间都选它，而量法上 ${noise} cm 的出入就可能让结果改变——值得再量一次。`,
-  disagree: (signal, picked, best) => `几条依据说法不一：按${ZH_SIGNAL[signal]}是 ${picked}；按最有力的综合依据是 ${best}。`,
+    `这次推荐接近尺码分界：胸围在 ${lo}–${hi} cm 时成立，测量相差 ${noise} cm 就可能影响结果。建议重新测量一次。`,
+  disagree: (signal, picked, best) =>
+    `不同依据指向不同尺码：按${ZH_SIGNAL[signal]}，应选 ${picked}；综合最有力的依据，推荐 ${best}。`,
   verdictOff: (label, verdict) =>
-    `只看你的尺寸，${label} 算是“${ZH_VERDICT[verdict]}”——我们是根据其他依据推荐它的，请把它当作起点，再对照一下尺码表。`,
-  closetScattered: "你衣橱里的反馈互相矛盾——有的说偏紧，有的说偏松——所以我们不太确定你这次想要哪种。",
-  largestSize: (pref) => `这已经是最大的码了——按${ZH_PREF[pref]}版型，你落在这个尺码范围的最上端。`,
-  smallestSize: (pref) => `这已经是最小的码了——按${ZH_PREF[pref]}版型，你落在这个尺码范围的最下端。`,
+    `仅按身形数据判断，${label} 显示为“${ZH_VERDICT[verdict]}”。当前推荐还参考了其他依据，请以此为起点，再核对尺码表。`,
+  closetScattered: "衣橱里的穿着评价存在差异：有些偏紧，有些偏松，因此这次还难以确定你想要的松紧程度。",
+  largestSize: (pref) => `这是商品提供的最大尺码。按${ZH_PREF[pref]}版型选择，已到可选范围的上限。`,
+  smallestSize: (pref) => `这是商品提供的最小尺码。按${ZH_PREF[pref]}版型选择，已到可选范围的下限。`,
   alternative: (label, pref) =>
-    `备选：${label} 也很接近——如果你想要${pref === "slim" ? "宽松一点" : "贴身一点"}，可以考虑它。`,
-  undeterminedHelp: "填上你的胸围，或者添一件这类穿着合身的衣服——有其中一样，就能给出真正的答案。",
-  limitedData: "商品数据有限——这次的推荐依据你的衣橱和偏好。",
+    `备选：${label} 也较接近。若你希望${pref === "slim" ? "更宽松一些" : "更贴身一些"}，可以考虑。`,
+  undeterminedHelp: "补充胸围，或添加一件同类型且合身的衣物，即可让这次推荐有据可依。",
+  limitedData: "商品信息有限，当前推荐依据你的衣橱和版型偏好。",
   crossDomain: (closet, product) =>
-    `你衣橱里的是${closet.map((d) => ZH_DOMAIN[d]).join("和")}，而这件是${ZH_DOMAIN[product]}。` +
-    `跨品类推荐尺码并不可靠——这次主要依据你的尺寸和偏好。添一件你自己的${ZH_DOMAIN[product]}，才能给出真正的推荐。`,
+    `衣橱中已有${closet.map((d) => ZH_DOMAIN[d]).join("、")}，当前商品属于${ZH_DOMAIN[product]}。` +
+    `不同品类的尺码难以直接参照，本次主要依据身形数据和版型偏好。添加一件你已有的${ZH_DOMAIN[product]}，可让推荐更有依据。`,
   easeContradiction: (n, pref) =>
-    `你对衣橱里 ${n} 件有尺寸数据的衣服的反馈互相矛盾——有的说想要更多余量，有的正相反——` +
-    `所以这次用你设定的${ZH_PREF[pref]}版型，没有从中学习。重新评一两件就能理清。`,
+    `这 ${n} 件已有尺寸信息的衣物，穿着评价存在差异，难以形成一致的松紧偏好。本次采用你填写的${ZH_PREF[pref]}版型。` +
+    `重新评价其中一两件，即可帮助厘清偏好。`,
   easeAdjusted: ({ more, garments, targetCm, statedCm, pref, excluded }) =>
-    `已按你实际穿着的放松量调整（${more ? "更宽松" : "更贴身"}）——依据衣橱里 ${garments} 件有尺寸数据的衣服` +
-    `（目标 ${targetCm} cm，${ZH_PREF[pref]}版型默认 ${statedCm} cm）` +
-    (excluded > 0 ? `；有 ${excluded} 件没有算进去，因为反馈和其他衣服矛盾，或尺寸看起来不对。` : "。"),
-  brandRuns: (big, n, brand) => `你反馈过 ${n} 件 ${brand} 偏${big ? "大——这次小一码" : "小——这次大一码"}。`,
-  refuseUnreadable: "我们没能读到这个页面——商家没有把它提供给我们，所以没有尺码表。这时给出的任何结果，都只是我们的猜测，而不是商家的数据。",
-  refuseNotApparel: "这个页面上没找到衣服。请粘贴一件具体衣服的商品页链接，比如衬衫、夹克、裤子。",
+    `依据衣橱中 ${garments} 件已有尺寸信息的衣物，调整到你实际穿着时偏好的${more ? "更大余量" : "更小余量"}。` +
+    `目标余量为 ${targetCm} cm，你填写的${ZH_PREF[pref]}版型对应 ${statedCm} cm。` +
+    (excluded > 0 ? `另有 ${excluded} 件衣物因评价与其他记录矛盾，或尺寸数据异常，未纳入本次参考。` : ""),
+  brandRuns: (big, n, brand) =>
+    `你曾记录 ${n} 件 ${brand} 单品${big ? "偏大" : "偏小"}，因此本次${big ? "下调" : "上调"}一个尺码等级。`,
+  refuseUnreadable: "商店未向我们提供可读取的页面，因此没有可用的尺码表。取得商品尺码数据后，才能给出有依据的推荐。",
+  refuseNotApparel: "未在此页面找到服装商品。请粘贴某件具体衣物的商品页链接，如衬衫、外套或长裤。",
   refuseUnsupported: (domain) =>
-    `我们暂时还不能为${ZH_DOMAIN[domain]}推荐尺码。引擎靠对比你的尺寸和衣服的尺寸来推荐，而这里需要的那项尺寸我们没有——` +
-    `这时说什么，都只是披着答案外衣的猜测。上装和下装目前都可以。`,
+    `目前支持上装和下装，暂不支持${ZH_DOMAIN[domain]}。推荐需要将身形数据与商品尺寸对应，而当前缺少这一品类所需的数据，因此无法给出可靠的推荐。`,
   refuseNoChartExtension:
-    "这一页上没找到尺码表，所以给出的任何尺码都是编的，而不是商家的。如果页面上有「尺码指南」「尺码表」或「尺码信息」，点开后再查一次——尺码表常常要点开才会加载。",
+    "当前页面未找到尺码表，暂时无法依据商店数据推荐尺码。若页面有“尺码指南”或“尺码表”入口，请打开后重新查询。尺码表通常会在打开后才加载。",
   refuseNoChartServer:
-    "我们在这一页找到了衣服，但没有读得懂的尺码表，所以给出的任何尺码都是编的，而不是商家的。很多商店要点开尺码指南才会加载尺码表——Fit Passport 浏览器插件可以在它打开后读取。",
+    "已找到服装商品，但没有可读取的尺码表，暂时无法依据商店数据推荐尺码。许多商店在打开尺码指南后才加载尺码表；使用 Fit Passport 浏览器插件，可在打开后读取。",
   notConnected:
-    "这个浏览器还没有连上你的 Fit Passport。先在这个浏览器里打开一次 Fit Passport（你的尺寸和衣橱都在那里），再查一次。如果你屏蔽了第三方 Cookie，插件就看不到你的 Fit Passport 登录状态。",
+    "当前浏览器尚未连接你的 Fit Passport。请在同一浏览器中打开一次 Fit Passport，让插件连接到你的身形数据和衣橱，再重新查询。若屏蔽了第三方 Cookie，插件将无法识别登录状态。",
   verdictName: (v) => ZH_VERDICT[v],
 };
 

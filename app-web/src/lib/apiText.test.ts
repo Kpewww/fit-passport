@@ -29,7 +29,7 @@ describe("the API's sentences", () => {
 
   it("answer a Chinese request in Chinese and anyone else in English", () => {
     const req = (h: Record<string, string>) => new Request("http://x/api", { headers: h });
-    expect(say(req({ "accept-language": "zh-CN" }), "username taken")).toBe("这个用户名已经有人用了。");
+    expect(say(req({ "accept-language": "zh-CN" }), "username taken")).toBe("该用户名已被使用。");
     expect(say(req({ "accept-language": "en-US" }), "username taken")).toBe("username taken");
     expect(say(req({ "x-fp-lang": "zh" }), "no such sentence")).toBe("no such sentence");
   });

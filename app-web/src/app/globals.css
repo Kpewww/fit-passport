@@ -73,6 +73,14 @@ body {
 :lang(zh) .eyebrow {
   letter-spacing: 0.12em;
 }
+/* The homepage hero is two lines in Chinese on every screen (copy spec 01.9 §8):
+   「穿」越时空， is seven full-width glyphs, which at the phone size (60px) is
+   wider than a 390px screen. Below the sm breakpoint the size follows the width. */
+@media (max-width: 639px) {
+  :lang(zh) .hero-title {
+    font-size: min(3.75rem, calc((100vw - 2rem) / 7.4));
+  }
+}
 
 
 /* Dark "credential" glass panel — a translucent frosted interior on dark bands. */

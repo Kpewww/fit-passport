@@ -31,6 +31,67 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-30 · Session 80a — The founder's Chinese copy, everywhere it is read
+
+The founder sent a finished Chinese copy revision (`docs/design/chinese-copy-2026-09-30.md`,
+kept as the record): every message key, the engine's reasons, the badges, the API's
+sentences and `/admin`, written against `eb42fc6`. It replaces Session 79's first draft
+(身材档案 → 合身护照, 注册账号 → 认领账户, 把握 → 可信度, 人体尺寸 → 身形数据 …).
+
+**How it went in.** The revision was parsed rather than retyped: key by "代码定位", the
+155 "沿用" references resolved to the entry they point at, Markdown escapes removed, then
+written into the string literals of `zh.ts` through the TypeScript AST, so formatting and
+comments are untouched. Before writing:
+- it covers all **1,122** keys, and `en.ts` had not changed since its base commit;
+- **804** Chinese values changed;
+- every reference's quoted English was compared with the key's real English. Of 22
+  differences, 21 are case (labels printed in capitals), end punctuation or a `<br/>`.
+  The 22nd is a misattribution: `closet.listSeparator` is quoted as the dropdown's "—",
+  but its English is ", " — the Chinese stays 、, the joiner the revision uses for lists.
+
+**Where the revision was adjusted**, each for a rule it states itself (listed in
+`docs/design/chinese-copy.md`):
+- the `<br/>`, `<accent>`, `<b>`, `<code>`, `<link>` tags put back on 5 homepage titles
+  and 7 extension lines, at the revision's own line breaks and accent choices — the tag
+  parity test caught all of them;
+- **加载未打包的扩展程序**, not 加载已解压的: read from Chrome 155's `Locales/zh-CN.pak`,
+  and the revision asks for Chrome's exact label;
+- "T恤" → "T 恤" in one example (the revision's own spelling elsewhere, and the spacing rule);
+- three single "…" → "……".
+
+**Also translated:** `lib/engineText.ts` (reasons and refusals, with the revision's branch
+words: 偏宽/偏窄, 上调/下调, "相似品牌" when there is no brand); the garment, fit and
+verdict words it uses now match the pages (T 恤, 夹克／外套, 超宽松, 大小合适);
+`lib/badgeText.ts` (titles, requirements, notes, tracks; progress lines as "2／20 件衣物");
+`lib/apiText.ts` (all 34 sentences); **`/admin`**, which was English-only — it now has an
+`admin` namespace (English unchanged) and lost its exemption from the untranslated-text
+guard. The popup's Chinese uses the same terms and the button names the `/extension` page
+quotes (查看推荐, 重新扫描, 可信度); extension **0.3.1**.
+
+**English changed in one place, on request:** the extension's install note no longer says
+"but we haven't tested them" (nor "It's the same extension either way", which the Chinese
+never had). It still says it isn't in the Chrome Web Store, four steps, about a minute,
+tested in Chrome, and that other Chromium browsers install it the same way.
+
+**Layout:** the homepage hero is two lines in Chinese on every screen, as the revision
+asks — at phone widths the Chinese title now scales with the viewport (two lines measured
+at 320, 390 and 430 px; it wrapped to three at 390 before).
+
+**A fix found on the way:** on this Windows checkout (`core.autocrlf=true`) the committed
+extension zip tested as stale on a clean tree. `pack-extension.mjs` now packs text files
+with LF endings, so the zip is the same bytes on every machine.
+
+**Not done, on purpose:** extending the arrow-glyph guard to the message files. The only
+hits are the revision's full-width ＋ in "＋ 关注" and similar — the Chinese form of the
+English "+ Follow" — which is copy, not an icon.
+
+Verified: Chinese at 1440 and 390 on /, /check, /extension, /closet, /passport, /badges,
+/community, /help, /account, /outfits, /admin with the demo closet — no overflow the
+English doesn't also have (one decorative layer on /passport and /community, identical in
+English). 637 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-09-29 · Session 79 close-out — resume brief and project memory
 
 Session 79 (79a–79h) is done: the site, the engine's reasons and refusals, the
