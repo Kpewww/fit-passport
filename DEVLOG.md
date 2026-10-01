@@ -31,6 +31,19 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-01 · Session 83b — The key was set all along
+
+After the Session 83 push, production's `/api/check` answered with
+`features.chartImage: true`: `ANTHROPIC_API_KEY` is set in Vercel. The deployment
+memory said it was not, and Session 83's entry, the extension design doc, the board
+and `todo/people/06` repeated that. All corrected; the founder's task is now to confirm
+a spend limit and try the first real picture read. The memory now says to check that
+field rather than trust the note.
+
+Docs only.
+
+---
+
 ## 2026-10-01 · Session 83 — A size chart that is only a picture: the shopper points at it
 
 Asked by the founder after an eBay listing (UltraClub dress shirt) whose size chart is
@@ -41,8 +54,9 @@ that publish no chart at all.
 pictures whose address or alt text named a chart, and its tokens had no "size chart"
 with a space (nor "size guide") — now added on both sides, drift-tested. And a
 one-off listing returned from `listingFrom` on its printed size ("Med") before any
-picture could be read. Production also has no `ANTHROPIC_API_KEY`, per the deployment
-memory (not re-checked in Vercel), so the existing image reader never runs there.
+picture could be read. (The deployment memory said production had no
+`ANTHROPIC_API_KEY`; after this push `/api/check` reported `features.chartImage: true`,
+so the key is set and that note was out of date — corrected.)
 eBay refuses our automated browser, so how that listing labels its photos is
 unverified.
 
@@ -74,7 +88,7 @@ then numeric labels, and says only "is close" when none can tell. Both languages
 **Checked.** In a headed browser with the 0.7.0 extension and a cached read (no key
 locally): no chart on the page, M at 50% from the closet; picked the picture; S at
 61% from its garment measurements, provenance naming the picked picture — in Chinese
-and English. **Not checked: a real vision read** (needs the key; todo/people/06). The
+and English. **Not checked: a real vision read** (todo/people/06). The
 privacy page says a picked picture may be read by Anthropic's API; the store listing
 is unchanged until the feature works in production.
 

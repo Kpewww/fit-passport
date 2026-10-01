@@ -804,6 +804,6 @@ keep), publish a contact address (`CONTACT_EMAIL`), decide trader / non-trader, 
 
 **Shipped:** the picker (extension 0.7.0), the read-once cache, "enter the seller's
 measurements" on every no-chart refusal, and the alternative line's direction fix.
-**Next — founder only:** set `ANTHROPIC_API_KEY` in Vercel with a spend limit
-(`todo/people/06`); until then the picker never shows in production. Then add it to the
-store listing. Jev (TypeSafe AI) was considered and rejected for this: text only.
+**Next — founder:** the key is already set in production (`features.chartImage: true`,
+2026-10-01); confirm a spend limit and try the first real read on the UltraClub eBay
+listing (`todo/people/06`), then add it to the store listing. Jev (TypeSafe AI) was considered and rejected for this: text only.

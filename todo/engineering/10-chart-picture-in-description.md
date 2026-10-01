@@ -20,4 +20,4 @@ One click, exact, one vision call per picture for everyone (cached). What is lef
   chart beyond that — check on a real listing without a 尺码信息 table;
 - a cheap on-device filter (aspect ratio, a grid of lines) could put the likely
   chart first; only worth it if shoppers struggle to find it;
-- nothing works until the key is set in production (todo/people/06).
+- the first real vision read is still to be seen (todo/people/06).

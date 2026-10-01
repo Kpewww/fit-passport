@@ -258,5 +258,6 @@ picture to a vision model costs money and sends pictures that are not the chart,
 
 Checked end to end in a headed browser with a cached read (no key locally): no chart
 on the page, M at 50% from the closet; picked the picture; S at 61% from the
-picture's garment measurements. **Not yet checked: a real vision read** — that needs
-the key in production (todo/people/06).
+picture's garment measurements. **Not yet checked: a real vision read** — the key is
+set in production (`features.chartImage: true`), so the first real pick is the check
+(todo/people/06).

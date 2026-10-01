@@ -44,7 +44,7 @@ How [[project-fit-passport]] is set up to deploy (prepared Session 31, 2026-08-1
 - **GitHub auto-deploy is NOT connected** — `vercel git connect` and `POST /v9/projects/{id}/link` both fail until the founder installs the Vercel GitHub App on the `Kpewww` account with access to the private repo. Until then release with `vercel deploy --prod` from the repo root.
 - **Production admin exists**: username `AK`, member No.1, password generated at seed time (NOT the local default). Seeding prod = `db:pg:generate` → run `scripts/seed-admin.mjs` with prod env → `npx prisma generate` to restore the SQLite client.
 - Verified live: 12/12 pages 200, Postgres read/write, core `/api/check` loop, Upstash actually receiving `rl:*` counters, and the **privacy invariant** (`/api/view/[code]` returns no cm/kg field of any kind).
-- Not yet set in prod: `ANTHROPIC_API_KEY` (so LLM + vision OCR extraction are inert), `RESEND_API_KEY`, `REPLICATE_API_TOKEN`.
+- **`ANTHROPIC_API_KEY` IS set in prod** — verified 2026-10-01 from `/api/check`'s `features.chartImage: true` (an older note here said it was not). Check that field rather than trusting this line. Not verified either way: `RESEND_API_KEY`, `REPLICATE_API_TOKEN`.
 
 
 ---
