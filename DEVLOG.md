@@ -31,6 +31,13 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-01 · Session 83c — The store update waits for the review
+
+0.6.0 is in Chrome Web Store review. 0.7.0 goes up as an update after approval rather
+than withdrawing the submission; recorded in `todo/people/05`. Docs only.
+
+---
+
 ## 2026-10-01 · Session 83b — The key was set all along
 
 After the Session 83 push, production's `/api/check` answered with

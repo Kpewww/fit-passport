@@ -77,3 +77,14 @@ What the original plan said:
   charging users, affiliate commission, ads, or operating as a company.
 - Left: Store listing, Privacy, Distribution and Test instructions tabs
   (`docs/store/chrome-web-store.md`), then Submit for review.
+
+## Status (2026-10-01)
+
+- **0.6.0 submitted, in review.** Not withdrawn for 0.7.0: withdrawing would restart
+  the queue, and 0.6.0 only lacks the chart-picture picker.
+- **After approval:** upload `app-web/store-build/fit-passport-extension-0.7.0-store.zip`
+  (rebuild with `node scripts/pack-extension.mjs --store` if the source changed) as an
+  update — it is reviewed again. Add the picker to the listing text
+  (`docs/store/chrome-web-store.md`) only after a real picture read has worked
+  (`todo/people/06`).
+- Meanwhile the site's download is already 0.7.0.
