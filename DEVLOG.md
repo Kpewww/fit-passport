@@ -31,6 +31,15 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-30 · Session 82b — The privacy contact address
+
+The founder created a project address for privacy questions and the store listing:
+**fitpassporteam@gmail.com**. It goes in `CONTACT_EMAIL` (`lib/siteContact.ts`), so `/privacy`
+now names it. `docs/store/chrome-web-store.md` no longer marks the listing blocked.
+731 tests passed + 1 skipped; typecheck clean.
+
+---
+
 ## 2026-09-30 · Session 82 — Nav order, two headline corrections, the store listing prepared, README brought up to date
 
 The founder asked for five things:

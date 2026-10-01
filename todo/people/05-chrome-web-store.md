@@ -18,7 +18,7 @@ are prepared here; Google's review then takes a few days, longer for a first ite
 Built: the store package (`node scripts/pack-extension.mjs --store`), `/privacy`,
 and the listing with its images in `docs/store/` (`chrome-web-store.md` says what
 to paste where). **Still open, all the founder's:**
-- the address to publish — put it in `CONTACT_EMAIL` (`app-web/src/lib/siteContact.ts`);
+- ~~the address to publish~~ — set: fitpassporteam@gmail.com (`CONTACT_EMAIL`);
   until then `/privacy` says one is coming, and the listing cannot be submitted;
 - trader or non-trader (EU): a trader's legal name, address, email and phone are
   shown on the listing;

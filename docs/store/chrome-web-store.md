@@ -104,8 +104,7 @@ activity.
 **Certify all three:** not sold to third parties; not used or transferred for
 purposes unrelated to the single purpose; not used to determine creditworthiness.
 
-**Privacy policy URL:** https://fit-passport.vercel.app/privacy — **blocked until
-`CONTACT_EMAIL` in `app-web/src/lib/siteContact.ts` holds the published address.**
+**Privacy policy URL:** https://fit-passport.vercel.app/privacy — contact: fitpassporteam@gmail.com (set 2026-09-30).
 
 ## Distribution tab
 
