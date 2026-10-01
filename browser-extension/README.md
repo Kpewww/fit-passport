@@ -57,6 +57,19 @@ unpacked use. A Chrome Web Store listing would get the store's key instead.
 For local development, pick **localhost:3000** under *Server* in the popup and run
 `npm run dev` in `app-web/`.
 
+## The Chrome Web Store package (0.6.0)
+
+`node scripts/pack-extension.mjs --store` (in `app-web/`) writes the upload to
+`app-web/store-build/`. It is this folder with three things left out, and nothing
+else changed (`extensionZip.test.ts` compares every other file):
+- the manifest's `key` — the store refuses an upload that has one and assigns its
+  own ID (the server never checks the ID, so nothing else changes);
+- the `localhost:3000` host permission and server — with one server the popup
+  hides its *Server* switch;
+- `captureTool` — "Save this capture" is our evaluation tool, not a shopper's.
+
+What to paste into the store's dashboard, and the images: `docs/store/`.
+
 ## Permissions, and why each one
 
 | Permission | Why |

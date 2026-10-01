@@ -10,8 +10,10 @@
 **线上地址:https://fit-passport.vercel.app**
 
 各品牌的尺码从来对不上。Fit Passport 让你拥有**一份可携带的档案** —— 你的身体尺寸、
-偏好的松紧程度,以及那些已经穿着合身的衣服 —— 然后把它翻译到你粘贴的任何商品页上。
+偏好的松紧程度,以及那些已经穿着合身的衣服 —— 然后通过**浏览器插件**把它翻译到你正在看的
+商品页上(在网站粘贴链接仍可用,作为测试版:许多大型商店会限制服务器读取页面)。
 每一条推荐都会展示自己的推理过程,因为引擎是**透明的规则打分模型,不是黑盒**。
+网站和插件都支持**英文与简体中文**。
 
 ---
 
@@ -32,6 +34,10 @@ npm test               # 单元测试(合身引擎、徽章、抽取器、尺码
 npm run typecheck      # tsc --noEmit
 npm run build          # 生产构建
 
+npm run eval           # 评测(见 app-web/eval/README.md)
+
+node scripts/pack-extension.mjs                # 重新打包网站提供下载的插件 zip
+node scripts/pack-extension.mjs --store        # Chrome 应用商店上传包(store-build/)
 node scripts/seed-admin.mjs                    # 创建/刷新管理员账号
 node scripts/moderate.mjs reports              # 查看待处理的举报
 node scripts/moderate.mjs unhide POST <id>     # 恢复被误隐藏的内容
@@ -42,6 +48,10 @@ node scripts/moderate.mjs unhide POST <id>     # 恢复被误隐藏的内容
 
 **本地开发不需要任何 API key,也不需要云服务** —— SQLite 加上处处合理的降级方案。
 可选的 key 只解锁额外能力(见 [`app-web/.env.example`](app-web/.env.example))。
+
+**本地加载插件:** `chrome://extensions` → 开发者模式 → *加载未打包的扩展程序* →
+选 `browser-extension/`。弹窗底部可切换服务器,选 `localhost:3000`。权限与发送内容见
+[`browser-extension/README.md`](browser-extension/README.md)。
 
 > **按平台的等价命令**(这个项目不绑定任何一个平台,两边都会用到):
 >
@@ -63,9 +73,12 @@ node scripts/moderate.mjs unhide POST <id>     # 恢复被误隐藏的内容
 
 | 模块 | 内容 |
 |---|---|
-| **护照(Passport)** | 一张金属信用卡式的身份页 —— 头像、持有人、地区、偏好版型、验证码行。卡面材质跟随你已获得的最高等级徽章(也可以在已拥有的金属里自选),可导出 PNG。 |
-| **衣橱(Closet)** | 可自定义颜色的收藏夹、单品照片、按 URL 添加、同款合并、档案柜式文件夹视图(把文件抽到"桌面"上、把单品放进对比篮),以及编辑历史。每件衣服还记录**它往哪边不合身**——一条带符号的刻度(*太紧 … 正好 … 太松*),可以用词也可以用数字。方向才是引擎能真正使用的信号,原来的 1–5 星现在由它**推导**出来,不再单独问。 |
-| **尺码检查(Size check)** | 粘贴任意商品链接(裸域名也可以)→ 抽取器读取**真实页面**(schema.org JSON-LD、OpenGraph、页面内的尺码表;图片尺码表可选视觉 OCR;中国 GB/T `号型` 编码)→ 透明引擎在**胸围 + 腰围 + 肩宽**三个维度上给每个尺码打分,附带逐信号理由和有序判定(*偏小 … 正合适 … 偏大*)。它会诚实地告诉你尺码是**从页面读到的**还是**估算的**,估算时会给置信度封顶。另有实时多地区尺码换算器。 |
+| **浏览器插件** | 主要入口(0.6.0;Chrome 应用商店上架前,在 `/extension` 提供 zip 下载,上架资料见 [`docs/store/`](docs/store/chrome-web-store.md))。在商品页点击:只读当前标签页,发送精简副本(标题、商品信息、尺码表、尺码选项;不含表单、购物车、账户、评价,发送前可查看全部内容),给出一个尺码和依据。能读天猫/淘宝的参数信息、eBay 的商品参数,经一次点击授权后还能读卖家描述。遇到登录页或详情被隐藏的页面会直接说明,不去猜。 |
+| **二手商品** | 没有尺码表时读取卖家实测:腋下平铺宽度 ×2 是衣物胸围,绝不直接和身体比;再对照你的衣橱或身形数据判断"较可能合身 / 可能偏紧 / 可能偏松",附理由和还缺什么。`/check` 也可手动输入卖家尺寸。 |
+| **待购** | 在插件里保存商品(网站 `/saved`)。单独一张表:永远不算你已拥有的衣服,不参与合身学习,不计入徽章。"已购买"后转入衣橱,并须回答合身感。 |
+| **护照(Passport)** | 一张金属信用卡式的身份页 —— **合身卡** —— 头像、持有人、地区、偏好版型、验证码行。卡面材质跟随你已获得的最高等级徽章(也可以在已拥有的金属里自选),可导出 PNG。 |
+| **衣橱(Closet)** | 可自定义颜色的收藏夹、单品照片、按 URL 添加(只预填页面真正写明的内容,演示数据会标注)、同款合并、档案柜式文件夹视图(把文件抽到"桌面"上、把单品放进对比篮),以及编辑历史。每件衣服还记录**它往哪边不合身**——一条带符号的刻度(*太紧 … 正好 … 太松*),可以用词也可以用数字。方向才是引擎能真正使用的信号,原来的 1–5 星现在由它**推导**出来,不再单独问。 |
+| **尺码检查(Size check)** | (插件成为主要入口后,这里是测试版。)粘贴任意商品链接(裸域名也可以)→ 抽取器读取**真实页面**(schema.org JSON-LD、OpenGraph、页面内的尺码表;图片尺码表可选视觉 OCR;中国 GB/T `号型` 编码)→ 透明引擎在**胸围 + 腰围 + 肩宽**三个维度上给每个尺码打分,附带逐信号理由和有序判定(*偏小 … 正合适 … 偏大*)。它会诚实地告诉你尺码是**从页面读到的**还是**估算的**,估算时会给置信度封顶。另有实时多地区尺码换算器。 |
 | **合身刷新(Fit refresh)** | 随时间重新评价衣物的穿着感受;身体会变,档案要跟着漂移。记录的是**方向**而不是评分。 |
 | **穿搭(Outfits)** | 在按体型生成的 SVG 假人上搭配造型、发布、收集点赞。配置图像 key 后可生成写实试穿图。 |
 | **社区(Community)** | 自愿加入的成员目录(每人一条自己卡面材质的金属横幅),外加可在 **Everyone**(按点赞排序)和 **Following**(你关注的人,按时间排序)之间切换的穿搭流。关注需要双方都已认领账号,所以关注数是挣来的。 |
@@ -83,6 +96,8 @@ node scripts/moderate.mjs unhide POST <id>     # 恢复被误隐藏的内容
 `/api/view/[code]` 刻意不 select 那些厘米字段,社区列表是自愿加入的,体型可以隐藏,
 被停用的账号对所有外部访问都不可见。详见
 [docs/design/identity-and-sharing.md](docs/design/identity-and-sharing.md)。
+网站和插件保存、发送什么,用大白话写在
+[`/privacy`](https://fit-passport.vercel.app/privacy)。
 
 ### 关于图片的说明
 
@@ -96,6 +111,7 @@ node scripts/moderate.mjs unhide POST <id>     # 恢复被误隐藏的内容
 ```
 app-web/
   src/app/            # Next.js App Router 页面 + /api 路由处理器
+  src/i18n/           # 英文(源)与中文文案;一致性测试
   src/components/     # UI:MetalCard、BadgeMedallion、BadgeInspect、OutfitMannequin…
   src/lib/            # 领域逻辑(关键部分均有单元测试)
     fitEngine.ts      #   透明的多维打分引擎
@@ -104,9 +120,12 @@ app-web/
     extractorLLM.ts   #   抓取 + 解析真实页面;可选 Claude 文本/视觉,带缓存与反爬识别
     populationPrior.ts#   地区冷启动体型先验(基于人口普查,治理安全)
     badges.ts         #   徽章阶梯 + 金属(唯一事实来源)
+    sellerMeasurements.ts / listingJudgement.ts # 二手商品:卖家实测 → 判断
     auth.ts / authEdge.ts  # HMAC 会话(Node + Edge,字节级兼容)
   prisma/schema.prisma     # 数据模型(本地 SQLite,生产 Postgres)
   middleware.ts       # 在任何 API 调用之前铸造会话 cookie
+  scripts/pack-extension.mjs # 插件 zip(已提交)与商店上传包
+browser-extension/    # MV3 插件:capture.js 读页面,popup.js 给出答案
 brand/                # Fit Thread 标志 —— **构建输入,不是文档**。
                       #   Logo.tsx 直接渲染母版路径,两者不一致时测试会失败
 docs/
@@ -117,6 +136,8 @@ docs/
   prospectus/         # 招股书式项目介绍、徽章设计文档、Founder Brief
   business/           # 商业模式、定位与讯息架构、风险与法律
   proposals/          # 最初的提案 PDF
+  store/              # Chrome 应用商店上架资料:文案、权限说明、图片
+todo/                 # 看板:下一步做什么,按谁能推进分组
 DEVLOG.md             # 逐次开发日志 —— 记决定,以及决定的代价
 ```
 
@@ -125,7 +146,7 @@ DEVLOG.md             # 逐次开发日志 —— 记决定,以及决定的代�
 现在 `src/lib/logoAsset.test.ts` 会在 `Logo.tsx` 与母版 SVG 不一致时报错。
 
 **技术栈:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
-Vitest(**449 个测试**)· Framer Motion(动效)· three.js(懒加载,仅用于徽章 inspect)。
+Vitest(**约 730 个测试**)· Framer Motion(动效)· three.js(懒加载,仅用于徽章 inspect)。
 
 **Node 版本:** 当前在 Node 24 LTS 上开发与部署。早期文档里"锁定 Node 18.20"
 是上一台开发机的限制,不是项目要求,换机时已解除。

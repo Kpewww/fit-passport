@@ -63,13 +63,15 @@ it here in the same commit.
   Quotation: “” for a UI label, a page's own words or a button name
   (点击“查看推荐”); 「」 only where the revision uses it as a device (「穿」越时空).
 - The ellipsis is six dots, ……, including in placeholders.
-- **Display headlines are drawn without punctuation** (founder, 2026-09-30): at
+- **Display headlines are drawn without pause marks** (founder, 2026-09-30): at
   60–128 px a full-width ，or 。 reads as a hole and pushes a centred line off
   centre. Write the string with its punctuation as usual — `components/Headline.tsx`
-  drops it where a headline is drawn (homepage section titles, page h1s): none at a
-  line's end, a gap inside a line, and 「穿」 drawn as 穿 in the accent colour. The
-  punctuation stays in the page for screen readers. `headline.test.tsx` requires
-  every translated serif headline to go through it. Card titles and body text keep
+  draws it where a headline is drawn (homepage section titles, page h1s):
+  ，。、；：… are not drawn at a line's end and become a gap inside a line;
+  **？ and ！ stay** (选多大 才合身？); **「」 stay**, set half-width (`halt`) so they
+  open no hole — 「穿」越时空 (a bracket-less blue 穿 was tried and rejected). What is
+  dropped stays in the page for screen readers. `headline.test.tsx` requires every
+  translated serif headline to go through it. Card titles and body text keep all
   their punctuation.
 - **No emoji, no arrow glyphs** — the same guard tests as the English (invariants
   67 and 69) scan the messages and the lib text files.

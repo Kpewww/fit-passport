@@ -1246,3 +1246,16 @@ on the same page).
 **(88)** **Every translated serif headline goes through `Headline`** (`headline.test.tsx` scans
 `app/`). Punctuation in Chinese display type is a drawing decision, never removed from the
 strings.
+
+**SESSION 82 (2026-09-30).** 729 → **731 tests**. Extension **0.6.0**.
+- Nav order: closet, passport, outfits, community, extension, check, help (founder).
+- `Headline` drops only pause marks (，。、；：…); ？！ and 「」 are drawn, brackets with `halt`
+  (`.cjk-halt`); the in-line gap is a widened space (collapses at a break).
+- Chrome Web Store prepared: `pack-extension.mjs --store` → `app-web/store-build/` (no `key`, no
+  localhost, no `captureTool`); `/privacy` (EN/ZH, footer); `docs/store/` (listing copy, images,
+  `make-images.mjs`). `CONTACT_EMAIL` (`lib/siteContact.ts`) is null until the founder picks one.
+- config.js `captureTool` gates "Save this capture"; popup hides the server switch with one origin.
+
+**NEW INVARIANT:**
+**(89)** **The store package is the download minus `key`, the dev server and `captureTool` —
+nothing else** (`extensionZip.test.ts` compares every other file byte for byte).

@@ -11,7 +11,7 @@ import { bareHeadline } from "@/components/Headline";
 function drawn(node: React.ReactNode): string {
   return renderToStaticMarkup(<>{node}</>)
     .replace(/<span class="sr-only">[^<]*<\/span>/g, "")
-    .replace(/<span aria-hidden="true" class="inline-block w-\[0\.5em\]"><\/span>/g, "␣")
+    .replace(/<span class="\[word-spacing:0\.25em\]"> <\/span>/g, "␣")
     .replace(/<br\/>/g, "/")
     .replace(/<[^>]+>/g, "");
 }
@@ -23,16 +23,18 @@ describe("the Chinese form of a display headline", () => {
     expect(renderToStaticMarkup(<>{node}</>)).toContain('<span class="sr-only">。</span>');
   });
 
-  it("turns punctuation inside a line into a gap, and keeps each clause whole", () => {
+  it("turns a pause inside a line into a gap, keeps each clause whole, and keeps the question mark", () => {
+    // The founder's correction: 选多大 才合身？ — a question keeps its mark.
     const html = renderToStaticMarkup(<>{bareHeadline("选多大，才合身？")}</>);
-    expect(drawn(bareHeadline("选多大，才合身？"))).toBe("选多大␣才合身");
+    expect(drawn(bareHeadline("选多大，才合身？"))).toBe("选多大␣才合身？");
     expect(html).toContain('<span class="inline-block">选多大</span>');
   });
 
-  it("draws 「穿」 as 穿 in the accent colour", () => {
+  it("keeps 「穿」 in its brackets, set half-width", () => {
+    // A first version drew a blue 穿 without brackets; the founder found it worse.
     const node = bareHeadline(["「穿」越时空，", <br key="b" />, "合身随行。"]);
-    expect(drawn(node)).toBe("穿越时空/合身随行");
-    expect(renderToStaticMarkup(<>{node}</>)).toContain('<span class="text-brand">穿</span>');
+    expect(drawn(node)).toBe("「穿」越时空/合身随行");
+    expect(renderToStaticMarkup(<>{node}</>)).toContain('<span class="cjk-halt">「</span>穿<span class="cjk-halt">」</span>');
   });
 
   it("puts a gap after a clause that ends just before an element on the same line", () => {

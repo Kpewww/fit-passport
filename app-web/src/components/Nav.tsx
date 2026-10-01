@@ -23,15 +23,18 @@ import {
 type LinkKey = "check" | "extension" | "closet" | "passport" | "outfits" | "community" | "help" | "review";
 type NavLink = { href: string; label: LinkKey; Icon: ComponentType<IconProps>; also?: string[] };
 
+// Order (founder, 2026-09-30): what you keep first — closet, passport, outfits,
+// community — then the tools, the extension before the link box it replaced as
+// the way in, then help.
 const LINKS: NavLink[] = [
-  { href: "/check", label: "check", Icon: Ruler },
-  { href: "/extension", label: "extension", Icon: BrowserIcon },
   { href: "/closet", label: "closet", Icon: Hanger },
   { href: "/passport", label: "passport", Icon: IdCard },
   { href: "/outfits", label: "outfits", Icon: Board },
   // Questions live inside /community, so they get no tab of their own. Thread
   // pages sit at /ask/[id] and don't share the prefix, hence `also`.
   { href: "/community", label: "community", Icon: People, also: ["/ask"] },
+  { href: "/extension", label: "extension", Icon: BrowserIcon },
+  { href: "/check", label: "check", Icon: Ruler },
   { href: "/help", label: "help", Icon: Question },
 ];
 

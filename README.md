@@ -9,9 +9,11 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang
 
 Sizes never agree across brands. Fit Passport keeps **one portable profile** you
 own — your measurements, your preferred fit, and the clothes that already fit you
-— then translates it to any product page you paste. Every recommendation shows
-its reasoning, because the engine is a transparent rule/score model, **not** a
-black box.
+— and translates it to the product page you are looking at, through a **browser
+extension** (pasting a link on the site still works, as a beta: many large shops
+block servers from reading their pages). Every recommendation shows its
+reasoning, because the engine is a transparent rule/score model, **not** a black
+box. The site and the extension speak **English and 简体中文**.
 
 ---
 
@@ -31,6 +33,10 @@ npm test               # unit tests (fit engine, badges, extractor, converters�
 npm run typecheck      # tsc --noEmit
 npm run build          # production build
 
+npm run eval           # the evaluation (app-web/eval/README.md)
+
+node scripts/pack-extension.mjs                # repack the extension zip the site offers
+node scripts/pack-extension.mjs --store        # the Chrome Web Store package (store-build/)
 node scripts/seed-admin.mjs                    # create/refresh the admin account
 node scripts/moderate.mjs reports              # open content reports
 node scripts/moderate.mjs unhide POST <id>     # restore something hidden wrongly
@@ -46,15 +52,23 @@ fallbacks everywhere. Optional keys unlock extras (see
 **Runs on Node 24 LTS.** (Older notes say "pinned to Node 18.20" — that was a
 previous machine's constraint, not a project requirement; it is lifted.)
 
+**The extension, locally:** `chrome://extensions` → Developer mode → *Load
+unpacked* → `browser-extension/`. Its popup has a server switch; pick
+`localhost:3000`. Details, permissions and what it sends:
+[`browser-extension/README.md`](browser-extension/README.md).
+
 ---
 
 ## What it does today
 
 | Area | What's there |
 |---|---|
-| **Passport** | A metal charge-card identity page — portrait, holder, region, preferred fit, verification line. Its finish is themed by your highest earned badge (and you can pick any metal you've earned). Exports as a PNG. |
-| **Closet** | Collections with custom folder colours, item photos, add-by-URL, variant merging, a filing-cabinet folder view (drag files out onto a "desk", set items aside in a comparison bucket), and edit history. Each garment records **which way it misses** on a signed scale (*too tight … just right … too loose*), in words or as a number — that direction is what the engine can actually act on, and the old 1–5 star rating is now derived from it rather than asked for separately. |
-| **Size check** | Paste any product link (bare domains fine) → the extractor reads the **real page** (schema.org JSON-LD, OpenGraph, and on-page size-chart tables; optional vision OCR for image-only charts; Chinese `号型` codes) → a transparent engine ranks every size across **chest + waist + shoulder** with per-signal reasons and an ordinal verdict (*too small … true to size … too big*). It says honestly whether the sizes were **read from the page** or **estimated**, and caps confidence when estimating. Plus a live multi-region size converter. |
+| **Browser extension** | The way in (0.6.0; a zip on `/extension` until the Chrome Web Store listing — see [`docs/store/`](docs/store/chrome-web-store.md)). Click it on a product page: it reads that tab only, sends a reduced copy (title, product data, size charts, size options — never forms, cart, account or reviews, and you can see exactly what goes first) and shows one size with its reasons. Reads Tmall/Taobao parameter lists, eBay item specifics and — with a permission asked once on a click — the seller's description. Says plainly when a page is a sign-in or a hidden-details page instead of guessing. |
+| **Second-hand listings** | No size chart? The seller's measurements are read instead — pit to pit ×2 is the garment's chest, never compared with a body — and judged against your closet or measurements: *likely fits / may be tight / may be loose*, with the reason and what would settle it. Typed-in measurements work on `/check` too. |
+| **To-buy list** | Save a product from the extension (`/saved` on the site). Kept in its own table: it never counts as clothes you own, never trains the engine, never earns a badge. "Bought it" moves it into the closet, with a fit report. |
+| **Passport** | A metal charge-card identity page — the **Fit Card** — portrait, holder, region, preferred fit, verification line. Its finish is themed by your highest earned badge (and you can pick any metal you've earned). Exports as a PNG. |
+| **Closet** | Collections with custom folder colours, item photos, add-by-URL (pre-fills only what the page really said; demo data is labelled), variant merging, a filing-cabinet folder view (drag files out onto a "desk", set items aside in a comparison bucket), and edit history. Each garment records **which way it misses** on a signed scale (*too tight … just right … too loose*), in words or as a number — that direction is what the engine can actually act on, and the old 1–5 star rating is now derived from it rather than asked for separately. |
+| **Size check** | (Beta, since the extension leads.) Paste any product link (bare domains fine) → the extractor reads the **real page** (schema.org JSON-LD, OpenGraph, and on-page size-chart tables; optional vision OCR for image-only charts; Chinese `号型` codes) → a transparent engine ranks every size across **chest + waist + shoulder** with per-signal reasons and an ordinal verdict (*too small … true to size … too big*). It says honestly whether the sizes were **read from the page** or **estimated**, and caps confidence when estimating. Plus a live multi-region size converter. |
 | **Fit refresh** | Re-rate how garments feel over time; bodies change, so the profile tracks drift. Reports **direction**, not a grade — see below. |
 | **Outfits** | Compose looks on a body-typed SVG mannequin, post them, collect likes. Optional photoreal try-on when an image key is set. |
 | **Community** | Opt-in directory of members (each with a metal banner in their card finish), plus an outfit feed you can switch between **Everyone** (most-liked first) and **Following** (people you follow, newest first). Following requires a claimed account on both sides, so follower counts stay earned. |
@@ -73,6 +87,8 @@ never your precise measurements.** `/api/view/[code]` deliberately doesn't selec
 the cm fields, community listing is opt-in, body type can be hidden, and
 deactivated accounts are invisible to all external access. See
 [docs/design/identity-and-sharing.md](docs/design/identity-and-sharing.md).
+What the site and the extension keep and send, in plain words:
+[`/privacy`](https://fit-passport.vercel.app/privacy).
 
 ### A note on imagery
 
@@ -87,6 +103,7 @@ decision.
 ```
 app-web/
   src/app/            # Next.js App Router pages + /api route handlers
+  src/i18n/           # English (the source) and Chinese messages; parity tests
   src/components/     # UI: MetalCard, BadgeMedallion, BadgeInspect, OutfitMannequin, …
   src/lib/            # Domain logic (all unit-tested where it matters)
     fitEngine.ts      #   the transparent multi-dimensional scoring engine
@@ -97,9 +114,12 @@ app-web/
     badges.ts         #   badge ladder + metals (single source of truth)
     fitDirection.ts   #   the signed fit scale (-10 too tight … +10 too loose)
     closetConsistency.ts # confidence from how much a wearer's own reports agree
+    sellerMeasurements.ts / listingJudgement.ts # second-hand: the seller's tape → a judgement
     auth.ts / authEdge.ts  # HMAC sessions (Node + Edge, byte-compatible)
   prisma/schema.prisma     # data model (SQLite locally, Postgres in prod)
   middleware.ts       # mints the session cookie before any API call
+  scripts/pack-extension.mjs # the extension zip (committed) and the store package
+browser-extension/    # the MV3 extension: capture.js reads the page, popup.js answers
 brand/                # the Fit Thread mark — BUILD INPUTS, not documentation.
                       #   Logo.tsx renders the master's path; a test fails if they drift
 docs/
@@ -107,6 +127,8 @@ docs/
   DEPLOYMENT.md       # Vercel + Neon runbook
   memory/             # shared decisions, invariants and traps
   design/             # shared technical research and engineering design notes
+  store/              # the Chrome Web Store listing: copy, justifications, images
+todo/                 # the board: what to do next, by who can move it
 coursework/
   technical/          # technical-course lens and deliverables
   startup/            # startup/market/product documents and deliverables
@@ -119,7 +141,7 @@ made it look optional — it is not, and `src/lib/logoAsset.test.ts` now fails i
 `Logo.tsx` and the master SVG disagree.
 
 **Stack:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
-Vitest (**449 tests**) · Framer Motion (motion) · three.js (lazy, badge inspect only).
+Vitest (**~730 tests**) · Framer Motion (motion) · three.js (lazy, badge inspect only).
 
 Key design decisions worth knowing before contributing:
 

@@ -186,6 +186,10 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
   滚动卡片动画(`SignalsDeck`,lg 起);护照封面改为「合身卡 / Fit Card」。Chrome 商店上架:一次性
   US$5,需创始人注册;上架前要做的见 `todo/people/05-chrome-web-store.md`。
 
+- **Session 82**:导航改为 衣橱 / 护照 / 搭配 / 社区 / 插件 / 尺码 / 帮助;标题保留 ？！ 和「」(半宽);
+  Chrome 商店上架资料已备好(`docs/store/`,`pack-extension.mjs --store`,`/privacy`),还差创始人:
+  注册付款、公开的联系邮箱(`lib/siteContact.ts`)、trader 声明、上传。插件 0.6.0。
+
 **下一步:见 `todo/`(做什么)与 `docs/memory/project-fit-passport-next-steps.md`
 底部(为什么)。** 客户访谈**已由创始人推迟**;插件**已不再受访谈证据门槛限制**
 (Session 73 创始人拍板)。

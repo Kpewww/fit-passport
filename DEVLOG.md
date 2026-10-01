@@ -31,6 +31,110 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-30 · Session 82 — Nav order, two headline corrections, the store listing prepared, README brought up to date
+
+The founder asked for five things:
+- reorder the nav: closet, passport, outfits, community, extension, check, help;
+- two corrections to Session 81's headlines: **选多大 才合身？** keeps its question
+  mark, and **「穿」 keeps its brackets** ("now it is uglier" — the blue 穿 without
+  them);
+- signals footnote → 三份依据汇成一个尺码推荐，并给你一个理由;
+- prepare the Chrome Web Store listing, and say whether they can pay with their own
+  account;
+- update the README.
+
+**Nav.** `Nav.tsx` `LINKS` reordered; the footer's Product column follows: closet,
+passport, outfits, extension, check. The header width is unchanged: the same tabs,
+`justify-between`.
+
+**Headline rule, narrowed** (`Headline.tsx`):
+- only pause marks are dropped: ，。、；：…;
+- ？ and ！ are drawn — they carry meaning;
+- 「」 are drawn, set with the font's half-width alternates (`font-feature-settings:
+  "halt"`, class `cjk-halt`). They keep the device without the empty half-em on
+  either side. Measured: each bracket draws 64 px at 128 px, and the line is 640 px
+  instead of 768. Screenshots with and without were compared;
+- the zh hero's phone size now allows six glyph widths: 58 px at 390, 53 px at 360,
+  no overflow;
+- **the gap inside a line is now a widened space** (`word-spacing`), not an empty
+  inline-block. The inline-block wrapped to the start of a line and indented it,
+  seen on the first store screenshot; a space collapses at the break. Verified at
+  320 px on /check.
+
+**Chrome Web Store, prepared** (extension **0.6.0**):
+- **`pack-extension.mjs --store`** writes `app-web/store-build/…-store.zip`
+  (ignored by git). It is the download minus three things, all pinned by
+  `extensionZip.test.ts`:
+  - the manifest's `key` — the store refuses it and assigns its own ID; the server
+    never checks the ID;
+  - the localhost permission and server — the popup hides its server switch when it
+    has one server;
+  - `captureTool` — "Save this capture", our evaluation tool.
+
+  Every other file is byte-equal to the download's.
+- **`/privacy`**, English and Chinese, linked from the footer. Each sentence is
+  checkable in code:
+  - what is stored — the passport, closet, to-buy list, checked products (not the
+    page), account and community data;
+  - the two cookies;
+  - what the extension sends;
+  - the services: Vercel, Neon, Upstash (IP counts for minutes), Resend, Anthropic
+    (page text only, never measurements);
+  - deactivation **keeps** data.
+
+  The contact address is the founder's to choose and will be public:
+  `CONTACT_EMAIL` in `lib/siteContact.ts` is null, and the page says an address is
+  coming. **The listing cannot be submitted until it is set.**
+- **`docs/store/chrome-web-store.md`**: what to paste in each dashboard tab:
+  - summary and description in English and Chinese;
+  - single purpose and a justification per permission;
+  - data disclosures — website content and web history, declared generously;
+  - reviewer steps.
+- **`docs/store/make-images.mjs`** makes three 1280×800 screenshots per language
+  and the 440×280 tile:
+  - the real popup answering from a local server, on a real Patagonia capture;
+  - fonts inlined;
+  - Chinese captions drawn by the headline rule;
+  - no retailer imagery.
+
+  Three faults were found in its own first output and fixed:
+  - mojibake ("Sweater®"), from serving the capture without a charset;
+  - fallback fonts, because file:// fonts cannot load in setContent;
+  - a zh "already saved" frame, because the English run had saved first — each run
+    now clears the list.
+
+  The answer shown is real for its profile (chest 102: **M · 62% · true to size**);
+  chest 104 / waist 90 gave "L · too big" as the pick, which is worth a look at
+  engine level some time.
+
+**Paying personally** — fine, with consequences recorded in `todo/people/05`:
+- the paying account owns the publisher (one per account, for life);
+- teammates join as members by role;
+- a later transfer is a support request of about a week;
+- 2-Step Verification is required;
+- the contact email is public, as are a trader's address and phone.
+
+**README** (both languages) caught up from Session ~60:
+- the extension as the way in;
+- second-hand listings, the to-buy list, the Fit Card;
+- English and 简体中文;
+- `/privacy`, `pack-extension`, `eval`;
+- `src/i18n/`, `browser-extension/`, `docs/store/`, `todo/`;
+- ~730 tests (was "449").
+
+**Verified**
+- Nav order read from the rendered header in both languages.
+- /check reads 选多大 才合身？.
+- The hero shows 「穿」 with half-width brackets.
+- /privacy has no overflow at 1280 and 390 in either language.
+- Store images inspected one by one.
+- 731 tests passed + 1 skipped, exit 0; typecheck clean.
+- **Local-server trap, recorded in memory:** stopping a background `npx next start`
+  leaves its node child holding the port. Twice this session a stale server answered
+  from an old build; Session 80f's "server stopped" was not true either. Kill by port.
+
+---
+
 ## 2026-09-30 · Session 81 — Headlines without punctuation in Chinese, the deck back on the homepage, the Fit Card
 
 The founder sent two screenshots of the Chinese homepage, "「穿」越时空，/ 合身随行。"

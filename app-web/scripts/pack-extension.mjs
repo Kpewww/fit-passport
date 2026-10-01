@@ -11,7 +11,8 @@
 // the root, and nothing at build time reads outside it. A zip made at build time
 // from `../browser-extension` would depend on a Vercel setting nobody has checked.
 //
-// Usage (from app-web/):  node scripts/pack-extension.mjs
+// Usage (from app-web/):  node scripts/pack-extension.mjs           the website download
+//                          node scripts/pack-extension.mjs --store   the Chrome Web Store upload
 // No dependencies — a zip "store" archive is a simple format.
 
 import { readFileSync, readdirSync, statSync, writeFileSync, mkdirSync } from "node:fs";
@@ -77,14 +78,36 @@ function shippedBytes(path, data) {
   return Buffer.from(data.toString("utf8").replace(/\r\n/g, "\n"), "utf8");
 }
 
+/** The Chrome Web Store package differs from the download in two files only:
+ *  - manifest.json without `key` — the store refuses an upload that carries one
+ *    and assigns the item its own ID — and without the localhost host permission;
+ *  - config.js without the development origin, so the popup has one server, and
+ *    without `captureTool` — "Save this capture" is our evaluation tool.
+ *  The server does not check the extension's ID, so the new one needs no change. */
+export const DEV_ORIGIN = "http://localhost:3000";
+function storeBytes(path, data) {
+  if (path === "manifest.json") {
+    const m = JSON.parse(data.toString("utf8"));
+    delete m.key;
+    m.host_permissions = m.host_permissions.filter((h) => !h.startsWith(DEV_ORIGIN));
+    return Buffer.from(JSON.stringify(m, null, 2) + "\n", "utf8");
+  }
+  if (path === "config.js") {
+    const lines = data.toString("utf8").split("\n");
+    return Buffer.from(lines.filter((l) => !l.includes(`url: "${DEV_ORIGIN}"`) && !/^\s*captureTool: true,/.test(l)).join("\n"), "utf8");
+  }
+  return data;
+}
+
 /** Build the archive in memory. Pure: same directory contents → same bytes. */
-export function buildExtensionZip(dir = EXT_DIR) {
+export function buildExtensionZip(dir = EXT_DIR, { store = false } = {}) {
   const locals = [];
   const centrals = [];
   let offset = 0;
 
   for (const path of extensionFiles(dir)) {
-    const data = shippedBytes(path, readFileSync(join(dir, path)));
+    const shipped = shippedBytes(path, readFileSync(join(dir, path)));
+    const data = store ? storeBytes(path, shipped) : shipped;
     const name = Buffer.from(path, "utf8");
     const crc = crc32(data);
 
@@ -144,11 +167,17 @@ export function zipFileName(version = extensionVersion()) {
   return `fit-passport-extension-${version}.zip`;
 }
 
-// Run directly: write the file the site links to.
+/** Where the store package goes: not committed — it is uploaded by hand. */
+export const STORE_DIR = join(HERE, "..", "store-build");
+
+// Run directly: write the file the site links to, or with --store the package
+// for the Chrome Web Store.
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  const zip = buildExtensionZip();
-  mkdirSync(OUT_DIR, { recursive: true });
-  const out = join(OUT_DIR, zipFileName());
+  const store = process.argv.includes("--store");
+  const zip = buildExtensionZip(EXT_DIR, { store });
+  const dir = store ? STORE_DIR : OUT_DIR;
+  mkdirSync(dir, { recursive: true });
+  const out = join(dir, store ? zipFileName().replace(/.zip$/, "-store.zip") : zipFileName());
   writeFileSync(out, zip);
   console.log(`wrote ${relative(process.cwd(), out)} — ${extensionFiles().length} files, ${(zip.length / 1024).toFixed(1)} KB`);
 }

@@ -62,6 +62,7 @@ export const en = {
       directory: "Directory",
       badges: "Badges",
       help: "Help & guide",
+      privacy: "Privacy",
       account: "Your account",
       login: "Log in",
       recover: "Reset password",
@@ -1136,6 +1137,50 @@ export const en = {
     decisionExchange: "exchange",
     forSize: "{decision} for {size}",
     fitLine: "Fit: {fit}",
+  },
+
+  privacy: {
+    title: "Privacy",
+    lede: "What Fit Passport keeps, why, and what it never does.",
+    updated: "Updated 30 September 2026",
+    keeps: {
+      title: "What the website keeps",
+      profile: "Your passport: the body measurements you choose to enter (every one optional), your preferred fit, the size systems you shop in, and a portrait if you upload one.",
+      closet: "Your closet and to-buy list: the clothes you add, their sizes, and how they fit you.",
+      products: "The products you check: what was read from the page — brand, name, category, size rows — and the recommendation we gave. The page itself is not stored.",
+      account: "If you claim your account: a username, your password (kept only as a one-way hash), and an email address if you give one, used only to reset your password.",
+      community: "What you post to the community: outfits, questions, answers, likes and follows.",
+    },
+    cookies: {
+      title: "Cookies",
+      session: "fp_session keeps you signed in to your account — including the unclaimed one the site makes on your first visit. It lasts a year.",
+      lang: "fp-lang remembers the language you chose.",
+      none: "No advertising or analytics cookies, and no tracking across other sites.",
+    },
+    extension: {
+      title: "The browser extension",
+      click: "It reads a page only when you click it, and only the tab you are looking at.",
+      reduced: "It sends a reduced copy of the product page — title, product data, size charts and size options — and nothing from forms, the cart, your account, reviews or the rest of the page. You can see exactly what will be sent before anything is.",
+      ebay: "With your permission, asked once on a click, it also reads measurement lines from an eBay seller's description.",
+      session: "It sends your Fit Passport session with the request, so the answer can use your profile, and saves a product to your to-buy list only when you press Save.",
+      local: "It keeps your language choice in the extension's own storage.",
+    },
+    others: {
+      title: "Who else sees it",
+      private: "Your passport is private. Others see your profile only if you list yourself in the community or share your account code — and then only what that page shows.",
+      never: "We do not sell data, show ads, or share your profile with retailers.",
+      services: "Services that run the site: Vercel (hosting), Neon (database), Upstash (rate limiting, which counts requests by IP address for a few minutes) and Resend (password-reset email). When a page has no size chart we can read, its text — never your measurements — may be sent to Anthropic's API to read the chart.",
+    },
+    choices: {
+      title: "Your choices",
+      edit: "Change or clear any measurement in your passport, and remove items from your closet or to-buy list, at any time.",
+      deactivate: "Deactivating your account (on the Account page) hides it from everyone and stops sign-in. The data is kept so it can be restored. To have it erased, write to the address below.",
+    },
+    contact: {
+      title: "Contact",
+      body: "Questions, and requests to erase your data: {email}",
+      pending: "A contact address will be published here before the extension is listed in the Chrome Web Store.",
+    },
   },
 
   help: {

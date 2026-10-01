@@ -13,7 +13,27 @@ are prepared here; Google's review then takes a few days, longer for a first ite
 2. Accept the developer agreement, pay the US$5, verify the contact email, set the
    publisher name (shown under the extension's name — "Fit Passport").
 
-## 2. Engineering — what the upload needs (none of it exists yet)
+## 2. Engineering — what the upload needs (DONE, Session 82)
+
+Built: the store package (`node scripts/pack-extension.mjs --store`), `/privacy`,
+and the listing with its images in `docs/store/` (`chrome-web-store.md` says what
+to paste where). **Still open, all the founder's:**
+- the address to publish — put it in `CONTACT_EMAIL` (`app-web/src/lib/siteContact.ts`);
+  until then `/privacy` says one is coming, and the listing cannot be submitted;
+- trader or non-trader (EU): a trader's legal name, address, email and phone are
+  shown on the listing;
+- the upload itself, from the account that paid.
+
+**Paying with your own account is fine.** What follows from it:
+- the account that pays owns the publisher — one per Google account, for life;
+  teammates are added as members with roles, not as co-owners;
+- moving the extension to another account later goes through a Google support
+  request (about a week), so pay from the account you intend to keep;
+- 2-Step Verification must be on before you can publish or update;
+- the developer contact email is public on the listing — use a project address,
+  not a personal one.
+
+What the original plan said:
 
 - **A store package**, separate from the website's zip: no `"key"` in the manifest
   (the store refuses an upload that carries one and assigns its own ID), and no
@@ -29,6 +49,13 @@ are prepared here; Google's review then takes a few days, longer for a first ite
   the site host permission, the optional `*.ebaydesc.com`).
 - **After approval:** switch `EXTENSION_DISTRIBUTION` to `{ kind: "store", href }` —
   one edit; `/extension` already renders that branch.
+
+## More sources (Session 82)
+
+- One publisher per account, members by role: [Group publishers](https://developer.chrome.com/docs/webstore/group-publishers).
+- Trader declaration: [Trader/Non-Trader developer identification](https://developer.chrome.com/docs/webstore/program-policies/trader-disclosure).
+- 2-Step Verification: [Chrome Web Store policy](https://developer.chrome.com/docs/webstore/program-policies/two-step-verification).
+- Transfers by support request: [chromium-extensions thread](https://groups.google.com/a/chromium.org/g/chromium-extensions/c/UnEtO_KTAj0).
 
 ## Sources
 

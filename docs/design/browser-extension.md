@@ -178,6 +178,12 @@ The manifest pins a public `key`, so the extension ID is the same for everyone w
 loads it — `odbdhmcfjbhikmlfmgafbkkbknkkaecp` — and the store listing will get the
 store's key instead.
 
+**The store package (Session 82)** is built from the same folder by
+`pack-extension.mjs --store`: no `key` (the store refuses one), no localhost
+permission or server, no "Save this capture". Listing copy, permission
+justifications, data disclosures and images: `docs/store/`; the privacy policy the
+listing points to: `/privacy`.
+
 ## 8. Limits — which are permanent and which are merely unbuilt
 
 **Permanent** (the platform does not allow it):

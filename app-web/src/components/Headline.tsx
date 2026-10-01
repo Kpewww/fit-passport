@@ -1,22 +1,24 @@
 "use client";
 
-// Display headings in Chinese carry no punctuation (founder, 2026-09-30: the
+// Display headings in Chinese drop their pause marks (founder, 2026-09-30: the
 // full-width ，and 。 of a 60–128 px headline read as holes, and pushed centred
 // lines off-centre). It is typography, so it lives here and not in the copy: the
 // strings keep their punctuation, as every other string does, and this drops it
 // only where a headline is drawn.
 //
-// - ，。、；：？！… at the end of a line are not drawn;
+// - ，。、；：… at the end of a line are not drawn;
 // - one inside a line becomes a gap, and the clauses either side wrap as wholes;
-// - 「穿」 is drawn as 穿 in the accent colour — the brackets mark a pun, which
-//   the colour still marks.
-// The punctuation stays in the DOM, visually hidden, for screen readers and copy.
+// - ？ and ！ stay — they carry meaning (选多大 才合身？); so do 「」, the device of
+//   「穿」越时空, set with the font's half-width alternates (`halt`) so they do
+//   not open a hole either side. A first version drew 「穿」 as a blue 穿 without
+//   brackets; the founder found it worse, and the brackets came back.
+// What is dropped stays in the DOM, visually hidden, for screen readers and copy.
 // English is untouched.
 
 import { Children, cloneElement, isValidElement, type ReactElement, type ReactNode } from "react";
 import { useLocale } from "@/i18n/client";
 
-const PUNCT_RUN = /[，。、；：？！…]+/g;
+const PUNCT_RUN = /[，。、；：…]+/g;
 
 export function Headline({ children }: { children: ReactNode }) {
   const locale = useLocale();
@@ -65,28 +67,23 @@ function bareText(text: string, atLineEnd: boolean, key: string): ReactNode[] {
   clauses.forEach((c, i) => {
     const k = `${key}.${i}`;
     if (c.text) {
-      const body = withAccents(c.text, k);
+      const body = withBrackets(c.text, k);
       if (several) out.push(<span key={k} className="inline-block">{body}</span>);
       else out.push(...body);
     }
     if (!c.after) return;
     out.push(hidden(c.after, `${k}.p`));
     const endOfText = i === clauses.length - 2 && !clauses[clauses.length - 1].text;
-    if (!(endOfText && atLineEnd)) out.push(<span key={`${k}.g`} aria-hidden="true" className="inline-block w-[0.5em]" />);
+    // The gap is a space, widened: where the line breaks it collapses like any
+    // space, so the next line never starts indented (an empty inline-block did,
+    // on the store screenshots).
+    if (!(endOfText && atLineEnd)) out.push(<span key={`${k}.g`} className="[word-spacing:0.25em]"> </span>);
   });
   return out;
 }
 
-function withAccents(text: string, key: string): ReactNode[] {
-  return text.split(/(「[^」]*」)/).filter(Boolean).map((part, i) => {
-    const m = /^「([^」]*)」$/.exec(part);
-    if (!m) return part;
-    return (
-      <span key={`${key}.a${i}`}>
-        {hidden("「", `${key}.a${i}.o`)}
-        <span className="text-brand">{m[1]}</span>
-        {hidden("」", `${key}.a${i}.c`)}
-      </span>
-    );
-  });
+function withBrackets(text: string, key: string): ReactNode[] {
+  return text.split(/([「」])/).filter(Boolean).map((part, i) =>
+    part === "「" || part === "」" ? <span key={`${key}.b${i}`} className="cjk-halt">{part}</span> : part,
+  );
 }

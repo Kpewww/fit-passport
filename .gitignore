@@ -35,6 +35,10 @@ app-web/prisma/schema.postgres.prisma
 # they may be committed (eval/README.md, "Captures").
 app-web/eval/local/
 
+# The Chrome Web Store package (pack-extension.mjs --store): uploaded by hand,
+# rebuilt from browser-extension/ at any time.
+app-web/store-build/
+
 # Vercel CLI link metadata (project/org ids)
 app-web/.vercel
 .vercel

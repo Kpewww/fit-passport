@@ -52,6 +52,9 @@
     originSelect.appendChild(opt);
   });
   originSelect.value = origin();
+  // The store build carries one server only (pack-extension.mjs --store); a
+  // choice of one is not a setting.
+  if (CFG.origins.length < 2) originSelect.closest("footer").hidden = true;
   originSelect.addEventListener("change", function () {
     try { localStorage.setItem(ORIGIN_KEY, originSelect.value); } catch (e) { /* ignore */ }
     start();
@@ -262,7 +265,7 @@
         el("summary", { text: t("showSent") }),
         what,
         el("div", { className: "actions" }, [
-          button(t("saveCapture"), function () { saveCapture(cap); }),
+          CFG.captureTool ? button(t("saveCapture"), function () { saveCapture(cap); }) : null,
         ]),
       ])
     );

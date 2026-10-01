@@ -792,3 +792,10 @@ costs and whether we can list now. **Shipped:** the first three (DEVLOG Session 
 **Next:** the store listing — founder registers (US$5, once); engineering then builds the
 store package (no `key`, no localhost), a privacy policy page and the listing assets
 (`todo/people/05-chrome-web-store.md`).
+
+## Session 82 (2026-09-30) — nav order, headline corrections, store listing prepared, DONE
+
+**Shipped:** nav reorder; ？ and 「」 back in headlines; the store package, `/privacy`, listing copy
+and images; README in both languages. **Next — founder only:** register (US$5, from the account to
+keep), publish a contact address (`CONTACT_EMAIL`), decide trader / non-trader, upload
+`store-build/…-store.zip` and paste `docs/store/chrome-web-store.md`.

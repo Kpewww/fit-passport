@@ -70,6 +70,12 @@ body {
 :lang(zh) h2.font-serif {
   line-height: 1.2;
 }
+/* 「」 in a display headline: the font's half-width alternates, so a bracket does
+   not leave an empty half em beside it (Headline.tsx). No effect where the font
+   has no `halt` feature. */
+.cjk-halt {
+  font-feature-settings: "halt" 1;
+}
 :lang(zh) .eyebrow {
   letter-spacing: 0.12em;
 }
@@ -78,12 +84,12 @@ body {
 :lang(zh) .nav-tab {
   letter-spacing: 0.08em;
 }
-/* The homepage hero is two lines in Chinese on every screen (copy spec 01.9 §8).
-   Drawn without punctuation (Headline.tsx) it is four glyphs a line — 穿越时空 /
-   合身随行 — so it can be as large as the closing headline: 8rem from sm up, and
-   on a phone as large as four glyphs and a little air allow. */
+/* The homepage hero is two lines in Chinese on every screen (copy spec 01.9 §8):
+   「穿」越时空 / 合身随行, the line-end marks not drawn (Headline.tsx). The first line
+   is six glyph widths — less where the font has half-width brackets — so on a phone
+   the size follows the width; from sm up it matches the closing headline. */
 :lang(zh) .hero-title {
-  font-size: min(4.5rem, calc((100vw - 2rem) / 4.6));
+  font-size: min(4.5rem, calc((100vw - 2rem) / 6.2));
 }
 @media (min-width: 640px) {
   :lang(zh) .hero-title {

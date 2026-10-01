@@ -5,8 +5,24 @@
 import { describe, it, expect } from "vitest";
 import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
-import { buildExtensionZip, extensionFiles, extensionVersion, zipFileName, EXT_DIR, OUT_DIR } from "../../scripts/pack-extension.mjs";
+import { buildExtensionZip, extensionFiles, extensionVersion, zipFileName, EXT_DIR, OUT_DIR, DEV_ORIGIN } from "../../scripts/pack-extension.mjs";
 import { EXTENSION_DISTRIBUTION, EXTENSION_ID } from "./extensionDistribution";
+
+/** Read a stored (uncompressed) zip back into name → text. */
+function unzip(zip: Buffer): Map<string, string> {
+  const out = new Map<string, string>();
+  let p = 0;
+  while (zip.readUInt32LE(p) === 0x04034b50) {
+    const size = zip.readUInt32LE(p + 18);
+    const nameLen = zip.readUInt16LE(p + 26);
+    const extra = zip.readUInt16LE(p + 28);
+    const name = zip.subarray(p + 30, p + 30 + nameLen).toString("utf8");
+    const start = p + 30 + nameLen + extra;
+    out.set(name, zip.subarray(start, start + size).toString("latin1"));
+    p = start + size;
+  }
+  return out;
+}
 
 describe("the extension download", () => {
   it("is exactly what the source would pack today", () => {
@@ -35,6 +51,25 @@ describe("the extension download", () => {
     // 0.4.0 and 0.5.0, so saved captures named the wrong extension (Session 80f).
     const capture = readFileSync(join(EXT_DIR, "capture.js"), "utf8");
     expect(capture).toContain(`var VERSION = "${extensionVersion()}";`);
+  });
+
+  it("makes a Chrome Web Store package without the key and the development server (Session 82)", () => {
+    // The store refuses a manifest with `key` and assigns its own ID; a localhost
+    // permission has no business in a published extension.
+    const files = unzip(buildExtensionZip(EXT_DIR, { store: true }));
+    const manifest = JSON.parse(files.get("manifest.json")!);
+    expect(manifest.key).toBeUndefined();
+    expect(manifest.host_permissions).toEqual(["https://fit-passport.vercel.app/*"]);
+    expect(manifest.version).toBe(extensionVersion());
+    expect(files.get("config.js")).not.toContain(DEV_ORIGIN);
+    expect(files.get("config.js")).not.toContain("captureTool");
+    expect(files.get("config.js")).toContain('url: "https://fit-passport.vercel.app"');
+    // Every other file is exactly the download's.
+    const download = unzip(buildExtensionZip());
+    expect([...files.keys()]).toEqual([...download.keys()]);
+    for (const [name, body] of files) {
+      if (name !== "manifest.json" && name !== "config.js") expect(body, name).toBe(download.get(name));
+    }
   });
 
   it("ships the extension and not our measurement tooling", () => {

@@ -13,11 +13,11 @@ const COLUMNS: Array<{ title: KeyIn<"footer">; links: Array<{ label: LinkKey; hr
   {
     title: "columns.product",
     links: [
-      { label: "links.check", href: "/check" },
-      { label: "links.extension", href: "/extension" },
       { label: "links.closet", href: "/closet" },
       { label: "links.passport", href: "/passport" },
       { label: "links.outfits", href: "/outfits" },
+      { label: "links.extension", href: "/extension" },
+      { label: "links.check", href: "/check" },
     ],
   },
   {
@@ -26,6 +26,7 @@ const COLUMNS: Array<{ title: KeyIn<"footer">; links: Array<{ label: LinkKey; hr
       { label: "links.directory", href: "/community" },
       { label: "links.badges", href: "/badges" },
       { label: "links.help", href: "/help" },
+      { label: "links.privacy", href: "/privacy" },
     ],
   },
   {
