@@ -39,7 +39,7 @@
 (function (root) {
   "use strict";
 
-  var VERSION = "0.3.0";
+  var VERSION = "0.5.1";
 
   // The server refuses supplied markup over 1,000,000 characters. A capture this
   // big means something went wrong, and the popup says so instead of sending it.
@@ -616,6 +616,30 @@
     return [];
   }
 
+  // A page standing in for the product: the sign-in page a marketplace redirects
+  // an item link to, or Taobao/Tmall's 访问异常提示, which hides the parameter
+  // list and 尺码信息 while the price and size buttons stay. Both met on real items
+  // (Session 80f), where a check could only have guessed. Read as yes/no from a
+  // fixed phrase in a visible element; nothing of it is sent.
+  var LOGIN_HOST_RE = /^(login|signin|passport)\./i;
+  var LOGIN_TITLE_RE = /^(登录|登錄|sign in|log in|login)$/i;
+  var PAUSED_NOTICES = { "访问异常提示": 1 };
+
+  function hostOf(loc) {
+    try { return new URL(loc && loc.href ? loc.href : String(loc)).hostname; } catch (e) { return ""; }
+  }
+
+  function pageGate(doc, host, title) {
+    if (LOGIN_HOST_RE.test(host) || LOGIN_TITLE_RE.test(title)) return "login";
+    var root = doc.body;
+    if (!root || !doc.createTreeWalker) return null;
+    var walker = doc.createTreeWalker(root, 4);
+    for (var node = walker.nextNode(); node; node = walker.nextNode()) {
+      if (PAUSED_NOTICES[collapse(node.nodeValue || "")] && node.parentElement && isVisible(node.parentElement)) return "paused";
+    }
+    return null;
+  }
+
   // ---- The capture ----
 
   function fpCapture(doc, loc, options) {
@@ -858,6 +882,7 @@
         selectedSize: selectedSize,
         specs: stats.specsKept || 0,
         descFrame: descFrame,
+        gate: pageGate(doc, hostOf(loc), title),
       },
     };
   }

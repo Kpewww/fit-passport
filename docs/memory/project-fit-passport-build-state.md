@@ -1187,3 +1187,47 @@ English implementation is the wording the tests pin, and zh must carry the same 
 **(83)** **API sentences for people go through `say(req, english)`** with Chinese in
 `API_ZH`; machine codes a client branches on (`claim-required`, `not-connected`) are
 never translated.
+
+**SESSION 80 (2026-09-30).** 637 → **701 tests**. Six pushes (80a–80f).
+
+- **Chinese copy = the founder's revision** (`docs/design/chinese-copy-2026-09-30.md`, kept as
+  the record): all 1,122 message keys, `engineText`, `badgeText`, `apiText`, `/admin` (now
+  translated). Imported by parsing, not retyping. Deviations only where the revision's own rules
+  demand them — listed in `docs/design/chinese-copy.md`. Chrome's zh-CN label is
+  **加载未打包的扩展程序** (read from Chrome 155's `Locales/zh-CN.pak`).
+- **Header:** desktop tabs from `lg`; the tab row keeps the English width in both languages
+  (`min-w-[32.5rem]` + `justify-between`) — measured Δ 0 px. Footer credit `© 2026 Fit Passport`,
+  no footer language switch.
+- **Extension zip is packed with LF** (`pack-extension.mjs`): a Windows checkout
+  (`core.autocrlf`) made the committed zip test stale on a clean tree.
+- **Closet add-by-link:** `lib/closetExtract.ts`. Demo fixtures answer only the links in
+  `lib/demoProducts.ts` and are labelled demo. `guessBrand` matches whole host labels.
+- **To-buy list:** `SavedItem` table, `/api/saved`, `/saved`, extension 0.4.0 "Save to buy".
+  `extractSmart(…, { noModel: true })` for saving. `ItemSchema` moved to `lib/closetItemInput.ts`.
+- **One-off listings:** `lib/sellerMeasurements.ts`, `lib/listingJudgement.ts`,
+  `sizesFrom: "seller"`, `source.listing`, refusal `no-measurements-listing`, constants
+  `LISTING` + `CONFIDENCE_CAPS.provenance.seller`. Extension 0.5.0 reads eBay item specifics and,
+  with an optional host permission, measurement lines from the `itm.ebaydesc.com` frame.
+  `easeFor`, `verdictFromDelta`, `isUndetermined` are exported from `fitEngine.ts` and shared.
+- eBay refuses our server ("Error Page") and began refusing automated browsers mid-session;
+  resale hosts are marketplaces (no brand from the host).
+- **Taobao/Tmall (80f, real signed-in access):** chart + 参数信息 read on two items, save 200 → 409 on
+  four; then Taobao's risk control hid item details (访问异常提示) and redirected to sign-in for the
+  automated browser. Extension **0.5.1**: `found.gate` (`login` | `paused`) — the popup says so and
+  offers no check. `capture.js` VERSION is pinned to the manifest (it had stayed 0.3.0).
+
+**NEW INVARIANTS:**
+**(84)** **A to-buy product is not an owned garment and lives in its own table.** Nothing that
+learns or counts reads `SavedItem` (`savedInput.test.ts` scans for it); it becomes a
+`KnownGoodItem` only through the closet add flow **with a fit report** (`fromSavedId`
+requires `fitDirection`), else the default `fitRating` 4 would make it a known-good anchor.
+**(85)** **A flat width doubled is a GARMENT circumference** — written to the garment field,
+never compared with a body directly (㊿). What could mean more than one thing ("Chest 22",
+"29x20", disagreeing readings) is not used; the user confirms it.
+**(86)** **One real size → a judgement, never a ranking.** Same target and verdict scale as the
+engine; a stored tie is never shown as a recommendation (`isUndetermined` on the stored
+ranking).
+**(87)** **The extension's optional host permission is requested only on a click and reads only
+measurement lines.** Free text on a listing page is never read (other sellers' measurements are
+on the same page).
+

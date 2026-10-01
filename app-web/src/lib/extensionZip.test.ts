@@ -31,6 +31,10 @@ describe("the extension download", () => {
   it("agrees with the version the extension reports about itself", () => {
     const config = readFileSync(join(EXT_DIR, "config.js"), "utf8");
     expect(config).toContain(`version: "${extensionVersion()}"`);
+    // capture.js stamps every capture with its own copy; it stayed at 0.3.0 through
+    // 0.4.0 and 0.5.0, so saved captures named the wrong extension (Session 80f).
+    const capture = readFileSync(join(EXT_DIR, "capture.js"), "utf8");
+    expect(capture).toContain(`var VERSION = "${extensionVersion()}";`);
   });
 
   it("ships the extension and not our measurement tooling", () => {

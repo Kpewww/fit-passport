@@ -12,3 +12,4 @@ visible table). What remains:
 | 09 | Re-capture the eval pages so S5 runs again (captures didn't survive the machine move) | A headed browser run of `try-pages.mjs`; nothing else |
 | 10 | A size chart that is a picture inside a Taobao description | Choosing which picture — see the file |
 | 11 | Marketplaces' per-size 身高/体重 range as a weak signal | Design questions in the file |
+| 12 | How far a seller's measurement can be off (`LISTING.flatNoiseCm`, assumed), and whether to read measuring photos | Listings with known garment measurements; a decision on photos |

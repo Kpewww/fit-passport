@@ -21,7 +21,15 @@
 // Chrome no longer accepts --load-extension.
 //
 //   node browser-extension/scripts/try-pages.mjs [--api http://localhost:3000]
-//        [--click] [--out results.json] [--save-captures dir] <url> [<url> ...]
+//        [--click] [--out results.json] [--save-captures dir] [--profile dir] [--save]
+//        <url> [<url> ...]
+//
+// --profile dir  a PERSISTENT browser profile instead of a fresh one, so a login a
+//                person made in it (Taobao/Tmall show some items only to a signed-in
+//                shopper) is still there next run. Keep it out of git
+//                (app-web/eval/local/ is ignored). The script never types a password.
+// --save         after each check, save the product to the to-buy list twice
+//                (/api/saved): the second must answer 409 already-saved. Session 80.
 
 import { chromium } from "playwright";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
@@ -47,13 +55,16 @@ const shotsDir = value("--shots", null);
 // order), and skip the API when only capturing (no dev server needed).
 const ids = (value("--ids", "") || "").split(",").filter(Boolean);
 const captureOnly = flag("--capture-only");
-const urls = args.filter((a, i) => /^https?:\/\//.test(a) && args[i - 1] !== "--api");
+const profileDir = value("--profile", null);
+const saveToBuy = flag("--save");
+const urls = args.filter((a, i) => /^https?:\/\//.test(a) && args[i - 1] !== "--api" && args[i - 1] !== "--profile");
 if (!urls.length) {
   console.error("usage: node try-pages.mjs [--api URL] [--click] [--out file] [--save-captures dir] <url>...");
   process.exit(1);
 }
 
-const profile = mkdtempSync(join(tmpdir(), "fp-ext-"));
+const profile = profileDir ?? mkdtempSync(join(tmpdir(), "fp-ext-"));
+if (profileDir) mkdirSync(profileDir, { recursive: true });
 const context = await chromium.launchPersistentContext(profile, {
   headless: false, // extensions and the retailers' bot gates both need a real window
   viewport: { width: 1366, height: 900 },
@@ -164,6 +175,23 @@ try {
           const s = b.source || {};
           row.api.source = { sizesFrom: s.sizesFrom, fetch: s.fetch, extractedBy: s.extractedBy, measurementKind: s.measurementKind, measurementKindFrom: s.measurementKindFrom };
           row.api.product = { id: b.product?.id, brand: b.product?.brand, name: b.product?.productName, category: b.product?.category };
+          if (saveToBuy && b.product?.id) {
+            // The popup's "Save to buy" after a check: by the stored product's id.
+            row.saved = await ext.evaluate(
+              async ({ api, url, id, version }) => {
+                const post = () => fetch(api + "/api/saved", {
+                  method: "POST",
+                  credentials: "include",
+                  headers: { "content-type": "application/json", "x-fp-client": "extension/" + version },
+                  body: JSON.stringify({ url, productId: id }),
+                }).then(async (r) => ({ status: r.status, body: await r.json().catch(() => null) }));
+                const first = await post();
+                const again = await post();
+                return { first: first.status, again: again.status, againError: again.body?.error ?? null, item: first.body?.item ?? again.body?.item ?? null };
+              },
+              { api, url: cap.url, id: b.product.id, version },
+            );
+          }
           if (shotsDir && b.product?.id) {
             mkdirSync(shotsDir, { recursive: true });
             await site.goto(`${api}/check?product=${encodeURIComponent(b.product.id)}`, { waitUntil: "networkidle" });
@@ -190,6 +218,7 @@ try {
         (row.api ? `\n  api ${row.api.status}: ` + (row.api.status === 200
           ? `${row.api.undetermined ? "undetermined" : row.api.best + " @ " + Math.round(row.api.confidence * 100) + "%"} · ${JSON.stringify(row.api.source)}`
           : `${row.api.error} — ${row.api.message ?? ""}`) : "") +
+        (row.saved ? `\n  saved: ${row.saved.first} then ${row.saved.again} ${row.saved.againError ?? ""} · ${JSON.stringify({ name: row.saved.item?.productName, brand: row.saved.item?.brand, sizes: row.saved.item?.sizes })}` : "") +
         (row.failure ? `\n  failed: ${row.failure}` : ""),
     );
   }

@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 79 · 2026-09-29 — LIVE, 637 tests + 1 honest skip.**
+> **Last updated: Session 80 · 2026-09-30 — LIVE, 700 tests + 1 honest skip.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -165,6 +165,23 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
 - 天猫:没有 JSON-LD,品牌/性别从「参数信息」按标签读,商品名取清洗过的 `<title>`;
   淘宝的「我的档案」(身高/体重)从不读取。
 
+**Session 80(创始人中文定稿 + 界面 + 衣橱链接 + 待购 + 二手判断,推送 80a–80e):**
+- 中文文案以创始人定稿为准:`docs/design/chinese-copy-2026-09-30.md`(存档),术语与偏差表见
+  `docs/design/chinese-copy.md`(合身护照、认领账户、身形数据、可信度;Chrome 按钮用实测的
+  「加载未打包的扩展程序」)。`/admin` 也已双语。
+- 页脚只剩 `© 2026 Fit Passport`,没有语言切换;顶部切换缩小 12%,点击区不变。桌面导航从
+  **lg(1024px)** 起才显示,中英文坐标一致(Δ 0 px);640–1000px 原来英文会溢出、账户按钮被裁掉。
+- 衣橱「按链接添加」只预填页面真读到的内容(`lib/closetExtract.ts`);演示数据只回答四个演示
+  链接(`lib/demoProducts.ts`)并标「演示数据」。
+- **待购**:`SavedItem` 独立表(迁移 `20260930120000_saved_items`),`/api/saved`、`/saved` 页;
+  插件 0.4.0 起「加入待购」;「已购买，加入衣橱」走衣橱添加流程且必须回答合身感。
+- **二手单品判断**(插件 0.5.0 + `/check`):`lib/sellerMeasurements.ts` 读卖家实测(腋下平铺 ×2
+  = 衣物胸围),`lib/listingJudgement.ts` 给出「较可能合身 / 可能偏紧 / 可能偏松」+ 依据强度;
+  eBay 描述框架用**可选**主机权限读取。eBay 拒绝我们的服务器,网站上靠用户手填卖家尺寸。
+- 淘宝/天猫(80f,真实登录访问):两件商品读到参数信息和尺码表，四件「加入待购」200、重复 409;
+  随后淘宝风控对自动化浏览器隐藏详情(「访问异常提示」)并跳登录页。插件 **0.5.1** 识别这两种页面，
+  直接说明情况，不再给猜测的结论。
+
 **下一步:见 `todo/`(做什么)与 `docs/memory/project-fit-passport-next-steps.md`
 底部(为什么)。** 客户访谈**已由创始人推迟**;插件**已不再受访谈证据门槛限制**
 (Session 73 创始人拍板)。
@@ -192,8 +209,8 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
     跑完 `npx prisma generate` 切回。
 14. **合身输入永远不是拖动滑块**(实测手机放弃率 37% vs 单选 2.3%);
     `fitRating` 由 `fitDirection` **推导**,不单独问。
-15. **手机上导航必须存在**——所有 nav 链接都是 `sm:block`,`Nav.tsx` 里的菜单面板
-    就是手机上的导航本体。
+15. **1024px 以下导航必须存在**——桌面标签从 `lg` 起才显示(Session 80 前是 `sm`,
+    英文在平板宽度会溢出),`Nav.tsx` 里的菜单面板就是 1024px 以下的导航本体。
 16. 任何写 `fitRating` 的地方必须同时写 `fitDirection`,否则同一行数据自相矛盾。
 17. **判断一个 SVG 是不是矢量,先看有没有 `<path>`**——文件名和来意都可能骗人。
 18. **标志有尺寸下限**:母版 ≥40px、micro 24–40px、**16–20px 必须用另画的
@@ -248,11 +265,21 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
     判语是**反的**(胸围 100 时 L 显示"too small")。只有判语错、排序一直对,所以
     藏了很久。
 
+33. **待购商品和已有衣物是两张表,待购永不参与合身学习。** `SavedItem` 不被引擎、徽章、
+    公开页、社区读取(`savedInput.test.ts` 扫描守住);转入衣橱必须带 `fitDirection`,
+    否则默认 `fitRating=4` 会让没穿过的衣服变成「已知合身」锚点。
+34. **腋下平铺 ×2 是衣物围度,只写入衣物字段,永不与身体数据直接比较。** 单写的
+    「Chest 22」、「29x20」、互相矛盾的读数都**不用**,交给用户确认。
+35. **只有一个尺码的商品给判断,不做排名**(`listingJudgement.ts`,与引擎共用
+    `easeFor` / `verdictFromDelta`)。排名里的「最大尺码」「平局」对单件商品都不成立。
+36. **插件的可选主机权限只在用户点击时申请,只读尺寸行。** eBay 描述在
+    `itm.ebaydesc.com` 框架里;主页面的自由文本从不读取(同页有别的卖家的 pit-to-pit)。
+
 ## 已有的关键系统(别重造)
 
 徽章阶梯 铜→银→金→**钛**→钻石→黑曜石 + 特殊色,源 `src/lib/badges.ts`;金属护照卡
 (`MetalCard.tsx`,**保持炫酷不动**);徽章**默认扁平**,立体版只在 inspect 舞台;
 本地管理员由 `node scripts/seed-admin.mjs` 播种;中英双语(`src/i18n/`,文案进 messages,别写死在 JSX);会员编号;拉黑双向生效;举报 +
-自动隐藏 + `/admin` 审核队列;Upstash 限流;字体自托管。
+自动隐藏 + `/admin` 审核队列;Upstash 限流;字体自托管;待购清单(`/saved`);二手单品判断。
 生态:关注+关注流、Ask&Answer(带真实衣橱证据)、每日 Top+Top 穿搭师榜。
 工具:`app-web/scripts/mobile-audit.mjs`(移动端布局实测,需 `npx playwright install chromium`)。

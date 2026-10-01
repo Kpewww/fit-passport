@@ -142,6 +142,17 @@ on a page with a parameter list, since nearly every product page has large photo
 The picture is not sent to the vision reader: picking the size chart out of thirty
 description images is unsolved (todo/engineering/10).
 
+**A page standing in for the product (Session 80f).** Two things Taobao showed a
+signed-in automated browser on real items: an item link redirected to
+`login.taobao.com`, and an item page whose 参数信息 and 尺码信息 were replaced by
+**访问异常提示** ("商品详情页将在一段时间后自动恢复") while the price and size buttons
+stayed. Before 0.5.1 the first was answered "not apparel" and the second with an
+estimated ladder and no pick. Now the capture reports `found.gate` — `login` (a
+sign-in host or a title that is only 登录 / Sign in) or `paused` (that notice, in a
+visible element) — read as yes/no and never sent, and the popup says what happened,
+offers **Re-scan**, and (paused only, the name and sizes being there) **Save to buy**.
+No check is offered: it could only guess.
+
 ## 6c. Language (Session 79c)
 
 The popup has its own 中 | EN switch (`i18n.js`), remembered in the extension's

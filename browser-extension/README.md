@@ -128,6 +128,9 @@ Both scripts need Playwright, which is deliberately not a project dependency
 - A size chart inside a **cross-origin iframe** or a **closed shadow root** cannot
   be read. Open shadow roots can be.
 - Charts that load only when opened need you to open them first, then **Re-scan**.
+- On Taobao/Tmall, a sign-in page or the **访问异常提示** notice can stand in for
+  the product. The popup says so (0.5.1) instead of checking: sign in, or wait until
+  the page shows its details again, then **Re-scan**.
 - When the size guide is a separate page (Nike), the product page holds no chart.
   The server then falls back to the brand's curated chart where one exists, and
   says so.

@@ -763,3 +763,24 @@ now read from 参数信息 by label and from the cleaned `<title>`.
 - **Engineering:** a chart that is a picture inside 图文详情 (`10`); the per-size
   身高/体重 line as a weak signal (`11`); plus the Session 78 list above (09, 08, 03, 07).
 - **People:** unchanged from Session 78 (`01` ground truth, `03` Upstash in prod).
+
+## Session 80 (2026-09-30) — founder's Chinese copy, UI, closet link, to-buy, second-hand, DONE (80a–80e)
+
+Founder's request: apply the Chinese copy revision in full; one language switch (header), no
+team names in the footer, a nav that holds still across languages; drop "we haven't tested
+them" from the install note; make the closet's add-by-link honest; let the extension save a
+product as to-buy (kept out of the closet); judge second-hand listings with no size chart from
+the seller's measurements; verify Taobao/Tmall.
+**Shipped:** all of it — see DEVLOG 80a–80f (80f: Taobao/Tmall on real items; extension 0.5.1).
+
+**Next, by who can move it:**
+- **Founder:** read the new Chinese on the live site; try "Save to buy" and an eBay listing in
+  your own Chrome (load the 0.5.1 zip; allow "Read the seller's description" once); and on a
+  Taobao item — Taobao's risk control stops automated browsers, so this needs a person.
+- **People:** hand-capture 2–3 eBay listings with the popup's "Save this capture" (eBay now
+  refuses automated browsers) so a resale case can join the eval; ground truth (`01`) as before.
+- **Engineering:** calibrate `LISTING.flatNoiseCm` (0.64, assumed: half-inch rounding) against
+  listings whose garment measurements are known; a second-hand measuring *photo* is not read
+  (the vision reader is for charts) — decide whether to try; plus the Session 79 list (10, 11, 09,
+  08, 03, 07).
+

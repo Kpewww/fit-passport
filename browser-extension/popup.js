@@ -134,10 +134,22 @@
     if (!cap || !cap.ok) {
       return message(t("tooLargeTitle"), t("tooLargeBody"));
     }
+    // A sign-in page, or Taobao's 访问异常提示, in place of the product: say so, and
+    // offer no check, which could only guess (Session 80f).
+    if (cap.found.gate) return gate(cap, tab);
     // A listing's description frame (eBay): read it now if the user already allowed
     // it once; otherwise the preview offers to.
     if (cap.found.descFrame && await hasDescAccess()) await readDescription(tab.id, cap);
     preview(cap, tab);
+  }
+
+  function gate(cap, tab) {
+    var paused = cap.found.gate === "paused";
+    message(t(paused ? "gatePausedTitle" : "gateLoginTitle"), t(paused ? "gatePausedBody" : "gateLoginBody"), [
+      button(t("rescan"), start, true),
+      // The name and the size buttons are still on a paused page; enough to save.
+      paused ? button(t("saveToBuy"), function () { saveForm(cap, null, function () { gate(cap, tab); }); }) : null,
+    ].filter(Boolean));
   }
 
   // ---- the seller's description frame (Session 80) ----

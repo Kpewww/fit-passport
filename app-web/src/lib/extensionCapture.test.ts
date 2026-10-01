@@ -48,6 +48,7 @@ type Capture = {
     selectedSize: string | null;
     specs: number;
     descFrame: string | null;
+    gate: "login" | "paused" | null;
   };
 };
 type FpCapture = ((doc: Document, loc: { href: string }) => Capture) & {
@@ -371,6 +372,24 @@ describe("what the popup is told it found", () => {
       <select name="size"><option>Choose a size</option><option>S</option><option>M</option></select></body></html>`).found;
     expect(f.selectedSize).toBeNull();
     expect(capture(`<html><body><h1>Tee</h1><button aria-selected="true">3</button></body></html>`).found.selectedSize).toBeNull();
+  });
+
+  it("notices a sign-in page or Taobao's 访问异常提示 standing in for the product (Session 80f)", () => {
+    // Both met on real Taobao items in a signed-in automated browser, 2026-09-30:
+    // an item link redirected to sign-in, and an item page whose parameters and
+    // 尺码信息 were replaced by the notice while its size buttons stayed.
+    const login = capture(`<html lang="en"><head><title>登录</title></head><body></body></html>`, "https://login.taobao.com/havanaone/login/login.htm");
+    expect(login.found.gate).toBe("login");
+    const paused = capture(`<html><head><title>JOKAR&amp;JONNY美式复古水洗阔腿牛仔裤男-淘宝网</title></head><body>
+      <div class="sku"><span>尺码</span><div><span title="S">S</span><span title="M">M</span></div></div>
+      <div class="notice"><div>访问异常提示</div><div>系统检测到当前访问存在异常，商品详情页将在一段时间后自动恢复。</div></div></body></html>`,
+      "https://item.taobao.com/item.htm?id=901079473341");
+    expect(paused.found.gate).toBe("paused");
+    expect(paused.found.sizes).toEqual(["S", "M"]); // still enough to save for later
+    expect(paused.html).not.toContain("访问异常");
+    // A hidden copy of the notice is not the page's state; a product page is not gated.
+    expect(capture(`<html><body><h1>Tee</h1><div hidden><div>访问异常提示</div></div></body></html>`).found.gate).toBeNull();
+    expect(capture(LOGGED_IN).found.gate).toBeNull();
   });
 
   it("marks a hidden tab's chart as not visible", () => {

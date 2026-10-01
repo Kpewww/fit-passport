@@ -31,6 +31,93 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-30 · Session 80f — Taobao and Tmall on real items, and a popup that says when the page is not the product
+
+Founder's request (part 8): check reading, size info, Re-scan and the new save flow on
+Taobao/Tmall. Reuse a login. When a login, QR code or verification needs a person,
+notify and wait.
+
+**How it was run.** A separate Chromium profile with the unpacked extension, kept out of
+git (`app-web/eval/local/tb-profile`). The founder signed in themselves, twice; no
+script typed anything. Items came from the signed-in Taobao home feed, because the
+search page gave the automated browser a slider verification that failed on its own
+("Oops… something's wrong"). We did not try to get past it. `try-pages.mjs` gained
+`--profile` (a persistent profile) and `--save` (save to buy twice; the second save
+must answer 409). The server was `next start` on port 3000 with the local database.
+
+**Real access, first round** (four items, the extension's own request from its origin;
+test profile chest 100 cm):
+
+| Item | What was read | Answer | Save, then again |
+|---|---|---|---|
+| SSUMENAM 长袖 T 恤 (Taobao) | 参数信息 (brand Ssumenam); chart, 3 rows, garment 胸围 108/113/118; sizes M/L/XL | M · true to size | 200 → 409 already-saved |
+| 天伦法奴 半拉链 T 恤 (opens as Tmall) | 10 parameters; chart, 3 rows, 胸围 98/102/106 with 身高/体重/肩宽/袖长/衣长; sizes M…3XL | 3XL · snug (XL and 2XL too small) | 200 → 409 |
+| JOKAR&JONNY 牛仔裤 | the name from the title; size buttons S…3XL; no parameters, no chart | estimated sizes, undetermined (no pick) | 200 → 409 |
+| CHICERRO 衬衫 | same as above | same as above | 200 → 409 |
+
+- **Payload size:** each capture sent 0.8–1.0 KB of a 400–580 KB page.
+- **Re-scan not needed for the chart:** on the readable items it was already in the
+  page once the page settled (7 s), with no scrolling to 尺码信息.
+- **The to-buy rows** hold the page's name, its brand where one was read, and its sizes.
+
+**Real access, after that.** The last two items had no parameters and no chart because
+Taobao had **hidden them**:
+- a "访问异常提示 … 商品详情页将在一段时间后自动恢复" box stood where the details had
+  been, with the price and size buttons still there;
+- from the next round on, item links went to `login.taobao.com`;
+- after the founder signed in again, all three items opened, each with the notice.
+
+Taobao's risk control had settled on this automated browser. We did nothing to get
+around it.
+
+What the extension did with those pages:
+- the sign-in page was answered **"not apparel"** (422);
+- the hidden page got estimated sizes;
+- neither answer said what was actually happening.
+
+**Fixed — extension 0.5.1.**
+- `capture.js` reports `found.gate`, a yes/no that is never sent:
+  - `login` — a sign-in host, or a title that is only 登录 / Sign in;
+  - `paused` — the notice, in a visible element.
+- The popup then says what happened, instead of offering a check that could only guess:
+  "这一页要求登录。" / "商品详情暂时被隐藏。…详情恢复后点击“重新扫描”。没有发送任何内容。"
+  It offers Re-scan, and on a paused page also Save to buy (the name and sizes are still
+  there).
+- Also fixed: `capture.js` had stamped every capture "0.3.0" since 0.3.0, a bump missed
+  at 0.4.0 and 0.5.0. It is now 0.5.1, and `extensionZip.test.ts` pins it to the
+  manifest.
+- The zip was repacked (112 KB).
+
+**Verified, by kind**
+- *Real access* (signed-in Taobao, real pages, local server):
+  - the table above;
+  - after the fix, the real capture on real pages gave `login` on 2 sign-in redirects
+    and `paused` on 4 hidden item pages;
+  - the real popup (popup.js, i18n.js) was given those captures and showed the two
+    messages and their buttons;
+  - on the hidden SSUMENAM page, Save to buy → form with the page's name → 保存 →
+    "已在待购中。已保存的尺码：暂不选择。" — the duplicate state, on a real page.
+- *Re-scan:* we captured at open (0.8 s after DOMContentLoaded) and again after 7 s and
+  scrolling. The two were identical on the three hidden items. A chart that appears only
+  after it is opened did not come up on Taobao this session.
+- *Not seen on real access after the fix:* the gate on a readable item. By then none
+  was readable. The notice replaces the details; a hidden copy of it is ignored (test).
+- *Automated tests* (701 passed + 1 skipped, exit 0; typecheck clean):
+  - sign-in page;
+  - hidden-details page (sizes still offered; the notice not sent);
+  - hidden copy ignored;
+  - ordinary page not gated;
+  - capture version pinned.
+- *Mocked:* no Taobao data. Only the popup's active-tab lookup was stubbed, because a
+  popup opened as a tab is its own active tab.
+
+**Left.** Taobao's risk control means this check cannot be repeated on demand in an
+automated browser. A person's own browser is the real case. Founder: try 0.5.1 on a
+Taobao item in your own Chrome — the chart, Save to buy, and Re-scan after opening
+尺码信息.
+
+---
+
 ## 2026-09-30 · Session 80e — Second-hand listings: a judgement from the seller's tape measure
 
 Founder's request: a second-hand listing (eBay …) has no size chart, but often a
