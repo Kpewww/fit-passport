@@ -8,6 +8,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button, Card, Field, inputClass } from "@/components/ui";
 import { useT } from "@/i18n/client";
+import { Headline } from "@/components/Headline";
 
 export default function RecoverPage() {
   const t = useT("auth");
@@ -42,7 +43,7 @@ export default function RecoverPage() {
     return (
       <main className="flex-1">
         <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
-          <h1 className="font-serif text-h1 text-ink">{t("sentTitle")}</h1>
+          <h1 className="font-serif text-h1 text-ink"><Headline>{t("sentTitle")}</Headline></h1>
           <p className="mt-2 text-ink-soft">{t("sentBody")}</p>
           {devLink && (
             <Card className="mt-6 bg-warn-tint ring-warn/30">
@@ -64,7 +65,7 @@ export default function RecoverPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
-        <h1 className="font-serif text-h1 text-ink">{t("recoverTitle")}</h1>
+        <h1 className="font-serif text-h1 text-ink"><Headline>{t("recoverTitle")}</Headline></h1>
         <p className="mt-2 text-ink-soft">{t("recoverLede")}</p>
         <Card className="mt-6">
           <form onSubmit={submit} className="space-y-4">

@@ -3,16 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion, type MotionValue } from "framer-motion";
 import { Button, Card, LinkButton, AccuracyBadge } from "@/components/ui";
 import { Avatar, PinnedSeals } from "@/components/Badges";
 import { OutfitMannequin } from "@/components/OutfitMannequin";
 import { GarmentCover } from "@/components/GarmentCover";
 import { BadgeMedallion } from "@/components/BadgeMedallion";
 import { productLabel } from "@/lib/productLabel";
-import { ArrowRight, BrowserIcon, CaretRight, Check, Hanger, Scales } from "@/components/Icon";
+import { ArrowRight, BrowserIcon, CaretRight, Check, Hanger, Ruler, Scales, Store } from "@/components/Icon";
 import { EXTENSION_DISTRIBUTION } from "@/lib/extensionDistribution";
 import { useT } from "@/i18n/client";
+import { Headline } from "@/components/Headline";
 
 type Step = {
   key: string;
@@ -115,7 +116,9 @@ export default function Home() {
   // (2026-09-28, founder's decision): "Three signals" restated How it works step
   // 2, and "Get started" restated How it works; its demo-closet action moved
   // into the closing CTA. What is left says each thing once — how it works,
-  // what you get, who owns the profile, why people stay.
+  // what you get, who owns the profile, why people stay. "Three signals" came
+  // back on 2026-09-30, also the founder's decision, for its scroll moment
+  // (SignalsDeck).
   const returning = status !== null && !isNewUser;
 
   return (
@@ -130,6 +133,7 @@ export default function Home() {
 
       <StickyHowItWorks />
       <WhatYouGet />
+      <SignalsDeck reduce={!!reduce} />
       <ParallaxStatement reduce={!!reduce} />
       <CommunityValue />
       <ClosingCTA newUser={isNewUser} />
@@ -156,7 +160,7 @@ function CommunityValue() {
         <div className="max-w-2xl">
           <p className="eyebrow text-ink-faint">{t("community.eyebrow")}</p>
           <h2 className="mt-4 font-serif text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-6xl">
-            {t.rich("community.title", { accent: (c) => <span className="font-normal italic text-brand">{c}</span> })}
+            <Headline>{t.rich("community.title", { accent: (c) => <span className="font-normal italic text-brand">{c}</span> })}</Headline>
           </h2>
           <p className="mt-6 text-ink-soft">{t("community.body")}</p>
         </div>
@@ -214,7 +218,7 @@ function Hero({
       >
         <p className="eyebrow text-paper/60 animate-rise">{t("hero.eyebrow")}</p>
         <h1 className="hero-title mx-auto mt-7 max-w-4xl font-serif text-6xl font-semibold leading-[0.95] tracking-tight animate-rise sm:text-8xl" style={{ animationDelay: "60ms" }}>
-          {t.rich("hero.title", { accent: (c) => <span className="italic font-normal text-brand">{c}</span> })}
+          <Headline>{t.rich("hero.title", { accent: (c) => <span className="italic font-normal text-brand">{c}</span> })}</Headline>
         </h1>
         <p className="mx-auto mt-8 max-w-lg text-base leading-relaxed text-paper/65 animate-rise sm:text-lg" style={{ animationDelay: "120ms" }}>
           {/* Three sentences became one. The headline already says what this is;
@@ -297,7 +301,7 @@ function StickyHowItWorks() {
         {/* pinned side */}
         <div className="md:sticky md:top-28 md:h-fit">
           <p className="eyebrow text-ink-faint">{t("how.eyebrow")}</p>
-          <h2 className="mt-4 font-serif text-4xl leading-tight text-ink sm:text-5xl">{t.rich("how.title", {})}</h2>
+          <h2 className="mt-4 font-serif text-4xl leading-tight text-ink sm:text-5xl"><Headline>{t.rich("how.title", {})}</Headline></h2>
           <p className="mt-5 max-w-sm text-ink-soft">{t("how.body")}</p>
           <LinkButton href="/passport" variant="secondary" arrow className="mt-6">
             {t("how.cta")}
@@ -350,7 +354,7 @@ function WhatYouGet() {
     <section className="bg-paper py-20 sm:py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <p className="eyebrow text-ink-faint">{t("get.eyebrow")}</p>
-        <h2 className="mt-3 font-serif text-4xl text-ink sm:text-5xl">{t("get.title")}</h2>
+        <h2 className="mt-3 font-serif text-4xl text-ink sm:text-5xl"><Headline>{t("get.title")}</Headline></h2>
       </div>
       <div className="mx-auto mt-10 max-w-6xl sm:px-6">
         <div className="no-scrollbar flex snap-x snap-mandatory gap-4 overflow-x-auto scroll-px-4 px-4 pb-2 sm:grid sm:snap-none sm:grid-cols-3 sm:gap-6 sm:overflow-visible sm:px-0 sm:pb-0">
@@ -410,6 +414,104 @@ function GetVisual({ kind }: { kind: (typeof GET_CARDS)[number]["visual"] }) {
   );
 }
 
+// ---------------- Three signals: a deck that opens as you scroll ----------------
+//
+// Cut on 2026-09-28 as a repeat of How it works step 2, restored on 2026-09-30 at
+// the founder's request: it is the page's one scroll-driven moment, and the page
+// was flatter without it. Restored with three changes:
+// - an icon per card instead of 01/02/03 — the signals are not a sequence;
+// - the deck from lg up only — opened, it is 1,000 px wide, and between 640 and
+//   1,000 px the old version clipped its outer cards; below lg, a plain grid;
+// - the backdrop word is centred by framer (`y: "-50%"`), not by a Tailwind
+//   translate, which framer's own transform silently replaced.
+// Cost: one useScroll, three cards and one word on their own layers (GPU_LAYER);
+// with native scrolling that is a handful of transforms per frame (performance
+// memory: it was Lenis that made the old page heavy, not this section).
+const SIGNALS = [
+  { key: "body", Icon: Ruler },
+  { key: "closet", Icon: Hanger },
+  { key: "brand", Icon: Store },
+] as const;
+
+type SignalText = { key: string; Icon: (typeof SIGNALS)[number]["Icon"]; title: string; line: string };
+
+function SignalsDeck({ reduce }: { reduce: boolean }) {
+  const t = useT("home");
+  const ref = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
+  // `open` peaks while the section is centred in the viewport: gathered on the
+  // way in, spread while you look at it, gathered again on the way out.
+  const open = useTransform(scrollYProgress, [0.12, 0.42, 0.58, 0.88], reduce ? [1, 1, 1, 1] : [0, 1, 1, 0]);
+  const wordScale = useTransform(scrollYProgress, [0, 1], reduce ? [1, 1] : [0.94, 1.08]);
+  const signals: SignalText[] = SIGNALS.map((s) => ({
+    ...s,
+    title: t(`signals.cards.${s.key}.title`),
+    line: t(`signals.cards.${s.key}.line`),
+  }));
+
+  return (
+    <section ref={ref} className="relative isolate overflow-hidden border-y border-line bg-paper-soft py-24 sm:py-28">
+      <motion.p
+        aria-hidden="true"
+        style={{ scale: wordScale, y: "-50%", ...GPU_LAYER }}
+        className="pointer-events-none absolute inset-x-0 top-1/2 select-none whitespace-nowrap text-center font-serif text-[22vw] font-semibold leading-none text-ink/[0.05]"
+      >
+        {t("signals.backdrop")}
+      </motion.p>
+
+      <div className="relative mx-auto max-w-5xl px-4 sm:px-6">
+        <div className="text-center">
+          <p className="eyebrow text-ink-faint">{t("signals.eyebrow")}</p>
+          <h2 className="mx-auto mt-4 max-w-4xl font-serif text-5xl font-semibold leading-[1.02] tracking-tight text-ink sm:text-7xl">
+            <Headline>{t.rich("signals.title", { accent: (c) => <span className="font-normal italic">{c}</span> })}</Headline>
+          </h2>
+        </div>
+
+        <div className="mt-14 grid gap-4 sm:grid-cols-3 lg:hidden">
+          {signals.map((s) => (
+            <div key={s.key} className="rounded-2xl bg-white p-6 ring-1 ring-line">
+              <s.Icon size={24} className="text-brand" />
+              <p className="mt-4 font-serif text-xl leading-tight text-ink">{s.title}</p>
+              <p className="mt-1.5 text-sm text-ink-soft">{s.line}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="relative mt-20 hidden h-60 lg:block">
+          {signals.map((s, i) => (
+            <DeckCard key={s.key} signal={s} index={i} open={open} />
+          ))}
+        </div>
+
+        <p className="mt-8 text-center text-sm text-ink-faint">{t("signals.footnote")}</p>
+      </div>
+    </section>
+  );
+}
+
+// One card of the deck. `open` 0 → 1 goes from a near-pile with a slight fan (you
+// can tell there are three) to spread side by side, level, nothing overlapping —
+// fully readable exactly when the section is in view.
+function DeckCard({ signal, index, open }: { signal: SignalText; index: number; open: MotionValue<number> }) {
+  const x = useTransform(open, [0, 1], [[-40, 0, 40][index], [-332, 0, 332][index]]);
+  const y = useTransform(open, [0, 1], [[10, 0, -10][index], [0, -18, 0][index]]);
+  const rotate = useTransform(open, [0, 1], [[-6, 0, 6][index], [-2, 0, 2][index]]);
+  // The outer two fade up as they come out from behind the middle one.
+  const opacity = useTransform(open, [0, 0.35, 1], index === 1 ? [1, 1, 1] : [0.55, 1, 1]);
+  return (
+    <motion.div
+      // Its own layer: it carries shadow-lift, and animating opacity on a shadowed
+      // box repaints the shadow every frame otherwise.
+      style={{ x, y, rotate, opacity, zIndex: index === 1 ? 3 : 1, ...GPU_LAYER }}
+      className="absolute left-1/2 top-4 -ml-[10rem] w-80 rounded-2xl bg-white p-6 shadow-lift ring-1 ring-line"
+    >
+      <signal.Icon size={26} className="text-brand" />
+      <p className="mt-4 font-serif text-2xl leading-tight text-ink">{signal.title}</p>
+      <p className="mt-2 text-sm leading-relaxed text-ink-soft">{signal.line}</p>
+    </motion.div>
+  );
+}
+
 // ---------------- Parallax statement: layered depth ----------------
 function ParallaxStatement({ reduce }: { reduce: boolean }) {
   const t = useT("home");
@@ -430,7 +532,7 @@ function ParallaxStatement({ reduce }: { reduce: boolean }) {
       {/* faster foreground statement */}
       <motion.div style={{ y: fgY, ...GPU_LAYER }} className="relative mx-auto max-w-3xl px-4 sm:px-6 text-center">
         <p className="eyebrow text-brand">{t("parallax.eyebrow")}</p>
-        <h2 className="mt-4 font-serif text-4xl leading-tight sm:text-6xl">{t.rich("parallax.title", {})}</h2>
+        <h2 className="mt-4 font-serif text-4xl leading-tight sm:text-6xl"><Headline>{t.rich("parallax.title", {})}</Headline></h2>
         <p className="mx-auto mt-5 max-w-lg text-paper/60">
           {/* Was three sentences building to the same point. The idea is the
               last clause; the run-up was decoration. */}
@@ -456,7 +558,7 @@ function ClosingCTA({ newUser }: { newUser: boolean }) {
   return (
     <section className="mx-auto max-w-4xl px-4 sm:px-6 pb-40 pt-24 text-center">
       <h2 className="font-serif text-6xl font-semibold leading-[0.95] tracking-tight text-ink sm:text-[8rem]">
-        {t.rich("closing.title", { accent: (c) => <span className="font-normal italic text-brand">{c}</span> })}
+        <Headline>{t.rich("closing.title", { accent: (c) => <span className="font-normal italic text-brand">{c}</span> })}</Headline>
       </h2>
       <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
         <LinkButton href="/passport" size="lg">{t("closing.create")}</LinkButton>

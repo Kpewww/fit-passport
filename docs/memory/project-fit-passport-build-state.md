@@ -1231,3 +1231,18 @@ ranking).
 measurement lines.** Free text on a listing page is never read (other sellers' measurements are
 on the same page).
 
+**SESSION 81 (2026-09-30).** 701 → **729 tests**.
+- **Chinese display headlines are drawn without punctuation** by `components/Headline.tsx`
+  (founder's request): end-of-line ，。、；：？！… hidden, inside a line a 0.5 em gap with
+  clauses kept whole, 「穿」 → 穿 in the accent colour. The copy keeps its punctuation;
+  screen readers still get it. zh hero 8rem from sm, `min(4.5rem, (100vw−2rem)/4.6)` below.
+- **`SignalsDeck`** (the old ConvergingStack) is back on the homepage, deck from `lg`, grid
+  below; icons instead of numbers; backdrop centred with framer `y`.
+- **Passport cover:** 合身卡 / Fit Card (was 国际合身身份 / International Sizing Identity).
+- Chrome Web Store: US$5 once per account; blockers are the manifest `key`, the localhost
+  host permission, and a missing privacy page (`todo/people/05`).
+
+**NEW INVARIANT:**
+**(88)** **Every translated serif headline goes through `Headline`** (`headline.test.tsx` scans
+`app/`). Punctuation in Chinese display type is a drawing decision, never removed from the
+strings.

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Field, inputClass, LinkButton } from "@/components/ui";
 import { useT } from "@/i18n/client";
+import { Headline } from "@/components/Headline";
 
 type Me = {
   claimed: boolean;
@@ -99,7 +100,7 @@ export default function AccountPage() {
     return (
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
-          <h1 className="font-serif text-h1 text-ink">{t("readyTitle")}</h1>
+          <h1 className="font-serif text-h1 text-ink"><Headline>{t("readyTitle")}</Headline></h1>
           <p className="mt-2 text-ink-soft">{t.rich("readyLede", { b: (c) => <strong>{c}</strong> })}</p>
 
           <Card className="mt-6">
@@ -151,7 +152,7 @@ export default function AccountPage() {
     return (
       <main className="flex-1">
         <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
-          <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
+          <h1 className="font-serif text-h1 text-ink"><Headline>{t("title")}</Headline></h1>
           <Card className="mt-6 space-y-3">
             <Row label={t("username")} value={me.username ?? "—"} />
             <Row label={t("accountCode")} value={me.accountCode ?? "—"} mono />
@@ -190,7 +191,7 @@ export default function AccountPage() {
           <Link href="/passport" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> {t("editPassport")}</Link>
           <Link href="/closet" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> {t("editCloset")}</Link>
         </div>
-        <h1 className="font-serif text-h1 text-ink">{t("claimTitle")}</h1>
+        <h1 className="font-serif text-h1 text-ink"><Headline>{t("claimTitle")}</Headline></h1>
         <p className="mt-2 text-ink-soft">{t.rich("claimLede", { b: (c) => <strong>{c}</strong> })}</p>
 
         <Card className="mt-6">

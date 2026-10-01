@@ -127,6 +127,17 @@ export const en = {
         line: "Struck-metal badges for a curated closet and admired looks.",
       },
     },
+    signals: {
+      eyebrow: "Three signals, one answer",
+      title: "Everything you know<br/><accent>about your fit.</accent>",
+      backdrop: "ONE FIT",
+      footnote: "Three signals converge into a single recommendation — with its reasoning attached.",
+      cards: {
+        body: { title: "Measurements", line: "Your body, once — kept private." },
+        closet: { title: "Known-good items", line: "The clothes that already fit you." },
+        brand: { title: "Brand behaviour", line: "How each label runs on you." },
+      },
+    },
     parallax: {
       eyebrow: "Consumer-owned",
       title: "You keep the profile.<br/>It works at every store.",
@@ -426,7 +437,7 @@ export const en = {
     startingTitle: "Starting from nothing?",
     startingBody: "There's a guided version of this — three questions, one at a time, and every measurement optional. Or fill in whatever you know below; the two write to the same passport.",
     takeMe: "Take me through it",
-    coverSub: "International Sizing Identity",
+    coverSub: "Fit Card",
     holder: "Holder",
     passportNo: "Passport no.",
     regionOfIssue: "Region of issue",

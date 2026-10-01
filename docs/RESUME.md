@@ -182,6 +182,10 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
   随后淘宝风控对自动化浏览器隐藏详情(「访问异常提示」)并跳登录页。插件 **0.5.1** 识别这两种页面，
   直接说明情况，不再给猜测的结论。
 
+- **Session 81**:中文大标题不画标点(`components/Headline.tsx`,文案本身保留标点);首页恢复
+  滚动卡片动画(`SignalsDeck`,lg 起);护照封面改为「合身卡 / Fit Card」。Chrome 商店上架:一次性
+  US$5,需创始人注册;上架前要做的见 `todo/people/05-chrome-web-store.md`。
+
 **下一步:见 `todo/`(做什么)与 `docs/memory/project-fit-passport-next-steps.md`
 底部(为什么)。** 客户访谈**已由创始人推迟**;插件**已不再受访谈证据门槛限制**
 (Session 73 创始人拍板)。

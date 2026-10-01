@@ -27,6 +27,7 @@ import { ArrowLeft, Check } from "@/components/Icon";
 import { useT } from "@/i18n/client";
 import { useGarmentText } from "@/i18n/garment";
 import type { DirectionKey } from "@/lib/engineText";
+import { Headline } from "@/components/Headline";
 
 type Item = {
   id: string;
@@ -188,7 +189,7 @@ function RefreshInner() {
           <div className="mb-4 flex items-center justify-between text-sm">
             <Link href="/closet" className="text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> {t("closet")}</Link>
           </div>
-          <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
+          <h1 className="font-serif text-h1 text-ink"><Headline>{t("title")}</Headline></h1>
           <p className="mt-1 text-sm text-ink-soft">{t("lede")}</p>
 
           {collections === null ? (

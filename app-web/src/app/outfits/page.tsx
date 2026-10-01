@@ -15,6 +15,7 @@ import { garmentLabel } from "@/lib/garments";
 import { GarmentIcon } from "@/components/GarmentIcon";
 import { useT } from "@/i18n/client";
 import { useGarmentText } from "@/i18n/garment";
+import { Headline } from "@/components/Headline";
 
 type Item = { brand: string; category: string; color: string; size: string; onlineAvailable: boolean };
 type Outfit = OutfitView;
@@ -131,7 +132,7 @@ export default function OutfitsPage() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
+            <h1 className="font-serif text-h1 text-ink"><Headline>{t("title")}</Headline></h1>
             <p className="mt-1 text-ink-soft">{t("lede")}</p>
           </div>
           <Link href="/community" className="whitespace-nowrap text-sm text-ink-faint hover:text-ink">{t("feed")} <ArrowRight size={14} className="-mt-px inline" /></Link>

@@ -123,6 +123,17 @@ export const zh: Messages = {
         line: "用金属质感徽章，记录精心经营的衣橱与令人心动的搭配。",
       },
     },
+    signals: {
+      eyebrow: "三份依据 · 一个答案",
+      title: "你的合身，<br/><accent>尽在一处。</accent>",
+      backdrop: "合身如一",
+      footnote: "三份依据汇成一个尺码推荐，并附上理由。",
+      cards: {
+        body: { title: "身形数据", line: "只填一次，只属于你。" },
+        closet: { title: "合身衣物", line: "那些已经合身的衣服。" },
+        brand: { title: "品牌尺码差异", line: "每个品牌在你身上偏大还是偏小。" },
+      },
+    },
     parallax: {
       eyebrow: "真正属于你",
       title: "身份归你，<br/>走到哪里都合身。",
@@ -417,7 +428,7 @@ export const zh: Messages = {
     startingTitle: "第一次填写？",
     startingBody: "跟随引导，逐一回答三个问题，身形数据均可选填。也可以直接在下方填写你已知的信息，两种方式都会保存到同一份合身护照。",
     takeMe: "开始引导填写",
-    coverSub: "国际合身身份",
+    coverSub: "合身卡",
     holder: "持有人",
     passportNo: "护照编号",
     regionOfIssue: "签发地区",

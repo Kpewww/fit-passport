@@ -31,6 +31,92 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-09-30 · Session 81 — Headlines without punctuation in Chinese, the deck back on the homepage, the Fit Card
+
+The founder sent two screenshots of the Chinese homepage, "「穿」越时空，/ 合身随行。"
+and "开启你的 / 合身护照。", and called the layout ugly. They asked for four things:
+- drop the commas, full stops and the like from the big headlines;
+- bring back the scroll-driven card animation the homepage used to have;
+- say what it costs to put the extension on Google's store, and whether we can now;
+- rename the passport cover's "国际合身身份" to **合身卡 = Fit Card**.
+
+**What was ugly.** At 96–128 px a full-width ，or 。 is an empty em-square:
+- it pushed both centred lines left, the 。 visibly;
+- the 「」 around 穿 opened two more holes in a seven-glyph line.
+
+Drawn without them, the lines are four glyphs each — 穿越时空 / 合身随行, 开启你的 /
+合身护照 — and sit square.
+
+**How.** `components/Headline.tsx` draws a headline's Chinese form:
+- punctuation at a line's end is not drawn;
+- punctuation inside a line becomes a 0.5 em gap, and each clause wraps as a whole
+  (选多大 才合身);
+- 「穿」 becomes 穿 in the accent colour, so the pun is still marked.
+
+It is typography, not copy:
+- the strings keep their punctuation, like every other string;
+- the punctuation stays in the page, visually hidden, for screen readers;
+- English is unchanged.
+
+Where it applies:
+- all six homepage section titles, every page's h1 (`PageHeader` and 16 direct
+  sites) and `/check`'s display title;
+- not card titles or body text;
+- not user-written titles (a post's title, a username).
+
+`headline.test.tsx` checks the drawn form, and fails if any translated serif headline
+skips `Headline`; that was seen fail with one unwrapped.
+
+The Chinese hero, now four glyphs a line, matches the closing headline: 128 px from
+`sm` up, and 72 px on a 390 px phone (the old rule shrank it to 48 px to fit seven
+glyphs).
+
+**The deck.** It is the "Three signals" section (`ConvergingStack`), cut on 2026-09-28
+as a repeat of How it works step 2 — the founder's decision then, reversed now. It is
+restored as `SignalsDeck` between "What you get" and the parallax statement, with
+three changes:
+- **icons, not 01/02/03** — the signals are not a sequence;
+- **the deck from `lg` up only.** Opened, it is about 1,000 px wide; the old version
+  clipped its outer cards between 640 and 1,000 px. Below `lg` the cards sit in a
+  plain grid;
+- **the backdrop word is centred by framer** (`y: "-50%"`). The old Tailwind
+  translate had been silently overwritten by framer's own transform.
+
+New Chinese copy, in the voice of `chinese-copy.md`:
+- 三份依据 · 一个答案 / 你的合身，尽在一处 / 身形数据 · 合身衣物 · 品牌尺码差异;
+- backdrop 合身如一.
+
+Cost: one `useScroll`, with three cards and one word each on their own layer. Lenis,
+the amplifier that made the old page heavy, stays removed.
+
+**Fit Card.** `passport.coverSub`: "International Sizing Identity" / "国际合身身份" →
+**"Fit Card" / "合身卡"**. The glossary row is added.
+
+**Chrome Web Store.** A **one-time US$5** registration fee per developer account,
+not per extension. Google's page says "a one-time registration fee" without the
+figure; 9to5Google gives US$5. Registering and paying need the founder's own Google
+account. Our side is not ready to upload, for three reasons:
+- the manifest carries `key`, which the store refuses;
+- it still holds a `localhost` host permission;
+- there is no privacy policy page.
+
+All of it is in `todo/people/05-chrome-web-store.md`.
+
+**Verified**
+- Screenshots on a local production build:
+  - zh at 1440 / 390 / 360: hero 128 / 72 / 71 px, no horizontal overflow;
+  - the deck gathered at progress 0.3 and open at 0.5;
+  - `/check` reads 选多大 才合身;
+  - the passport cover reads 合身卡;
+  - en unchanged.
+- `mobile-audit`: 26 of 26 without horizontal scroll.
+- 729 tests passed + 1 skipped, exit 0; typecheck clean.
+- One false start: the first screenshots came from a stale server still holding the
+  port after its wrapper was stopped (hero at 32 px, punctuation drawn). The process
+  was killed and the shots were retaken.
+
+---
+
 ## 2026-09-30 · Session 80f — Taobao and Tmall on real items, and a popup that says when the page is not the product
 
 Founder's request (part 8): check reading, size info, Re-scan and the new save flow on

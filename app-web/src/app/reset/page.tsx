@@ -7,6 +7,7 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button, Card, Field, inputClass } from "@/components/ui";
 import { useT } from "@/i18n/client";
+import { Headline } from "@/components/Headline";
 
 function ResetInner() {
   const t = useT("auth");
@@ -43,7 +44,7 @@ function ResetInner() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
-        <h1 className="font-serif text-h1 text-ink">{t("resetTitle")}</h1>
+        <h1 className="font-serif text-h1 text-ink"><Headline>{t("resetTitle")}</Headline></h1>
         {invalidLink ? (
           <p className="mt-2 text-sm text-bad">
             {t.rich("resetMissing", { link: (c) => <Link href="/recover" className="text-brand hover:underline">{c}</Link> })}

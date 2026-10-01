@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button, Card, Field, inputClass } from "@/components/ui";
 import { ArrowRight } from "@/components/Icon";
 import { useT } from "@/i18n/client";
+import { Headline } from "@/components/Headline";
 
 export default function LoginPage() {
   const t = useT("auth");
@@ -38,7 +39,7 @@ export default function LoginPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
-        <h1 className="font-serif text-h1 text-ink">{t("loginTitle")}</h1>
+        <h1 className="font-serif text-h1 text-ink"><Headline>{t("loginTitle")}</Headline></h1>
         <p className="mt-2 text-ink-soft">{t("loginLede")}</p>
         <Card className="mt-6">
           <form onSubmit={submit} className="space-y-4">

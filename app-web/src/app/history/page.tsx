@@ -7,6 +7,7 @@ import { FitDirectionInput } from "@/components/FitDirectionInput";
 import { nearestOption } from "@/lib/fitDirection";
 import { useT } from "@/i18n/client";
 import type { DirectionKey } from "@/lib/engineText";
+import { Headline } from "@/components/Headline";
 
 type Outcome = {
   id: string;
@@ -80,7 +81,7 @@ export default function HistoryPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
-        <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
+        <h1 className="font-serif text-h1 text-ink"><Headline>{t("title")}</Headline></h1>
         <p className="mt-2 text-ink-soft">{t("lede")}</p>
 
         {noProducts ? (

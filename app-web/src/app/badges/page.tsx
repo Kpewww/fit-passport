@@ -11,6 +11,7 @@ import { BadgeSeal } from "@/components/Badges";
 import { badgesByTrack, METAL_STYLE, type EarnedBadge } from "@/lib/badges";
 import { useT } from "@/i18n/client";
 import { useBadgeWords } from "@/i18n/badges";
+import { Headline } from "@/components/Headline";
 
 type StatusResp = {
   badges: EarnedBadge[];
@@ -64,7 +65,7 @@ export default function BadgesPage() {
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
+            <h1 className="font-serif text-h1 text-ink"><Headline>{t("title")}</Headline></h1>
             <p className="mt-1 text-ink-soft">{t("lede")}</p>
           </div>
           <Link href="/passport" className="text-sm text-ink-faint hover:text-brand"><ArrowLeft size={14} className="-mt-px inline" /> {t("passport")}</Link>

@@ -15,6 +15,7 @@ import Link from "next/link";
 import { Card, EmptyState, LinkButton } from "@/components/ui";
 import { ArrowRight } from "@/components/Icon";
 import { useT } from "@/i18n/client";
+import { Headline } from "@/components/Headline";
 
 type Item = {
   kind: "POST" | "ANSWER" | "OUTFIT";
@@ -98,7 +99,7 @@ export default function AdminPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-12">
-        <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
+        <h1 className="font-serif text-h1 text-ink"><Headline>{t("title")}</Headline></h1>
         <p className="mt-2 text-ink-soft">
           {t.rich("signedIn", { strong: (c) => <strong className="text-ink">{c}</strong> }, { username: data.admin.username ?? "", threshold: data.threshold })}
         </p>

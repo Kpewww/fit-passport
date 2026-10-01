@@ -784,3 +784,11 @@ the seller's measurements; verify Taobao/Tmall.
   (the vision reader is for charts) — decide whether to try; plus the Session 79 list (10, 11, 09,
   08, 03, 07).
 
+## Session 81 (2026-09-30) — headline typography, the deck, Fit Card, store cost, DONE
+
+Founder's request: drop punctuation from big Chinese headlines; bring back the scroll card
+animation; rename the passport cover to 合身卡 / Fit Card; find out what the Chrome Web Store
+costs and whether we can list now. **Shipped:** the first three (DEVLOG Session 81).
+**Next:** the store listing — founder registers (US$5, once); engineering then builds the
+store package (no `key`, no localhost), a privacy policy page and the listing assets
+(`todo/people/05-chrome-web-store.md`).

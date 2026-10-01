@@ -29,6 +29,7 @@ it here in the same commit.
 |---|---|---|
 | Fit Passport | Fit Passport | **The brand is never translated** (founder's decision, Session 79) |
 | passport (the user's profile) | 合身护照 | nav tab: 护照 |
+| fit card (the passport's cover) | 合身卡 | Fit Card; was 国际合身身份 / International Sizing Identity until 2026-09-30 |
 | fit identity | 合身身份 | what the passport holds; "身份归你" |
 | closet | 衣橱 | "我的衣橱" for the user's own |
 | check (a size) | 尺码 / 尺码查询 | nav tab: 尺码; the action is 查看推荐 |
@@ -62,6 +63,14 @@ it here in the same commit.
   Quotation: “” for a UI label, a page's own words or a button name
   (点击“查看推荐”); 「」 only where the revision uses it as a device (「穿」越时空).
 - The ellipsis is six dots, ……, including in placeholders.
+- **Display headlines are drawn without punctuation** (founder, 2026-09-30): at
+  60–128 px a full-width ，or 。 reads as a hole and pushes a centred line off
+  centre. Write the string with its punctuation as usual — `components/Headline.tsx`
+  drops it where a headline is drawn (homepage section titles, page h1s): none at a
+  line's end, a gap inside a line, and 「穿」 drawn as 穿 in the accent colour. The
+  punctuation stays in the page for screen readers. `headline.test.tsx` requires
+  every translated serif headline to go through it. Card titles and body text keep
+  their punctuation.
 - **No emoji, no arrow glyphs** — the same guard tests as the English (invariants
   67 and 69) scan the messages and the lib text files.
 - Fonts: the reader's own system fonts (PingFang SC, Microsoft YaHei; headings Songti

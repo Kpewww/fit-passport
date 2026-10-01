@@ -11,6 +11,7 @@ import { Logo } from "@/components/Logo";
 import { ArrowLeft, ArrowRight } from "@/components/Icon";
 import { useT } from "@/i18n/client";
 import { useBadgeWords } from "@/i18n/badges";
+import { Headline } from "@/components/Headline";
 
 // Earn conditions come straight from each badge's own `blurb` in badges.ts —
 // a single source of truth, so this table can never drift from the real rules.
@@ -21,7 +22,7 @@ export default function HelpPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
-        <h1 className="font-serif text-h1 text-ink">{t("title")}</h1>
+        <h1 className="font-serif text-h1 text-ink"><Headline>{t("title")}</Headline></h1>
         <p className="mt-2 text-ink-soft">{t("lede")}</p>
 
         {/* Core concepts */}

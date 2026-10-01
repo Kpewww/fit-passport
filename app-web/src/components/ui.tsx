@@ -10,6 +10,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRight, Plus, Star } from "@/components/Icon";
+import { Headline } from "@/components/Headline";
 
 // ---------- Button ----------
 
@@ -171,7 +172,7 @@ export function PageHeader({
     <header className={`flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between ${className}`}>
       <div className="min-w-0">
         {eyebrow && <p className="eyebrow text-ink-faint">{eyebrow}</p>}
-        <h1 className={`font-serif text-h1 text-ink ${eyebrow ? "mt-3" : ""}`}>{title}</h1>
+        <h1 className={`font-serif text-h1 text-ink ${eyebrow ? "mt-3" : ""}`}><Headline>{title}</Headline></h1>
         {lede && <p className="mt-3 max-w-xl text-ink-soft">{lede}</p>}
       </div>
       {action && <div className="flex-shrink-0">{action}</div>}

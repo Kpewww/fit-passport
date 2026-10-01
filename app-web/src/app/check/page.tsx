@@ -24,6 +24,7 @@ import { DEMO_PRODUCTS } from "@/lib/demoProducts";
 import { isResaleHost } from "@/lib/sellerMeasurements";
 import type { Judgement } from "@/lib/listingJudgement";
 import { useGarmentText } from "@/i18n/garment";
+import { Headline } from "@/components/Headline";
 
 // three.js only loads if someone opens the 3D view. Boundaried because a failed
 // chunk silently blanks its subtree rather than throwing.
@@ -270,7 +271,7 @@ function CheckInner() {
         {/* Centered hero — mirrors the homepage composition. */}
         <div className="text-center">
           <p className="eyebrow text-ink-faint">{t("eyebrow")}</p>
-          <h1 className="mx-auto mt-4 max-w-3xl font-serif text-display text-ink [text-wrap:balance]">{t("title")}</h1>
+          <h1 className="mx-auto mt-4 max-w-3xl font-serif text-display text-ink [text-wrap:balance]"><Headline>{t("title")}</Headline></h1>
           <p className="mx-auto mt-5 max-w-lg text-ink-soft">{t("lede")}</p>
           {/* Said once, plainly: many large retailers refuse our servers (measured,
               Sessions 70–75d), so a link that fails here is usually not the

@@ -78,12 +78,16 @@ body {
 :lang(zh) .nav-tab {
   letter-spacing: 0.08em;
 }
-/* The homepage hero is two lines in Chinese on every screen (copy spec 01.9 §8):
-   「穿」越时空， is seven full-width glyphs, which at the phone size (60px) is
-   wider than a 390px screen. Below the sm breakpoint the size follows the width. */
-@media (max-width: 639px) {
+/* The homepage hero is two lines in Chinese on every screen (copy spec 01.9 §8).
+   Drawn without punctuation (Headline.tsx) it is four glyphs a line — 穿越时空 /
+   合身随行 — so it can be as large as the closing headline: 8rem from sm up, and
+   on a phone as large as four glyphs and a little air allow. */
+:lang(zh) .hero-title {
+  font-size: min(4.5rem, calc((100vw - 2rem) / 4.6));
+}
+@media (min-width: 640px) {
   :lang(zh) .hero-title {
-    font-size: min(3.75rem, calc((100vw - 2rem) / 7.4));
+    font-size: 8rem;
   }
 }
 

@@ -27,6 +27,7 @@ import {
 } from "@/lib/onboardingFlow";
 import { useT } from "@/i18n/client";
 import { useGarmentText } from "@/i18n/garment";
+import { Headline } from "@/components/Headline";
 
 type Profile = {
   sex: "male" | "female" | "unspecified" | null;
@@ -108,7 +109,7 @@ export default function OnboardingPage() {
         <p className="text-xs uppercase tracking-[0.18em] text-ink-faint">
           {t("stepOf", { n: stepIndex + 1, total: ONBOARDING_STEPS.length })}
         </p>
-        <h1 className="mt-2 font-serif text-h1 text-ink">{t(`title.${step}`)}</h1>
+        <h1 className="mt-2 font-serif text-h1 text-ink"><Headline>{t(`title.${step}`)}</Headline></h1>
 
         {status === "saved" ? (
           <Card className="mt-8">
