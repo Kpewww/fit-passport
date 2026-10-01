@@ -66,3 +66,14 @@ What the original plan said:
 - The store refuses a manifest with `key`: reported by developers, e.g.
   [testomatio/browser-extension#391](https://github.com/testomatio/browser-extension/issues/391).
 - Upload, listing and privacy tabs: [Publish in the Chrome Web Store](https://developer.chrome.com/docs/webstore/publish).
+
+## Progress (2026-09-30)
+
+- Registered; the 0.6.0 store package is uploaded as a **draft**. Store item ID:
+  `ciecejomnniicliemefagfegkmgfkfe` (the listing will be
+  `https://chromewebstore.google.com/detail/ciecejomnniicliemefagfegkmgfkfe`).
+  The unpacked/zip build keeps its own ID; the server checks neither.
+- Declared **non-trader** for now. Switch to trader when any of these happens:
+  charging users, affiliate commission, ads, or operating as a company.
+- Left: Store listing, Privacy, Distribution and Test instructions tabs
+  (`docs/store/chrome-web-store.md`), then Submit for review.
