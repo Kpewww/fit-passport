@@ -296,7 +296,7 @@
 
   // ---- 3. send, and render whatever the API says ----
 
-  async function send(cap, seller) {
+  async function send(cap, seller, chartImage) {
     show(el("p", { className: "muted", text: t("checking") }));
     var res;
     var body = null;
@@ -308,16 +308,17 @@
         credentials: "include",
         // x-fp-lang: the popup's language, so reasons and refusals come back in it.
         headers: { "content-type": "application/json", "x-fp-client": "extension/" + CFG.version, "x-fp-lang": I18N.lang() },
-        body: JSON.stringify({ url: cap.url, html: cap.html, seller: seller || undefined }),
+        body: JSON.stringify({ url: cap.url, html: cap.html, seller: seller || undefined, chartImage: chartImage || undefined }),
       });
       try { body = await res.json(); } catch (e) { body = null; }
     } catch (e) {
       return message(
         t("unreachableTitle"),
         t(origin().indexOf("localhost") >= 0 ? "unreachableBodyDev" : "unreachableBody", { origin: origin() }),
-        [button(t("tryAgain"), function () { send(cap, seller); }, true)]
+        [button(t("tryAgain"), function () { send(cap, seller, chartImage); }, true)]
       );
     }
+    if (body) { cap.features = body.features || cap.features; cap.seller = seller; }
     if (res.ok && body && body.result) return result(body, cap);
     refusal(res.status, body || {}, cap);
   }
@@ -343,10 +344,15 @@
     }
     if (status === 422) {
       var listingPage = cap && (cap.found.descFrame || cap.found.specs > 0);
-      return message(REFUSAL_TITLES[code] ? t(REFUSAL_TITLES[code]) : t("cantSize"), body.message, [
-        code === "no-measurements-listing" || (code === "no-chart-on-page" && listingPage)
-          ? button(t("enterMeasurements"), function () { measureForm(cap, null); }, true) : null,
-        code === "no-chart-on-page" ? button(t("rescan"), start, !listingPage) : null,
+      var noChart = code === "no-measurements-listing" || code === "no-chart-on-page";
+      var pick = noChart ? pickButton(cap, true) : null;
+      return message(REFUSAL_TITLES[code] ? t(REFUSAL_TITLES[code]) : t("cantSize"),
+        [body.message, pickNote(body.source)].filter(Boolean).join(" "), [
+        pick,
+        // A shop with no chart at all (a vintage football shirt shop, say) can
+        // still have the seller's measurements on the page, or answer an email.
+        noChart ? button(t("enterMeasurements"), function () { measureForm(cap, null); }, !pick && (listingPage || code === "no-measurements-listing")) : null,
+        code === "no-chart-on-page" ? button(t("rescan"), start, !pick && !listingPage) : null,
       ].filter(Boolean));
     }
     message(
@@ -367,6 +373,7 @@
         table: "readerTable",
         "llm-text": "readerLlmText",
         "llm-vision": "readerLlmVision",
+        "picked-picture": "readerPicked",
         "hao-xing": "readerHaoXing",
       }[source.extractedBy] || "readerPage");
       parts.push(t("kindAndReader", { kind: kind, reader: reader }));
@@ -419,8 +426,10 @@
       el("div", { className: "card" }, [
         head,
         notes.length ? el("p", { className: "note", text: notes.join(" ") }) : null,
+        pickNote(data.source) ? el("p", { className: "note", text: pickNote(data.source) }) : null,
         el("p", { className: "source", text: provenance(data.source, data.product && data.product.brand) }),
       ]),
+      data.source && data.source.sizesFrom === "estimated" && pickButton(cap, false) ? el("div", { className: "actions" }, [pickButton(cap, false)]) : null,
       el("div", { className: "actions" }, [
         button(t("openFull"), function () {
           openTab(origin() + "/check?product=" + encodeURIComponent(data.product.id));
@@ -461,14 +470,55 @@
         (j.reasons || []).length ? el("ul", { className: "reasons" }, j.reasons.map(function (line) { return el("li", { text: line }); })) : null,
         (j.notes || []).length ? el("p", { className: "note", text: j.notes.join(" ") }) : null,
         (j.ambiguous || []).length ? el("p", { className: "note", text: t("ambiguousLine", { raw: j.ambiguous.map(function (a) { return a.raw; }).join("；") }) }) : null,
+        pickNote(data.source) ? el("p", { className: "note", text: pickNote(data.source) }) : null,
         el("p", { className: "source", text: provenance(data.source, data.product && data.product.brand) }),
       ]),
       nexts.length ? el("div", { className: "actions" }, nexts) : null,
+      pickButton(cap, false) ? el("div", { className: "actions" }, [pickButton(cap, !nexts.length && !known)]) : null,
       el("div", { className: "actions" }, [
         button(t("openFull"), function () { openTab(origin() + "/check?product=" + encodeURIComponent(data.product.id)); }, !nexts.length),
         cap ? button(t("saveToBuy"), function () { saveForm(cap, data, function () { result(data, cap); }); }) : null,
         cap ? button(t("enterMeasurements"), function () { measureForm(cap, j); }) : null,
       ])
+    );
+  }
+
+  // ---- the size chart is a picture (Session 83) ----
+  //
+  // Some listings print the chart only as a photo (eBay's fifth picture, a Taobao
+  // description's tenth). Nothing says which, so the shopper picks it here. Only
+  // the picked picture's address is sent; the server reads it once for everyone.
+  // Offered only when the server says it can read pictures, and the page has some.
+
+  function pickButton(cap, primary) {
+    var pics = cap && cap.found && cap.found.pictures;
+    if (!pics || !pics.length || !(cap.features && cap.features.chartImage)) return null;
+    return button(t("pickChart"), function () { pickChart(cap); }, primary);
+  }
+
+  var PICK_NOTES = {
+    "not-a-chart": "pickNotChart", unavailable: "pickUnavailable", failed: "pickFailed",
+    "bad-address": "pickFailed", "page-has-table": "pickPageTable",
+  };
+  function pickNote(source) {
+    var key = source && PICK_NOTES[source.chartImage];
+    return key ? t(key) : null;
+  }
+
+  function pickChart(cap) {
+    var pics = cap.found.pictures;
+    show(
+      el("p", { className: "title", text: t("pickTitle") }),
+      el("p", { className: "muted", text: t("pickIntro") }),
+      el("div", { className: "picks" }, pics.map(function (p) {
+        var b = el("button", { type: "button", className: "pick" + (p.chart ? " likely" : ""), title: p.chart ? t("pickLikely") : "" }, [
+          el("img", { src: p.thumb, alt: "", loading: "lazy", referrerPolicy: "no-referrer" }),
+        ]);
+        b.addEventListener("click", function () { send(cap, cap.seller, p.url); });
+        return b;
+      })),
+      el("p", { className: "small", text: t("pickPrivacy") }),
+      el("div", { className: "actions" }, [button(t("back"), function () { start(); })])
     );
   }
 

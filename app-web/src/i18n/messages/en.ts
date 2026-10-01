@@ -330,6 +330,7 @@ export const en = {
       sizesRead: "Sizes read from the page",
       sizesAiText: "Sizes read by AI from the page's text",
       sizesAiImage: "Sizes read by AI from a chart image",
+      sizesPicked: "Sizes read by AI from the picture you picked as the size chart",
       brandBody: "Body measurements — the chest each size is cut to fit, as the brand states them.",
       brandGarment: "The garment's flat measurements, as the brand states them.",
       checkGuide: "Check the brand’s size guide",
@@ -377,6 +378,7 @@ export const en = {
       whereBrand: "the brand's size guide",
       readerText: " (read by AI from its text)",
       readerImage: " (read by AI from a chart image)",
+      readerPicked: " (read by AI from the picture you picked)",
       body: "Body measurements from {where}{reader}",
       garment: "Garment measurements from {where}{reader}",
       unknown: "Measurements from {where}{reader} — it didn't say body or flat",
@@ -1160,7 +1162,7 @@ export const en = {
     extension: {
       title: "The browser extension",
       click: "It reads a page only when you click it, and only the tab you are looking at.",
-      reduced: "It sends a reduced copy of the product page — title, product data, size charts and size options — and nothing from forms, the cart, your account, reviews or the rest of the page. You can see exactly what will be sent before anything is.",
+      reduced: "It sends a reduced copy of the product page — title, product data, size charts and size options — and nothing from forms, the cart, your account, reviews or the rest of the page. You can see exactly what will be sent before anything is. If you tell it which picture on the page is the size chart, it also sends that one picture's address — nothing else about the page's pictures.",
       ebay: "With your permission, asked once on a click, it also reads measurement lines from an eBay seller's description.",
       session: "It sends your Fit Passport session with the request, so the answer can use your profile, and saves a product to your to-buy list only when you press Save.",
       local: "It keeps your language choice in the extension's own storage.",
@@ -1169,7 +1171,7 @@ export const en = {
       title: "Who else sees it",
       private: "Your passport is private. Others see your profile only if you list yourself in the community or share your account code — and then only what that page shows.",
       never: "We do not sell data, show ads, or share your profile with retailers.",
-      services: "Services that run the site: Vercel (hosting), Neon (database), Upstash (rate limiting, which counts requests by IP address for a few minutes) and Resend (password-reset email). When a page has no size chart we can read, its text — never your measurements — may be sent to Anthropic's API to read the chart.",
+      services: "Services that run the site: Vercel (hosting), Neon (database), Upstash (rate limiting, which counts requests by IP address for a few minutes) and Resend (password-reset email). When a page has no size chart we can read, its text — never your measurements — may be sent to Anthropic's API to read the chart, and so may a picture you picked as the size chart; what is read from a picture is kept, the picture is not.",
     },
     choices: {
       title: "Your choices",

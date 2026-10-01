@@ -39,7 +39,7 @@
 (function (root) {
   "use strict";
 
-  var VERSION = "0.6.0";
+  var VERSION = "0.7.0";
 
   // The server refuses supplied markup over 1,000,000 characters. A capture this
   // big means something went wrong, and the popup says so instead of sending it.
@@ -57,6 +57,10 @@
   // description that is all pictures (Taobao/Tmall 图文详情).
   var LARGE_IMAGE_PX = 700;
   var PICTURE_DESCRIPTION_MIN = 3;
+  // Pictures the shopper may pick as the size chart (Session 83). Listed for the
+  // popup only; nothing is sent unless one is picked, and then only its address.
+  var MAX_PICKABLE = 30;
+  var PICKABLE_MIN_PX = 120;
 
   // ---- Must equal the server parser. Checked by extensionCapture.test.ts. ----
 
@@ -79,7 +83,7 @@
   var SIZE_SELECT_RE = /size|尺码|规格/i;
   // pageParse.ts CHART_IMG_TOKENS — what marks an <img> as a size chart.
   var CHART_IMG_TOKENS = [
-    "size-chart", "sizechart", "size_chart", "size-guide", "sizeguide", "size-table",
+    "size-chart", "sizechart", "size_chart", "size chart", "size-guide", "sizeguide", "size guide", "size-table",
     "尺码表", "尺寸表", "尺码", "尺寸", "measurement", "measurements", "规格",
   ];
 
@@ -450,6 +454,47 @@
       if (t.length <= PERSONAL_BOX_CHARS && PERSONAL_RE.test(t)) return true;
     }
     return false;
+  }
+
+  // The largest address a picture offers: the biggest srcset entry, a zoom or
+  // lazy-load address, then what is on screen. Thumbnails on two marketplaces are
+  // asked for at full size, so the reader sees the chart's small print: eBay's
+  // /s-l140. becomes /s-l1600., an alicdn "x.jpg_400x400q90.jpg" becomes "x.jpg".
+  function fullAddress(img) {
+    var best = null, bestW = 0;
+    var srcset = img.getAttribute("srcset") || img.getAttribute("data-srcset") || "";
+    srcset.split(",").forEach(function (part) {
+      var bits = part.trim().split(/\s+/);
+      var w = parseInt((bits[1] || "").replace(/[^0-9]/g, ""), 10) || 1;
+      if (bits[0] && w >= bestW) { best = bits[0]; bestW = w; }
+    });
+    var url = best || img.getAttribute("data-zoom-src") || img.getAttribute("data-src") ||
+      img.getAttribute("data-original") || img.currentSrc || img.getAttribute("src") || "";
+    try { url = new URL(url, img.ownerDocument && img.ownerDocument.baseURI || undefined).toString(); } catch (e) { return null; }
+    if (!/^https:/i.test(url)) return null;
+    url = url.replace(/(ebayimg\.com\/.*\/s-l)\d+(\.\w+)/i, "$11600$2");
+    url = url.replace(/(alicdn\.com\/.*?\.(?:jpe?g|png|webp))_[^/]*$/i, "$1");
+    return url;
+  }
+
+  function pickablePictures(imgs) {
+    var seen = {}, chartLike = [], others = [];
+    for (var i = 0; i < imgs.length; i++) {
+      var img = imgs[i];
+      var w = img.naturalWidth || Number(img.getAttribute("width")) || 0;
+      var h = img.naturalHeight || Number(img.getAttribute("height")) || 0;
+      if (w < PICKABLE_MIN_PX || h < PICKABLE_MIN_PX * 0.6) continue;
+      if (underNeverRead(img) || inPersonalBox(img)) continue;
+      var url = fullAddress(img);
+      if (!url || /\.svg(\?|$)/i.test(url) || seen[url]) continue;
+      seen[url] = 1;
+      var shown = img.currentSrc || img.getAttribute("src") || url;
+      var hay = ["src", "alt", "title", "class", "id"].map(function (a) { return img.getAttribute(a) || ""; }).join(" ").toLowerCase();
+      var entry = { url: url, thumb: /^https:/i.test(shown) ? shown : url,
+        chart: CHART_IMG_TOKENS.some(function (tok) { return hay.indexOf(tok) >= 0; }) };
+      (entry.chart ? chartLike : others).push(entry);
+    }
+    return chartLike.concat(others).slice(0, MAX_PICKABLE);
   }
 
   function insideTable(el) {
@@ -877,6 +922,9 @@
         sizeRows: biggest,
         sizeOptions: stats.optionsKept + stats.swatchValuesKept,
         chartImages: stats.chartImagesKept,
+        // For the popup's "the chart is a picture" picker only; never sent unless
+        // the shopper picks one, and then only that address.
+        pictures: pickablePictures(imgs),
         // For the popup's "Save to buy" form only; never sent on their own.
         sizes: popupSizes.slice(0, MAX_SWATCH_VALUES),
         selectedSize: selectedSize,

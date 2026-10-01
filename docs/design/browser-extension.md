@@ -231,3 +231,32 @@ drops what is ambiguous (a bare "Chest 22", "29x20") for the user to confirm, an
 answers with a **judgement** (`listingJudgement.ts`) on the engine's own target and
 verdict scale. Our server is refused by eBay (an "Error Page"), so on the website a
 listing is judged from measurements the user types.
+
+## 10. A size chart that is only a picture (Session 83)
+
+Some listings print their chart only as a photo — an eBay listing's fifth picture,
+a Taobao description's tenth — with nothing on the page saying which. Sending every
+picture to a vision model costs money and sends pictures that are not the chart, so
+**the shopper picks it**:
+
+- The capture lists the page's sizeable pictures (`pickablePictures`: at least
+  120 px, https, not in the header, a form or a shopper's profile box; chart-named
+  ones first; at most 30), asking two marketplaces' thumbnails for full size (eBay
+  `/s-l140.` to `/s-l1600.`, alicdn `_400x400q90.jpg` stripped). The list stays in
+  the popup; **no picture address leaves the browser unless one is picked**.
+- After an answer with no measurements, the popup offers **The size chart is a
+  picture** — only when the server says it can read pictures (`features.chartImage`,
+  true when `ANTHROPIC_API_KEY` is set) and the page has pictures.
+- `/api/check` takes `chartImage` (the address only). `chartImage.ts` reads it once
+  for everyone: the numbers are cached by address in `ChartImageRead`, and so is
+  "not a chart"; a failed read is not cached. A table on the page still wins. The
+  model also copies the chart's own heading word for word, so the existing
+  page-wording rules decide body or garment — not the model.
+- 20 picks per user per hour (working value). Provenance says "read by AI from the
+  picture you picked" (`extractedBy: "picked-picture"`).
+- We keep the numbers read from a picture, never the picture (no scraped imagery).
+
+Checked end to end in a headed browser with a cached read (no key locally): no chart
+on the page, M at 50% from the closet; picked the picture; S at 61% from the
+picture's garment measurements. **Not yet checked: a real vision read** — that needs
+the key in production (todo/people/06).

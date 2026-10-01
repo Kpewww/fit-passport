@@ -1259,3 +1259,17 @@ strings.
 **NEW INVARIANT:**
 **(89)** **The store package is the download minus `key`, the dev server and `captureTool` —
 nothing else** (`extensionZip.test.ts` compares every other file byte for byte).
+
+**SESSION 83 (2026-10-01).** 731 → **744 tests**. Extension **0.7.0**. A size chart that is
+only a picture: the capture lists pickable pictures (sent only when picked), `/api/check`
+takes `chartImage`, `chartImage.ts` caches each read by address in `ChartImageRead` (also
+"not a chart"; failures not cached), `features.chartImage` gates the popup button (true iff
+`ANTHROPIC_API_KEY`). `sizeDirection` (fitEngine) words the alternative by which way it lies.
+Local dev has no key: test the flow by seeding a `ChartImageRead` row and running dev with a
+placeholder key — a cache hit never calls the model. Test pages must sit under a
+host-permitted origin (the popup cannot be clicked in automation, so activeTab is never
+granted), and the popup's server must be set via localStorage `fp-origin`.
+
+**NEW INVARIANT:**
+**(90)** **A picture's address leaves the browser only when the shopper picks it, and we keep
+the numbers read from it, never the picture.** A table on the page outranks any picture.

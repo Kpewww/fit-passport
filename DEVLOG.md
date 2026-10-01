@@ -31,6 +31,62 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-01 · Session 83 — A size chart that is only a picture: the shopper points at it
+
+Asked by the founder after an eBay listing (UltraClub dress shirt) whose size chart is
+its fifth photo, and a classmate's question about shops like Classic Football Shirts
+that publish no chart at all.
+
+**Why the eBay listing got no chart.** Two separate gaps. The capture only kept
+pictures whose address or alt text named a chart, and its tokens had no "size chart"
+with a space (nor "size guide") — now added on both sides, drift-tested. And a
+one-off listing returned from `listingFrom` on its printed size ("Med") before any
+picture could be read. Production also has no `ANTHROPIC_API_KEY`, per the deployment
+memory (not re-checked in Vercel), so the existing image reader never runs there.
+eBay refuses our automated browser, so how that listing labels its photos is
+unverified.
+
+**The picker (extension 0.7.0).** The capture lists the page's sizeable pictures for
+the popup — full-size addresses for eBay and alicdn thumbnails, never from the header,
+a form or a shopper's profile box — and sends none of them. After an answer with no
+measurements, a "no chart" refusal or a listing judgement, the popup offers **The size
+chart is a picture** when the server reports `features.chartImage`. The shopper taps
+the chart; only its address goes to `/api/check` (`chartImage`).
+
+**Read once for everyone.** `chartImage.ts` caches each picture's numbers by address in
+a new `ChartImageRead` table (migration `20261001120000_chart_image_reads`), and caches
+"not a chart" too; a failed read is not cached. A table on the page still wins. The
+model copies the chart's printed heading, and the existing page-wording rules decide
+body or garment from it. 20 picks per user per hour (working value). Provenance:
+"read by AI from the picture you picked".
+
+**Other shops without a chart.** The "no chart" refusal now always offers **Enter the
+seller's measurements** (it was listing pages only), so a shop that states pit to pit
+somewhere, or answers an email, can still be judged.
+
+**Found on the way: the alternative line could point the wrong way.** "Alternative: L
+is close — consider it if you prefer a snugger fit" chose its words from the shopper's
+fit preference, not from whether the runner-up is bigger or smaller. A property test
+sweeping chest 84–120 cm across three preferences failed first (XS offered as "extra
+room"); `sizeDirection` now decides by the alpha ladder, then the sizes' own girths,
+then numeric labels, and says only "is close" when none can tell. Both languages.
+
+**Checked.** In a headed browser with the 0.7.0 extension and a cached read (no key
+locally): no chart on the page, M at 50% from the closet; picked the picture; S at
+61% from its garment measurements, provenance naming the picked picture — in Chinese
+and English. **Not checked: a real vision read** (needs the key; todo/people/06). The
+privacy page says a picked picture may be read by Anthropic's API; the store listing
+is unchanged until the feature works in production.
+
+Also considered: Jev (TypeSafe AI) accepts text only ("No image, audio, or video
+input", docs.typesafe.ai/models), so it cannot read a chart picture; and searching the
+web for a brand's chart found only a different UltraClub style, which would be an
+invented chart for this one — not used.
+
+744 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-09-30 · Session 82b — The privacy contact address
 
 The founder created a project address for privacy questions and the store listing:

@@ -22,6 +22,7 @@
 import {
   alphaDistance,
   alphaIndex,
+  alphaShift,
   easeChestCm,
   easeAdjustForCategory,
   normalizeToAlpha,
@@ -71,6 +72,28 @@ export type SizeOptionInput = {
   bodyWaistMinCm?: number | null;
   bodyWaistMaxCm?: number | null;
 };
+
+/**
+ * Which way `to` lies from `from`: by the alpha ladder (S < M < L), else by the
+ * sizes' own chest or waist numbers, else by numeric labels (32 < 34). Null when
+ * none of these can tell — the alternative line then names the size and nothing more.
+ */
+export function sizeDirection(from: string, to: string, sizes: SizeOptionInput[]): "bigger" | "smaller" | null {
+  const sign = (d: number | null | undefined) => (d == null || d === 0 || Number.isNaN(d) ? null : d > 0 ? "bigger" : "smaller");
+  const byAlpha = sign(alphaShift(normalizeToAlpha(from), normalizeToAlpha(to)));
+  if (byAlpha) return byAlpha;
+  const a = sizes.find((s) => s.label === from);
+  const b = sizes.find((s) => s.label === to);
+  const girth = (s?: SizeOptionInput) =>
+    s?.chestCm ?? (s?.bodyChestMinCm != null && s?.bodyChestMaxCm != null ? (s.bodyChestMinCm + s.bodyChestMaxCm) / 2 : null) ?? s?.waistCm ?? null;
+  const ga = girth(a), gb = girth(b);
+  if (ga != null && gb != null) {
+    const byGirth = sign(gb - ga);
+    if (byGirth) return byGirth;
+  }
+  const na = Number(from.replace(/^[A-Z]{2}\s*/i, "")), nb = Number(to.replace(/^[A-Z]{2}\s*/i, ""));
+  return sign(nb - na);
+}
 
 export type KnownGoodInput = {
   brand: string;
@@ -1052,7 +1075,7 @@ export function recommend(
   // rung "close" implies the first was ahead of it, and it wasn't.
   const alternative =
     !undetermined && !edgeNote && ranked[1] && ranked[1].score > best.score - TIE.alternativeWithin
-      ? M.alternative(ranked[1].label, profile.preferredFit)
+      ? M.alternative(ranked[1].label, sizeDirection(best.label, ranked[1].label, input.sizes))
       : null;
   const explanation = undetermined
     // The UI's own heading already states that the sizes tied. This says the one

@@ -402,6 +402,42 @@ describe("what the popup is told it found", () => {
 
 // The capture carries its own copies of a few server rules (no build step, so it
 // cannot import them). These fail the moment the two drift apart.
+describe("pictures the shopper may pick as the chart (Session 83)", () => {
+  type Pic = { url: string; thumb: string; chart: boolean };
+  const pics = (html: string) => (capture(html).found as unknown as { pictures: Pic[] }).pictures;
+  const PAGE = (imgs: string) => `<html><head><title>Shirt | eBay</title></head><body><h1>Shirt</h1>
+    <header><img src="https://shop.test/logo-header.png" width="300" height="200"></header>
+    <main>${imgs}</main>
+    <form><img src="https://shop.test/in-form.png" width="300" height="200"></form></body></html>`;
+
+  it("lists the page's sizeable pictures, full size, chart-named first — and sends none of them", () => {
+    const html = PAGE(`
+      <img src="https://i.ebayimg.com/images/g/AAA/s-l140.jpg" width="140" height="140">
+      <img src="https://i.ebayimg.com/images/g/BBB/s-l140.jpg" alt="size chart" width="140" height="140">
+      <img src="https://img.alicdn.com/imgextra/x/O1.jpg_400x400q90.jpg" width="400" height="400">
+      <img src="https://shop.test/icon.png" width="24" height="24">
+      <img src="https://shop.test/vector.svg" width="300" height="300">
+      <img src="http://shop.test/plain-http.jpg" width="300" height="300">`);
+    const list = pics(html);
+    expect(list.map((p) => p.url)).toEqual([
+      "https://i.ebayimg.com/images/g/BBB/s-l1600.jpg",
+      "https://i.ebayimg.com/images/g/AAA/s-l1600.jpg",
+      "https://img.alicdn.com/imgextra/x/O1.jpg",
+    ]);
+    expect(list[0].chart).toBe(true);
+    expect(list[0].thumb).toBe("https://i.ebayimg.com/images/g/BBB/s-l140.jpg");
+    // Not in the payload: picking is the only way an address leaves the browser.
+    expect(capture(html).html).not.toContain("AAA");
+  });
+
+  it("takes the biggest srcset entry, and never a picture in the header, a form or a shopper's profile box", () => {
+    const html = PAGE(`
+      <section><div><div><img src="https://shop.test/p-small.jpg" srcset="https://shop.test/p-400.jpg 400w, https://shop.test/p-1200.jpg 1200w" width="400" height="400"></div></div></section>
+      <div><span>我的档案</span><img src="https://shop.test/me.jpg" width="300" height="300"></div>`);
+    expect(pics(html).map((p) => p.url)).toEqual(["https://shop.test/p-1200.jpg"]);
+  });
+});
+
 describe("drift — the capture agrees with the server parser", () => {
   it("looks for the same body/garment sentences", () => {
     expect(fpCapture.KIND_BODY.map(String)).toEqual(KIND_PATTERNS.body.map(String));

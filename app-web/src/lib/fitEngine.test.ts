@@ -151,6 +151,24 @@ describe("undetermined — when nothing tells the sizes apart", () => {
     expect(out.explanation).not.toMatch(/Alternative:/);
   });
 
+  it("words the alternative by which way it lies — a bigger size is roomier, never snugger", () => {
+    // Session 83: the line used to pick "a snugger fit" from the shopper's
+    // preference, so a regular-fit shopper offered L beside M was told L is snugger.
+    const ORDER = ["XS", "S", "M", "L", "XL", "XXL"];
+    let seen = 0;
+    for (const pref of ["slim", "regular", "relaxed"] as const) {
+      for (let chest = 84; chest <= 120; chest += 0.5) {
+        const out = recommend(baseInput({ profile: { chestCm: chest, preferredFit: pref } }));
+        if (!out.alternative || !out.ranked[1]) continue;
+        seen++;
+        const step = ORDER.indexOf(out.ranked[1].label) - ORDER.indexOf(out.best.label);
+        if (step > 0) expect(out.alternative).not.toMatch(/snugger/);
+        if (step < 0) expect(out.alternative).not.toMatch(/extra room/);
+      }
+    }
+    expect(seen).toBeGreaterThan(5); // the sweep did meet the line
+  });
+
   it("clears as soon as ONE real signal arrives — a body measurement", () => {
     const out = recommend(baseInput({ profile: { chestCm: 100, preferredFit: "regular" } }));
     expect(out.undetermined).toBe(false);

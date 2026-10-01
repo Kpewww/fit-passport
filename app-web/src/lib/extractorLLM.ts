@@ -30,6 +30,7 @@ import {
 } from "./pageParse";
 import { normalizeToAlpha } from "./sizing";
 import { domainForCategory } from "./sizeSystems";
+import { readChartImage, type ChartImageStore } from "./chartImage";
 import { isResaleHost, readSeller, typedMeasurements, withTyped, type TypedMeasurement } from "./sellerMeasurements";
 
 // Garment categories worn on the torso, where a Chinese 号型 code's 型 girth is the
@@ -134,6 +135,15 @@ const VisionExtractSchema = z.object({
   sizes: LLMExtractSchema.shape.sizes,
 });
 type VisionExtract = z.infer<typeof VisionExtractSchema>;
+// A picked chart also returns its own heading, word for word (Session 83).
+// An empty `sizes` is a real answer here ("this picture is not a chart"), and a
+// trouser chart's waist is kept.
+const PickedChartSchema = z.object({
+  header: z.string().nullable().optional(),
+  sizes: z.array(
+    LLMExtractSchema.shape.sizes.element.extend({ waistCm: z.number().positive().optional().nullable() }),
+  ),
+});
 
 /** Ask Claude to extract structured product data from the page's rendered text. */
 async function callLLM(url: string, pageText: string): Promise<LLMExtract | null> {
@@ -431,6 +441,80 @@ async function callVisionLLM(imageUrls: string[]): Promise<VisionExtract | null>
   return null;
 }
 
+/**
+ * Read ONE picture the shopper pointed at as the size chart (Session 83).
+ *
+ * Unlike `callVisionLLM`, nothing here guesses which picture is the chart — the
+ * person looking at the page said so. Also asked for: the chart's own heading and
+ * notes, word for word ("Body measurements", "平铺测量"), so the existing rules that
+ * read a page's wording decide body-or-garment, rather than the model.
+ *
+ * Returns the sizes read; "not-a-chart" when the model saw no size chart; null when
+ * the read failed (no key, the picture would not load, a malformed answer) — a
+ * failure is NOT remembered, a "not a chart" is.
+ */
+export async function visionReadPicked(
+  imageUrl: string,
+): Promise<{ sizes: ExtractedSize[]; header: string | null } | "not-a-chart" | null> {
+  const key = process.env.ANTHROPIC_API_KEY;
+  if (!key) return null;
+  const img = await fetchImageBase64(imageUrl);
+  if (!img) return null;
+  const system =
+    "You read apparel SIZE CHARTS from an image for a fit engine. Extract ONLY the " +
+    "numbers printed in the chart; never recommend a size. Respond with a SINGLE " +
+    "JSON object and nothing else. Convert all measurements to CENTIMETRES (values " +
+    "near 30-50 for a chest are inches: multiply by 2.54). A chest given as a range " +
+    "(\"38-40\") goes in bodyChestMinCm/bodyChestMaxCm. Chinese headers: 胸围=chest, " +
+    "腰围=waist, 肩宽=shoulder, 袖长=sleeve, 衣长=length. Copy the chart's own title " +
+    "and notes word for word into `header` (null if none). If the image is not a " +
+    "size chart, return {\"sizes\": [], \"header\": null}.";
+  const schemaHint =
+    "Schema: {header: string|null, sizes:[{label, region?, chestCm?, waistCm?, " +
+    "shoulderCm?, sleeveCm?, lengthCm?, bodyChestMinCm?, bodyChestMaxCm?}]}";
+  const controller = new AbortController();
+  const t = setTimeout(() => controller.abort(), PAGE_FETCH_TIMEOUT_MS * 2);
+  try {
+    const r = await fetch(LLM_ENDPOINT, {
+      method: "POST",
+      signal: controller.signal,
+      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+      body: JSON.stringify({
+        model: LLM_MODEL,
+        max_tokens: 1500,
+        temperature: 0,
+        system,
+        messages: [
+          {
+            role: "user",
+            content: [
+              { type: "image", source: { type: "base64", media_type: img.mediaType, data: img.data } },
+              { type: "text", text: `Read this size chart. ${schemaHint}` },
+            ],
+          },
+        ],
+      }),
+    });
+    if (!r.ok) return null;
+    const j = (await r.json()) as { content?: Array<{ type: string; text?: string }> };
+    const text = (j.content ?? []).find((c) => c.type === "text")?.text ?? "";
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    const parsed = PickedChartSchema.safeParse(JSON.parse(match[0]));
+    if (!parsed.success) return null;
+    if (parsed.data.sizes.length < 2) return "not-a-chart";
+    const sizes = parsed.data.sizes.map((row, i) => ({ ...mapLlmSizes([row])[0], waistCm: row.waistCm ?? undefined, label: row.label || String(i + 1) }));
+    return { sizes, header: parsed.data.header?.slice(0, 400) ?? null };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+/** The model that reads a picked chart — recorded beside each cached read. */
+export const VISION_MODEL = LLM_MODEL;
+
 function mapLlmSizes(sizes: LLMExtract["sizes"]): ExtractedSize[] {
   return sizes.map((s) => ({
     label: s.label,
@@ -603,6 +687,14 @@ export async function extractSmart(
      * say. Typed numbers win over anything read. Session 80.
      */
     seller?: SellerInput;
+    /**
+     * A picture the shopper picked as the size chart, by address (Session 83).
+     * Read once for everyone through `chartImage.ts`'s cache; a table on the
+     * page still wins over it.
+     */
+    chartImage?: string;
+    /** The cache behind `chartImage`; the database unless a test supplies one. */
+    chartStore?: ChartImageStore;
   } = {},
 ): Promise<ExtractedProduct> {
   const deterministic = extractFromUrl(url);
@@ -692,7 +784,29 @@ export async function extractSmart(
       out.source.measurementKind = parsed.measurementKind;
       out.source.measurementKindFrom = parsed.measurementKindFrom;
     }
+    // A picked picture is not needed when the page has a table; say so.
+    if (opts.chartImage) out.source.chartImage = "page-has-table";
     return out; // real chart in hand — no need to spend an LLM call
+  }
+
+  // 2a. The shopper pointed at a picture as the size chart. Ahead of the one-off
+  // listing path, which would otherwise answer from the printed size alone.
+  if (opts.chartImage && !opts.noModel) {
+    const store = opts.chartStore ?? (await import("./chartImageStore")).prismaChartImageStore;
+    const picked = await readChartImage(opts.chartImage, {
+      store,
+      vision: visionReadPicked,
+      model: VISION_MODEL,
+      hasKey: !!process.env.ANTHROPIC_API_KEY,
+    });
+    out.source.chartImage = picked.status;
+    if (picked.sizes.length >= 2) {
+      creditPage(out, "picked-picture");
+      // The chart's own printed heading goes first, so its wording ("body
+      // measurements", "平铺") decides what the numbers measure.
+      applyKind(out, picked.sizes, `${picked.header ?? ""}\n${html}`, brandChart?.kind);
+      return out;
+    }
   }
 
   // 2b. A one-off listing (eBay …): no chart, but the seller's own tape measure,

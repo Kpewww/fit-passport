@@ -576,6 +576,20 @@ model SavedItem {
   @@index([userId])
 }
 
+/// A size-chart picture the vision reader has read, once for everyone (Session 83).
+/// Keyed by the picture's address: the same listing's chart is paid for once, and a
+/// picture that turned out not to be a chart is remembered too (`sizesJson` "[]").
+/// Holds the numbers read off the picture, never the picture itself.
+model ChartImageRead {
+  id        String   @id @default(cuid())
+  imageKey  String   @unique // sha256 of the normalised address
+  imageUrl  String
+  sizesJson String // ExtractedSize[] as read; "[]" when it was not a chart
+  header    String? // the chart's own heading and notes, as printed
+  model     String
+  createdAt DateTime @default(now())
+}
+
 /// One row per available size on the product page. Measurements optional
 /// because many retailers only expose alpha labels.
 model SizeOption {

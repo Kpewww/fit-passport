@@ -89,7 +89,7 @@ type Source = {
   /** "extension" = the page came from the user's own browser, not our fetch. */
   fetch?: "ok" | "blocked" | "unreachable" | "skipped" | "extension";
   /** Which reader produced page sizes — a table, or a model reading text/images. */
-  extractedBy?: "table" | "llm-text" | "llm-vision" | "hao-xing" | "seller-title" | "seller-specs" | "seller-description" | "seller-typed";
+  extractedBy?: "table" | "llm-text" | "llm-vision" | "picked-picture" | "hao-xing" | "seller-title" | "seller-specs" | "seller-description" | "seller-typed";
 };
 
 type Body = {
@@ -919,6 +919,7 @@ function SourceRow({ product, source }: { product: Product; source: Source }) {
   const reader =
     source.extractedBy === "llm-text" ? t("source.sizesAiText")
       : source.extractedBy === "llm-vision" ? t("source.sizesAiImage")
+      : source.extractedBy === "picked-picture" ? t("source.sizesPicked")
       : null;
   const host = source.host || t("source.thePage");
   return (
@@ -1036,6 +1037,7 @@ function measurementLabel(
   const reader =
     extractedBy === "llm-text" ? t("measure.readerText")
       : extractedBy === "llm-vision" ? t("measure.readerImage")
+      : extractedBy === "picked-picture" ? t("measure.readerPicked")
       : "";
   if (kind === "body") return t("measure.body", { where, reader });
   if (kind === "garment") return t("measure.garment", { where, reader });

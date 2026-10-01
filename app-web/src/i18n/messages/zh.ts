@@ -323,6 +323,7 @@ export const zh: Messages = {
       sizesRead: "尺码读取自商品页面",
       sizesAiText: "AI 从页面文字中读取的尺码",
       sizesAiImage: "AI 从尺码表图片中读取的尺码",
+      sizesPicked: "AI 从你选的尺码表图片中读取的尺码",
       brandBody: "身形尺寸：品牌标明的各尺码适用胸围。",
       brandGarment: "衣物平铺尺寸：以品牌标注为准。",
       checkGuide: "查看品牌尺码指南",
@@ -370,6 +371,7 @@ export const zh: Messages = {
       whereBrand: "品牌尺码指南",
       readerText: "（由 AI 读取文字）",
       readerImage: "（由 AI 读取尺码表图片）",
+      readerPicked: "（由 AI 读取你选的图片）",
       body: "身形尺寸，来源：{where}{reader}",
       garment: "衣物尺寸，来源：{where}{reader}",
       unknown: "尺寸来源：{where}{reader}，未注明身形或平铺尺寸",
@@ -1151,7 +1153,7 @@ export const zh: Messages = {
     extension: {
       title: "浏览器插件",
       click: "只在你点击时读取页面，而且只读取你正在看的那个标签页。",
-      reduced: "它发送的是商品页的精简副本：标题、商品信息、尺码表和尺码选项；不包含表单、购物车、账户、评价或页面其他部分。发送之前，你可以看到将要发送的全部内容。",
+      reduced: "它发送的是商品页的精简副本：标题、商品信息、尺码表和尺码选项；不包含表单、购物车、账户、评价或页面其他部分。发送之前，你可以看到将要发送的全部内容。如果你指出页面上哪张图片是尺码表，它还会发送这一张图片的地址，页面上其他图片的信息一概不发。",
       ebay: "经你许可（点击时询问一次）后，它还会读取 eBay 卖家描述中的尺寸行。",
       session: "它会随请求带上你的 Fit Passport 登录状态，以便结合你的合身护照给出推荐；只有你点击保存时，才会把商品加入待购。",
       local: "你选择的语言保存在插件自己的存储中。",
@@ -1160,7 +1162,7 @@ export const zh: Messages = {
       title: "谁能看到",
       private: "你的合身护照默认私密。只有当你加入社区名录或分享账户代码时，别人才能看到你的主页，而且只能看到该页面展示的内容。",
       never: "我们不出售数据、不投放广告，也不会把你的合身护照提供给商家。",
-      services: "为网站提供服务的公司：Vercel（托管）、Neon（数据库）、Upstash（限流，会按 IP 地址统计几分钟内的请求次数）和 Resend（发送重置密码邮件）。当页面没有可读的尺码表时，页面文字可能会发送给 Anthropic 的 API 来读取尺码表，但绝不包括你的身形数据。",
+      services: "为网站提供服务的公司：Vercel（托管）、Neon（数据库）、Upstash（限流，会按 IP 地址统计几分钟内的请求次数）和 Resend（发送重置密码邮件）。当页面没有可读的尺码表时，页面文字可能会发送给 Anthropic 的 API 来读取尺码表，但绝不包括你的身形数据；你选为尺码表的那张图片也可能发给它读取。我们保存从图片里读出的数字，不保存图片本身。",
     },
     choices: {
       title: "你的选择",

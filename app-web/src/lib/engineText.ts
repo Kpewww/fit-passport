@@ -49,7 +49,8 @@ export interface EngineText {
   closetScattered: string;
   largestSize(pref: FitPreference): string;
   smallestSize(pref: FitPreference): string;
-  alternative(label: string, pref: FitPreference): string;
+  /** The runner-up, worded by which way it lies from the pick; null when unknown. */
+  alternative(label: string, direction: "bigger" | "smaller" | null): string;
   undeterminedHelp: string;
   limitedData: string;
   crossDomain(closet: SizeDomain[], product: SizeDomain): string;
@@ -155,8 +156,10 @@ export const EN_TEXT: EngineText = {
     "some run loose — so we're less sure which you want here.",
   largestSize: (pref) => `This is the largest size offered — for ${art(pref)} ${pref} fit you're at the top of the range.`,
   smallestSize: (pref) => `This is the smallest size offered — for ${art(pref)} ${pref} fit you're at the bottom of the range.`,
-  alternative: (label, pref) =>
-    `Alternative: ${label} is close — consider it if you prefer ${pref === "slim" ? "extra room" : "a snugger fit"}.`,
+  alternative: (label, direction) =>
+    direction == null
+      ? `Alternative: ${label} is close.`
+      : `Alternative: ${label} is close — consider it if you prefer ${direction === "bigger" ? "extra room" : "a snugger fit"}.`,
   undeterminedHelp:
     "Add your chest measurement, or one garment of this type that fits you well — " +
     "either one turns this into a real answer.",
@@ -292,8 +295,10 @@ export const ZH_TEXT: EngineText = {
   closetScattered: "衣橱里的穿着评价存在差异：有些偏紧，有些偏松，因此这次还难以确定你想要的松紧程度。",
   largestSize: (pref) => `这是商品提供的最大尺码。按${ZH_PREF[pref]}版型选择，已到可选范围的上限。`,
   smallestSize: (pref) => `这是商品提供的最小尺码。按${ZH_PREF[pref]}版型选择，已到可选范围的下限。`,
-  alternative: (label, pref) =>
-    `备选：${label} 也较接近。若你希望${pref === "slim" ? "更宽松一些" : "更贴身一些"}，可以考虑。`,
+  alternative: (label, direction) =>
+    direction == null
+      ? `备选：${label} 也较接近。`
+      : `备选：${label} 也较接近。若你希望${direction === "bigger" ? "更宽松一些" : "更贴身一些"}，可以考虑。`,
   undeterminedHelp: "补充胸围，或添加一件同类型且合身的衣物，即可让这次推荐有据可依。",
   limitedData: "商品信息有限，当前推荐依据你的衣橱和版型偏好。",
   crossDomain: (closet, product) =>

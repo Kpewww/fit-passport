@@ -152,7 +152,14 @@ export type ExtractedProduct = {
      * four very different levels of trust that the UI and the evaluation both
      * need to tell apart.
      */
-    extractedBy?: "table" | "llm-text" | "llm-vision" | "hao-xing" | "seller-title" | "seller-specs" | "seller-description" | "seller-typed";
+    extractedBy?: "table" | "llm-text" | "llm-vision" | "picked-picture" | "hao-xing" | "seller-title" | "seller-specs" | "seller-description" | "seller-typed";
+    /**
+     * What happened to a picture the shopper picked as the size chart (Session 83,
+     * chartImage.ts): read now, read before (cached), not a chart, the reader is
+     * off (no key), the read failed, or the address was refused. Absent when no
+     * picture was picked.
+     */
+    chartImage?: "read" | "cached" | "not-a-chart" | "unavailable" | "failed" | "bad-address" | "page-has-table";
     /**
      * A one-off listing (Session 80): one garment, one size, from one seller —
      * eBay and the like. Its answer is a judgement ("likely fits", "may be

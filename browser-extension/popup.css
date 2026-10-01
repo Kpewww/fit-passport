@@ -149,3 +149,10 @@ pre {
 .verdict.may-be-tight, .verdict.may-be-loose { color: var(--warn, #8a5a12); }
 .verdict.too-small, .verdict.too-big { color: var(--bad, #9b2c2c); }
 .verdict.unknown { color: var(--ink); font-size: 16px; }
+
+/* The chart picker (Session 83): the page's pictures, one tap to pick. */
+.picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; margin: 8px 0; max-height: 300px; overflow-y: auto; }
+.pick { padding: 0; border: 1px solid var(--line, #ddd); border-radius: 8px; background: #fff; aspect-ratio: 1; overflow: hidden; cursor: pointer; min-width: 0; }
+.pick img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.pick.likely { border: 2px solid var(--brand, #2f4fd8); }
+.pick:hover, .pick:focus-visible { outline: 2px solid var(--ink, #111); outline-offset: 1px; }

@@ -27,6 +27,7 @@ import { normalizeUrl } from "@/lib/normalizeUrl";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, readSession } from "@/lib/session";
 import { extractSmart } from "@/lib/extractorLLM";
+import { MAX_IMAGE_URL } from "@/lib/chartImage";
 import { computeRecommendation } from "@/lib/recommendService";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import {
@@ -109,7 +110,17 @@ const Body = z.object({
       category: z.enum(["top", "bottom"]).optional(),
     })
     .optional(),
+  // A picture the shopper picked as the size chart (Session 83): its address only.
+  // chartImage.ts refuses anything but https.
+  chartImage: z.string().max(MAX_IMAGE_URL).optional(),
 });
+
+// A picked picture can cost one vision call. Most picks are cache hits, but the
+// limit bounds the bill for the ones that are not. WORKING VALUES, like the ones above.
+const PICKS_PER_USER = { limit: 20, windowMs: 60 * 60_000 };
+
+// Whether a picked picture can be read at all — the popup offers picking only then.
+const features = () => ({ chartImage: !!process.env.ANTHROPIC_API_KEY });
 
 export async function POST(req: Request) {
   // The language the answer is written in — the extension's own switch first
@@ -137,16 +148,21 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { url, html, seller } = parsed.data;
+  const { url, html, seller, chartImage } = parsed.data;
 
-  const extracted = await extractSmart(url, { html, seller });
+  if (chartImage) {
+    const picks = await rateLimit(`chart-pick:${user.id}`, PICKS_PER_USER.limit, PICKS_PER_USER.windowMs);
+    if (!picks.ok) return tooMany(picks.retryAfterSec, req);
+  }
+
+  const extracted = await extractSmart(url, { html, seller, chartImage });
 
   // Not clothing, a page we never saw, a category we cannot measure anyone
   // against, or an invented ladder on a page the browser handed us: say so, and
   // write no Product row. See checkPolicy.ts for each rule and the case behind it.
   const refusal = refusalFor(extracted, M);
   if (refusal) {
-    return NextResponse.json({ ...refusal, source: extracted.source }, { status: 422 });
+    return NextResponse.json({ ...refusal, source: extracted.source, features: features() }, { status: 422 });
   }
 
   // Persist product + sizes.
@@ -210,5 +226,6 @@ export async function POST(req: Request) {
     effectiveFit,
     body,
     recommendationId: rec.id,
+    features: features(),
   });
 }

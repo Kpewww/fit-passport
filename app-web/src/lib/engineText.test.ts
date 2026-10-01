@@ -39,7 +39,7 @@ const ARGS: Args = {
   closetScattered: null,
   largestSize: ["relaxed"],
   smallestSize: ["slim"],
-  alternative: ["L", "regular"],
+  alternative: ["L", "bigger"],
   undeterminedHelp: null,
   limitedData: null,
   crossDomain: [["bottom", "shoe"], "top"],

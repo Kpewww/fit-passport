@@ -13,8 +13,11 @@ chart images it can identify. The unsolved part is **which picture**: a listing
 has 20–60 of them, and sending all of them costs money and sends images that are
 not the product's chart.
 
-Options to evaluate, none started:
-- let the shopper pick the chart picture in the popup (one click, exact);
-- a cheap on-device filter (aspect ratio, a grid of lines) before any vision call.
+**Session 83: the shopper picks it** (extension 0.7.0, browser-extension.md §10).
+One click, exact, one vision call per picture for everyone (cached). What is left:
 
-Needs a real Taobao listing without a 尺码信息 table to design against.
+- the picker lists at most 30 pictures; a long Taobao description may hold the
+  chart beyond that — check on a real listing without a 尺码信息 table;
+- a cheap on-device filter (aspect ratio, a grid of lines) could put the likely
+  chart first; only worth it if shoppers struggle to find it;
+- nothing works until the key is set in production (todo/people/06).

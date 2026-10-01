@@ -900,7 +900,7 @@ export function parseChineseSizeCode(label: string): ChineseSizeCode | null {
 // Tokens that mark an <img> as (probably) the size chart, EN + CN. Ordered by
 // strength so the most chart-specific candidates rank first.
 export const CHART_IMG_TOKENS = [
-  "size-chart", "sizechart", "size_chart", "size-guide", "sizeguide", "size-table",
+  "size-chart", "sizechart", "size_chart", "size chart", "size-guide", "sizeguide", "size guide", "size-table",
   "尺码表", "尺寸表", "尺码", "尺寸", "measurement", "measurements", "规格",
 ];
 

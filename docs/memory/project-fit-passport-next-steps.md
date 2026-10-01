@@ -799,3 +799,11 @@ store package (no `key`, no localhost), a privacy policy page and the listing as
 and images; README in both languages. **Next — founder only:** register (US$5, from the account to
 keep), publish a contact address (`CONTACT_EMAIL`), decide trader / non-trader, upload
 `store-build/…-store.zip` and paste `docs/store/chrome-web-store.md`.
+
+## Session 83 (2026-10-01) — size chart only as a picture: the shopper picks it, DONE
+
+**Shipped:** the picker (extension 0.7.0), the read-once cache, "enter the seller's
+measurements" on every no-chart refusal, and the alternative line's direction fix.
+**Next — founder only:** set `ANTHROPIC_API_KEY` in Vercel with a spend limit
+(`todo/people/06`); until then the picker never shows in production. Then add it to the
+store listing. Jev (TypeSafe AI) was considered and rejected for this: text only.

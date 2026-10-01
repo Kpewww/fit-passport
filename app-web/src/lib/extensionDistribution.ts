@@ -22,9 +22,9 @@ export type ExtensionDistribution =
 
 export const EXTENSION_DISTRIBUTION: ExtensionDistribution = {
   kind: "zip",
-  href: "/downloads/fit-passport-extension-0.6.0.zip",
-  version: "0.6.0",
-  sizeKb: 113,
+  href: "/downloads/fit-passport-extension-0.7.0.zip",
+  version: "0.7.0",
+  sizeKb: 121,
 };
 
 /** The pinned extension ID (from the manifest `key`) — the same for every install. */
