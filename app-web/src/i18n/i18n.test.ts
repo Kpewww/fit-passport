@@ -18,6 +18,7 @@ const ZH = new Map(leaves(zh));
 // Strings that are the same in both languages on purpose: the brand, the
 // language names as their own speakers write them, and codes.
 const SAME_IN_BOTH = new Set([
+  "sizeInput.hint.intimate", // "S–XL" in both: a size range, not words
   "meta.title",
   "common.zhShort",
   "common.enShort",

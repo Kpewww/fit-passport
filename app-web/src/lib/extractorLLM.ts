@@ -38,7 +38,7 @@ import { isResaleHost, readSeller, typedMeasurements, withTyped, type TypedMeasu
 // chest target the engine's range scorer understands. (Bottoms encode waist, which
 // our size model doesn't yet range-score — left for later.)
 const TOP_CATEGORIES = new Set([
-  "tshirt", "shirt", "polo", "sweater", "hoodie", "sweatshirt",
+  "tshirt", "top", "shirt", "polo", "sweater", "hoodie", "sweatshirt",
   "jacket", "coat", "parka", "blazer", "tank", "dress",
 ]);
 
@@ -168,7 +168,7 @@ async function callLLM(url: string, pageText: string): Promise<LLMExtract | null
     "Extract these fields:",
     "- brand (string)",
     "- productName (string)",
-    "- category (string, one of: tshirt, shirt, polo, sweater, hoodie, jacket, pants, jeans, shorts, skirt, shoes, sneakers, boots, socks, hat, belt, scarf, accessory, other)",
+    "- category (string, one of: tshirt, top, shirt, polo, sweater, hoodie, jacket, pants, jeans, shorts, skirt, shoes, sneakers, boots, socks, hat, belt, scarf, accessory, other)",
     "- material (string or null)",
     "- fitNotes (string or null — the page's own qualitative fit description)",
     "- imageUrl (absolute URL of the main product image, or null)",

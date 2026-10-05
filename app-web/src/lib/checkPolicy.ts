@@ -67,7 +67,9 @@ export function refusalFor(extracted: ExtractedProduct, M: EngineText = EN_TEXT)
   if (source.categoryGuessed && source.sizesFrom === "estimated") {
     return {
       error: "not-apparel",
-      message: M.refuseNotApparel,
+      // The extension read the page in the shopper's own tab: "paste a link"
+      // would be advice for a different product (Session 84).
+      message: source.fetch === "extension" ? M.refuseNotApparelPage : M.refuseNotApparel,
     };
   }
 

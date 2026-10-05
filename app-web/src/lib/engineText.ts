@@ -62,6 +62,8 @@ export interface EngineText {
   // ---- refusals (checkPolicy.ts) ----
   refuseUnreadable: string;
   refuseNotApparel: string;
+  /** The same, for a page the browser extension read: there is no link to paste. */
+  refuseNotApparelPage: string;
   refuseUnsupported(domain: SizeDomain): string;
   refuseNoChartExtension: string;
   refuseNoChartServer: string;
@@ -105,6 +107,8 @@ const EN_DIRECTION: Record<DirectionKey, string> = {
 const EN_DOMAIN_ONE: Record<SizeDomain, string> = {
   top: "top",
   bottom: "bottoms",
+  onepiece: "dress or jumpsuit",
+  intimate: "underwear",
   shoe: "footwear",
   sock: "socks",
   accessory: "accessory",
@@ -112,6 +116,8 @@ const EN_DOMAIN_ONE: Record<SizeDomain, string> = {
 const EN_DOMAIN_PLURAL: Record<SizeDomain, string> = {
   top: "tops",
   bottom: "bottoms",
+  onepiece: "dresses and jumpsuits",
+  intimate: "underwear",
   shoe: "footwear",
   sock: "socks",
   accessory: "accessories",
@@ -188,6 +194,8 @@ export const EN_TEXT: EngineText = {
     "Anything we showed you here would be our guess rather than their numbers.",
   refuseNotApparel:
     "We couldn't find a clothing item on that page. Paste a link to a specific garment — a product page for a shirt, jacket, trousers and so on.",
+  refuseNotApparelPage:
+    "We couldn't tell what kind of garment is on this page. If it is clothing, open the page's size chart, then press Re-scan.",
   refuseUnsupported: (domain) =>
     `We don't size ${EN_DOMAIN_PLURAL[domain]} yet. The engine works by comparing your ` +
     `measurements to the garment's, and we don't hold the measurement that would ` +
@@ -256,10 +264,10 @@ const ZH_VERDICT: Record<Verdict, string> = {
   relaxed: "宽松",
   "too big": "过大",
 };
-const ZH_DOMAIN: Record<SizeDomain, string> = { top: "上装", bottom: "下装", shoe: "鞋履", sock: "袜子", accessory: "配饰" };
+const ZH_DOMAIN: Record<SizeDomain, string> = { top: "上装", bottom: "下装", onepiece: "连衣裙和连体装", intimate: "内衣", shoe: "鞋履", sock: "袜子", accessory: "配饰" };
 const ZH_CATEGORY: Record<string, string> = {
-  tshirt: "T 恤", shirt: "衬衫", polo: "Polo 衫", sweater: "毛衣", hoodie: "连帽衫", jacket: "夹克／外套", coat: "大衣",
-  pants: "长裤", jeans: "牛仔裤", shorts: "短裤", skirt: "裙装", dress: "连衣裙",
+  tshirt: "T 恤", top: "上衣", dress: "连衣裙", jumpsuit: "连体裤", swimsuit: "泳衣", underwear: "内衣", shirt: "衬衫", polo: "Polo 衫", sweater: "毛衣", hoodie: "连帽衫", jacket: "夹克／外套", coat: "大衣",
+  pants: "长裤", jeans: "牛仔裤", shorts: "短裤", skirt: "裙装",
 };
 // "你曾将 Uniqlo 的 M…" / "你曾将相似品牌的 M…": whose garment, with the spacing rule.
 const brandText = (brand: string | null) => (brand ? ` ${brand} ` : "相似品牌");
@@ -315,6 +323,7 @@ export const ZH_TEXT: EngineText = {
     `你曾记录 ${n} 件 ${brand} 单品${big ? "偏大" : "偏小"}，因此本次${big ? "下调" : "上调"}一个尺码等级。`,
   refuseUnreadable: "商店未向我们提供可读取的页面，因此没有可用的尺码表。取得商品尺码数据后，才能给出有依据的推荐。",
   refuseNotApparel: "未在此页面找到服装商品。请粘贴某件具体衣物的商品页链接，如衬衫、外套或长裤。",
+  refuseNotApparelPage: "没能从这一页认出衣服的品类。如果这是一件衣服，请先打开页面上的尺码表，再点击“重新扫描”。",
   refuseUnsupported: (domain) =>
     `目前支持上装和下装，暂不支持${ZH_DOMAIN[domain]}。推荐需要将身形数据与商品尺寸对应，而当前缺少这一品类所需的数据，因此无法给出可靠的推荐。`,
   refuseNoChartExtension:

@@ -31,6 +31,53 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-05 · Session 84a — "Not a garment" for a top: the category rules learn tops, one-pieces and underwear
+
+The founder's first checks with the store extension, in their own Chrome: an adidas
+"Satin Polka Dots TT Track Top" and an H&M product page both answered **"This doesn't
+look like a garment"**.
+
+**Why.** `refusalFor` says not-apparel when the category was guessed **and** the sizes
+are estimated. No category rule knew the word *top*. The adidas page names only
+"track top", and H&M 1369399001 is, by a web search, a "Lace-Trimmed Velvet Top" (not
+read off the page itself). Both shops keep the size chart behind a button, so no chart
+was read either, and the two conditions met.
+
+Neither page could be reproduced here: both refuse an automated browser (adidas
+"unable to give you access", H&M "Access Denied"), so the real names stand in for
+the pages in the tests.
+
+**Changed** (server only — the installed 0.6.0 extension benefits on deploy):
+- **New category `top`** (domain top, scored like a T-shirt):
+  - top, tank, cami, camisole, bodysuit, tunic, blouse, singlet, crop / tube / halter
+    top;
+  - Chinese 背心, 吊带, 打底衫, 雪纺衫, 上衣. 背心 left the jacket rule: it is a vest top,
+    not a gilet.
+
+  The bare word *top* is matched last and not before handle, stitched, coat, up
+  (a game top-up page — an existing test caught it), a number, or sellers / picks.
+- **Track tops and suits are jackets.**
+- **One-pieces and underwear are recognised.** dress (not a "dress shirt" or "dress
+  pants"), jumpsuit, overalls, swimsuit, bra, underwear, and the Chinese equivalents.
+  They map to two new size domains, `onepiece` and `intimate`. Neither is scoreable
+  yet, so they get the unsupported-category answer naming what they are, instead of
+  "not a garment". Scoring dresses and jumpsuits on chest, waist and hip is 84b.
+  - 连衣裙 used to map to "dress" with no domain, which fell back to *top* — a dress
+    was scored as a T-shirt. Now it is refused honestly until 84b.
+- **On a page the extension read, "not a garment" no longer says "paste a link".** It
+  says to open the size chart and re-scan (`refuseNotApparelPage`, both languages).
+
+**Verified:** `categoryWords.test.ts` (28: the two real names, false friends like
+"dress shirt", "top coat", "top-stitched jeans" and "top-handle bag", and the refusal
+wording); 772 tests passed + 1 skipped, exit 0; typecheck clean; eval unchanged
+(S5 4 answered / 5 refused, guardrails 8/8).
+
+**Next in this session:** 84b scores one-pieces; 84c lets the TypeSafe Jev model name a
+category the words miss, with Haiku as fallback; 84d has the popup ask the shopper
+when neither knows.
+
+---
+
 ## 2026-10-01 · Session 83c — The store update waits for the review
 
 0.6.0 is in Chrome Web Store review. 0.7.0 goes up as an update after approval rather

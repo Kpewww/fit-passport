@@ -48,6 +48,7 @@ const ARGS: Args = {
   brandRuns: [true, 2, "Uniqlo"],
   refuseUnreadable: null,
   refuseNotApparel: null,
+  refuseNotApparelPage: null,
   refuseUnsupported: ["shoe"],
   refuseNoChartExtension: null,
   refuseNoChartServer: null,

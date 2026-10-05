@@ -9,12 +9,20 @@
 // one-size / cm) can slot in later WITHOUT touching the closet UI or the engine.
 // See the roadmap note in DEVLOG.
 
-export type SizeDomain = "top" | "bottom" | "shoe" | "sock" | "accessory";
+// "onepiece" (dresses, jumpsuits, swimsuits) and "intimate" (bras, underwear) are
+// recognised so a page is told the truth about them (Session 84); whether the
+// engine can score them is SCOREABLE_DOMAINS's question, below.
+export type SizeDomain = "top" | "bottom" | "onepiece" | "intimate" | "shoe" | "sock" | "accessory";
 
 // Map each garment category (the engine's `category` field) to a size domain.
 // Unknown categories fall back to "top" (alpha) so nothing breaks.
 const CATEGORY_DOMAIN: Record<string, SizeDomain> = {
   tshirt: "top",
+  top: "top",
+  dress: "onepiece",
+  jumpsuit: "onepiece",
+  swimsuit: "onepiece",
+  underwear: "intimate",
   shirt: "top",
   sweater: "top",
   jacket: "top",
@@ -59,6 +67,8 @@ export const SCOREABLE_DOMAINS: readonly SizeDomain[] = ["top", "bottom"];
 const DOMAIN_LABEL: Record<SizeDomain, string> = {
   top: "tops",
   bottom: "bottoms",
+  onepiece: "dresses and jumpsuits",
+  intimate: "underwear",
   shoe: "footwear",
   sock: "socks",
   accessory: "accessories",
@@ -76,6 +86,8 @@ export const ALPHA_SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"] as 
 const DOMAIN_PRESETS: Record<SizeDomain, string[]> = {
   top: [...ALPHA_SIZES],
   bottom: ["28", "30", "32", "34", "36", "38", ...ALPHA_SIZES],
+  onepiece: [...ALPHA_SIZES, "0", "2", "4", "6", "8", "10", "12", "14"],
+  intimate: ["XS", "S", "M", "L", "XL"],
   shoe: ["6", "7", "8", "9", "10", "11", "12", "13"],
   sock: ["S", "M", "L", "XL", "One size"],
   accessory: ["XS", "S", "M", "L", "XL", "One size"],
@@ -89,6 +101,8 @@ export function presetSizesFor(category: string): string[] {
 const DOMAIN_HINT: Record<SizeDomain, string> = {
   top: "alpha or EU (e.g. M, EU 48)",
   bottom: "waist or W×L (e.g. 32, 32×32)",
+  onepiece: "alpha or US numeric (e.g. M, 6)",
+  intimate: "S–XL",
   shoe: "US / EU / cm (e.g. 9, EU 42)",
   sock: "S–XL or shoe size",
   accessory: "S–XL or One size",
@@ -116,6 +130,15 @@ const DOMAIN_PATTERNS: Record<SizeDomain, RegExp[]> = {
     /^\d{2} ?[x×] ?\d{2}$/i, // "32x32"
     /^W ?\d{2} ?L ?\d{2}$/i, // "W32 L32"
     /^EU ?\d{2}$/i,
+  ],
+  onepiece: [
+    /^(XXS|XS|S|M|L|XL|XXL|XXXL)$/i,
+    /^\d{1,2}$/, // US 0–16, EU 32–48
+    /^(EU|UK|US) ?\d{1,2}$/i,
+  ],
+  intimate: [
+    /^(XXS|XS|S|M|L|XL|XXL|XXXL)$/i,
+    /^\d{2} ?[A-H]{1,2}$/i, // band + cup, kept so a stored value is not junk
   ],
   shoe: [
     /^\d{1,2}(\.5)?$/, // US/EU numeric, half sizes

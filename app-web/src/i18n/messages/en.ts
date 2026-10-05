@@ -414,7 +414,7 @@ export const en = {
   // (lib/collections.ts). A folder the user renamed is shown as typed.
   garment: {
     cat: {
-      tshirt: "T-shirt", shirt: "Shirt", polo: "Polo", sweater: "Sweater", hoodie: "Hoodie",
+      tshirt: "T-shirt", top: "Top", shirt: "Shirt", polo: "Polo", sweater: "Sweater", hoodie: "Hoodie",
       jacket: "Jacket / Coat", pants: "Pants", jeans: "Jeans", shorts: "Shorts", skirt: "Skirt",
       shoes: "Shoes", sneakers: "Sneakers", boots: "Boots", socks: "Socks", hat: "Hat", belt: "Belt",
       scarf: "Scarf", accessory: "Other accessory", other: "Other",
@@ -844,6 +844,8 @@ export const en = {
     hint: {
       top: "alpha or EU (e.g. M, EU 48)",
       bottom: "waist or W×L (e.g. 32, 32×32)",
+      onepiece: "alpha or US numeric (e.g. M, 6)",
+      intimate: "S–XL",
       shoe: "US / EU / cm (e.g. 9, EU 42)",
       sock: "S–XL or shoe size",
       accessory: "S–XL or One size",

@@ -280,7 +280,21 @@ const BRAND_TABLE: Record<string, BrandProfile> = {
 // was judged on the WAIST as a pair of jeans).
 const TOP_NOUN_AFTER = /\b(shirts?|overshirts?|tees?|t-?shirts?|jackets?|coats?|hood(?:ie|y)s?|sweaters?|sweatshirts?|polos?|blouses?|flannels?|trucker|vests?|cardigans?|tops?)\b/i;
 
+// "Top-handle bag", "top-stitched jeans", "top coat": the word top that is not a top.
+// …and a game "top-up" or a "top 10" (the top-up page was caught by an existing test).
+const NOT_A_TOP_AFTER = /^[\s-]*(handles?|stitch\w*|load\w*|rated|grain|coats?|zip\w*|ups?|sellers?|picks?|\d)\b/i;
+const DRESS_NOT_AFTER = /^[\s-]*(shirts?|pants?|trousers?|shoes?|socks?|boots?|code|watch)\b/i;
+
 const CATEGORY_KEYWORDS: Array<{ cat: string; re: RegExp; unless?: (after: string) => boolean }> = [
+  // One-piece garments and underwear (Session 84). Before everything else:
+  // "jumpsuit" and "bodysuit" end in words later rules know, and a "shirt dress"
+  // is a dress. A "dress shirt" or "dress pants" is not — hence DRESS_NOT_AFTER.
+  // Found on real pages: an H&M "Lace-Trimmed Velvet Top" and an adidas "Track
+  // Top" were refused as "not a garment" because no rule knew the word top.
+  { cat: "swimsuit", re: /\b(swim\s?suits?|swimwear|bathing[\s-]suits?|bikinis?|tankinis?|one[\s-]piece[\s-]swim\w*)\b/i },
+  { cat: "underwear", re: /\b(bras?|bralettes?|lingerie|underwear|briefs|panties|boxer[\s-]?briefs|thongs?)\b/i },
+  { cat: "jumpsuit", re: /\b(jumpsuits?|rompers?|playsuits?|overalls|dungarees|boiler[\s-]?suits?|unitards?)\b/i },
+  { cat: "dress", re: /\b(dress(es)?|gowns?|sundress(es)?|kaftans?)\b/i, unless: (after) => DRESS_NOT_AFTER.test(after) },
   // Bottoms (before tops so "sweatpants" ≠ sweater, "board-shorts" ≠ shirt)
   { cat: "jeans", re: /\b(jeans?|denim)\b/i, unless: (after) => TOP_NOUN_AFTER.test(after) },
   // "short" alone is a real garment name ("Men's 7-inch Running Short"), but NOT
@@ -306,18 +320,22 @@ const CATEGORY_KEYWORDS: Array<{ cat: string; re: RegExp; unless?: (after: strin
   // shirt` was classified "jacket", which adds outerwear ease and pushes the
   // recommendation up a size. Found by a test in Session 78.
   { cat: "shirt", re: /\bbutton[\s-]?(down|up)\b/i },
+  { cat: "jacket", re: /\btrack[\s-]?(tops?|jackets?)\b/i },
   { cat: "jacket", re: /\b(down|puffer|puffy|insulated|parka|anorak|windbreaker|gilet|shell)\b/i },
   { cat: "polo", re: /\bpolo\b/i },
   { cat: "hoodie", re: /\b(hoodie|hoody|hooded|sweatshirt)\b/i },
   { cat: "sweater", re: /\b(sweater|jumper|knit|cardigan|pullover|fleece|turtleneck)\b/i },
-  { cat: "jacket", re: /\b(jacket|coat|trucker|blazer|outerwear|vest)\b/i },
+  { cat: "jacket", re: /\b(jacket|coat|trucker|blazer|outerwear|vest|suits?)\b/i },
   // T-shirt BEFORE shirt, and matching a space as well as a hyphen. The URL text
   // has its separators turned into spaces before matching, so "t-shirt" arrives as
   // "t shirt": the old `t-?shirt` could never match it, and the generic `shirt`
   // rule — which used to come first — caught it instead. Measured:
   // `.../mens-dri-fit-training-t-shirt` classified as "shirt".
   { cat: "tshirt", re: /\b(t[\s-]?shirts?|tees?|crew[\s-]?neck)\b/i },
+  { cat: "top", re: /\b(tanks?|tank[\s-]tops?|camis?|camisoles?|bodysuits?|tunics?|singlets?|blouses?|(crop|tube|halter|bandeau)[\s-]?tops?)\b/i },
   { cat: "shirt", re: /\b(shirts?|overshirts?|oxford|flannel)\b/i },
+  // The bare word, last: a "Velvet Top" names nothing more specific.
+  { cat: "top", re: /\btops?\b/i, unless: (after) => NOT_A_TOP_AFTER.test(after) },
 
   // Chinese garment terms. Needed now that an unrecognised page is REFUSED rather
   // than defaulted to "tshirt" — without these, a Chinese product link would be
@@ -327,6 +345,10 @@ const CATEGORY_KEYWORDS: Array<{ cat: string; re: RegExp; unless?: (after: strin
   // No \b anchors: word boundaries are defined by ASCII word characters, so they
   // never match at a CJK boundary and would silently disable every rule here.
   // Ordered bottoms-before-tops for the same reason as above (裤 before 衣).
+  { cat: "swimsuit", re: /(泳衣|泳装|比基尼)/ },
+  { cat: "underwear", re: /(文胸|内衣|内裤|胸罩)/ },
+  { cat: "jumpsuit", re: /(连体裤|连身裤|背带裤|工装连体)/ },
+  { cat: "dress", re: /(连衣裙|连身裙|旗袍|礼服裙|吊带裙)/ },
   { cat: "jeans", re: /(牛仔裤|丹宁)/ },
   { cat: "shorts", re: /(短裤|沙滩裤)/ },
   { cat: "skirt", re: /(半身裙|短裙|长裙|A字裙)/ },
@@ -338,13 +360,13 @@ const CATEGORY_KEYWORDS: Array<{ cat: string; re: RegExp; unless?: (after: strin
   { cat: "hat", re: /(帽子|棒球帽|针织帽|渔夫帽)/ },
   { cat: "belt", re: /(腰带|皮带)/ },
   { cat: "scarf", re: /(围巾|丝巾)/ },
-  { cat: "jacket", re: /(羽绒服|棉服|冲锋衣|风衣|夹克|外套|大衣|西装|马甲|背心)/ },
+  { cat: "jacket", re: /(羽绒服|棉服|冲锋衣|风衣|夹克|外套|大衣|西装|马甲)/ },
   { cat: "polo", re: /(POLO衫|polo衫)/ },
   { cat: "hoodie", re: /(卫衣|连帽衫|帽衫)/ },
   { cat: "sweater", re: /(毛衣|针织衫|开衫|羊毛衫|抓绒|高领衫)/ },
   { cat: "shirt", re: /(衬衫|衬衣)/ },
-  { cat: "dress", re: /(连衣裙|连身裙)/ },
-  { cat: "tshirt", re: /(T恤|t恤|短袖|打底衫)/ },
+  { cat: "tshirt", re: /(T恤|t恤|短袖)/ },
+  { cat: "top", re: /(背心|吊带|打底衫|雪纺衫|上衣|小衫)/ },
 ];
 
 // Gender / department detection from the URL path. "women" first — note
@@ -691,7 +713,8 @@ export function extractFromUrl(url: string): ExtractedProduct {
 // Human noun for a category, used when we couldn't recover a real product name.
 function garmentNoun(category: string): string {
   const nouns: Record<string, string> = {
-    tshirt: "T-shirt", shirt: "shirt", polo: "polo", sweater: "sweater",
+    tshirt: "T-shirt", top: "top", dress: "dress", jumpsuit: "jumpsuit", swimsuit: "swimsuit",
+    underwear: "underwear", shirt: "shirt", polo: "polo", sweater: "sweater",
     hoodie: "hoodie", jacket: "jacket", pants: "pants", jeans: "jeans",
     shorts: "shorts", skirt: "skirt", shoes: "shoes", sneakers: "sneakers",
     boots: "boots", socks: "socks", hat: "hat", belt: "belt", scarf: "scarf",

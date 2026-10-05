@@ -405,7 +405,7 @@ export const zh: Messages = {
 
   garment: {
     cat: {
-      tshirt: "T 恤", shirt: "衬衫", polo: "Polo 衫", sweater: "毛衣", hoodie: "连帽衫",
+      tshirt: "T 恤", top: "上衣", shirt: "衬衫", polo: "Polo 衫", sweater: "毛衣", hoodie: "连帽衫",
       jacket: "夹克／外套", pants: "长裤", jeans: "牛仔裤", shorts: "短裤", skirt: "裙装",
       shoes: "鞋履", sneakers: "运动鞋", boots: "靴子", socks: "袜子", hat: "帽子", belt: "腰带",
       scarf: "围巾", accessory: "其他配饰", other: "其他",
@@ -835,6 +835,8 @@ export const zh: Messages = {
     hint: {
       top: "字母尺码或欧码（如 M、EU 48）",
       bottom: "腰围或 W×L（如 32、32×32）",
+      onepiece: "字母尺码或美码（如 M、6）",
+      intimate: "S–XL",
       shoe: "US / EU / cm（如 9、EU 42）",
       sock: "S–XL 或鞋履尺码",
       accessory: "S–XL 或 One size",

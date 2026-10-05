@@ -35,7 +35,7 @@ const hex = (c: string | null | undefined, fallback: string) => colorHexOr(c, fa
 type Zone = "top" | "bottom" | "shoe" | "head" | "neck" | "none";
 function zoneFor(category: string): Zone {
   const c = category.toLowerCase();
-  if (["tshirt", "shirt", "polo", "sweater", "hoodie", "jacket"].includes(c)) return "top";
+  if (["tshirt", "top", "shirt", "polo", "sweater", "hoodie", "jacket"].includes(c)) return "top";
   if (["pants", "jeans", "shorts", "skirt"].includes(c)) return "bottom";
   if (["shoes", "sneakers", "boots"].includes(c)) return "shoe";
   if (["hat"].includes(c)) return "head";

@@ -11,6 +11,7 @@ import { prisma } from "./db";
 const TYPE_TO_COLLECTION: Record<string, string> = {
   // Tops
   tshirt: "T-Shirts",
+  top: "T-Shirts",
   polo: "T-Shirts",
   shirt: "Shirts",
   sweater: "Sweaters",

@@ -23,6 +23,7 @@ export type Garment = {
 export const GARMENTS: Garment[] = [
   // Tops
   { category: "tshirt", label: "T-shirt", section: "Tops", domain: "top" },
+  { category: "top", label: "Top", section: "Tops", domain: "top" },
   { category: "shirt", label: "Shirt", section: "Tops", domain: "top" },
   { category: "polo", label: "Polo", section: "Tops", domain: "top" },
   { category: "sweater", label: "Sweater", section: "Tops", domain: "top" },

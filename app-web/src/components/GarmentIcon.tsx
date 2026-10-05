@@ -94,6 +94,7 @@ const DRAWN: Record<string, ReactNode> = {
 
 const LIBRARY = {
   tshirt: D.TShirt,
+  top: D.TShirt,
   polo: D.TShirt,
   shirt: D.ShirtFolded,
   hoodie: D.Hoodie,
