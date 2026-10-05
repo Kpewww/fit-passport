@@ -31,6 +31,54 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-05 · Session 84c — When no word rule knows the name, a classifier names the garment (Jev first, Haiku as fallback)
+
+The founder asked whether the extractor could use **TypeSafe's Jev** to recognise
+categories, so a gap in the vocabulary never again reads as "not a garment". They
+chose it over Haiku on cost and asked for Haiku as the fallback. No key was handed
+over.
+
+**What Jev is** (typesafe.ai; docs.typesafe.ai/api, /primitives/choice): a "System
+One" model.
+- `POST https://api.typesafe.ai/v1/systemone` with a Bearer key.
+- A `choice` question is a map of options to descriptions (up to 255); the answer
+  is `choice`, `probabilities` and `confidence`.
+- $42 per billion input tokens — a classification here is a few hundred tokens.
+
+**Built** (`lib/categoryModel.ts`):
+- **Called only after every word rule has failed** on a page that names a product,
+  and never on the save-to-buy path (`noModel`).
+- **Input:** the product's name and the page's category string — nothing about the
+  shopper.
+- **Options:** our categories, each with the words shops use, plus `not_clothing`.
+- **Used only at confidence ≥ 0.6** (`CATEGORY_MODEL`, assumed, to calibrate once a
+  key exists). Below that, "not clothing", no key or a failed call keep the old
+  behaviour: guessed → refused.
+- **Cached** by name per server instance; 3 s timeout; never throws.
+- **Recorded:** `categoryFrom: "model"` and `categoryModel: "jev" | "haiku"`. The
+  closet still asks the category when a model named it.
+- **Haiku** runs only when Jev could not answer at all (no key, an error, a
+  timeout), only with `CATEGORY_FALLBACK=haiku`, and only as a forced tool call
+  restricted to the same enum. Off by default.
+- **fetch, not an SDK** — the same as the Anthropic calls in `extractorLLM.ts`; no
+  new dependency.
+- **Documentation updated:**
+  - `.env.example` and DEPLOYMENT.md list `TYPESAFE_API_KEY` (not set yet — the
+    founder adds it) and `CATEGORY_FALLBACK`;
+  - `/privacy` (EN/ZH) names TypeSafe as receiving a product name.
+
+**Verified:** `categoryModel.test.ts` (stubbed fetch, no real calls):
+- the request shape and the exact text sent;
+- the threshold and "not clothing";
+- no key → no call; one call per name;
+- Haiku only when Jev fails and the switch is on;
+- a network failure resolves to null.
+
+781 tests passed + 1 skipped; typecheck clean. **Not verified:** a real Jev call —
+there is no key here.
+
+---
+
 ## 2026-10-05 · Session 84b — Dresses, jumpsuits and swimsuits are sized, on bust, waist and hip
 
 The founder asked for these categories to be covered rather than refused. A dress

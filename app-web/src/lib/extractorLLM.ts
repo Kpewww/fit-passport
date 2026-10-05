@@ -17,6 +17,7 @@
 
 import { z } from "zod";
 import { detectCategoryStrict, extractFromUrl, resolveCategory, type ExtractedProduct, type ExtractedSize } from "./extractor";
+import { classifyCategory } from "./categoryModel";
 import { chartFor } from "./brandCharts";
 import { checkUrlSafety, resolvesToPrivateAddress } from "./urlSafety";
 import {
@@ -771,6 +772,20 @@ export async function extractSmart(
     out.category = resolved.category;
     out.source.categoryGuessed = false;
     out.source.categoryFrom = resolved.from;
+  } else if (out.source.categoryGuessed && !opts.noModel && (parsed.productName || parsed.headline)) {
+    // No word rule knew this name (Session 84c): ask the classifier — the name
+    // and the page's category string only. Null keeps the guess, and
+    // the refusal policy then asks the shopper.
+    const named = await classifyCategory({
+      name: parsed.productName || parsed.headline,
+      structured: parsed.category ?? null,
+    });
+    if (named) {
+      out.category = named.category;
+      out.source.categoryGuessed = false;
+      out.source.categoryFrom = "model";
+      out.source.categoryModel = named.by;
+    }
   }
 
   if (parsed.sizes && parsed.sizes.length >= 2) {

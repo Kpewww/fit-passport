@@ -1175,7 +1175,7 @@ export const en = {
       title: "Who else sees it",
       private: "Your passport is private. Others see your profile only if you list yourself in the community or share your account code — and then only what that page shows.",
       never: "We do not sell data, show ads, or share your profile with retailers.",
-      services: "Services that run the site: Vercel (hosting), Neon (database), Upstash (rate limiting, which counts requests by IP address for a few minutes) and Resend (password-reset email). When a page has no size chart we can read, its text — never your measurements — may be sent to Anthropic's API to read the chart, and so may a picture you picked as the size chart; what is read from a picture is kept, the picture is not.",
+      services: "Services that run the site: Vercel (hosting), Neon (database), Upstash (rate limiting, which counts requests by IP address for a few minutes) and Resend (password-reset email). When a page has no size chart we can read, its text — never your measurements — may be sent to Anthropic's API to read the chart, and so may a picture you picked as the size chart; what is read from a picture is kept, the picture is not. When a product's name does not tell us what kind of garment it is, that name — never anything about you — may be sent to TypeSafe to classify it.",
     },
     choices: {
       title: "Your choices",

@@ -110,6 +110,8 @@ export type ExtractedProduct = {
      * refused as not-apparel, and the refusal policy has to tell it apart.
      */
     categoryFrom?: CategorySource;
+    /** Which classifier named the category, when categoryFrom is "model" (Session 84c). */
+    categoryModel?: "jev" | "haiku";
     /**
      * Present only when `sizesFrom === "brand-chart"`. The page a user can open
      * to check every number we showed them, and the date we read it. A curated
@@ -471,7 +473,8 @@ export function detectCategoryStrict(text: string): string | null {
 }
 
 /** Where the garment category was read from — see `resolveCategory`. */
-export type CategorySource = "page-structured" | "url" | "page-name" | "user";
+/** "model": a classifier named it after every word rule failed (categoryModel.ts). */
+export type CategorySource = "page-structured" | "url" | "page-name" | "user" | "model";
 
 /**
  * The garment category, from everything we know, normalised to one of OUR keys.

@@ -190,6 +190,18 @@ export const LISTING = {
 // EASE — how much room each stated preference means.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// CATEGORY MODEL — asking a classifier when no word rule knows the name (84c).
+// ---------------------------------------------------------------------------
+
+export const CATEGORY_MODEL = {
+  /** Below this the answer is not used and the shopper is asked instead. */
+  minConfidence: 0.6,
+  timeoutMs: 3000,
+  maxStateChars: 400,
+  cacheEntries: 500,
+} as const;
+
 export const EASE_CM = { slim: 6, regular: 10, relaxed: 16, oversized: 22 } as const;
 
 export const CATEGORY_EASE_CM = {
@@ -306,6 +318,10 @@ export const PROVENANCE: Record<string, ConstantSource> = {
   "DIMENSIONS.shoulder.weight": A("remainder after chest and waist"),
   "DIMENSIONS.shoulder.sigmaCm": A("shoulders are the least forgiving dimension"),
   "DIMENSIONS.hip.weight": A("as much as chest: a dress or jumpsuit that will not pass the hips does not fit, and size guides say to size to the larger measurement. At waist weight (0.22) a 99 cm hip still got S on a chart whose S stops at 96 (onepiece.test.ts)"),
+  "CATEGORY_MODEL.minConfidence": A("Jev's confidence is concentration of probability; 0.6 keeps a split answer (two garments near 0.4 each) out. To calibrate on real names once a key is set"),
+  "CATEGORY_MODEL.timeoutMs": A("a check already waits on the page parse; a slow classifier must not hold it"),
+  "CATEGORY_MODEL.maxStateChars": A("a name, a breadcrumb and a category string fit easily; caps cost"),
+  "CATEGORY_MODEL.cacheEntries": A("per server instance; a clear when full is enough at this traffic"),
   "DIMENSIONS.hip.sigmaCm": A("same as chest and waist"),
   "DIMENSIONS.hip.easeFactor": A("half the chest ease: a dress usually sits closer at the hip than at the bust; to calibrate against real dress charts"),
 

@@ -62,7 +62,8 @@ export function closetExtract(ex: ExtractedProduct): ClosetExtract {
   if (!demo && (pageUnread || noGarment)) return { result: "unreadable", host };
 
   const category = ex.category && garmentFor(ex.category) ? ex.category : null;
-  const categoryFromPage = category != null && (demo || (!s.categoryGuessed && s.categoryFrom !== "url" && s.categoryFrom != null));
+  // A model's category is not the page's word: the closet still asks (Session 84c).
+  const categoryFromPage = category != null && (demo || (!s.categoryGuessed && s.categoryFrom !== "url" && s.categoryFrom !== "model" && s.categoryFrom != null));
 
   const realSizes = !s.sizesSynthesized && s.sizesFrom !== "estimated" ? ex.sizes : [];
   // Labels the PAGE listed. A brand chart's labels are the brand's guide, not what
