@@ -62,7 +62,9 @@ export function domainForCategory(category: string): SizeDomain {
  * refuses anything outside this list — see the guard there for what that looked
  * like in production before it existed.
  */
-export const SCOREABLE_DOMAINS: readonly SizeDomain[] = ["top", "bottom"];
+// "onepiece" since Session 84: dresses, jumpsuits and swimsuits are scored on
+// chest, waist and hip — all three are FitProfile fields.
+export const SCOREABLE_DOMAINS: readonly SizeDomain[] = ["top", "bottom", "onepiece"];
 
 const DOMAIN_LABEL: Record<SizeDomain, string> = {
   top: "tops",

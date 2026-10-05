@@ -301,6 +301,8 @@ export const VISIBLE_CHART_ATTR = "data-fp-visible";
 export const MEASURE_MAP: Array<{ re: RegExp; field: keyof ExtractedSize }> = [
   { re: /chest|bust|胸围|胸/i, field: "chestCm" },
   { re: /waist|腰围|腰/i, field: "waistCm" },
+  // Hip (Session 84): dresses and jumpsuits are sized by bust, waist and hip.
+  { re: /hips?|臀围|臀/i, field: "hipCm" },
   { re: /shoulder|肩宽|肩/i, field: "shoulderCm" },
   { re: /sleeve|arm\s*length|袖长|袖/i, field: "sleeveCm" },
   { re: /length|body\s*length|衣长|总长|后中长/i, field: "lengthCm" },
@@ -413,11 +415,12 @@ function inchesToCm(sizes: GridSize[]): GridSize[] {
     ...s,
     chestCm: conv(s.chestCm),
     waistCm: conv(s.waistCm),
+    hipCm: conv(s.hipCm),
     shoulderCm: conv(s.shoulderCm),
     sleeveCm: conv(s.sleeveCm),
     lengthCm: conv(s.lengthCm),
     // The stated ranges are in the chart's units too, and must move with the rest.
-    ...(s.ranges ? { ranges: { chestCm: convRange(s.ranges.chestCm), waistCm: convRange(s.ranges.waistCm) } } : {}),
+    ...(s.ranges ? { ranges: { chestCm: convRange(s.ranges.chestCm), waistCm: convRange(s.ranges.waistCm), hipCm: convRange(s.ranges.hipCm) } } : {}),
   }));
 }
 
@@ -441,11 +444,11 @@ function inchesToCm(sizes: GridSize[]): GridSize[] {
  * `foldByLabel` prefers it.
  */
 type GridSize = ExtractedSize & {
-  ranges?: { chestCm?: [number, number]; waistCm?: [number, number] };
+  ranges?: { chestCm?: [number, number]; waistCm?: [number, number]; hipCm?: [number, number] };
 };
 
-/** Fields whose stated ranges are kept — the two a body chart publishes as ranges. */
-const RANGED_FIELDS = new Set(["chestCm", "waistCm"]);
+/** Fields whose stated ranges are kept — those a body chart publishes as ranges. */
+const RANGED_FIELDS = new Set(["chestCm", "waistCm", "hipCm"]);
 
 function sizesFromGrid(grid: string[][]): { sizes: GridSize[]; ranged: boolean } | null {
   if (grid.length < 2) return null;
@@ -640,12 +643,12 @@ function foldByLabel(sizes: GridSize[], kind: "body" | "garment" | null): Extrac
 
   // One representative point per label, for the neighbours `midpointBand` reads
   // when a label states only a single value.
-  const pointsFor = (key: "chestCm" | "waistCm") =>
+  const pointsFor = (key: "chestCm" | "waistCm" | "hipCm") =>
     order.map((label) => {
       const v = nums(groups.get(label)!, key);
       return v.length ? (Math.min(...v) + Math.max(...v)) / 2 : null;
     });
-  const points = { chestCm: pointsFor("chestCm"), waistCm: pointsFor("waistCm") };
+  const points = { chestCm: pointsFor("chestCm"), waistCm: pointsFor("waistCm"), hipCm: pointsFor("hipCm") };
 
   /**
    * The body range a label covers for one measurement, best source first:
@@ -656,7 +659,7 @@ function foldByLabel(sizes: GridSize[], kind: "body" | "garment" | null): Extrac
    * Before Session 78 a range in a cell reached this point already collapsed to
    * its midpoint, so (2) rebuilt a range the retailer had printed.
    */
-  const bodyRange = (rows: GridSize[], key: "chestCm" | "waistCm", i: number): [number, number] | null => {
+  const bodyRange = (rows: GridSize[], key: "chestCm" | "waistCm" | "hipCm", i: number): [number, number] | null => {
     const lows = rows.map((r) => r.ranges?.[key]?.[0] ?? r[key]).filter((n): n is number => typeof n === "number");
     const highs = rows.map((r) => r.ranges?.[key]?.[1] ?? r[key]).filter((n): n is number => typeof n === "number");
     if (!lows.length) return null;
@@ -685,6 +688,8 @@ function foldByLabel(sizes: GridSize[], kind: "body" | "garment" | null): Extrac
       // (invariant ㊿, one column over). It now lands where chest already did.
       const w = bodyRange(rows, "waistCm", i);
       if (w) { out.bodyWaistMinCm = w[0]; out.bodyWaistMaxCm = w[1]; }
+      const h = bodyRange(rows, "hipCm", i);
+      if (h) { out.bodyHipMinCm = h[0]; out.bodyHipMaxCm = h[1]; }
       const c = bodyRange(rows, "chestCm", i);
       if (c) { out.bodyChestMinCm = c[0]; out.bodyChestMaxCm = c[1]; }
       return out;
@@ -693,6 +698,8 @@ function foldByLabel(sizes: GridSize[], kind: "body" | "garment" | null): Extrac
     // Garment (or unstated — the long-standing reading, invariant (57)).
     const waists = nums(rows, "waistCm");
     if (waists.length) out.waistCm = r1(waists.reduce((a, b) => a + b, 0) / waists.length);
+    const hips = nums(rows, "hipCm");
+    if (hips.length) out.hipCm = r1(hips.reduce((a, b) => a + b, 0) / hips.length);
     const chests = nums(rows, "chestCm");
     if (chests.length) out.chestCm = r1((Math.min(...chests) + Math.max(...chests)) / 2);
     return out;
@@ -765,8 +772,13 @@ export function applyMeasurementKind(
       row.waistCm = s.waistCm ?? (s.bodyWaistMinCm + s.bodyWaistMaxCm) / 2;
       row.ranges = { ...row.ranges, waistCm: [s.bodyWaistMinCm, s.bodyWaistMaxCm] };
     }
+    if (s.bodyHipMinCm != null && s.bodyHipMaxCm != null) {
+      row.hipCm = s.hipCm ?? (s.bodyHipMinCm + s.bodyHipMaxCm) / 2;
+      row.ranges = { ...row.ranges, hipCm: [s.bodyHipMinCm, s.bodyHipMaxCm] };
+    }
     delete row.bodyChestMinCm; delete row.bodyChestMaxCm;
     delete row.bodyWaistMinCm; delete row.bodyWaistMaxCm;
+    delete row.bodyHipMinCm; delete row.bodyHipMaxCm;
     return row;
   });
   const ranged = rows.length > 0 && rows.filter((r) => r.ranges?.chestCm).length / rows.length >= 0.5;

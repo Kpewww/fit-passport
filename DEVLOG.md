@@ -31,6 +31,46 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-05 · Session 84b — Dresses, jumpsuits and swimsuits are sized, on bust, waist and hip
+
+The founder asked for these categories to be covered rather than refused. A dress
+fits neither existing domain: tops are scored on chest and shoulder, bottoms on
+waist, and a one-piece must pass the bust, the waist **and** the hips. The body side
+was never missing — FitProfile has had `hipCm` all along — but no chart's hip was
+read and the engine had no hip dimension.
+
+**Hip, end to end:**
+- **Parser:** "Hip / Hips / 臀围" columns. Body charts get a body hip range, like chest
+  and waist; garment charts get `hipCm`. Hip moves with the inch conversion and the
+  re-fold for model-read sizes.
+- **Storage:** `SizeOption.bodyHipMinCm/MaxCm`, through the additive migration
+  `20261005120000_size_body_hip`; garment `hipCm` already existed.
+- **Engine:** a `hip` dimension, scored **only when the domain is `onepiece`**. Tops
+  and bottoms score exactly as before, pinned by a test with a 120 cm hip on a T-shirt.
+- **Wiring:** `engineSizes` and the stability grid carry hip. The engine gets the
+  wearer's own hip (there is no regional prior for it). `/check` shows the hip it
+  weighed.
+
+**Domain and garments:**
+- `onepiece` joins `SCOREABLE_DOMAINS`.
+- Dress, Jumpsuit and Swimsuit are closet garments in a new *One-piece* section, with
+  EN/ZH names; items file under "Other" for now.
+- Underwear stays refused: a bra needs an underbust and a cup, which FitProfile does
+  not hold.
+
+**One constant changed by a test.** At waist weight (0.22), a 99 cm hip still got S
+on a chart whose S stops at 96: bust and waist outvoted the hips. Size guides say to
+size to the larger measurement, and a dress that will not pass the hips does not fit,
+so `DIMENSIONS.hip.weight` is **0.6**, equal to chest. `easeFactor` 0.5 (half the
+chest ease) is assumed, with that recorded; the table was regenerated (106 constants).
+
+**Verified:** `onepiece.test.ts` (body hip ranges read; hips decide between S and M;
+tops unaffected). Four older tests that pinned "dress is not a closet category" were
+updated to use "coat". 776 tests passed + 1 skipped; typecheck and build clean; eval
+unchanged.
+
+---
+
 ## 2026-10-05 · Session 84a — "Not a garment" for a top: the category rules learn tops, one-pieces and underwear
 
 The founder's first checks with the store extension, in their own Chrome: an adidas

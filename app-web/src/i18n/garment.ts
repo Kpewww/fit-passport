@@ -11,7 +11,7 @@ import { useT } from "./client";
 import { GARMENTS } from "@/lib/garments";
 
 const CATEGORIES = new Set(GARMENTS.map((g) => g.category));
-const SECTIONS = new Set(["Tops", "Bottoms", "Footwear", "Accessories"]);
+const SECTIONS = new Set(["Tops", "Bottoms", "One-piece", "Footwear", "Accessories"]);
 // lib/collections.ts DEFAULT_COLLECTIONS, plus the closet's own bucket name. Not
 // imported: that module reaches the database.
 const FOLDERS = new Set(["T-Shirts", "Shirts", "Sweaters", "Jackets", "Bottoms", "Footwear", "Accessories", "Other", "Uncategorized"]);

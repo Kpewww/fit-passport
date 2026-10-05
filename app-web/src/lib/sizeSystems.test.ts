@@ -13,7 +13,7 @@ describe("what the engine may score", () => {
   // category the same letter ladder with chest measurements attached. The
   // engine has no foot length to compare against, so the number was invented.
   it("scores only the domains FitProfile has a measurement for", () => {
-    expect([...SCOREABLE_DOMAINS].sort()).toEqual(["bottom", "top"]);
+    expect([...SCOREABLE_DOMAINS].sort()).toEqual(["bottom", "onepiece", "top"]);
   });
 
   it("refuses footwear, socks and accessories", () => {

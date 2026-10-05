@@ -389,6 +389,8 @@ export const en = {
       waist: "waist {n}cm",
       bodyChest: "fits body chest {lo}–{hi}cm",
       bodyWaist: "fits body waist {lo}–{hi}cm",
+      hip: "hip {n}cm",
+      bodyHip: "fits body hip {lo}–{hi}cm",
     },
     row: {
       pick: "pick",
@@ -414,12 +416,12 @@ export const en = {
   // (lib/collections.ts). A folder the user renamed is shown as typed.
   garment: {
     cat: {
-      tshirt: "T-shirt", top: "Top", shirt: "Shirt", polo: "Polo", sweater: "Sweater", hoodie: "Hoodie",
+      tshirt: "T-shirt", top: "Top", dress: "Dress", jumpsuit: "Jumpsuit", swimsuit: "Swimsuit", shirt: "Shirt", polo: "Polo", sweater: "Sweater", hoodie: "Hoodie",
       jacket: "Jacket / Coat", pants: "Pants", jeans: "Jeans", shorts: "Shorts", skirt: "Skirt",
       shoes: "Shoes", sneakers: "Sneakers", boots: "Boots", socks: "Socks", hat: "Hat", belt: "Belt",
       scarf: "Scarf", accessory: "Other accessory", other: "Other",
     },
-    section: { Tops: "Tops", Bottoms: "Bottoms", Footwear: "Footwear", Accessories: "Accessories" },
+    section: { Tops: "Tops", Bottoms: "Bottoms", "One-piece": "One-piece", Footwear: "Footwear", Accessories: "Accessories" },
     folder: {
       "T-Shirts": "T-Shirts", Shirts: "Shirts", Sweaters: "Sweaters", Jackets: "Jackets",
       Bottoms: "Bottoms", Footwear: "Footwear", Accessories: "Accessories", Other: "Other",

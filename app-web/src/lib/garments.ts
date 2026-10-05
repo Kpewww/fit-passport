@@ -10,7 +10,7 @@
 import type { SizeDomain } from "./sizeSystems";
 import { domainForCategory } from "./sizeSystems";
 
-export type GarmentSection = "Tops" | "Bottoms" | "Footwear" | "Accessories";
+export type GarmentSection = "Tops" | "Bottoms" | "One-piece" | "Footwear" | "Accessories";
 
 export type Garment = {
   category: string; // engine key (stable)
@@ -34,6 +34,10 @@ export const GARMENTS: Garment[] = [
   { category: "jeans", label: "Jeans", section: "Bottoms", domain: "bottom" },
   { category: "shorts", label: "Shorts", section: "Bottoms", domain: "bottom" },
   { category: "skirt", label: "Skirt", section: "Bottoms", domain: "bottom" },
+  // One-piece (Session 84): scored on chest, waist and hip.
+  { category: "dress", label: "Dress", section: "One-piece", domain: "onepiece" },
+  { category: "jumpsuit", label: "Jumpsuit", section: "One-piece", domain: "onepiece" },
+  { category: "swimsuit", label: "Swimsuit", section: "One-piece", domain: "onepiece" },
   // Footwear
   { category: "shoes", label: "Shoes", section: "Footwear", domain: "shoe" },
   { category: "sneakers", label: "Sneakers", section: "Footwear", domain: "shoe" },
@@ -48,7 +52,7 @@ export const GARMENTS: Garment[] = [
   { category: "other", label: "Other", section: "Accessories", domain: "top" },
 ];
 
-export const SECTION_ORDER: GarmentSection[] = ["Tops", "Bottoms", "Footwear", "Accessories"];
+export const SECTION_ORDER: GarmentSection[] = ["Tops", "Bottoms", "One-piece", "Footwear", "Accessories"];
 
 const BY_CATEGORY: Record<string, Garment> = Object.fromEntries(
   GARMENTS.map((g) => [g.category, g]),

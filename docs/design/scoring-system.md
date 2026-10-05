@@ -20,13 +20,13 @@ provenances:
 |---|---|---|
 | **measured** | Computed from data we hold, with the n stated | **1** |
 | **cited** | A published source states this value — not just the idea | **2** |
-| **assumed** | A judgement, usually hand-tuned against a handful of cases | **100** |
+| **assumed** | A judgement, usually hand-tuned against a handful of cases | **103** |
 
 `scoringConstants.test.ts` fails if a value has no provenance, if a provenance
 names no value, if a measured entry does not state its n, or if an assumed value
 is missing from the calibration table below.
 
-**Read the counts plainly.** 100 of 103 numbers are judgements. The
+**Read the counts plainly.** 103 of 106 numbers are judgements. The
 literature the engine cites supports the SHAPE of the model — fit as a bipolar
 ordinal (too small … too big), fit as a multi-measurement signal — and not a
 single one of its values. That is normal for a scorer before it has outcome data,
@@ -342,6 +342,9 @@ number we have not yet earned; the test fails if one is missing here.
 | `DIMENSIONS.waist.easeFactor` | 0.8 | assumed | waist tracks the body more tightly than chest |
 | `DIMENSIONS.shoulder.weight` | 0.18 | assumed | remainder after chest and waist |
 | `DIMENSIONS.shoulder.sigmaCm` | 2.5 | assumed | shoulders are the least forgiving dimension |
+| `DIMENSIONS.hip.weight` | 0.6 | assumed | as much as chest: a dress or jumpsuit that will not pass the hips does not fit, and size guides say to size to the larger measurement. At waist weight (0.22) a 99 cm hip still got S on a chart whose S stops at 96 (onepiece.test.ts) |
+| `DIMENSIONS.hip.sigmaCm` | 4 | assumed | same as chest and waist |
+| `DIMENSIONS.hip.easeFactor` | 0.5 | assumed | half the chest ease: a dress usually sits closer at the hip than at the bust; to calibrate against real dress charts |
 | `BODY_RANGE.insideFloor` | 0.85 | assumed | anywhere inside the retailer's range is a strong fit |
 | `BODY_RANGE.insideSpan` | 0.15 | assumed | a small preference for the range's centre |
 | `BODY_RANGE.outsidePushCm` | 4 | assumed | keeps an out-of-range size from reading 'true to size' |

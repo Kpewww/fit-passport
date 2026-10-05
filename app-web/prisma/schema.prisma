@@ -611,6 +611,9 @@ model SizeOption {
   bodyChestMaxCm Float?
   bodyWaistMinCm Float?
   bodyWaistMaxCm Float?
+  /// The body hip a size is cut for (Session 84) — dresses and jumpsuits.
+  bodyHipMinCm   Float?
+  bodyHipMaxCm   Float?
 
   @@index([productId])
 }

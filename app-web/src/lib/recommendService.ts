@@ -79,6 +79,8 @@ export async function computeRecommendation(
       chestCm: profile?.chestCm ?? prior?.chestCm ?? null,
       waistCm: profile?.waistCm ?? prior?.waistCm ?? null,
       shoulderCm: profile?.shoulderCm ?? prior?.shoulderCm ?? null,
+      // No regional prior for hip: it is scored only when the wearer gave theirs.
+      hipCm: profile?.hipCm ?? null,
       preferredFit: effectiveFit,
       chestIsEstimated: !hasOwnChest && prior != null,
     },

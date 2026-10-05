@@ -43,6 +43,10 @@ export type ExtractedSize = {
    */
   bodyWaistMinCm?: number;
   bodyWaistMaxCm?: number;
+  /** Hip, garment and body (Session 84): what a dress or jumpsuit is sized by. */
+  hipCm?: number;
+  bodyHipMinCm?: number;
+  bodyHipMaxCm?: number;
 };
 
 export type Gender = "mens" | "womens" | "unisex";

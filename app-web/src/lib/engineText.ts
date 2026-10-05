@@ -21,7 +21,7 @@ import type { Locale } from "@/i18n/config";
 export type Verdict = "too small" | "snug" | "true to size" | "relaxed" | "too big";
 export type DirectionKey = "too-tight" | "snug" | "just-right" | "roomy" | "too-loose";
 export type SignalName = "measurement-fit" | "known-good" | "preference" | "outcome" | "completeness" | "brand-bias";
-export type Dim = "chest" | "waist" | "shoulder";
+export type Dim = "chest" | "waist" | "shoulder" | "hip";
 
 export interface EngineText {
   // ---- measurement fit ----
@@ -241,7 +241,7 @@ export const EN_TEXT: EngineText = {
 // Wording: docs/design/chinese-copy-2026-09-30.md §02.14–02.15 and the words of
 // §04.9 / §05.1–05.4, so a reason names a garment or a fit exactly as the page does.
 const ZH_PREF: Record<FitPreference, string> = { slim: "修身", regular: "常规", relaxed: "宽松", oversized: "超宽松" };
-const ZH_DIM: Record<Dim, string> = { chest: "胸围", waist: "腰围", shoulder: "肩宽" };
+const ZH_DIM: Record<Dim, string> = { chest: "胸围", waist: "腰围", shoulder: "肩宽", hip: "臀围" };
 const ZH_SIGNAL: Record<SignalName, string> = {
   "measurement-fit": "你的身形数据",
   "known-good": "你已有的衣物",

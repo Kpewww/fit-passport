@@ -63,6 +63,9 @@ type SizeOption = {
   waistCm?: number | null;
   bodyWaistMinCm?: number | null;
   bodyWaistMaxCm?: number | null;
+  hipCm?: number | null;
+  bodyHipMinCm?: number | null;
+  bodyHipMaxCm?: number | null;
 };
 
 type Product = {
@@ -1181,6 +1184,9 @@ function measurementChips(t: ReturnType<typeof useT<"check">>, o?: SizeOption): 
   if (o.waistCm != null) chips.push(t("measure.waist", { n: o.waistCm }));
   if (o.bodyWaistMinCm != null && o.bodyWaistMaxCm != null)
     chips.push(t("measure.bodyWaist", { lo: o.bodyWaistMinCm, hi: o.bodyWaistMaxCm }));
+  if (o.hipCm != null) chips.push(t("measure.hip", { n: o.hipCm }));
+  if (o.bodyHipMinCm != null && o.bodyHipMaxCm != null)
+    chips.push(t("measure.bodyHip", { lo: o.bodyHipMinCm, hi: o.bodyHipMaxCm }));
   return chips;
 }
 

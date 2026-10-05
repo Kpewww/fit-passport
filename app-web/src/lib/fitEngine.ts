@@ -71,6 +71,10 @@ export type SizeOptionInput = {
   /** The body waist range this size is cut for — the waist twin of bodyChest. */
   bodyWaistMinCm?: number | null;
   bodyWaistMaxCm?: number | null;
+  /** Hip, garment and body — read for dresses and jumpsuits (Session 84). */
+  hipCm?: number | null;
+  bodyHipMinCm?: number | null;
+  bodyHipMaxCm?: number | null;
 };
 
 /**
@@ -136,6 +140,8 @@ export type EngineInput = {
     chestCm?: number | null;
     waistCm?: number | null;
     shoulderCm?: number | null;
+    /** Scored for dresses and jumpsuits only (Session 84). */
+    hipCm?: number | null;
     preferredFit: FitPreference;
     // True when the measurements above are a REGIONAL-AVERAGE prior, not the
     // user's own (populationPrior.ts). The engine then softens its language and
@@ -386,6 +392,20 @@ function scoreMeasurementFit(
     const target = profile.shoulderCm + 1; // shoulders want minimal ease
     const delta = size.shoulderCm - target;
     dims.push({ key: "shoulder", sub: gauss(delta, DIMENSIONS.shoulder.sigmaCm), delta, weight: DIMENSIONS.shoulder.weight, sigma: DIMENSIONS.shoulder.sigmaCm });
+  }
+
+  // ---- Hip — dresses and jumpsuits only (Session 84) ----
+  // A one-piece has to pass the hips as well as the bust; a top or a pair of
+  // trousers keeps exactly the scoring it had, so nothing else moves.
+  if (profile.hipCm != null && domainForCategory(category ?? "") === "onepiece") {
+    if (size.bodyHipMinCm != null && size.bodyHipMaxCm != null) {
+      const { sub, delta } = bodyRangeFit(profile.hipCm, size.bodyHipMinCm, size.bodyHipMaxCm);
+      dims.push({ key: "hip", sub, delta, weight: DIMENSIONS.hip.weight, sigma: DIMENSIONS.hip.sigmaCm });
+    } else if (size.hipCm != null) {
+      const target = profile.hipCm + ease * DIMENSIONS.hip.easeFactor;
+      const delta = size.hipCm - target;
+      dims.push({ key: "hip", sub: gauss(delta, DIMENSIONS.hip.sigmaCm), delta, weight: DIMENSIONS.hip.weight, sigma: DIMENSIONS.hip.sigmaCm });
+    }
   }
 
   if (dims.length === 0) return { score: 0, reason: null };

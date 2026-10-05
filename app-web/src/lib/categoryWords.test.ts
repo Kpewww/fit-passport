@@ -48,7 +48,7 @@ describe("the category rules know tops, one-pieces and underwear", () => {
     expect(detectCategoryStrict("Leather Top-Handle Bag")).toBeNull();
   });
 
-  it("scores tops; recognises one-pieces and underwear without pretending to score them yet", () => {
+  it("scores tops and one-pieces (Session 84b); recognises underwear without pretending to score it", () => {
     expect(domainForCategory("top")).toBe("top");
     expect(SCOREABLE_DOMAINS).toContain(domainForCategory("top"));
     expect(domainForCategory("dress")).toBe("onepiece");

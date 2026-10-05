@@ -382,6 +382,8 @@ export const zh: Messages = {
       waist: "腰围 {n} cm",
       bodyChest: "适用胸围 {lo}–{hi} cm",
       bodyWaist: "适用腰围 {lo}–{hi} cm",
+      hip: "臀围 {n} cm",
+      bodyHip: "适用臀围 {lo}–{hi} cm",
     },
     row: {
       pick: "推荐",
@@ -405,12 +407,12 @@ export const zh: Messages = {
 
   garment: {
     cat: {
-      tshirt: "T 恤", top: "上衣", shirt: "衬衫", polo: "Polo 衫", sweater: "毛衣", hoodie: "连帽衫",
+      tshirt: "T 恤", top: "上衣", dress: "连衣裙", jumpsuit: "连体裤", swimsuit: "泳衣", shirt: "衬衫", polo: "Polo 衫", sweater: "毛衣", hoodie: "连帽衫",
       jacket: "夹克／外套", pants: "长裤", jeans: "牛仔裤", shorts: "短裤", skirt: "裙装",
       shoes: "鞋履", sneakers: "运动鞋", boots: "靴子", socks: "袜子", hat: "帽子", belt: "腰带",
       scarf: "围巾", accessory: "其他配饰", other: "其他",
     },
-    section: { Tops: "上装", Bottoms: "下装", Footwear: "鞋履", Accessories: "配饰" },
+    section: { Tops: "上装", Bottoms: "下装", "One-piece": "连体装", Footwear: "鞋履", Accessories: "配饰" },
     folder: {
       "T-Shirts": "T 恤", Shirts: "衬衫", Sweaters: "毛衣", Jackets: "外套",
       Bottoms: "下装", Footwear: "鞋履", Accessories: "配饰", Other: "其他",

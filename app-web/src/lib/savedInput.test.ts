@@ -24,7 +24,7 @@ describe("the to-buy list recognises the same product saved twice", () => {
 describe("what a save may contain", () => {
   it("keeps a category only if the closet can file it", () => {
     expect(SaveBody.parse({ url: "https://x.test/p", category: "shirt" }).category).toBe("shirt");
-    expect(SaveBody.parse({ url: "https://x.test/p", category: "dress" }).category).toBeNull();
+    expect(SaveBody.parse({ url: "https://x.test/p", category: "coat" }).category).toBeNull(); // dress is fileable since Session 84
   });
   it("leaves out of an edit what the edit does not mention (changing the size kept wiping the category)", () => {
     const edit = PatchBody.parse({ id: "s1", size: "L" });

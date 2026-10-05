@@ -22,6 +22,9 @@ export type SizeRow = {
   waistCm?: number | null;
   bodyWaistMinCm?: number | null;
   bodyWaistMaxCm?: number | null;
+  hipCm?: number | null;
+  bodyHipMinCm?: number | null;
+  bodyHipMaxCm?: number | null;
 };
 
 export function engineSizes(rows: SizeRow[]): SizeOptionInput[] {
@@ -36,5 +39,8 @@ export function engineSizes(rows: SizeRow[]): SizeOptionInput[] {
     waistCm: s.waistCm ?? null,
     bodyWaistMinCm: s.bodyWaistMinCm ?? null,
     bodyWaistMaxCm: s.bodyWaistMaxCm ?? null,
+    hipCm: s.hipCm ?? null,
+    bodyHipMinCm: s.bodyHipMinCm ?? null,
+    bodyHipMaxCm: s.bodyHipMaxCm ?? null,
   }));
 }

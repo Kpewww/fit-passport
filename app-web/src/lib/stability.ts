@@ -38,6 +38,9 @@ type Sized = {
   bodyChestMaxCm?: number | null;
   bodyWaistMinCm?: number | null;
   bodyWaistMaxCm?: number | null;
+  hipCm?: number | null;
+  bodyHipMinCm?: number | null;
+  bodyHipMaxCm?: number | null;
 };
 
 export type StabilityInput<S extends Sized> = {
@@ -60,6 +63,7 @@ export type Stability = {
 const CHART_FIELDS = [
   "chestCm", "waistCm", "shoulderCm", "sleeveCm",
   "bodyChestMinCm", "bodyChestMaxCm", "bodyWaistMinCm", "bodyWaistMaxCm",
+  "hipCm", "bodyHipMinCm", "bodyHipMaxCm",
 ] as const;
 
 function shiftChart<S extends Sized>(sizes: S[], by: number): S[] {

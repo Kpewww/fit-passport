@@ -101,6 +101,8 @@ const LIBRARY = {
   pants: D.Pants,
   jeans: D.Pants,
   dress: D.Dress,
+  jumpsuit: D.Dress,
+  swimsuit: D.Dress,
   sneakers: D.Sneaker,
   boots: D.Boot,
   socks: D.Sock,
