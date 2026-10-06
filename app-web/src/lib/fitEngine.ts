@@ -87,9 +87,9 @@ function hasMeasurement(s: SizeOptionInput): boolean {
   return [s.chestCm, s.waistCm, s.hipCm, s.shoulderCm, s.bodyChestMinCm, s.bodyWaistMinCm, s.bodyHipMinCm].some((v) => v != null);
 }
 
-export function sizeDirection(from: string, to: string, sizes: SizeOptionInput[]): "bigger" | "smaller" | null {
+export function sizeDirection(from: string, to: string, sizes: SizeOptionInput[], line?: string | null): "bigger" | "smaller" | null {
   const sign = (d: number | null | undefined) => (d == null || d === 0 || Number.isNaN(d) ? null : d > 0 ? "bigger" : "smaller");
-  const byAlpha = sign(alphaShift(normalizeToAlpha(from), normalizeToAlpha(to)));
+  const byAlpha = sign(alphaShift(normalizeToAlpha(from, line), normalizeToAlpha(to, line)));
   if (byAlpha) return byAlpha;
   const a = sizes.find((s) => s.label === from);
   const b = sizes.find((s) => s.label === to);
@@ -125,6 +125,8 @@ export type KnownGoodInput = {
    */
   garmentChestCm?: number | null;
   garmentMeasuredFrom?: string | null;
+  /** The piece's own line — how its numeric size is read (womensSizes.ts). Session 88. */
+  gender?: string | null;
 };
 
 export type OutcomeInput = {
@@ -156,6 +158,8 @@ export type EngineInput = {
   product: {
     brand?: string | null;
     category?: string | null;
+    /** The product's line, "mens" | "womens" | "unisex", when the page said (Session 88). */
+    gender?: string | null;
   };
   sizes: SizeOptionInput[];
   knownGood: KnownGoodInput[];
@@ -464,6 +468,7 @@ function scoreMeasurementFit(
 function anchorIndexByMeasurement(
   kg: KnownGoodInput,
   sizes: SizeOptionInput[],
+  line?: string | null,
 ): number | null {
   if (kg.garmentChestCm == null) return null;
   // Only a measurement we READ, never one the extractor guessed — the same bar
@@ -474,7 +479,7 @@ function anchorIndexByMeasurement(
   let bestDelta = Infinity;
   for (const s of sizes) {
     if (s.chestCm == null) continue;
-    const idx = alphaIndex(normalizeToAlpha(s.label));
+    const idx = alphaIndex(normalizeToAlpha(s.label, line));
     if (idx === null) continue;
     const delta = Math.abs(s.chestCm - kg.garmentChestCm);
     if (delta < bestDelta) {
@@ -496,7 +501,7 @@ function scoreKnownGood(
   M: EngineText = EN_TEXT,
 ): { score: number; reason: Reason | null } {
   if (knownGood.length === 0) return { score: 0, reason: null };
-  const sizeAlpha = normalizeToAlpha(size.label);
+  const sizeAlpha = normalizeToAlpha(size.label, product.gender);
   if (!sizeAlpha) return { score: 0, reason: null };
   const sizeIdx = alphaIndex(sizeAlpha);
   if (sizeIdx === null) return { score: 0, reason: null };
@@ -504,7 +509,7 @@ function scoreKnownGood(
   let best = 0;
   let bestMsg = "";
   for (const kg of knownGood) {
-    const kgAlpha = normalizeToAlpha(kg.size);
+    const kgAlpha = normalizeToAlpha(kg.size, kg.gender);
     const kgIdx = alphaIndex(kgAlpha);
     if (kgIdx === null) continue;
 
@@ -531,7 +536,7 @@ function scoreKnownGood(
     // Same-brand anchors are left on the label deliberately: within one brand the
     // ladder already lines up, and the label is what the wearer will recognise in
     // the explanation.
-    const byMeasure = strong ? null : anchorIndexByMeasurement(kg, allSizes);
+    const byMeasure = strong ? null : anchorIndexByMeasurement(kg, allSizes, product.gender);
     const baseIdx = byMeasure ?? kgIdx;
     const targetIdx = (strong ? baseIdx + preferenceShift(pref) : baseIdx) + dirShift;
     const dist = Math.abs(sizeIdx - targetIdx);
@@ -591,7 +596,7 @@ function scoreOutcome(
   M: EngineText = EN_TEXT,
 ): { score: number; reason: Reason | null } {
   if (outcomes.length === 0) return { score: 0, reason: null };
-  const sIdx = alphaIndex(normalizeToAlpha(size.label));
+  const sIdx = alphaIndex(normalizeToAlpha(size.label, product.gender));
   if (sIdx == null) return { score: 0, reason: null };
   let bestPenalty = 0;
   let bestBoost = 0;
@@ -772,21 +777,22 @@ function referenceSizeIdx(
     (kg) => product.brand && kg.brand.toLowerCase() === product.brand.toLowerCase(),
   );
   if (anchor) {
-    const idx = alphaIndex(normalizeToAlpha(anchor.size));
+    const idx = alphaIndex(normalizeToAlpha(anchor.size, anchor.gender));
     if (idx !== null) return idx;
   }
   // Otherwise pick the middle offered size.
   const mid = sizes[Math.floor(sizes.length / 2)];
-  return mid ? alphaIndex(normalizeToAlpha(mid.label)) : null;
+  return mid ? alphaIndex(normalizeToAlpha(mid.label, product.gender)) : null;
 }
 
 function scoreBrandBiasForSize(
   size: SizeOptionInput,
   bias: BrandBias,
   refIdx: number | null,
+  line?: string | null,
 ): Reason | null {
   if (bias.shift === 0 || refIdx === null) return null;
-  const sizeIdx = alphaIndex(normalizeToAlpha(size.label));
+  const sizeIdx = alphaIndex(normalizeToAlpha(size.label, line));
   if (sizeIdx === null) return null;
   const targetIdx = refIdx + bias.shift;
   const dist = Math.abs(sizeIdx - targetIdx);
@@ -948,7 +954,7 @@ export function recommend(
     if (kg.reason) reasons.push(kg.reason);
     const outc = scoreOutcome(size, product, outcomes, W, M);
     if (outc.reason) reasons.push(outc.reason);
-    const bias = scoreBrandBiasForSize(size, brandBias, refIdx);
+    const bias = scoreBrandBiasForSize(size, brandBias, refIdx, product.gender);
     if (bias) reasons.push(bias);
     // Weight 0: this did not push this size up or down against its siblings — it
     // moved the target every size was measured against. It is here so the user
@@ -966,7 +972,7 @@ export function recommend(
     confidence *= consistency.factor;
     return {
       label: size.label,
-      normalized: normalizeToAlpha(size.label),
+      normalized: normalizeToAlpha(size.label, product.gender),
       score,
       confidence,
       reasons,
@@ -1100,7 +1106,7 @@ export function recommend(
   // rung "close" implies the first was ahead of it, and it wasn't.
   const alternative =
     !undetermined && !edgeNote && ranked[1] && ranked[1].score > best.score - TIE.alternativeWithin
-      ? M.alternative(ranked[1].label, sizeDirection(best.label, ranked[1].label, input.sizes))
+      ? M.alternative(ranked[1].label, sizeDirection(best.label, ranked[1].label, input.sizes, input.product.gender))
       : null;
   const explanation = undetermined
     // The UI's own heading already states that the sizes tied. This says the one

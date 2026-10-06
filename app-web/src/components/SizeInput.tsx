@@ -26,10 +26,13 @@ export function SizeInput({
   category,
   value,
   onChange,
+  line,
 }: {
   category: string;
   value: string;
   onChange: (v: string) => void;
+  /** The garment's line ("mens" | "womens" | "unisex"), for the converter's default. */
+  line?: string | null;
 }) {
   const t = useT("sizeInput");
   const presets = presetSizesFor(category);
@@ -96,7 +99,7 @@ export function SizeInput({
       )}
 
       {/* 4. Collapsed converter */}
-      <SizeConverter category={category} onAdopt={onChange} />
+      <SizeConverter category={category} onAdopt={onChange} line={line} />
     </div>
   );
 }

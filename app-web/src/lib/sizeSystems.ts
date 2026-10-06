@@ -125,6 +125,7 @@ const DOMAIN_PATTERNS: Record<SizeDomain, RegExp[]> = {
     /^UK ?\d{1,2}$/i,
     /^US ?(XXS|XS|S|M|L|XL|XXL|XXXL|\d{1,2})$/i,
     /^\d{2}$/, // bare EU numeric like "48"
+    /^(FR|IT|DE) ?\d{2}$/i, // a women's size by country (womensSizes.ts), Session 88
   ],
   bottom: [
     /^(XXS|XS|S|M|L|XL|XXL|XXXL)$/i,
@@ -137,6 +138,7 @@ const DOMAIN_PATTERNS: Record<SizeDomain, RegExp[]> = {
     /^(XXS|XS|S|M|L|XL|XXL|XXXL)$/i,
     /^\d{1,2}$/, // US 0–16, EU 32–48
     /^(EU|UK|US) ?\d{1,2}$/i,
+    /^(FR|IT|DE) ?\d{2}$/i,
   ],
   intimate: [
     /^(XXS|XS|S|M|L|XL|XXL|XXXL)$/i,

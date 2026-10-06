@@ -65,7 +65,11 @@ export type ListingInput = {
     fitDirection?: number | null;
     garmentChestCm?: number | null;
     garmentMeasuredFrom?: string | null;
+    /** The piece's line, for reading its numeric size (womensSizes.ts). */
+    gender?: string | null;
   }>;
+  /** The listing's line, when known (Session 88). */
+  line?: string | null;
   seller?: SellerReading;
 };
 
@@ -166,10 +170,10 @@ export function judgeListing(input: ListingInput, M: EngineText): Judgement {
 
   // 3. Only a printed size: against a size of the same kind in the closet. Weak —
   //    the same letter runs differently from one brand to the next.
-  const listingIdx = alphaIndex(normalizeToAlpha(sizeLabel));
+  const listingIdx = alphaIndex(normalizeToAlpha(sizeLabel, input.line));
   if (listingIdx != null) {
     const refs = input.knownGood
-      .map((k) => ({ k, idx: alphaIndex(normalizeToAlpha(k.size)) }))
+      .map((k) => ({ k, idx: alphaIndex(normalizeToAlpha(k.size, k.gender)) }))
       .filter((x) => x.idx != null && domainForCategory(x.k.category) === domain)
       .sort((a, b) =>
         Number(b.k.category === input.category) - Number(a.k.category === input.category) ||

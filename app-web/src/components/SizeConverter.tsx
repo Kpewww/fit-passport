@@ -10,32 +10,41 @@
 import { useMemo, useState } from "react";
 import { inputClass } from "@/components/ui";
 import { domainForCategory } from "@/lib/sizeSystems";
-import { convert, scalesForDomain } from "@/lib/sizeConvert";
+import { convert, scalesForDomain, type SizeLine } from "@/lib/sizeConvert";
+import { isValidSize } from "@/lib/sizeSystems";
+import { Segmented } from "@/components/ui";
 import { ArrowRight, Close } from "@/components/Icon";
 import { useT } from "@/i18n/client";
 
 export function SizeConverter({
   category,
   onAdopt,
+  line: itemLine,
 }: {
   category: string;
   onAdopt: (v: string) => void;
+  /** The piece's line; women's opens on the women's tables (womensSizes.ts). */
+  line?: string | null;
 }) {
   const domain = domainForCategory(category);
-  const scales = scalesForDomain(domain);
   const t = useT("sizeInput");
+  const [line, setLine] = useState<SizeLine>(itemLine === "womens" ? "womens" : "mens");
+  const scales = scalesForDomain(domain, line);
   const [open, setOpen] = useState(false);
   const [scaleId, setScaleId] = useState(scales[0]?.id ?? "");
   const [raw, setRaw] = useState("");
+  // EU's countries (FR, IT) open underneath on request.
+  const [euOpen, setEuOpen] = useState(false);
 
-  // Keep the chosen scale valid if the domain changes under us.
+  // Keep the chosen scale valid if the domain or line changes under us.
   const activeScaleId = scales.some((s) => s.id === scaleId) ? scaleId : scales[0]?.id ?? "";
   const activeScale = scales.find((s) => s.id === activeScaleId);
+  const hasCountries = scales.some((s) => s.parent === "EU");
 
   const results = useMemo(
-    () => (raw.trim() ? convert(domain, raw, activeScaleId) : []),
-    [domain, raw, activeScaleId],
-  );
+    () => (raw.trim() ? convert(domain, raw, activeScaleId, line) : []),
+    [domain, raw, activeScaleId, line],
+  ).filter((r) => euOpen || !scales.find((s) => s.id === r.scaleId)?.parent || r.scaleId === activeScaleId);
 
   if (scales.length === 0) return null; // socks / accessories: no converter
 
@@ -64,6 +73,16 @@ export function SizeConverter({
         </button>
       </div>
 
+      {domain !== "bottom" && (
+        <div className="mb-2">
+          <Segmented
+            label={t("lineLabel")}
+            options={[{ value: "mens" as SizeLine, label: t("lineMens") }, { value: "womens" as SizeLine, label: t("lineWomens") }]}
+            value={line}
+            onChange={(v) => { setLine(v); setScaleId(""); }}
+          />
+        </div>
+      )}
       <p className="mb-1.5 text-[11px] text-ink-soft">
         {t("steps")}
       </p>
@@ -74,7 +93,7 @@ export function SizeConverter({
           onChange={(e) => { setScaleId(e.target.value); }}
         >
           {scales.map((s) => (
-            <option key={s.id} value={s.id}>{s.label}</option>
+            <option key={s.id} value={s.id}>{s.parent ? `${s.parent} › ${s.label}` : s.label}</option>
           ))}
         </select>
         <input
@@ -98,10 +117,14 @@ export function SizeConverter({
             {t("thatsAbout")}
           </p>
           <div className="flex flex-wrap gap-1.5">
-            {results.map((r) => (
+            {results.map((r) => {
+              // A letter's range ("FR 32–34") is information, not a size to store.
+              const adoptable = isValidSize(category, r.value);
+              return (
               <button
                 key={r.scaleId}
                 type="button"
+                disabled={!adoptable}
                 onClick={() => { onAdopt(r.value); setOpen(false); }}
                 className={`rounded-md border px-2.5 py-1.5 text-xs transition-colors ${
                   r.scaleId === activeScaleId
@@ -111,10 +134,21 @@ export function SizeConverter({
                 title={t("use", { value: r.value })}
               >
                 <span className="text-ink-faint">{r.scaleLabel}</span>{" "}
-                <span className="font-semibold">{r.value.replace(/^(EU|US|UK)\s*/, "")}</span>
+                <span className="font-semibold">{r.value.replace(/^(EU|US|UK|FR|IT)\s*/, "")}</span>
               </button>
-            ))}
+              );
+            })}
           </div>
+          {domain === "top" && (
+            hasCountries ? (
+              <button type="button" onClick={() => setEuOpen((v) => !v)} aria-expanded={euOpen}
+                className="mt-1.5 text-[11px] font-medium text-brand hover:underline">
+                {euOpen ? t("euLess") : t("euMore")}
+              </button>
+            ) : (
+              <p className="mt-1.5 text-[10px] text-ink-faint">{t("mensCountries")}</p>
+            )
+          )}
           <p className="mt-1.5 text-[10px] text-ink-faint">
             {t("approx")}
           </p>

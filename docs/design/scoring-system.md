@@ -317,6 +317,25 @@ If it is built later, it should start from this, not from a blank page:
 Every threshold above would enter `scoringConstants.ts` as `assumed` until data
 exists to measure it.
 
+## 10. Men's and women's numbers (Session 88)
+
+Every numeric size used to be read on the men's EU jacket ladder (`sizing.ts`
+`EU_TO_ALPHA`): a women's FR 34–40 label meant nothing, FR 42–46 landed on the wrong
+rung, and the converter showed a women's XS as EU 44.
+
+- `womensSizes.ts` holds the women's ladder: the US women's number is the rung, and
+  DE/EU = US + 30, FR = US + 32, IT = US + 36, UK = US + 4 (blitzresults.com and
+  sizechart.com agree row for row; letters follow size.ly's two-number bands).
+- `normalizeToAlpha(label, line)` reads a women's label on that ladder **only when the
+  line is women's**: the product's line from the page (`rawJson.gender`), each closet
+  piece's own `gender`, and failing those the one department the wearer shops
+  (`shopsFor`). Unknown line: exactly the old reading.
+- A country prefix is exact ("FR 38" = "IT 42"). A bare number or "EU" is read the
+  German way; published tables disagree on "EU" (some French-style), so at band
+  edges this is a choice, recorded in the code.
+- Men's sizes are not split by country: published tables disagree on whether French
+  and Italian men's numbers differ from the EU's.
+
 ## Calibration table
 
 Generated from `scoringConstants.ts` (`PROVENANCE`). Every **assumed** row is a

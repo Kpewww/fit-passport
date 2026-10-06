@@ -3,6 +3,7 @@
 // user to the single most valuable next step. This powers the progress-aware
 // home dashboard and the inline nudges on /check.
 
+import { soleDepartment } from "@/lib/womensSizes";
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
@@ -84,6 +85,8 @@ export async function GET() {
     hasBody,
     hasChest,
     preferredFit: profile?.preferredFit ?? null,
+    // The one department they shop, if they named one — the size converter's default line.
+    department: soleDepartment(profile?.shopsFor),
     closetCount,
     productCount,
     outcomeCount,

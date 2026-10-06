@@ -31,6 +31,42 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 88a — Men's and women's sizes, with EU split by country
+
+The founder: "US XS is French 34, but /check shows EU 44 — do we need a men's/women's
+switch?" Yes, and not only in the converter. `sizeConvert.ts`'s top tables were men's
+only (its own comment said women's "can be added later"), and `normalizeToAlpha` read
+every number on the men's EU jacket ladder, so in the engine a women's FR 34–40
+label normalised to nothing (a Sandro FR 40 in the closet was silently dropped) and
+FR 42–46 to the wrong rung.
+
+- `womensSizes.ts`: the women's ladder, rung = US women's number; DE/EU = US + 30,
+  FR = US + 32, IT = US + 36, UK = US + 4 (blitzresults.com and sizechart.com, which
+  agree; letter bands from size.ly). Spain left out: no source listed it alone.
+- The engine reads women's labels on that ladder when the line is women's — the page's
+  own word, each closet piece's `gender`, else the one department in `shopsFor` — and
+  exactly as before otherwise. `listingJudgement` likewise.
+- Converters (/check and the closet's size field): a 男装 | 女装 switch, defaulting to
+  the wearer's department or the piece's line; **EU is the main scale and opens into
+  FR and IT** (the founder's ask: French and UK can differ). UK stays its own scale.
+  A letter converts to a range (XS = US 0–2 = FR 32–34), which is shown but cannot be
+  written into a size field; "FR 34", "IT 38", "DE 32" are now valid sizes to store.
+- Honest gaps, written into the code and the page: tables disagree on what "EU"
+  means for women (German US + 30 vs French US + 32), so a bare number is read the
+  German way as a recorded choice; men's sizes are not split by country because the
+  published tables contradict each other; women's shoes (US ≈ EU − 31) are UNVERIFIED.
+- `docs/design/scoring-system.md` §10.
+
+Red first: 5 of 7 new tests failed before the change (including the dropped Sandro
+anchor). Seen at 390 and 1440 in Chinese: no overflow.
+
+`npm ci` (not `npm install`) brought in the `@vercel/analytics` package another
+machine added, leaving the lockfile untouched.
+
+798 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-10-06 · Session 87 — Memory sync: two invariants numbered (90)
 
 Sessions 83 and 84 ran on different machines and each added an invariant (90). Session

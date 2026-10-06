@@ -1187,7 +1187,7 @@ function EditRow({
         </div>
         <div className="sm:col-span-6">
           <Field label={t("size")}>
-            <SizeInput category={f.category} value={f.size} onChange={(v) => setF({ ...f, size: v })} />
+            <SizeInput category={f.category} value={f.size} onChange={(v) => setF({ ...f, size: v })} line={f.gender} />
           </Field>
         </div>
         <div className="sm:col-span-3">
@@ -2088,7 +2088,7 @@ function AddItemFlow({
                   </div>
                 </div>
               )}
-              <SizeInput category={form.category} value={form.size} onChange={(v) => setForm({ ...form, size: v })} />
+              <SizeInput category={form.category} value={form.size} onChange={(v) => setForm({ ...form, size: v })} line={form.gender} />
             </>
           )}
           {step === "fit" && (

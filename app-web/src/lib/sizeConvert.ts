@@ -4,9 +4,9 @@
 // in EU / US / cm." And: explain what the pants numbers mean.
 //
 // Scope is honest: cross-scale sizing is approximate (brands vary), so we round
-// to the nearest common rung and label everything "≈". The tables here are the
-// widely-published men's conversions; women's/kids' can be added later as extra
-// scale sets keyed by the same domain.
+// to the nearest common rung and label everything "≈". The first tables here are
+// the widely-published men's conversions; women's tops and shoes were added in
+// Session 88 (womensSizes.ts). Kids' are not here.
 //
 // Design: each size DOMAIN (from sizeSystems) has a set of SCALES. A scale knows
 // how to parse a raw string into a canonical numeric "rung", and how to render a
@@ -14,6 +14,7 @@
 // rung → render in every scale.
 
 import type { SizeDomain } from "./sizeSystems";
+import { WOMENS_LETTER_RUNG, renderWomens, womensLetter, womensUsNumber, type WomensCountry } from "./womensSizes";
 
 export type Scale = {
   id: string; // "EU" | "US" | "UK" | "CM" | "ALPHA" | "WAIST_IN" | "WAIST_CM"
@@ -24,7 +25,15 @@ export type Scale = {
   parse: (raw: string) => number | null;
   // Render a canonical rung as a label in this scale.
   render: (rung: number) => string;
+  /**
+   * The scale this one is a country of (Session 88): FR and IT sit under EU, shown
+   * when the reader opens "EU" for detail. Absent for top-level scales.
+   */
+  parent?: string;
 };
+
+/** Which line's tables to use: men's (the default, and what existed before) or women's. */
+export type SizeLine = "mens" | "womens";
 
 // ---------------- SHOES ----------------
 // Canonical rung = EU size (the most granular common scale for shoes).
@@ -187,14 +196,84 @@ const bottomScales: Scale[] = [
   },
 ];
 
+// ---------------- WOMEN'S TOPS (Session 88) ----------------
+// Canonical rung = the US women's number; every country is an offset from it
+// (womensSizes.ts, with its sources). A letter covers two numbers, so a letter's
+// rung is odd and renders as a range: XS = US 0–2 = FR 32–34.
+function womensNumberScale(id: WomensCountry, label: string, example: string, parent?: string): Scale {
+  return {
+    id,
+    label,
+    example,
+    parent,
+    parse: (raw) => {
+      const s = raw.trim().toUpperCase();
+      // The scale is chosen, so a bare number is in it; a prefix must match it.
+      const m = s.match(/^([A-Z]{2})?\s*(00|\d{1,2})$/);
+      if (!m) return null;
+      if (m[1] && m[1] !== id && !(id === "EU" && m[1] === "DE")) return null;
+      return womensUsNumber(`${id} ${m[2]}`);
+    },
+    render: (us) => `${id} ${renderWomens(us, id)}`,
+  };
+}
+
+const womensTopScales: Scale[] = [
+  {
+    id: "ALPHA",
+    label: "S / M / L",
+    example: "S",
+    parse: (raw) => {
+      const s = raw.trim().toUpperCase().split("/")[0];
+      return WOMENS_LETTER_RUNG[s as keyof typeof WOMENS_LETTER_RUNG] ?? null;
+    },
+    render: (us) => {
+      // A range's letter is the letter of its upper number (XS covers 0–2).
+      const n = Math.round(us);
+      return womensLetter(n % 2 === 0 ? n : n + 1) ?? "—";
+    },
+  },
+  womensNumberScale("US", "US", "4"),
+  womensNumberScale("UK", "UK", "8"),
+  womensNumberScale("EU", "EU / DE", "36"),
+  womensNumberScale("FR", "FR", "38", "EU"),
+  womensNumberScale("IT", "IT", "42", "EU"),
+];
+
+// ---------------- WOMEN'S SHOES ----------------
+// Women's US shoe ≈ EU − 31 (vs men's − 33). UNVERIFIED as a rule of thumb: the
+// published tables disagree by half a size at the ends, so this stays "≈" like the
+// men's table, and the EU / UK / cm rows are the men's ones (the same foot).
+const womensShoeScales: Scale[] = shoeScales.map((s) =>
+  s.id === "US"
+    ? {
+        ...s,
+        label: "US (women's)",
+        example: "8",
+        parse: (raw) => {
+          const m = raw.trim().match(/^US\s*(\d{1,2}(?:\.5)?)$/i);
+          return m ? Number(m[1]) + 31 : null;
+        },
+        render: (eu) => `US ${trimNum(eu - 31)}`,
+      }
+    : s,
+);
+
 const DOMAIN_SCALES: Partial<Record<SizeDomain, Scale[]>> = {
   shoe: shoeScales,
   top: topScales,
   bottom: bottomScales,
 };
 
-export function scalesForDomain(domain: SizeDomain): Scale[] {
-  return DOMAIN_SCALES[domain] ?? [];
+const WOMENS_DOMAIN_SCALES: Partial<Record<SizeDomain, Scale[]>> = {
+  shoe: womensShoeScales,
+  top: womensTopScales,
+  // Waist in inches and cm is the same measurement on either line.
+  bottom: bottomScales,
+};
+
+export function scalesForDomain(domain: SizeDomain, line: SizeLine = "mens"): Scale[] {
+  return (line === "womens" ? WOMENS_DOMAIN_SCALES : DOMAIN_SCALES)[domain] ?? [];
 }
 
 export type Conversion = { scaleId: string; scaleLabel: string; value: string };
@@ -204,8 +283,8 @@ export type Conversion = { scaleId: string; scaleLabel: string; value: string };
  * rendered in every scale for that domain. Returns [] if the domain has no
  * conversion table (socks/accessories) or the value can't be parsed.
  */
-export function convert(domain: SizeDomain, raw: string, fromScaleId: string): Conversion[] {
-  const scales = scalesForDomain(domain);
+export function convert(domain: SizeDomain, raw: string, fromScaleId: string, line: SizeLine = "mens"): Conversion[] {
+  const scales = scalesForDomain(domain, line);
   const from = scales.find((s) => s.id === fromScaleId);
   if (!from) return [];
   const rung = from.parse(raw);
@@ -218,8 +297,8 @@ export function convert(domain: SizeDomain, raw: string, fromScaleId: string): C
 }
 
 /** Best-guess which scale a raw string is in (for auto-detecting free text). */
-export function detectScale(domain: SizeDomain, raw: string): string | null {
-  for (const s of scalesForDomain(domain)) {
+export function detectScale(domain: SizeDomain, raw: string, line: SizeLine = "mens"): string | null {
+  for (const s of scalesForDomain(domain, line)) {
     if (s.parse(raw) != null) return s.id;
   }
   return null;

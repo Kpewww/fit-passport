@@ -2,6 +2,7 @@
 // /api/recommend (recompute with a fit-preference override). Keeps engine-input
 // assembly in one place so the two endpoints can't drift.
 
+import { soleDepartment } from "./womensSizes";
 import type { Locale } from "@/i18n/config";
 import { prisma } from "./db";
 import { easeFor, recommend, type EngineInput, type EngineOutput, type OutcomeInput } from "./fitEngine";
@@ -84,7 +85,9 @@ export async function computeRecommendation(
       preferredFit: effectiveFit,
       chestIsEstimated: !hasOwnChest && prior != null,
     },
-    product: { brand: product.brand, category: product.category },
+    // The line decides how numeric sizes are read (womensSizes.ts): the page's own
+    // word first, else the one department the wearer says they shop.
+    product: { brand: product.brand, category: product.category, gender: lineOf(product.rawJson) ?? soleDepartment(profile?.shopsFor) },
     // One mapping for every caller — see engineInput.ts for why waist is not in it.
     sizes: engineSizes(product.sizeOptions),
     knownGood: knownGood.map((k) => ({
@@ -98,6 +101,7 @@ export async function computeRecommendation(
       // from. Feeds the personal ease target in personalEase.ts.
       garmentChestCm: k.garmentChestCm,
       garmentMeasuredFrom: k.garmentMeasuredFrom,
+      gender: k.gender ?? soleDepartment(profile?.shopsFor),
     })),
     outcomes: priorOutcomes.map<OutcomeInput>((o) => ({
       purchasedSize: o.purchasedSize,
@@ -124,6 +128,7 @@ export async function computeRecommendation(
         profile: engineInput.profile as ListingProfile,
         easeCm: easeFor(engineInput, M).easeCm,
         knownGood: engineInput.knownGood,
+        line: engineInput.product.gender,
         seller: source.seller,
       },
       M,
@@ -153,6 +158,17 @@ export async function computeRecommendation(
 }
 
 type ListingProfile = Parameters<typeof judgeListing>[0]["profile"];
+
+/** The product's line as the extractor read it ("mens" | "womens" | "unisex"), or null. */
+function lineOf(rawJson: string | null | undefined): string | null {
+  if (!rawJson) return null;
+  try {
+    const g = JSON.parse(rawJson)?.gender;
+    return g === "mens" || g === "womens" || g === "unisex" ? g : null;
+  } catch {
+    return null;
+  }
+}
 
 function sourceOf(rawJson: string | null | undefined): { listing?: boolean; categoryGuessed?: boolean; seller?: SellerReading } | null {
   if (!rawJson) return null;

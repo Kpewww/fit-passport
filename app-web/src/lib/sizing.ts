@@ -3,6 +3,7 @@
 // These are the ONLY place we normalize regional size labels. Every consumer
 // of size strings goes through here so the fit engine stays domain-agnostic.
 
+import { womensLetter, womensUsNumber } from "./womensSizes";
 import { CATEGORY_EASE_CM, EASE_CM } from "./scoringConstants";
 
 export type Category =
@@ -37,13 +38,27 @@ const EU_TO_ALPHA: Record<number, AlphaSize> = {
   60: "XXL",
 };
 
-/** Parse a size label into a normalized alpha slot (best-effort). */
-export function normalizeToAlpha(raw: string | null | undefined): AlphaSize | null {
+/**
+ * Parse a size label into a normalized alpha slot (best-effort).
+ *
+ * `line` is the garment's line when known. On the women's line a numeric label is
+ * read on the women's ladder, with its country prefix (womensSizes.ts: "FR 34" and
+ * "IT 38" are the same size); otherwise numbers are read as men's EU jacket sizes,
+ * as they always were. Session 88.
+ */
+export function normalizeToAlpha(raw: string | null | undefined, line?: string | null): AlphaSize | null {
   if (!raw) return null;
   const s = raw.trim().toUpperCase();
 
   // Pure alpha match
   if ((ALPHA_LADDER as readonly string[]).includes(s)) return s as AlphaSize;
+
+  if (line === "womens") {
+    const us = womensUsNumber(s);
+    if (us != null) return womensLetter(us);
+    const prefixed = s.match(/^(?:US|UK|EU|FR|IT)\s*(XXS|XS|S|M|L|XL|XXL|XXXL)$/);
+    if (prefixed) return prefixed[1] as AlphaSize;
+  }
 
   // "EU 48", "EU48", "48"
   const eu = s.match(/^(?:EU\s*)?(\d{2})$/);
@@ -54,7 +69,7 @@ export function normalizeToAlpha(raw: string | null | undefined): AlphaSize | nu
 
   // "US M", "US 10" — strip the region prefix and retry
   const us = s.match(/^US\s*(.+)$/);
-  if (us) return normalizeToAlpha(us[1]);
+  if (us) return normalizeToAlpha(us[1], line);
 
   // "2XL", "3XL", "2X" — the way most US retailers print the top of the ladder.
   // Without this they normalise to null, and a null alpha is dropped silently by
@@ -70,7 +85,7 @@ export function normalizeToAlpha(raw: string | null | undefined): AlphaSize | nu
 
   // "M/L" ambiguous → take first
   const slash = s.split("/")[0];
-  if (slash !== s) return normalizeToAlpha(slash);
+  if (slash !== s) return normalizeToAlpha(slash, line);
 
   return null;
 }
