@@ -33,6 +33,7 @@ import {
 import { domainForCategory } from "./sizeSystems";
 import { biasForBrand, type BrandBias } from "./brandBias";
 import { directionToLadderShift, isDirectional, nearestOption } from "./fitDirection";
+import { styleKeys, styleRelation } from "./styleWords";
 import { EN_TEXT, engineText, type DirectionKey, type Dim, type EngineText, type SignalName } from "./engineText";
 import type { Locale } from "@/i18n/config";
 import { reportConsistency } from "./closetConsistency";
@@ -127,6 +128,10 @@ export type KnownGoodInput = {
   garmentMeasuredFrom?: string | null;
   /** The piece's own line — how its numeric size is read (womensSizes.ts). Session 88. */
   gender?: string | null;
+  /** The closet row, so a reason can say which piece it used (Session 88b). */
+  id?: string;
+  /** What the wearer calls it ("Ribbed cardigan") — named in the reason, and its style words compared. */
+  name?: string | null;
 };
 
 export type OutcomeInput = {
@@ -160,6 +165,8 @@ export type EngineInput = {
     category?: string | null;
     /** The product's line, "mens" | "womens" | "unisex", when the page said (Session 88). */
     gender?: string | null;
+    /** The product's name — its style words pick the closet's closest pieces (styleWords.ts). */
+    name?: string | null;
   };
   sizes: SizeOptionInput[];
   knownGood: KnownGoodInput[];
@@ -172,6 +179,8 @@ export type Reason = {
   signal: "measurement-fit" | "known-good" | "preference" | "outcome" | "completeness" | "brand-bias";
   weight: number; // contribution to this size's score, positive = supports
   message: string;
+  /** On a known-good reason: the closet piece it came from (Session 88b). */
+  itemId?: string;
 };
 
 // Ordinal fit verdict for a size, from the signed body-vs-garment delta. This is
@@ -508,6 +517,17 @@ function scoreKnownGood(
 
   let best = 0;
   let bestMsg = "";
+  let bestId: string | undefined;
+  // The product's style words ("cardigan", "cable"): among same-brand pieces, one
+  // of the same style is the better reference (styleWords.ts). Session 88b.
+  const productStyles = styleKeys(product.name);
+  const isStrong = (kg: KnownGoodInput) =>
+    !!product.brand && !!product.category &&
+    kg.brand.toLowerCase() === product.brand.toLowerCase() && kg.category.toLowerCase() === product.category.toLowerCase();
+  // When the closet holds a piece of the product's own style, every OTHER piece of
+  // that brand and type — a different style, or one whose name says none — comes
+  // after it. With no same-style piece, only a clearly different style is marked down.
+  const sameStyleExists = knownGood.some((kg) => isStrong(kg) && styleRelation(productStyles, styleKeys(kg.name)) === "same");
   for (const kg of knownGood) {
     const kgAlpha = normalizeToAlpha(kg.size, kg.gender);
     const kgIdx = alphaIndex(kgAlpha);
@@ -551,11 +571,16 @@ function scoreKnownGood(
     // usually comes with, when in fact it is one of the most informative items in
     // the closet.
     const trust = kg.fitDirection != null ? DIRECTED_ANCHOR_TRUST : kg.fitRating / 5;
-    const mult = strong ? KNOWN_GOOD.mult.strong : sameCat ? KNOWN_GOOD.mult.sameCategory : KNOWN_GOOD.mult.other;
+    const relation = styleRelation(productStyles, styleKeys(kg.name));
+    const styleOff = strong && (relation === "different" || (sameStyleExists && relation !== "same"));
+    const mult =
+      (strong ? KNOWN_GOOD.mult.strong : sameCat ? KNOWN_GOOD.mult.sameCategory : KNOWN_GOOD.mult.other) *
+      (styleOff ? KNOWN_GOOD.styleMismatch : 1);
     const s = proximity * trust * mult;
     if (s > best) {
       best = s;
-      const label = `${kg.brand} ${kg.size}`;
+      bestId = kg.id;
+      const label = M.pieceLabel(kg.brand, kg.size, kg.name);
       const dirWord: DirectionKey | null =
         isDirectional(kg.fitDirection) && kg.fitDirection != null ? (nearestOption(kg.fitDirection).key as DirectionKey) : null;
       // Prefer the direction in the explanation when there is one — "runs snug"
@@ -580,7 +605,7 @@ function scoreKnownGood(
     }
   }
   return best > 0
-    ? { score: best, reason: { signal: "known-good", weight: W.knownGood * best, message: bestMsg } }
+    ? { score: best, reason: { signal: "known-good", weight: W.knownGood * best, message: bestMsg, ...(bestId ? { itemId: bestId } : {}) } }
     : { score: 0, reason: null };
 }
 

@@ -8,6 +8,7 @@ import {
   Button,
   Card,
   ConfidenceRing,
+  FitStars,
   LinkButton,
   Segmented,
   Skeleton,
@@ -25,6 +26,7 @@ import { isResaleHost } from "@/lib/sellerMeasurements";
 import type { Judgement } from "@/lib/listingJudgement";
 import { useGarmentText } from "@/i18n/garment";
 import { Headline } from "@/components/Headline";
+import { GarmentIcon } from "@/components/GarmentIcon";
 import { PICKABLE_CATEGORIES } from "@/lib/garments";
 
 // three.js only loads if someone opens the 3D view. Boundaried because a failed
@@ -38,7 +40,7 @@ type SizeScore = {
   normalized: string | null;
   score: number;
   confidence: number;
-  reasons: Array<{ signal: string; weight: number; message: string }>;
+  reasons: Array<{ signal: string; weight: number; message: string; itemId?: string }>;
   verdict?: "too small" | "snug" | "true to size" | "relaxed" | "too big";
 };
 
@@ -643,6 +645,76 @@ function LoadingResult() {
   );
 }
 
+type ClosetPiece = {
+  id: string;
+  brand: string;
+  displayName: string | null;
+  category: string;
+  size: string;
+  color: string | null;
+  fitRating: number;
+  imageDataUrl: string | null;
+};
+
+/**
+ * The closet pieces behind the answer: the one a reason used, and every other
+ * piece of the same brand and type — so someone with five Maje sweaters sees which
+ * one counted, and that the others are a different size. Session 88b.
+ */
+function ClosetBasis({ product, result }: { product: Product; result: CheckResponse["result"] }) {
+  const t = useT("check");
+  const g = useGarmentText();
+  const [items, setItems] = useState<ClosetPiece[] | null>(null);
+  const usedId = result.best.reasons.find((r) => r.signal === "known-good")?.itemId ?? null;
+  const brand = (product.brand ?? "").toLowerCase();
+
+  useEffect(() => {
+    if (!usedId && !brand) return;
+    fetch("/api/closet").then((r) => r.json()).then((j) => setItems(j.items ?? [])).catch(() => setItems([]));
+  }, [usedId, brand]);
+
+  if (!items) return null;
+  const same = items.filter((it) => brand && it.brand.toLowerCase() === brand && it.category === product.category);
+  const used = items.find((it) => it.id === usedId);
+  // The piece the answer used first, then the rest of that brand and type.
+  const shown = used ? [used, ...same.filter((it) => it.id !== used.id)] : same;
+  if (shown.length === 0) return null;
+  const sizes = new Set(same.map((it) => it.size.toUpperCase()));
+  const unnamed = same.filter((it) => !it.displayName).length;
+
+  return (
+    <div className="border-t border-line px-6 py-4 sm:px-8">
+      <p className="eyebrow mb-2.5 text-ink-faint">{t("basis.title")}</p>
+      <ul className="space-y-2">
+        {shown.map((it) => (
+          <li key={it.id} className={`flex min-w-0 items-center gap-3 rounded-xl px-2.5 py-2 ${it.id === usedId ? "bg-brand-tint ring-1 ring-brand/30" : "ring-1 ring-line"}`}>
+            <span className="flex h-10 w-10 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-paper-soft">
+              {it.imageDataUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={it.imageDataUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <GarmentIcon category={it.category} size={22} className="text-ink-faint" />
+              )}
+            </span>
+            <span className="min-w-0 flex-1 text-sm">
+              <span className="block truncate font-medium text-ink">
+                {it.brand} {it.displayName ? `· ${it.displayName}` : it.color ? `· ${g.color(it.color)}` : `· ${g.label(it.category)}`}
+              </span>
+              <span className="text-xs text-ink-soft">{t("basis.size", { size: it.size })}</span>
+            </span>
+            <FitStars rating={it.fitRating} size={12} />
+            {it.id === usedId && <span className="flex-shrink-0 rounded-full bg-brand px-2 py-0.5 text-[10px] font-semibold text-white">{t("basis.used")}</span>}
+          </li>
+        ))}
+      </ul>
+      {same.length >= 2 && sizes.size >= 2 && <p className="mt-2 text-xs text-ink-soft">{t("basis.split", { n: same.length })}</p>}
+      {same.length >= 2 && unnamed >= 2 && (
+        <Link href="/closet" className="mt-1.5 inline-block text-xs font-medium text-brand hover:underline">{t("basis.nameThem")}</Link>
+      )}
+    </div>
+  );
+}
+
 function Result({
   data,
   fit,
@@ -777,6 +849,9 @@ function Result({
             </details>
           )}
         </div>
+
+        {/* Which closet pieces this leaned on (Session 88b). */}
+        <ClosetBasis product={product} result={result} />
 
         {/* Where the numbers came from. */}
         <div className="border-t border-line px-6 py-4 sm:px-8">

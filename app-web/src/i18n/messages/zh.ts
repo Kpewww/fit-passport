@@ -295,6 +295,14 @@ export const zh: Messages = {
       bodyGuessing: "我们可以读取商品页面；但在不了解你的情况下，只能参考品牌提供的尺码表。花两分钟完成设置，答案会更贴近你。",
       bodyMissing: "每项补充都能提升推荐可信度，每次推荐也始终展示判断依据。",
     },
+    basis: {
+      size: "尺码 {size}",
+      title: "依据的衣橱单品",
+      used: "这次参考的",
+      unnamed: "未命名",
+      split: "你有 {n} 件这样的衣服，尺码不一样，所以推荐以最接近的那件为准。",
+      nameThem: "给它们起个名字，方便区分",
+    },
     result: {
       lowConfidence: "依据较少的推荐",
       whyLower: "这次可信度为何较低",
@@ -878,6 +886,7 @@ export const zh: Messages = {
   },
 
   closet: {
+    nameToTell: "起个名字，和同款区分",
     eyebrow: "衣橱",
     title: "所穿所爱，合身有迹。",
     lede: "把你已有且真正合身的衣服记在这里。每一件，都是一份合身依据，让 Fit Passport 更懂不同品牌穿在你身上的差异。",

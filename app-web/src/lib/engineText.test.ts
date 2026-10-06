@@ -26,6 +26,7 @@ const ARGS: Args = {
   anchorShifted: [true, "COS L", "oversized"],
   anchorAdjustedSteps: [2, "COS L", "slim"],
   anchorMatches: ["Uniqlo M", "tshirt"],
+  pieceLabel: ["Uniqlo", "M", "罗纹开衫"],
   anchorSteps: [1, "Uniqlo M"],
   exchanged: ["M", "L", "Uniqlo"],
   returned: ["M", null, "tight"],

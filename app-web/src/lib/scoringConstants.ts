@@ -97,6 +97,13 @@ export const KNOWN_GOOD = {
   /** Score lost per ladder step between the anchor and a size. */
   perStep: 0.5,
   mult: { strong: 1.0, sameCategory: 0.75, other: 0.55 },
+  /**
+   * A same-brand, same-category piece of a different style from the product (a
+   * crew-neck when buying a cardigan; styleWords.ts) — or one whose name names no
+   * style, when the closet also holds a piece of the product's own style — counts
+   * for this much of a same-style one. Session 88b.
+   */
+  styleMismatch: 0.6,
 } as const;
 
 /** How a past keep/return moves a size (scoreOutcome). */
@@ -345,6 +352,7 @@ export const PROVENANCE: Record<string, ConstantSource> = {
   "KNOWN_GOOD.mult.strong": A("same brand and category"),
   "KNOWN_GOOD.mult.sameCategory": A("same category, other brand"),
   "KNOWN_GOOD.mult.other": A("other category"),
+  "KNOWN_GOOD.styleMismatch": A("a different style of the same brand is weaker evidence than the same style; not measured — no closet with style-named pieces has an outcome yet"),
 
   "OUTCOME.perStep": A("same as KNOWN_GOOD.perStep"),
   "OUTCOME.keepBoost": A("a keep counts for less than a return"),

@@ -31,6 +31,38 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 88b — Which Maje sweater: naming the piece, and the same style first
+
+The founder owns many Maje sweaters, and "Maje sweater" is not one garment. Three
+problems, all asked for: a reason said "Matches your Maje M" without saying which piece;
+the closet showed look-alike pieces with nothing to tell them apart; and a cropped
+cardigan counted the same as a crew-neck when buying a cardigan.
+
+- **The reason names the piece**: `EngineText.pieceLabel` uses the wearer's own name
+  for it (Maje "Cropped cardigan" M; 中文 Maje「Cropped cardigan」M), unchanged when the
+  piece has none; the reason carries the piece's `itemId`.
+- **/check lists the closet pieces behind the answer**: the one used first (marked),
+  then every other piece of that brand and type with its size, and says when they
+  differ; with two or more unnamed, a link to name them.
+- **Same style first** (`styleWords.ts`, both languages: cardigan/开衫, crew/圆领,
+  cable/绞花, cropped/短款 …). Among same-brand, same-type pieces, a different style —
+  or, when a same-style piece exists, any other piece — counts for
+  `KNOWN_GOOD.styleMismatch` = 0.6, registered as **assumed**. A product name with no
+  style word changes nothing.
+- **The closet marks unnamed look-alikes** ("起个名字，和同款区分").
+- `docs/design/scoring-system.md` §11.
+
+Red first: the new tests failed before each change. The browser run caught one the
+tests had not: with two unnamed Maje S pieces beside a named "Cropped cardigan" M, the
+first rule (penalise only a clearly different style) still picked S; a test for that
+case failed, then passed after the rule was widened. Seen in both languages.
+
+Local SQLite lacked Session 84's columns (another machine): `npm run db:push` locally.
+
+804 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-10-06 · Session 88a — Men's and women's sizes, with EU split by country
 
 The founder: "US XS is French 34, but /check shows EU 44 — do we need a men's/women's

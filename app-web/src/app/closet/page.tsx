@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Button, Card, Chip, EmptyState, Field, FitStars, LinkButton, Page, PageHeader, Segmented, inputClass } from "@/components/ui";
 import {
@@ -101,6 +101,7 @@ export default function ClosetPage() {
   // The piece just added — its card asks for a photo until it gets one. The
   // photo is never a step in the add flow (build-state ㉙); this is the nudge.
   const [nudgeId, setNudgeId] = useState<string | null>(null);
+  const lookalikes = useMemo(() => lookalikeIds(items), [items]);
   // Once the closet has its three pieces, the add flow folds into one row so the
   // clothes, not the form, lead the page.
   const [addOpen, setAddOpen] = useState(false);
@@ -413,6 +414,7 @@ export default function ClosetPage() {
                   onOpen={setDetailGroup}
                   onPhoto={setPhoto}
                   nudge={g.items.some((it) => it.id === nudgeId)}
+                  lookalike={!g.isVariant && lookalikes.has(g.items[0].id)}
                   selectMode={selectMode}
                   selected={selected.has(g.items[0].id)}
                   onToggleSelect={toggleSelect}
@@ -439,6 +441,7 @@ export default function ClosetPage() {
                   onPatch={patch}
                   onPhoto={setPhoto}
                   nudgeId={nudgeId}
+                  lookalikes={lookalikes}
                   onRemove={remove}
                   onReload={load}
                   onMove={move}
@@ -549,6 +552,7 @@ function CollectionSection({
   onPatch,
   onPhoto,
   nudgeId,
+  lookalikes,
   onRemove,
   onReload,
   onMove,
@@ -574,6 +578,8 @@ function CollectionSection({
   onPatch: (id: string, data: Record<string, unknown>) => void;
   onPhoto: (id: string, file: File | null) => Promise<void>;
   nudgeId: string | null;
+  /** Pieces that look like another of the same brand and type, and have no name. */
+  lookalikes: Set<string>;
   onRemove: (id: string) => void;
   onReload: () => void;
   onMove: (collectionId: string | null, itemId: string, dir: -1 | 1) => void;
@@ -705,6 +711,7 @@ function CollectionSection({
               onOpen={onOpenDetail}
               onPhoto={onPhoto}
               nudge={g.items.some((it) => it.id === nudgeId)}
+              lookalike={!g.isVariant && lookalikes.has(g.items[0].id)}
               selectMode={selectMode}
               selected={selected.has(g.items[0].id)}
               onToggleSelect={onToggleSelect}
@@ -775,7 +782,10 @@ function GalleryCard({
   canMoveUp,
   canMoveDown,
   onMove,
+  lookalike = false,
 }: {
+  /** Another piece of the same brand and type exists and this one has no name. */
+  lookalike?: boolean;
   group: Group;
   onOpen: (g: Group) => void;
   onPhoto: (id: string, file: File | null) => Promise<void>;
@@ -884,6 +894,11 @@ function GalleryCard({
           </span>
           {!group.isVariant && <FitStars rating={head.fitRating} size={11} className="flex-shrink-0" />}
         </div>
+        {lookalike && !selectMode && (
+          <button type="button" onClick={() => onOpen(group)} className="mt-1 text-[11px] font-medium text-brand hover:underline">
+            {t("nameToTell")}
+          </button>
+        )}
         {failed && <p className="mt-1 text-xs text-bad">{t("photoFailed")}</p>}
       </figcaption>
     </figure>
@@ -891,6 +906,25 @@ function GalleryCard({
 }
 
 type Group = { key: string; label: string; items: Item[]; isVariant: boolean };
+
+/**
+ * Pieces with no name that share a brand and type with another piece — "Maje
+ * sweater" twice, and nothing to tell them apart on a check (Session 88b).
+ */
+function lookalikeIds(items: Item[]): Set<string> {
+  const byKey = new Map<string, Item[]>();
+  for (const it of items) {
+    if (it.groupId) continue; // sizes of one garment are one piece
+    const k = `${it.brand.trim().toLowerCase()}|${it.category}`;
+    byKey.set(k, [...(byKey.get(k) ?? []), it]);
+  }
+  const out = new Set<string>();
+  for (const arr of byKey.values()) {
+    if (arr.length < 2) continue;
+    for (const it of arr) if (!it.displayName) out.add(it.id);
+  }
+  return out;
+}
 
 function buildGroups(items: Item[]): Group[] {
   const byGroup = new Map<string, Item[]>();

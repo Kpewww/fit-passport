@@ -20,13 +20,13 @@ provenances:
 |---|---|---|
 | **measured** | Computed from data we hold, with the n stated | **1** |
 | **cited** | A published source states this value — not just the idea | **2** |
-| **assumed** | A judgement, usually hand-tuned against a handful of cases | **107** |
+| **assumed** | A judgement, usually hand-tuned against a handful of cases | **108** |
 
 `scoringConstants.test.ts` fails if a value has no provenance, if a provenance
 names no value, if a measured entry does not state its n, or if an assumed value
 is missing from the calibration table below.
 
-**Read the counts plainly.** 107 of 110 numbers are judgements. The
+**Read the counts plainly.** 108 of 111 numbers are judgements. The
 literature the engine cites supports the SHAPE of the model — fit as a bipolar
 ordinal (too small … too big), fit as a multi-measurement signal — and not a
 single one of its values. That is normal for a scorer before it has outcome data,
@@ -336,6 +336,23 @@ rung, and the converter showed a women's XS as EU 44.
 - Men's sizes are not split by country: published tables disagree on whether French
   and Italian men's numbers differ from the EU's.
 
+## 11. Which closet piece, and the same style first (Session 88b)
+
+Someone with five Maje sweaters was told "Matches your Maje M" — not which one — and a
+cropped cardigan counted the same as a crew-neck when buying a cardigan.
+
+- A known-good reason names the piece by the wearer's own name for it
+  (`EngineText.pieceLabel`: Maje "Cropped cardigan" M / Maje「Cropped cardigan」M) and
+  carries its `itemId`; /check lists that piece first, then every other piece of the
+  same brand and type with its size.
+- `styleWords.ts`: neckline, opening, knit and cut words, in both languages. Among
+  same-brand, same-type pieces, a piece of a **different** style — or, when a piece of
+  the product's own style exists, any other piece — counts for
+  `KNOWN_GOOD.styleMismatch` (0.6, assumed) of a same-style one. A product whose name
+  names no style changes nothing.
+- The closet marks unnamed look-alikes ("起个名字，和同款区分"), since a name is what
+  makes both of the above work.
+
 ## Calibration table
 
 Generated from `scoringConstants.ts` (`PROVENANCE`). Every **assumed** row is a
@@ -385,6 +402,7 @@ number we have not yet earned; the test fails if one is missing here.
 | `KNOWN_GOOD.mult.strong` | 1 | assumed | same brand and category |
 | `KNOWN_GOOD.mult.sameCategory` | 0.75 | assumed | same category, other brand |
 | `KNOWN_GOOD.mult.other` | 0.55 | assumed | other category |
+| `KNOWN_GOOD.styleMismatch` | 0.6 | assumed | a different style of the same brand is weaker evidence than the same style; not measured — no closet with style-named pieces has an outcome yet |
 | `OUTCOME.perStep` | 0.5 | assumed | same as KNOWN_GOOD.perStep |
 | `OUTCOME.keepBoost` | 0.6 | assumed | a keep counts for less than a return |
 | `OUTCOME.goodFitRating` | 4 | assumed | 4 of 5 on the old unipolar rating |

@@ -302,6 +302,14 @@ export const en = {
       bodyGuessing: "We can read any product page, but with nothing about you we can only fall back on the brand's own chart. Two minutes of setup changes the answer completely.",
       bodyMissing: "Each of these makes the engine measurably more confident — and every recommendation still shows its reasoning.",
     },
+    basis: {
+      size: "Size {size}",
+      title: "From your closet",
+      used: "Used here",
+      unnamed: "No name",
+      split: "You own {n} of these in different sizes, so the answer leans on the closest one.",
+      nameThem: "Give them names to tell them apart",
+    },
     result: {
       lowConfidence: "Low-confidence recommendation",
       whyLower: "Why confidence is lower here",
@@ -887,6 +895,7 @@ export const en = {
   },
 
   closet: {
+    nameToTell: "Name it to tell it apart",
     eyebrow: "Closet",
     title: "Your closet",
     lede: "Clothes you own that fit well. Each piece teaches the size engine how a brand runs on your body.",

@@ -34,6 +34,8 @@ export interface EngineText {
   anchorShifted(up: boolean, label: string, pref: FitPreference): string;
   anchorAdjustedSteps(steps: number, label: string, pref: FitPreference): string;
   anchorMatches(label: string, category: string): string;
+  /** A closet piece as a reason names it: brand, the wearer's own name for it, size. */
+  pieceLabel(brand: string, size: string, name?: string | null): string;
   anchorSteps(steps: number, label: string): string;
   // ---- purchase outcomes ----
   exchanged(from: string, to: string, brand: string | null): string;
@@ -139,6 +141,7 @@ export const EN_TEXT: EngineText = {
   anchorShifted: (up, label, pref) => `Sized ${up ? "up" : "down"} from your ${label} for a ${pref} fit`,
   anchorAdjustedSteps: (steps, label, pref) => `${steps} step${steps > 1 ? "s" : ""} from your ${pref}-adjusted ${label}`,
   anchorMatches: (label, category) => `Matches your ${label} (${category})`,
+  pieceLabel: (brand, size, name) => (name ? `${brand} "${name}" ${size}` : `${brand} ${size}`),
   anchorSteps: (steps, label) => `${steps} step${steps > 1 ? "s" : ""} from your ${label}`,
   exchanged: (from, to, brand) => `You exchanged a ${from} for a ${to} in ${brand ?? "similar"}`,
   returned: (size, brand, how) =>
@@ -289,6 +292,7 @@ export const ZH_TEXT: EngineText = {
     `以你已有的 ${label} 为参照，${up ? "上调" : "下调"}一个尺码等级，以贴近${ZH_PREF[pref]}版型。`,
   anchorAdjustedSteps: (steps, label, pref) => `按${ZH_PREF[pref]}版型调整后，与已有的 ${label} 相差 ${steps} 个尺码等级。`,
   anchorMatches: (label, category) => `与已有的 ${label}（${ZH_CATEGORY[category] ?? "衣物"}）尺码相符。`,
+  pieceLabel: (brand, size, name) => (name ? `${brand}「${name}」${size}` : `${brand} ${size}`),
   anchorSteps: (steps, label) => `与已有的 ${label} 相差 ${steps} 个尺码等级。`,
   exchanged: (from, to, brand) => `你曾将${brandText(brand)}的 ${from} 换成 ${to}。`,
   returned: (size, brand, how) =>

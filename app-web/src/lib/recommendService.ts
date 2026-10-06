@@ -17,6 +17,7 @@ type ProductWithSizes = {
   id: string;
   brand: string | null;
   category: string | null;
+  productName?: string | null;
   /** The extractor's payload; its `source` says whether this is a one-off listing. */
   rawJson?: string | null;
   sizeOptions: Array<{
@@ -87,7 +88,13 @@ export async function computeRecommendation(
     },
     // The line decides how numeric sizes are read (womensSizes.ts): the page's own
     // word first, else the one department the wearer says they shop.
-    product: { brand: product.brand, category: product.category, gender: lineOf(product.rawJson) ?? soleDepartment(profile?.shopsFor) },
+    product: {
+      brand: product.brand,
+      category: product.category,
+      gender: lineOf(product.rawJson) ?? soleDepartment(profile?.shopsFor),
+      // Its style words pick the closest pieces in the closet (styleWords.ts).
+      name: product.productName ?? null,
+    },
     // One mapping for every caller — see engineInput.ts for why waist is not in it.
     sizes: engineSizes(product.sizeOptions),
     knownGood: knownGood.map((k) => ({
@@ -102,6 +109,9 @@ export async function computeRecommendation(
       garmentChestCm: k.garmentChestCm,
       garmentMeasuredFrom: k.garmentMeasuredFrom,
       gender: k.gender ?? soleDepartment(profile?.shopsFor),
+      // Which piece a reason used, by name (Session 88b).
+      id: k.id,
+      name: k.displayName,
     })),
     outcomes: priorOutcomes.map<OutcomeInput>((o) => ({
       purchasedSize: o.purchasedSize,
