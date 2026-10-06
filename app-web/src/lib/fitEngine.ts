@@ -82,6 +82,11 @@ export type SizeOptionInput = {
  * sizes' own chest or waist numbers, else by numeric labels (32 < 34). Null when
  * none of these can tell — the alternative line then names the size and nothing more.
  */
+/** Does a size row state any number the engine could score? */
+function hasMeasurement(s: SizeOptionInput): boolean {
+  return [s.chestCm, s.waistCm, s.hipCm, s.shoulderCm, s.bodyChestMinCm, s.bodyWaistMinCm, s.bodyHipMinCm].some((v) => v != null);
+}
+
 export function sizeDirection(from: string, to: string, sizes: SizeOptionInput[]): "bigger" | "smaller" | null {
   const sign = (d: number | null | undefined) => (d == null || d === 0 || Number.isNaN(d) ? null : d > 0 ? "bigger" : "smaller");
   const byAlpha = sign(alphaShift(normalizeToAlpha(from), normalizeToAlpha(to)));
@@ -1101,7 +1106,11 @@ export function recommend(
     // The UI's own heading already states that the sizes tied. This says the one
     // thing it does not: what is missing. Four sentences repeating the tie made
     // the screen read as an apology instead of an instruction.
-    ? M.undeterminedHelp
+    // Asking for a chest the wearer already gave reads as not listening (Session
+    // 84, an H&M top with its chart behind a button): say what is actually missing.
+    ? (input.profile.chestCm != null && !input.profile.chestIsEstimated && !input.sizes.some(hasMeasurement)
+        ? M.undeterminedNoChart
+        : M.undeterminedHelp)
     : [
         ...(topReasons.length > 0 ? topReasons : [M.limitedData]),
         ...contextReasons,

@@ -1273,3 +1273,23 @@ granted), and the popup's server must be set via localStorage `fp-origin`.
 **NEW INVARIANT:**
 **(90)** **A picture's address leaves the browser only when the shopper picks it, and we keep
 the numbers read from it, never the picture.** A table on the page outranks any picture.
+
+**SESSION 84 (2026-10-05).** 731 → **783 tests**. Extension **0.7.1**. (Session 83 was the other
+machine's, 10/01: chart-picture picker, 0.7.0.)
+- **Categories:** `top` (tank, cami, bodysuit, blouse, the bare word last); track tops and suits →
+  jacket; `dress`/`jumpsuit`/`swimsuit` in a new `onepiece` domain, **scored on chest, waist and hip**
+  (hip only for onepiece; `DIMENSIONS.hip` weight 0.6); `underwear` in `intimate`, refused.
+  Hip is parsed (body ranges and garment), stored (`SizeOption.bodyHipMin/MaxCm`, migration
+  `20261005120000_size_body_hip`), and shown on /check.
+- **Classifier:** `lib/categoryModel.ts` — TypeSafe Jev after the word rules fail (name + page
+  category only), confidence ≥ 0.6, Haiku fallback behind `CATEGORY_FALLBACK=haiku`.
+  `TYPESAFE_API_KEY` NOT set yet. `categoryFrom: "model"`; a confident `not_clothing` sets
+  `source.notClothing`.
+- **Refusals:** extension page + guessed category → `pick-category` (popup picker, `category` in
+  /api/check, `withUserCategory`); `not-apparel` stays for server-read pages and `notClothing`.
+- Tie text `undeterminedNoChart` when the wearer's chest is on file and sizes carry no numbers.
+
+**NEW INVARIANT:**
+**(90)** **A word rule, then a classifier, then the shopper — never "not a garment" for a page the
+shopper clicked on unless something positively said it is not clothing.** The shopper's choice never
+overrules what the page said.

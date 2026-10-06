@@ -807,3 +807,14 @@ measurements" on every no-chart refusal, and the alternative line's direction fi
 **Next — founder:** the key is already set in production (`features.chartImage: true`,
 2026-10-01); confirm a spend limit and try the first real read on the UltraClub eBay
 listing (`todo/people/06`), then add it to the store listing. Jev (TypeSafe AI) was considered and rejected for this: text only.
+
+## Session 84 (2026-10-05) — "not a garment" for real clothes, DONE (84a–d)
+
+The founder's store-extension checks (adidas track top, H&M velvet top) were refused as not
+clothing. **Shipped:** the missing words; one-pieces sized on chest/waist/hip; a Jev classifier
+(Haiku fallback); the popup asks when nobody knows; extension 0.7.1.
+**Next — founder:** set `TYPESAFE_API_KEY` in Vercel (typesafe.ai console); recheck the adidas and
+H&M links in your own Chrome (open the size guide first); after 0.6.0 is approved, upload the
+0.7.1 store zip. **Engineering:** calibrate `CATEGORY_MODEL.minConfidence` once a key exists;
+the website's /check could offer the same picker; a page WITH a chart and an unknown name still
+defaults to tshirt silently — ask there too.

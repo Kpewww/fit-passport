@@ -111,10 +111,9 @@ async function askHaiku(state: string, key: string): Promise<CategoryAnswer | nu
 }
 
 /**
- * Our category for a product the word rules did not know, or null: no key, a
- * failed call, an answer below the confidence threshold, or "not clothing" —
- * which the caller treats exactly as before (guessed, refused, or the shopper
- * asked). Never throws.
+ * Our category for a product the word rules did not know — or "not_clothing" —
+ * or null: no key, a failed call, an answer below the confidence threshold,
+ * which the caller treats exactly as before. Never throws.
  */
 type Env = Partial<Record<"TYPESAFE_API_KEY" | "ANTHROPIC_API_KEY" | "CATEGORY_FALLBACK", string>>;
 
@@ -133,7 +132,9 @@ export async function classifyCategory(hint: CategoryHint, env: Env = process.en
   if (jevFailed && env.CATEGORY_FALLBACK === "haiku" && env.ANTHROPIC_API_KEY) {
     try { answer = await askHaiku(state, env.ANTHROPIC_API_KEY); } catch { answer = null; }
   }
-  const usable = answer && answer.category in CATEGORY_CHOICES && answer.category !== "not_clothing" && answer.confidence >= CATEGORY_MODEL.minConfidence;
+  // "not_clothing" is returned too, when confident: the caller then keeps the
+  // page's refusal as "not a garment" instead of asking the shopper.
+  const usable = answer && answer.category in CATEGORY_CHOICES && answer.confidence >= CATEGORY_MODEL.minConfidence;
   const out = usable ? answer : null;
   if (cache.size > CATEGORY_MODEL.cacheEntries) cache.clear();
   cache.set(state, out);

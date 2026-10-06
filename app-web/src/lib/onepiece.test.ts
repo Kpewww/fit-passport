@@ -35,6 +35,17 @@ describe("a dress chart's hips are read", () => {
   });
 });
 
+describe("a tie on a page whose sizes carry no numbers", () => {
+  it("asks for the size chart, not for a chest the wearer already gave", () => {
+    const labelsOnly = ["XS", "S", "M", "L"].map((label) => ({ label }));
+    const r = recommend(input("top", labelsOnly, null));
+    expect(r.undetermined).toBe(true);
+    expect(r.explanation).toMatch(/size chart/);
+    const noBody = recommend({ ...input("top", labelsOnly, null), profile: { preferredFit: "regular" } });
+    expect(noBody.explanation).toMatch(/chest measurement/);
+  });
+});
+
 describe("a one-piece is scored on bust, waist and hip", () => {
   const sizes = () => parseSizeChart(DRESS_CHART)!.sizes.map((s) => ({ ...s }));
 

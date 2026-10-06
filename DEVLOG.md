@@ -31,6 +31,52 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-05 · Session 84d — When nobody can name the garment, the popup asks; a tie says what is missing (extension 0.7.1)
+
+**Ask the shopper.**
+- On a page the extension read, a guessed category with no chart is now refused as
+  **`pick-category`**, not "not a garment": the shopper clicked on what they took
+  for a product.
+- Exception: when the classifier was confident the page is not clothing (a gift card,
+  a game top-up), `source.notClothing` keeps "not a garment".
+- A pasted link our server read keeps its old answer.
+- The popup shows a garment list — the categories the engine can score,
+  `PICKABLE_CATEGORIES` — and checks again with `category`. `/api/check` accepts it,
+  and `withUserCategory` applies it only over a guess or a model's answer, never over
+  what the page said.
+- The "not a garment, open the chart" wording added in 84a became unreachable and
+  was removed.
+
+**A tie says what is missing.** On the synthetic H&M page (real name, chart behind
+a button), the answer asked the shopper to "add your chest measurement" — which they
+had. When the wearer's own chest is on file and no size carries a number, the tie
+now says: *this page lists its sizes without measurements; open its size chart and
+check again* (`undeterminedNoChart`, EN/ZH).
+
+**Extension 0.7.1** on top of 0.7.0 — the picker and its words (EN/ZH). The website
+zip is 0.7.1. The store package is built at `store-build/…-0.7.1-store.zip`, to
+upload after 0.6.0 is approved.
+
+**Verified, end to end** (local production build; real popup, dev extension;
+synthetic pages with the real product names; only the active-tab lookup stubbed):
+
+| Page | Answer |
+|---|---|
+| H&M "Lace-Trimmed Velvet Top", no chart | the sizes tie, and the popup asks for the size chart |
+| adidas "Satin Polka Dots TT Track Top", size guide open | **M · 60% · true to size** |
+| "The Margot" (a name no rule knows) | the picker; after Dress → the size-chart prompt |
+
+**Tests:** 783 passed + 1 skipped; typecheck and build clean. Updated:
+- pick-category vs not-apparel;
+- the user's choice never overrules the page;
+- the tie message;
+- two older tests that expected "not-apparel" for an unnamed extension page.
+
+**Still unverified:** a real Jev answer (no key yet), and both shops' real pages.
+They refuse automated browsers; the founder checks them in their own Chrome.
+
+---
+
 ## 2026-10-05 · Session 84c — When no word rule knows the name, a classifier names the garment (Jev first, Haiku as fallback)
 
 The founder asked whether the extractor could use **TypeSafe's Jev** to recognise

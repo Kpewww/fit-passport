@@ -52,6 +52,8 @@ export interface EngineText {
   /** The runner-up, worded by which way it lies from the pick; null when unknown. */
   alternative(label: string, direction: "bigger" | "smaller" | null): string;
   undeterminedHelp: string;
+  /** The same tie when the wearer's numbers are on file and the page's sizes carry none. */
+  undeterminedNoChart: string;
   limitedData: string;
   crossDomain(closet: SizeDomain[], product: SizeDomain): string;
   // ---- learned ease (personalEase.ts) ----
@@ -62,8 +64,8 @@ export interface EngineText {
   // ---- refusals (checkPolicy.ts) ----
   refuseUnreadable: string;
   refuseNotApparel: string;
-  /** The same, for a page the browser extension read: there is no link to paste. */
-  refuseNotApparelPage: string;
+  /** The extension's page named no garment anyone could recognise: ask the shopper. */
+  refusePickCategory: string;
   refuseUnsupported(domain: SizeDomain): string;
   refuseNoChartExtension: string;
   refuseNoChartServer: string;
@@ -169,6 +171,9 @@ export const EN_TEXT: EngineText = {
   undeterminedHelp:
     "Add your chest measurement, or one garment of this type that fits you well — " +
     "either one turns this into a real answer.",
+  undeterminedNoChart:
+    "This page lists its sizes without measurements. Open its size chart and check again — " +
+    "or add one garment of this type that fits you well.",
   limitedData: "Limited product data — recommendation based on your closet and preference.",
   crossDomain: (closet, product) =>
     `Your closet is ${closet.map((d) => EN_DOMAIN_ONE[d]).join(" & ")}, but this is a ${EN_DOMAIN_ONE[product]} item. ` +
@@ -194,8 +199,7 @@ export const EN_TEXT: EngineText = {
     "Anything we showed you here would be our guess rather than their numbers.",
   refuseNotApparel:
     "We couldn't find a clothing item on that page. Paste a link to a specific garment — a product page for a shirt, jacket, trousers and so on.",
-  refuseNotApparelPage:
-    "We couldn't tell what kind of garment is on this page. If it is clothing, open the page's size chart, then press Re-scan.",
+  refusePickCategory: "We couldn't tell what kind of garment this is. Choose one and we'll check it.",
   refuseUnsupported: (domain) =>
     `We don't size ${EN_DOMAIN_PLURAL[domain]} yet. The engine works by comparing your ` +
     `measurements to the garment's, and we don't hold the measurement that would ` +
@@ -308,6 +312,7 @@ export const ZH_TEXT: EngineText = {
       ? `备选：${label} 也较接近。`
       : `备选：${label} 也较接近。若你希望${direction === "bigger" ? "更宽松一些" : "更贴身一些"}，可以考虑。`,
   undeterminedHelp: "补充胸围，或添加一件同类型且合身的衣物，即可让这次推荐有据可依。",
+  undeterminedNoChart: "这一页只列出了尺码，没有尺寸。请打开页面上的尺码表后再查看一次，或添加一件同类型且合身的衣物。",
   limitedData: "商品信息有限，当前推荐依据你的衣橱和版型偏好。",
   crossDomain: (closet, product) =>
     `衣橱中已有${closet.map((d) => ZH_DOMAIN[d]).join("、")}，当前商品属于${ZH_DOMAIN[product]}。` +
@@ -323,7 +328,7 @@ export const ZH_TEXT: EngineText = {
     `你曾记录 ${n} 件 ${brand} 单品${big ? "偏大" : "偏小"}，因此本次${big ? "下调" : "上调"}一个尺码等级。`,
   refuseUnreadable: "商店未向我们提供可读取的页面，因此没有可用的尺码表。取得商品尺码数据后，才能给出有依据的推荐。",
   refuseNotApparel: "未在此页面找到服装商品。请粘贴某件具体衣物的商品页链接，如衬衫、外套或长裤。",
-  refuseNotApparelPage: "没能从这一页认出衣服的品类。如果这是一件衣服，请先打开页面上的尺码表，再点击“重新扫描”。",
+  refusePickCategory: "没能认出这是哪类衣服。选一个品类，我们再帮你查看。",
   refuseUnsupported: (domain) =>
     `目前支持上装和下装，暂不支持${ZH_DOMAIN[domain]}。推荐需要将身形数据与商品尺寸对应，而当前缺少这一品类所需的数据，因此无法给出可靠的推荐。`,
   refuseNoChartExtension:

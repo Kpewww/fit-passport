@@ -780,7 +780,9 @@ export async function extractSmart(
       name: parsed.productName || parsed.headline,
       structured: parsed.category ?? null,
     });
-    if (named) {
+    if (named?.category === "not_clothing") {
+      out.source.notClothing = named.by; // a gift card, a game top-up: say so, ask nothing
+    } else if (named) {
       out.category = named.category;
       out.source.categoryGuessed = false;
       out.source.categoryFrom = "model";

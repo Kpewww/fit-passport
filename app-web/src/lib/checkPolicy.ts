@@ -23,6 +23,7 @@ type Source = ExtractedProduct["source"];
 export type RefusalCode =
   | "unreadable"
   | "not-apparel"
+  | "pick-category"
   | "unsupported-category"
   | "no-chart-on-page"
   | "no-measurements-listing";
@@ -65,11 +66,13 @@ export function refusalFor(extracted: ExtractedProduct, M: EngineText = EN_TEXT)
   // real size chart: a game top-up page, an article, a login wall. The extractor
   // used to default such pages to "tshirt" and hand back a confident size.
   if (source.categoryGuessed && source.sizesFrom === "estimated") {
+    // The shopper clicked the extension on a page they took for a product: no
+    // word rule and no classifier knew the garment, so ask them (Session 84d)
+    // rather than tell them it is not clothing.
+    if (source.fetch === "extension" && !source.notClothing) return { error: "pick-category", message: M.refusePickCategory };
     return {
       error: "not-apparel",
-      // The extension read the page in the shopper's own tab: "paste a link"
-      // would be advice for a different product (Session 84).
-      message: source.fetch === "extension" ? M.refuseNotApparelPage : M.refuseNotApparel,
+      message: M.refuseNotApparel,
     };
   }
 

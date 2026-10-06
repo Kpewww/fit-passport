@@ -32,11 +32,11 @@ describe("classifyCategory", () => {
     expect(Object.keys(calls[0].body.questions.category.criteria)).toEqual(Object.keys(CATEGORY_CHOICES));
   });
 
-  it("does not use a split answer, or 'not clothing'", async () => {
+  it("does not use a split answer; passes a confident 'not clothing' on", async () => {
     stub(() => jev("top", CATEGORY_MODEL.minConfidence - 0.01));
     expect(await classifyCategory({ name: "Thing A" }, { TYPESAFE_API_KEY: "k" })).toBeNull();
     stub(() => jev("not_clothing", 0.99));
-    expect(await classifyCategory({ name: "Thing B" }, { TYPESAFE_API_KEY: "k" })).toBeNull();
+    expect(await classifyCategory({ name: "Gift Card" }, { TYPESAFE_API_KEY: "k" })).toMatchObject({ category: "not_clothing" });
   });
 
   it("calls nothing without a key, and asks once per name", async () => {

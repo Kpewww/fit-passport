@@ -52,6 +52,13 @@ export const GARMENTS: Garment[] = [
   { category: "other", label: "Other", section: "Accessories", domain: "top" },
 ];
 
+/** What the shopper may choose when no one could name the garment (Session 84d):
+ *  the categories the engine can score. Order is the popup's. */
+export const PICKABLE_CATEGORIES = [
+  "top", "tshirt", "shirt", "sweater", "hoodie", "jacket",
+  "pants", "jeans", "shorts", "skirt", "dress", "jumpsuit",
+] as const;
+
 export const SECTION_ORDER: GarmentSection[] = ["Tops", "Bottoms", "One-piece", "Footwear", "Accessories"];
 
 const BY_CATEGORY: Record<string, Garment> = Object.fromEntries(

@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 import { detectCategoryStrict } from "./extractor";
 import { domainForCategory, SCOREABLE_DOMAINS } from "./sizeSystems";
 import { refusalFor } from "./checkPolicy";
-import { extractFromUrl } from "./extractor";
+import { extractFromUrl, withUserCategory } from "./extractor";
 
 describe("the category rules know tops, one-pieces and underwear", () => {
   it.each([
@@ -68,12 +68,23 @@ describe("what the shopper is told", () => {
     expect(r?.error).toBe("no-chart-on-page"); // the chart sits behind H&M's size-guide button
   });
 
-  it("a page the extension read gets advice about the page, not about pasting a link", () => {
+  it("a page the extension read, whose garment nobody could name, asks the shopper (84d)", () => {
     const ex = extractFromUrl("https://shop.test/p/12345");
     ex.source = { ...ex.source, categoryGuessed: true, sizesFrom: "estimated", fetch: "extension" };
     const r = refusalFor(ex);
-    expect(r?.error).toBe("not-apparel");
+    expect(r?.error).toBe("pick-category");
     expect(r?.message).not.toMatch(/paste/i);
-    expect(r?.message).toMatch(/Re-scan/);
+    // A pasted link our server read keeps the old answer.
+    ex.source = { ...ex.source, fetch: "ok" };
+    expect(refusalFor(ex)?.error).toBe("not-apparel");
+  });
+
+  it("the shopper's choice applies over a guess, never over what the page said", () => {
+    const guessed = extractFromUrl("https://shop.test/p/12345");
+    guessed.source = { ...guessed.source, categoryGuessed: true };
+    const picked = withUserCategory(guessed, "dress");
+    expect(picked).toMatchObject({ category: "dress", source: { categoryGuessed: false, categoryFrom: "user" } });
+    const named = extractFromUrl("https://shop.test/p/mens-oxford-shirt");
+    expect(withUserCategory(named, "dress").category).toBe(named.category);
   });
 });

@@ -112,6 +112,8 @@ export type ExtractedProduct = {
     categoryFrom?: CategorySource;
     /** Which classifier named the category, when categoryFrom is "model" (Session 84c). */
     categoryModel?: "jev" | "haiku";
+    /** A classifier was confident this is not clothing at all (Session 84d). */
+    notClothing?: "jev" | "haiku";
     /**
      * Present only when `sizesFrom === "brand-chart"`. The page a user can open
      * to check every number we showed them, and the date we read it. A curated
@@ -470,6 +472,16 @@ export function detectCategoryStrict(text: string): string | null {
     return cat;
   }
   return null;
+}
+
+/**
+ * The garment the shopper chose, when nothing else could name it (Session 84d) —
+ * the popup's answer to a "pick-category" refusal. Applied only over a guess or a
+ * model's answer: what the page itself said is not overruled.
+ */
+export function withUserCategory(ex: ExtractedProduct, category: string | undefined): ExtractedProduct {
+  if (!category || !(ex.source.categoryGuessed || ex.source.categoryFrom === "model")) return ex;
+  return { ...ex, category, source: { ...ex.source, categoryGuessed: false, categoryFrom: "user" } };
 }
 
 /** Where the garment category was read from — see `resolveCategory`. */

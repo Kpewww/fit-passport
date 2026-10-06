@@ -28,6 +28,8 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser, readSession } from "@/lib/session";
 import { extractSmart } from "@/lib/extractorLLM";
 import { MAX_IMAGE_URL } from "@/lib/chartImage";
+import { withUserCategory } from "@/lib/extractor";
+import { PICKABLE_CATEGORIES } from "@/lib/garments";
 import { computeRecommendation } from "@/lib/recommendService";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import {
@@ -110,6 +112,9 @@ const Body = z.object({
       category: z.enum(["top", "bottom"]).optional(),
     })
     .optional(),
+  // The garment the shopper chose after a "pick-category" refusal (Session 84d):
+  // one of the categories the engine can score.
+  category: z.enum(PICKABLE_CATEGORIES).optional(),
   // A picture the shopper picked as the size chart (Session 83): its address only.
   // chartImage.ts refuses anything but https.
   chartImage: z.string().max(MAX_IMAGE_URL).optional(),
@@ -148,14 +153,14 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { url, html, seller, chartImage } = parsed.data;
+  const { url, html, seller, chartImage, category } = parsed.data;
 
   if (chartImage) {
     const picks = await rateLimit(`chart-pick:${user.id}`, PICKS_PER_USER.limit, PICKS_PER_USER.windowMs);
     if (!picks.ok) return tooMany(picks.retryAfterSec, req);
   }
 
-  const extracted = await extractSmart(url, { html, seller, chartImage });
+  const extracted = withUserCategory(await extractSmart(url, { html, seller, chartImage }), category);
 
   // Not clothing, a page we never saw, a category we cannot measure anyone
   // against, or an invented ladder on a page the browser handed us: say so, and

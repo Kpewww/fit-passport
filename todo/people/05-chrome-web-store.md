@@ -88,3 +88,11 @@ What the original plan said:
   (`docs/store/chrome-web-store.md`) only after a real picture read has worked
   (`todo/people/06`).
 - Meanwhile the site's download is already 0.7.0.
+
+## Status (2026-10-05)
+
+- **0.7.1 supersedes 0.7.0** for the store update: after 0.6.0 is approved, upload
+  `app-web/store-build/fit-passport-extension-0.7.1-store.zip` (rebuild with
+  `node scripts/pack-extension.mjs --store` if the source changed). 0.7.1 adds the
+  "What kind of garment is this?" picker (Session 84d).
+- Server fixes for "not a garment" (84a–c) apply to the installed 0.6.0 already.

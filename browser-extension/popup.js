@@ -296,7 +296,7 @@
 
   // ---- 3. send, and render whatever the API says ----
 
-  async function send(cap, seller, chartImage) {
+  async function send(cap, seller, chartImage, category) {
     show(el("p", { className: "muted", text: t("checking") }));
     var res;
     var body = null;
@@ -308,14 +308,14 @@
         credentials: "include",
         // x-fp-lang: the popup's language, so reasons and refusals come back in it.
         headers: { "content-type": "application/json", "x-fp-client": "extension/" + CFG.version, "x-fp-lang": I18N.lang() },
-        body: JSON.stringify({ url: cap.url, html: cap.html, seller: seller || undefined, chartImage: chartImage || undefined }),
+        body: JSON.stringify({ url: cap.url, html: cap.html, seller: seller || undefined, chartImage: chartImage || undefined, category: category || undefined }),
       });
       try { body = await res.json(); } catch (e) { body = null; }
     } catch (e) {
       return message(
         t("unreachableTitle"),
         t(origin().indexOf("localhost") >= 0 ? "unreachableBodyDev" : "unreachableBody", { origin: origin() }),
-        [button(t("tryAgain"), function () { send(cap, seller, chartImage); }, true)]
+        [button(t("tryAgain"), function () { send(cap, seller, chartImage, category); }, true)]
       );
     }
     if (body) { cap.features = body.features || cap.features; cap.seller = seller; }
@@ -327,6 +327,7 @@
     "no-chart-on-page": "refusalNoChart",
     unreadable: "refusalUnreadable",
     "not-apparel": "refusalNotApparel",
+    "pick-category": "refusalPickCategory",
     "unsupported-category": "refusalUnsupported",
     "not-connected": "refusalNotConnected",
     "no-measurements-listing": "refusalNoMeasurements",
@@ -342,6 +343,7 @@
     if (status === 429) {
       return message(t("tooManyTitle"), t("tooManyBody"));
     }
+    if (status === 422 && code === "pick-category") return pickCategory(cap, body.message);
     if (status === 422) {
       var listingPage = cap && (cap.found.descFrame || cap.found.specs > 0);
       var noChart = code === "no-measurements-listing" || code === "no-chart-on-page";
@@ -576,6 +578,23 @@
   // the closet, and nothing that recommends a size reads it. The user confirms what
   // is saved — name, brand, the size they mean to buy — before anything is sent.
   // After a check, the stored check is referenced instead of resending the page.
+
+  // No word rule and no classifier could name the garment (Session 84d): the
+  // shopper says what it is, and the check runs again with that. The choices are
+  // the categories the engine can score (lib/garments.ts PICKABLE_CATEGORIES).
+  var PICKABLE = ["top", "tshirt", "shirt", "sweater", "hoodie", "jacket", "pants", "jeans", "shorts", "skirt", "dress", "jumpsuit"];
+  function pickCategory(cap, text) {
+    var sel = el("select", {}, PICKABLE.map(function (c) { return el("option", { value: c, text: t("pick_" + c) }); }));
+    show(
+      el("p", { className: "title", text: t("refusalPickCategory") }),
+      text ? el("p", { className: "muted", text: text }) : null,
+      el("div", { className: "form" }, [field(t("fieldCategory"), sel)]),
+      el("div", { className: "actions" }, [
+        button(t("check"), function () { send(cap, cap.seller, null, sel.value); }, true),
+        button(t("rescan"), start),
+      ])
+    );
+  }
 
   function field(label, input) {
     return el("label", { className: "field" }, [el("span", { text: label }), input]);

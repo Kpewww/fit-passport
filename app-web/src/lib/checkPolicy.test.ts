@@ -84,6 +84,9 @@ describe("refusalFor — an invented ladder on a page the browser handed us", ()
     ).toBe("unsupported-category");
     expect(
       refusalFor(product({ fetch: "extension", sizesFrom: "estimated", sizesSynthesized: true, categoryGuessed: true }))?.error,
+    ).toBe("pick-category"); // Session 84d: the shopper is asked; "not-apparel" is for pages a classifier ruled out
+    expect(
+      refusalFor(product({ fetch: "extension", sizesFrom: "estimated", sizesSynthesized: true, categoryGuessed: true, notClothing: "jev" }))?.error,
     ).toBe("not-apparel");
   });
 });
@@ -283,11 +286,13 @@ describe("category from the page, not only the URL", () => {
     expect(refusalFor(out)?.error).toBe("unsupported-category");
   });
 
-  it("still refuses a page that names no garment anywhere", async () => {
+  it("still refuses a page that names no garment anywhere — by asking, when no classifier ruled it out", async () => {
     offline();
     const out = await extractSmart("https://shop.test/p/item-999", {
       html: `<html><body><h1>Gift Card</h1>${prose}</body></html>`,
     });
-    expect(refusalFor(out)?.error).toBe("not-apparel");
+    // No key in tests, so nothing said "not clothing": the shopper is asked
+    // (Session 84d) — and nothing is sized.
+    expect(refusalFor(out)?.error).toBe("pick-category");
   });
 });
