@@ -179,6 +179,7 @@ Everything below degrades gracefully when unset — the app stays fully usable.
 
 | Variable | Unlocks | Notes |
 |---|---|---|
+| *(none)* — Vercel Web Analytics | Page views (`@vercel/analytics`, `components/SiteAnalytics.tsx`, Session 86) | Needs **Analytics enabled** for the project in the Vercel dashboard; no variable. Account codes and query strings are redacted before sending. |
 | `TYPESAFE_API_KEY` | Garment category for a name no word rule knows (Jev, `lib/categoryModel.ts`, Session 84c) | **Not set yet — the founder adds it.** Only the product name and the page's category string are sent. Unset: the shopper is asked. |
 | `CATEGORY_FALLBACK` | `haiku` lets Claude Haiku name the category when Jev cannot | Off by default (cost). |
 | `ANTHROPIC_API_KEY` | LLM text extract + vision size-chart OCR (Claude Haiku 4.5) | **SET in production since 2026-08-25.** ~$0.012/check, capped ~$0.026. Only page text is sent, never measurements. NOTE: it cannot fix a 403 — it only helps pages we actually fetched. |

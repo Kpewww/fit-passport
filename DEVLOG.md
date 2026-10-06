@@ -31,6 +31,52 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 86 — Vercel Web Analytics, with the secrets taken out of the URLs first
+
+The founder asked for Vercel Web Analytics: check first, use the project's package
+manager, put the component in the root layout, leave the look unchanged, deploy as
+usual, and verify that production reports page views.
+
+**Checked first:** no `@vercel/analytics` or `@vercel/speed-insights` in
+`package.json`, nothing in `src/`, no Content-Security-Policy that would block the
+script. The package manager is npm (`package-lock.json`).
+
+**Install.** `npm install @vercel/analytics` stopped with ERESOLVE. 2.0.1 lists
+SvelteKit as an *optional* peer, and npm 11 walked that chain to Vite 8, while vitest
+pins Vite 5; 1.6.1 has the same peers. Next ≥ 13 and React 18, the peers that apply,
+are satisfied.
+- Installed with `--legacy-peer-deps`, which only stops npm auto-installing peers.
+- The lockfile gained the one package (+43 lines, nothing removed, no SvelteKit).
+- A plain `npm install` and `npm ci` against it then pass. Vercel's install runs
+  against the same lockfile.
+- No `.npmrc` change, so nothing else resolves differently.
+
+**Component** (`components/SiteAnalytics.tsx`, rendered last in `app/layout.tsx`).
+Vercel's privacy page says every data point carries the URL, and two of ours hold
+secrets:
+- `/u/<account code>` — the code is the read capability for that closet;
+- `/reset?token=…`.
+
+`beforeSend` therefore drops every query string and fragment and turns an account code
+into `[code]` (`analyticsRedact.test.ts`). It is a client component because a
+function cannot cross from the server layout.
+
+**Privacy page** (EN/ZH, `cookies.none`): page visits are counted with Vercel Web
+Analytics — no cookies, no visitor identity kept past 24 hours, codes and query strings
+removed first (Vercel: visitors are a hash of the request, discarded after 24 hours).
+DEPLOYMENT.md notes that it needs Analytics enabled in the dashboard and no variable.
+
+**Verified locally:**
+- 791 tests passed + 1 skipped; typecheck and build clean; shared First Load JS
+  unchanged at 87.4 kB.
+- The page's visible elements are unchanged (header, main, footer, back-to-top).
+- The script tag is injected; it 404s locally, as it should, since only Vercel serves
+  it.
+
+Production check: below.
+
+---
+
 ## 2026-10-05 · Session 85d (prepared) — Calibrating the classifier, ready to run
 
 `eval/category.eval.ts` asks the real classifier about the 133 labelled names in `eval/category-names.json`: 50 the word rules already know, which check Jev itself, and 83 hard ones — kurta, bolero, cheongsam, palazzos, tankini, Chinese names, non-clothing items and deliberately unclear names. The names are written in shop style, not scraped.

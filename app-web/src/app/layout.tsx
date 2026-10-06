@@ -8,6 +8,7 @@ import { BackToTop } from "@/components/BackToTop";
 import { I18nProvider } from "@/i18n/client";
 import { htmlLang } from "@/i18n/config";
 import { getLocale, messagesFor } from "@/i18n/server";
+import { SiteAnalytics } from "@/components/SiteAnalytics";
 
 // Fonts are SELF-HOSTED (see src/app/fonts/LICENSE.md — both are OFL 1.1).
 // `next/font/google` downloads at BUILD time, so a deploy fails whenever Google
@@ -57,6 +58,9 @@ export default function RootLayout({
           <ClaimNudge />
           <BackToTop />
         </I18nProvider>
+        {/* Vercel Web Analytics (page views, cookieless, nothing visible), with secrets
+            redacted from URLs first — see SiteAnalytics.tsx. */}
+        <SiteAnalytics />
       </body>
     </html>
   );
