@@ -31,6 +31,14 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-05 · Session 85d (prepared) — Calibrating the classifier, ready to run
+
+`eval/category.eval.ts` asks the real classifier about the 133 labelled names in `eval/category-names.json`: 50 the word rules already know, which check Jev itself, and 83 hard ones — kurta, bolero, cheongsam, palazzos, tankini, Chinese names, non-clothing items and deliberately unclear names. The names are written in shop style, not scraped.
+
+The eval reports answered/accuracy for each threshold from 0.30 to 0.90 and recommends the lowest threshold whose answers are at least 95% right. It writes `eval/results/category-calibration-<date>.json` with names, answers and confidences only; the key is never printed or saved. It reads `TYPESAFE_API_KEY` from `app-web/.env.local` (git-ignored) and skips without it, as it did here. `CATEGORY_MODEL.minConfidence` stays at 0.6 (assumed) until it runs.
+
+---
+
 ## 2026-10-05 · Session 85c — The Uniqlo demo answers what Uniqlo's chart says; the eval captures are accounted for
 
 **todo 08, confirmed and fixed.** The capture of the real Uniqlo AIRism page made on
