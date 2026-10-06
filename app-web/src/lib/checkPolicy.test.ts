@@ -39,9 +39,23 @@ describe("refusalFor — the existing refusals, unchanged by the move", () => {
     expect(refusalFor(product({ fetch: "unreachable", sizesFrom: "estimated" }))?.error).toBe("unreadable");
   });
 
-  it("refuses when nothing identified a garment (⑪)", () => {
-    const r = refusalFor(product({ fetch: "ok", sizesFrom: "estimated", categoryGuessed: true }));
-    expect(r?.error).toBe("not-apparel");
+  it("refuses when nothing identified a garment (⑪) — and asks, when someone read the page (85b)", () => {
+    // Nobody read the page (the URL alone): not a garment, as before.
+    expect(refusalFor(product({ fetch: "skipped", sizesFrom: "estimated", categoryGuessed: true }))?.error).toBe("not-apparel");
+    // Our server read it, and no rule or classifier named the garment: ask.
+    expect(refusalFor(product({ fetch: "ok", sizesFrom: "estimated", categoryGuessed: true }))?.error).toBe("pick-category");
+    // A classifier sure it is not clothing keeps the old answer.
+    expect(refusalFor(product({ fetch: "ok", sizesFrom: "estimated", categoryGuessed: true, notClothing: "jev" }))?.error).toBe("not-apparel");
+  });
+
+  it("asks for the garment on a page WITH a chart whose garment nobody could name (85b)", () => {
+    // It used to be scored as a T-shirt, the guess's default.
+    expect(refusalFor(product({ fetch: "ok", sizesFrom: "page", categoryGuessed: true }))?.error).toBe("pick-category");
+    expect(refusalFor(product({ fetch: "extension", sizesFrom: "page", categoryGuessed: true }))?.error).toBe("pick-category");
+    // Named by the page, the chart is used as before.
+    expect(refusalFor(product({ fetch: "ok", sizesFrom: "page" }))).toBeNull();
+    // A one-off listing asks for the kind in its own judgement.
+    expect(refusalFor(product({ fetch: "extension", sizesFrom: "seller", categoryGuessed: true, listing: true }))).toBeNull();
   });
 
   it("refuses a category the engine cannot measure anyone against (㉜), naming it", () => {

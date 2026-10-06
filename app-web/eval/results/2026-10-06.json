@@ -1,0 +1,2029 @@
+{
+  "date": "2026-10-06",
+  "live": false,
+  "personas": [
+    {
+      "id": "m92",
+      "sex": "male",
+      "chestCm": 92,
+      "waistCm": 78,
+      "shoulderCm": 44,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "m100",
+      "sex": "male",
+      "chestCm": 100,
+      "waistCm": 86,
+      "shoulderCm": 46,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "m108",
+      "sex": "male",
+      "chestCm": 108,
+      "waistCm": 94,
+      "shoulderCm": 48,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "f84",
+      "sex": "female",
+      "chestCm": 84,
+      "waistCm": 66,
+      "shoulderCm": 38,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "f92",
+      "sex": "female",
+      "chestCm": 92,
+      "waistCm": 74,
+      "shoulderCm": 40,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "f100",
+      "sex": "female",
+      "chestCm": 100,
+      "waistCm": 82,
+      "shoulderCm": 42,
+      "preferredFit": "regular"
+    },
+    {
+      "id": "m-absurd",
+      "sex": "male",
+      "chestCm": 58,
+      "waistCm": 110,
+      "shoulderCm": 46,
+      "preferredFit": "regular",
+      "adversarial": "absurd-body"
+    },
+    {
+      "id": "f-absurd",
+      "sex": "female",
+      "chestCm": 60,
+      "waistCm": 115,
+      "shoulderCm": 40,
+      "preferredFit": "regular",
+      "adversarial": "absurd-body"
+    },
+    {
+      "id": "m-contra",
+      "sex": "male",
+      "chestCm": 100,
+      "waistCm": 86,
+      "shoulderCm": 46,
+      "preferredFit": "regular",
+      "adversarial": "contradictory-closet",
+      "closet": [
+        {
+          "brand": "Eval Closet",
+          "category": "tshirt",
+          "size": "M",
+          "fitDirection": -10,
+          "garmentOverChestCm": 14
+        },
+        {
+          "brand": "Eval Closet",
+          "category": "tshirt",
+          "size": "M",
+          "fitDirection": 0,
+          "garmentOverChestCm": 16
+        }
+      ]
+    },
+    {
+      "id": "f-contra",
+      "sex": "female",
+      "chestCm": 92,
+      "waistCm": 74,
+      "shoulderCm": 40,
+      "preferredFit": "regular",
+      "adversarial": "contradictory-closet",
+      "closet": [
+        {
+          "brand": "Eval Closet",
+          "category": "tshirt",
+          "size": "M",
+          "fitDirection": -10,
+          "garmentOverChestCm": 14
+        },
+        {
+          "brand": "Eval Closet",
+          "category": "tshirt",
+          "size": "M",
+          "fitDirection": 0,
+          "garmentOverChestCm": 16
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "B-brand-chart": {
+      "cases": 11,
+      "answered": 3,
+      "refused": 8,
+      "errors": 0,
+      "pageObtained": 0,
+      "pageChart": 0,
+      "usableChart": 3,
+      "readers": {},
+      "withTruth": 0,
+      "outcomes": {
+        "rightAnswer": 0,
+        "rightRefusal": 0,
+        "wrongAnswer": 0,
+        "wrongRefusal": 0
+      },
+      "labelsExact": 0,
+      "valuesWithinTolerance": {
+        "c": 0,
+        "w": 0
+      },
+      "kindRight": 0,
+      "recommendation": {
+        "n": 0,
+        "ok": 0
+      },
+      "provenanceRight": 0,
+      "calibration": {
+        "n": 0,
+        "brier": null,
+        "meanConfidence": null,
+        "hitRate": null,
+        "gap": null,
+        "confidentlyWrong": {
+          "count": 0,
+          "of": 0,
+          "above": 0.5
+        }
+      },
+      "stability": {
+        "picks": 9,
+        "meanAgreement": 0.877,
+        "fragile": 2,
+        "fragileBelow": 0.75
+      },
+      "guardrails": {
+        "checks": 6,
+        "passed": 6,
+        "failures": []
+      }
+    },
+    "S5-extension": {
+      "cases": 9,
+      "answered": 4,
+      "refused": 5,
+      "errors": 0,
+      "pageObtained": 9,
+      "pageChart": 3,
+      "usableChart": 4,
+      "readers": {
+        "table": 3
+      },
+      "withTruth": 0,
+      "outcomes": {
+        "rightAnswer": 0,
+        "rightRefusal": 0,
+        "wrongAnswer": 0,
+        "wrongRefusal": 0
+      },
+      "labelsExact": 0,
+      "valuesWithinTolerance": {
+        "c": 0,
+        "w": 0
+      },
+      "kindRight": 0,
+      "recommendation": {
+        "n": 0,
+        "ok": 0
+      },
+      "provenanceRight": 0,
+      "calibration": {
+        "n": 0,
+        "brier": null,
+        "meanConfidence": null,
+        "hitRate": null,
+        "gap": null,
+        "confidentlyWrong": {
+          "count": 0,
+          "of": 0,
+          "above": 0.5
+        }
+      },
+      "stability": {
+        "picks": 12,
+        "meanAgreement": 0.897,
+        "fragile": 2,
+        "fragileBelow": 0.75
+      },
+      "guardrails": {
+        "checks": 8,
+        "passed": 8,
+        "failures": []
+      }
+    }
+  },
+  "rows": [
+    {
+      "id": "arcteryx-atom-hoody-mens",
+      "url": "https://arcteryx.com/us/en/shop/mens/atom-hoody-9556",
+      "retailer": "Arc'teryx",
+      "capture": {
+        "committed": false,
+        "capturedAt": "2026-09-29T00:31:44.762Z",
+        "stats": {
+          "version": "0.1.0",
+          "domChars": 1268032,
+          "payloadChars": 1717,
+          "tablesSeen": 0,
+          "tablesKept": 0,
+          "ldJsonKept": 2,
+          "optionsKept": 0,
+          "swatchValuesKept": 0,
+          "chartImagesKept": 0,
+          "kindSnippets": 0,
+          "masked": 0,
+          "queryParamsDropped": 0,
+          "lang": "en-US",
+          "ms": 8
+        }
+      },
+      "truth": null,
+      "runs": [
+        {
+          "system": "B-brand-chart",
+          "outcome": "refuse",
+          "refusal": "unreadable",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "blocked",
+            "sizesSynthesized": true,
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 103
+            },
+            {
+              "label": "S",
+              "chestCm": 108
+            },
+            {
+              "label": "M",
+              "chestCm": 113
+            },
+            {
+              "label": "L",
+              "chestCm": 118
+            },
+            {
+              "label": "XL",
+              "chestCm": 123
+            }
+          ],
+          "picks": {},
+          "ms": 2
+        },
+        {
+          "system": "S5-extension",
+          "outcome": "refuse",
+          "refusal": "no-chart-on-page",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "extension",
+            "sizesSynthesized": true,
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 103
+            },
+            {
+              "label": "S",
+              "chestCm": 108
+            },
+            {
+              "label": "M",
+              "chestCm": 113
+            },
+            {
+              "label": "L",
+              "chestCm": 118
+            },
+            {
+              "label": "XL",
+              "chestCm": 123
+            }
+          ],
+          "picks": {},
+          "ms": 5
+        }
+      ],
+      "scores": null,
+      "guardrails": {
+        "B-brand-chart": [],
+        "S5-extension": []
+      },
+      "stability": {
+        "B-brand-chart": [],
+        "S5-extension": []
+      }
+    },
+    {
+      "id": "everlane-organic-cotton-crew-mens",
+      "url": "https://www.everlane.com/products/mens-organic-cotton-crew-tee-white",
+      "retailer": "Everlane",
+      "capture": {
+        "committed": false,
+        "capturedAt": "2026-09-29T00:31:58.288Z",
+        "stats": {
+          "version": "0.1.0",
+          "domChars": 1133721,
+          "payloadChars": 3924,
+          "tablesSeen": 0,
+          "tablesKept": 0,
+          "ldJsonKept": 1,
+          "optionsKept": 0,
+          "swatchValuesKept": 100,
+          "chartImagesKept": 0,
+          "kindSnippets": 0,
+          "masked": 0,
+          "queryParamsDropped": 0,
+          "lang": "en",
+          "ms": 10
+        }
+      },
+      "truth": null,
+      "runs": [
+        {
+          "system": "B-brand-chart",
+          "outcome": "refuse",
+          "refusal": "unreadable",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "blocked",
+            "sizesSynthesized": true,
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 94
+            },
+            {
+              "label": "S",
+              "chestCm": 99
+            },
+            {
+              "label": "M",
+              "chestCm": 104
+            },
+            {
+              "label": "L",
+              "chestCm": 109
+            },
+            {
+              "label": "XL",
+              "chestCm": 114
+            }
+          ],
+          "picks": {},
+          "ms": 0
+        },
+        {
+          "system": "S5-extension",
+          "outcome": "refuse",
+          "refusal": "no-chart-on-page",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "extension",
+            "sizesSynthesized": true,
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 94
+            },
+            {
+              "label": "S",
+              "chestCm": 99
+            },
+            {
+              "label": "M",
+              "chestCm": 104
+            },
+            {
+              "label": "L",
+              "chestCm": 109
+            },
+            {
+              "label": "XL",
+              "chestCm": 114
+            }
+          ],
+          "picks": {},
+          "ms": 2
+        }
+      ],
+      "scores": null,
+      "guardrails": {
+        "B-brand-chart": [],
+        "S5-extension": []
+      },
+      "stability": {
+        "B-brand-chart": [],
+        "S5-extension": []
+      }
+    },
+    {
+      "id": "gap-classic-tee-mens",
+      "url": "https://www.gap.com/browse/product.do?pid=440775082",
+      "retailer": "Gap",
+      "capture": {
+        "committed": false,
+        "capturedAt": "2026-09-29T00:32:06.311Z",
+        "stats": {
+          "version": "0.1.0",
+          "domChars": 2313025,
+          "payloadChars": 1829,
+          "tablesSeen": 0,
+          "tablesKept": 0,
+          "ldJsonKept": 2,
+          "optionsKept": 0,
+          "swatchValuesKept": 0,
+          "chartImagesKept": 0,
+          "kindSnippets": 0,
+          "masked": 0,
+          "queryParamsDropped": 1,
+          "lang": "en-US",
+          "ms": 14
+        }
+      },
+      "truth": null,
+      "runs": [
+        {
+          "system": "B-brand-chart",
+          "outcome": "refuse",
+          "refusal": "unreadable",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "blocked",
+            "sizesSynthesized": true,
+            "categoryGuessed": true
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 94
+            },
+            {
+              "label": "S",
+              "chestCm": 99
+            },
+            {
+              "label": "M",
+              "chestCm": 104
+            },
+            {
+              "label": "L",
+              "chestCm": 109
+            },
+            {
+              "label": "XL",
+              "chestCm": 114
+            }
+          ],
+          "picks": {},
+          "ms": 0
+        },
+        {
+          "system": "S5-extension",
+          "outcome": "refuse",
+          "refusal": "no-chart-on-page",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "extension",
+            "sizesSynthesized": true,
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 94
+            },
+            {
+              "label": "S",
+              "chestCm": 99
+            },
+            {
+              "label": "M",
+              "chestCm": 104
+            },
+            {
+              "label": "L",
+              "chestCm": 109
+            },
+            {
+              "label": "XL",
+              "chestCm": 114
+            }
+          ],
+          "picks": {},
+          "ms": 1
+        }
+      ],
+      "scores": null,
+      "guardrails": {
+        "B-brand-chart": [],
+        "S5-extension": []
+      },
+      "stability": {
+        "B-brand-chart": [],
+        "S5-extension": []
+      }
+    },
+    {
+      "id": "hm-regular-fit-tee-mens",
+      "url": "https://www2.hm.com/en_us/productpage.0685816002.html",
+      "retailer": "H&M",
+      "capture": null,
+      "truth": null,
+      "runs": [
+        {
+          "system": "B-brand-chart",
+          "outcome": "refuse",
+          "refusal": "unreadable",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "blocked",
+            "sizesSynthesized": true,
+            "categoryGuessed": true
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 92
+            },
+            {
+              "label": "S",
+              "chestCm": 97
+            },
+            {
+              "label": "M",
+              "chestCm": 102
+            },
+            {
+              "label": "L",
+              "chestCm": 107
+            },
+            {
+              "label": "XL",
+              "chestCm": 112
+            }
+          ],
+          "picks": {},
+          "ms": 0
+        }
+      ],
+      "scores": null,
+      "guardrails": {
+        "B-brand-chart": []
+      },
+      "stability": {
+        "B-brand-chart": []
+      }
+    },
+    {
+      "id": "nike-air-force-1-shoe-mens",
+      "url": "https://www.nike.com/t/air-force-1-low-mens-shoes-XVPIszaq",
+      "retailer": "Nike",
+      "capture": {
+        "committed": false,
+        "capturedAt": "2026-09-29T00:35:35.530Z",
+        "stats": {
+          "version": "0.1.0",
+          "domChars": 1379465,
+          "payloadChars": 1055,
+          "tablesSeen": 0,
+          "tablesKept": 0,
+          "ldJsonKept": 1,
+          "optionsKept": 0,
+          "swatchValuesKept": 0,
+          "chartImagesKept": 0,
+          "kindSnippets": 0,
+          "masked": 0,
+          "queryParamsDropped": 0,
+          "lang": "en-US",
+          "ms": 9
+        }
+      },
+      "truth": null,
+      "runs": [
+        {
+          "system": "B-brand-chart",
+          "outcome": "refuse",
+          "refusal": "unreadable",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "blocked",
+            "sizesSynthesized": true,
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 96
+            },
+            {
+              "label": "S",
+              "chestCm": 101
+            },
+            {
+              "label": "M",
+              "chestCm": 106
+            },
+            {
+              "label": "L",
+              "chestCm": 111
+            },
+            {
+              "label": "XL",
+              "chestCm": 116
+            }
+          ],
+          "picks": {},
+          "ms": 0
+        },
+        {
+          "system": "S5-extension",
+          "outcome": "refuse",
+          "refusal": "unsupported-category",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "extension",
+            "sizesSynthesized": true,
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 96
+            },
+            {
+              "label": "S",
+              "chestCm": 101
+            },
+            {
+              "label": "M",
+              "chestCm": 106
+            },
+            {
+              "label": "L",
+              "chestCm": 111
+            },
+            {
+              "label": "XL",
+              "chestCm": 116
+            }
+          ],
+          "picks": {},
+          "ms": 0
+        }
+      ],
+      "scores": null,
+      "guardrails": {
+        "B-brand-chart": [],
+        "S5-extension": []
+      },
+      "stability": {
+        "B-brand-chart": [],
+        "S5-extension": []
+      }
+    },
+    {
+      "id": "nike-dri-fit-legend-tee-mens",
+      "url": "https://www.nike.com/t/dri-fit-legend-mens-fitness-t-shirt-JmKL0d",
+      "retailer": "Nike",
+      "capture": {
+        "committed": false,
+        "capturedAt": "2026-09-29T00:32:35.455Z",
+        "stats": {
+          "version": "0.1.0",
+          "domChars": 1282412,
+          "payloadChars": 1211,
+          "tablesSeen": 0,
+          "tablesKept": 0,
+          "ldJsonKept": 1,
+          "optionsKept": 0,
+          "swatchValuesKept": 0,
+          "chartImagesKept": 0,
+          "kindSnippets": 0,
+          "masked": 0,
+          "queryParamsDropped": 0,
+          "lang": "en-US",
+          "ms": 9
+        }
+      },
+      "truth": null,
+      "runs": [
+        {
+          "system": "B-brand-chart",
+          "outcome": "answer",
+          "source": {
+            "sizesFrom": "brand-chart",
+            "fetch": "blocked",
+            "measurementKind": "body",
+            "measurementKindFrom": "brand",
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "bodyChestMinCm": 80,
+              "bodyChestMaxCm": 88.9
+            },
+            {
+              "label": "S",
+              "bodyChestMinCm": 88.9,
+              "bodyChestMaxCm": 95.3
+            },
+            {
+              "label": "M",
+              "bodyChestMinCm": 95.3,
+              "bodyChestMaxCm": 104.1
+            },
+            {
+              "label": "L",
+              "bodyChestMinCm": 104.1,
+              "bodyChestMaxCm": 111.8
+            },
+            {
+              "label": "XL",
+              "bodyChestMinCm": 111.8,
+              "bodyChestMaxCm": 123.2
+            },
+            {
+              "label": "XXL",
+              "bodyChestMinCm": 123.2,
+              "bodyChestMaxCm": 135.9
+            },
+            {
+              "label": "3XL",
+              "bodyChestMinCm": 135.9,
+              "bodyChestMaxCm": 147.3
+            }
+          ],
+          "picks": {
+            "m92": {
+              "label": "S",
+              "confidence": 0.65,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 1,
+              "holdsForChestCm": [
+                87,
+                97
+              ],
+              "conflictNote": null
+            },
+            "m100": {
+              "label": "M",
+              "confidence": 0.65,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 1,
+              "holdsForChestCm": [
+                93.5,
+                105.5
+              ],
+              "conflictNote": null
+            },
+            "m108": {
+              "label": "L",
+              "confidence": 0.65,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 1,
+              "holdsForChestCm": [
+                102,
+                113
+              ],
+              "conflictNote": null
+            },
+            "m-absurd": {
+              "label": "XXL",
+              "confidence": 0.4,
+              "undetermined": false,
+              "verdict": "too big",
+              "agreement": 0.6,
+              "holdsForChestCm": [
+                50,
+                66
+              ],
+              "conflictNote": "Your measurements look unusual together (chest 58 cm with waist 110 cm; shoulder 46 cm with chest 58 cm). If one is a typo, fixing it on your passport will sharpen this. This one is close: it holds for a chest between 50 and 66 cm, and a 2 cm difference in how you measure could change it — measuring again is worth it. On your measurements alone XXL reads \"too big\" — we're recommending it on other evidence, so treat this as a starting point and check the chart."
+            },
+            "m-contra": {
+              "label": "M",
+              "confidence": 0.65,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 1,
+              "holdsForChestCm": [
+                93.5,
+                105.5
+              ],
+              "conflictNote": "Your fit reports on 2 measured garments contradict each other — some say you want more room than others give you — so we used your stated regular fit instead of learning from them. Re-rating one or two would settle it.",
+              "emptyClosetConfidence": 0.65
+            }
+          },
+          "ms": 1
+        },
+        {
+          "system": "S5-extension",
+          "outcome": "answer",
+          "source": {
+            "sizesFrom": "brand-chart",
+            "fetch": "extension",
+            "measurementKind": "body",
+            "measurementKindFrom": "brand",
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "bodyChestMinCm": 80,
+              "bodyChestMaxCm": 88.9
+            },
+            {
+              "label": "S",
+              "bodyChestMinCm": 88.9,
+              "bodyChestMaxCm": 95.3
+            },
+            {
+              "label": "M",
+              "bodyChestMinCm": 95.3,
+              "bodyChestMaxCm": 104.1
+            },
+            {
+              "label": "L",
+              "bodyChestMinCm": 104.1,
+              "bodyChestMaxCm": 111.8
+            },
+            {
+              "label": "XL",
+              "bodyChestMinCm": 111.8,
+              "bodyChestMaxCm": 123.2
+            },
+            {
+              "label": "XXL",
+              "bodyChestMinCm": 123.2,
+              "bodyChestMaxCm": 135.9
+            },
+            {
+              "label": "3XL",
+              "bodyChestMinCm": 135.9,
+              "bodyChestMaxCm": 147.3
+            }
+          ],
+          "picks": {
+            "m92": {
+              "label": "S",
+              "confidence": 0.65,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 1,
+              "holdsForChestCm": [
+                87,
+                97
+              ],
+              "conflictNote": null
+            },
+            "m100": {
+              "label": "M",
+              "confidence": 0.65,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 1,
+              "holdsForChestCm": [
+                93.5,
+                105.5
+              ],
+              "conflictNote": null
+            },
+            "m108": {
+              "label": "L",
+              "confidence": 0.65,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 1,
+              "holdsForChestCm": [
+                102,
+                113
+              ],
+              "conflictNote": null
+            },
+            "m-absurd": {
+              "label": "XXL",
+              "confidence": 0.4,
+              "undetermined": false,
+              "verdict": "too big",
+              "agreement": 0.6,
+              "holdsForChestCm": [
+                50,
+                66
+              ],
+              "conflictNote": "Your measurements look unusual together (chest 58 cm with waist 110 cm; shoulder 46 cm with chest 58 cm). If one is a typo, fixing it on your passport will sharpen this. This one is close: it holds for a chest between 50 and 66 cm, and a 2 cm difference in how you measure could change it — measuring again is worth it. On your measurements alone XXL reads \"too big\" — we're recommending it on other evidence, so treat this as a starting point and check the chart."
+            },
+            "m-contra": {
+              "label": "M",
+              "confidence": 0.65,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 1,
+              "holdsForChestCm": [
+                93.5,
+                105.5
+              ],
+              "conflictNote": "Your fit reports on 2 measured garments contradict each other — some say you want more room than others give you — so we used your stated regular fit instead of learning from them. Re-rating one or two would settle it.",
+              "emptyClosetConfidence": 0.65
+            }
+          },
+          "ms": 1
+        }
+      ],
+      "scores": null,
+      "guardrails": {
+        "B-brand-chart": [
+          {
+            "persona": "m-absurd",
+            "check": "absurd body is capped and named",
+            "passed": true,
+            "detail": "confidence 0.4 (cap 0.4)"
+          },
+          {
+            "persona": "m-contra",
+            "check": "contradictory closet is not learned from, adds no confidence, and says so",
+            "passed": true,
+            "detail": "confidence 0.65 vs 0.65 with an empty closet"
+          }
+        ],
+        "S5-extension": [
+          {
+            "persona": "m-absurd",
+            "check": "absurd body is capped and named",
+            "passed": true,
+            "detail": "confidence 0.4 (cap 0.4)"
+          },
+          {
+            "persona": "m-contra",
+            "check": "contradictory closet is not learned from, adds no confidence, and says so",
+            "passed": true,
+            "detail": "confidence 0.65 vs 0.65 with an empty closet"
+          }
+        ]
+      },
+      "stability": {
+        "B-brand-chart": [
+          {
+            "persona": "m92",
+            "agreement": 1
+          },
+          {
+            "persona": "m100",
+            "agreement": 1
+          },
+          {
+            "persona": "m108",
+            "agreement": 1
+          }
+        ],
+        "S5-extension": [
+          {
+            "persona": "m92",
+            "agreement": 1
+          },
+          {
+            "persona": "m100",
+            "agreement": 1
+          },
+          {
+            "persona": "m108",
+            "agreement": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "nike-size-help-page",
+      "url": "https://www.nike.com/help/a/size-charts",
+      "retailer": "Nike",
+      "capture": {
+        "committed": false,
+        "capturedAt": "2026-09-29T00:32:43.132Z",
+        "stats": {
+          "version": "0.1.0",
+          "domChars": 942935,
+          "payloadChars": 495,
+          "tablesSeen": 0,
+          "tablesKept": 0,
+          "ldJsonKept": 0,
+          "optionsKept": 0,
+          "swatchValuesKept": 0,
+          "chartImagesKept": 0,
+          "kindSnippets": 0,
+          "masked": 0,
+          "queryParamsDropped": 0,
+          "lang": "en-US",
+          "ms": 7
+        }
+      },
+      "truth": null,
+      "runs": [
+        {
+          "system": "B-brand-chart",
+          "outcome": "refuse",
+          "refusal": "unreadable",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "blocked",
+            "sizesSynthesized": true,
+            "categoryGuessed": true
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 96
+            },
+            {
+              "label": "S",
+              "chestCm": 101
+            },
+            {
+              "label": "M",
+              "chestCm": 106
+            },
+            {
+              "label": "L",
+              "chestCm": 111
+            },
+            {
+              "label": "XL",
+              "chestCm": 116
+            }
+          ],
+          "picks": {},
+          "ms": 0
+        },
+        {
+          "system": "S5-extension",
+          "outcome": "refuse",
+          "refusal": "pick-category",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "extension",
+            "sizesSynthesized": true,
+            "categoryGuessed": true
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 96
+            },
+            {
+              "label": "S",
+              "chestCm": 101
+            },
+            {
+              "label": "M",
+              "chestCm": 106
+            },
+            {
+              "label": "L",
+              "chestCm": 111
+            },
+            {
+              "label": "XL",
+              "chestCm": 116
+            }
+          ],
+          "picks": {},
+          "ms": 0
+        }
+      ],
+      "scores": null,
+      "guardrails": {
+        "B-brand-chart": [],
+        "S5-extension": []
+      },
+      "stability": {
+        "B-brand-chart": [],
+        "S5-extension": []
+      }
+    },
+    {
+      "id": "patagonia-better-sweater-mens",
+      "url": "https://www.patagonia.com/product/mens-better-sweater-fleece-jacket/25528.html",
+      "retailer": "Patagonia",
+      "capture": {
+        "committed": false,
+        "capturedAt": "2026-09-29T00:02:40.524Z",
+        "stats": {
+          "version": "0.1.0",
+          "domChars": 1780615,
+          "payloadChars": 11041,
+          "tablesSeen": 1,
+          "tablesKept": 1,
+          "ldJsonKept": 12,
+          "optionsKept": 0,
+          "swatchValuesKept": 93,
+          "chartImagesKept": 1,
+          "kindSnippets": 0,
+          "masked": 0,
+          "queryParamsDropped": 0,
+          "lang": "en-US",
+          "ms": 16
+        }
+      },
+      "truth": null,
+      "runs": [
+        {
+          "system": "B-brand-chart",
+          "outcome": "answer",
+          "source": {
+            "sizesFrom": "brand-chart",
+            "fetch": "blocked",
+            "measurementKind": "body",
+            "measurementKindFrom": "brand",
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XXS",
+              "bodyChestMinCm": 81.3,
+              "bodyChestMaxCm": 86.4
+            },
+            {
+              "label": "XS",
+              "bodyChestMinCm": 86.4,
+              "bodyChestMaxCm": 91.4
+            },
+            {
+              "label": "S",
+              "bodyChestMinCm": 91.4,
+              "bodyChestMaxCm": 97.8
+            },
+            {
+              "label": "M",
+              "bodyChestMinCm": 97.8,
+              "bodyChestMaxCm": 106.7
+            },
+            {
+              "label": "L",
+              "bodyChestMinCm": 106.7,
+              "bodyChestMaxCm": 115.6
+            },
+            {
+              "label": "XL",
+              "bodyChestMinCm": 115.6,
+              "bodyChestMaxCm": 123.2
+            },
+            {
+              "label": "XXL",
+              "bodyChestMinCm": 123.2,
+              "bodyChestMaxCm": 134.6
+            },
+            {
+              "label": "XXXL",
+              "bodyChestMinCm": 134.6,
+              "bodyChestMaxCm": 149.9
+            }
+          ],
+          "picks": {
+            "m92": {
+              "label": "S",
+              "confidence": 0.44,
+              "undetermined": false,
+              "verdict": "relaxed",
+              "agreement": 0.6,
+              "holdsForChestCm": [
+                91.5,
+                97.5
+              ],
+              "conflictNote": "This one is close: it holds for a chest between 91.5 and 97.5 cm, and a 2 cm difference in how you measure could change it — measuring again is worth it."
+            },
+            "m100": {
+              "label": "M",
+              "confidence": 0.62,
+              "undetermined": false,
+              "verdict": "relaxed",
+              "agreement": 0.9333333333333333,
+              "holdsForChestCm": [
+                98,
+                106.5
+              ],
+              "conflictNote": null
+            },
+            "m108": {
+              "label": "L",
+              "confidence": 0.55,
+              "undetermined": false,
+              "verdict": "relaxed",
+              "agreement": 0.8,
+              "holdsForChestCm": [
+                107,
+                115.5
+              ],
+              "conflictNote": null
+            },
+            "m-absurd": {
+              "label": "XXS",
+              "confidence": 0.4,
+              "undetermined": false,
+              "verdict": "too big",
+              "agreement": 1,
+              "holdsForChestCm": [
+                50,
+                66
+              ],
+              "conflictNote": "Your measurements look unusual together (chest 58 cm with waist 110 cm; shoulder 46 cm with chest 58 cm). If one is a typo, fixing it on your passport will sharpen this. On your measurements alone XXS reads \"too big\" — we're recommending it on other evidence, so treat this as a starting point and check the chart."
+            },
+            "m-contra": {
+              "label": "M",
+              "confidence": 0.62,
+              "undetermined": false,
+              "verdict": "relaxed",
+              "agreement": 0.9333333333333333,
+              "holdsForChestCm": [
+                98,
+                106.5
+              ],
+              "conflictNote": "Your fit reports on 2 measured garments contradict each other — some say you want more room than others give you — so we used your stated regular fit instead of learning from them. Re-rating one or two would settle it.",
+              "emptyClosetConfidence": 0.62
+            }
+          },
+          "ms": 0
+        },
+        {
+          "system": "S5-extension",
+          "outcome": "answer",
+          "source": {
+            "sizesFrom": "page",
+            "fetch": "extension",
+            "extractedBy": "table",
+            "measurementKind": "body",
+            "measurementKindFrom": "brand",
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XXS",
+              "bodyChestMinCm": 83.3,
+              "bodyChestMaxCm": 89.6
+            },
+            {
+              "label": "XS",
+              "bodyChestMinCm": 91.4,
+              "bodyChestMaxCm": 94
+            },
+            {
+              "label": "S",
+              "bodyChestMinCm": 96.5,
+              "bodyChestMaxCm": 99.1
+            },
+            {
+              "label": "M",
+              "bodyChestMinCm": 101.6,
+              "bodyChestMaxCm": 104.1
+            },
+            {
+              "label": "L",
+              "bodyChestMinCm": 106.7,
+              "bodyChestMaxCm": 111.8
+            },
+            {
+              "label": "XL",
+              "bodyChestMinCm": 116.8,
+              "bodyChestMaxCm": 121.9
+            },
+            {
+              "label": "XXL",
+              "bodyChestMinCm": 127,
+              "bodyChestMaxCm": 132.1
+            },
+            {
+              "label": "3XL",
+              "bodyChestMinCm": 137.2,
+              "bodyChestMaxCm": 142.2
+            }
+          ],
+          "picks": {
+            "m92": {
+              "label": "XS",
+              "confidence": 0.55,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 0.8133333333333334,
+              "holdsForChestCm": [
+                89.5,
+                93.5
+              ],
+              "conflictNote": null
+            },
+            "m100": {
+              "label": "M",
+              "confidence": 0.52,
+              "undetermined": false,
+              "verdict": "relaxed",
+              "agreement": 0.7466666666666667,
+              "holdsForChestCm": [
+                99,
+                105
+              ],
+              "conflictNote": "This one is close: it holds for a chest between 99 and 105 cm, and a 2 cm difference in how you measure could change it — measuring again is worth it."
+            },
+            "m108": {
+              "label": "L",
+              "confidence": 0.65,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 1,
+              "holdsForChestCm": [
+                104,
+                114
+              ],
+              "conflictNote": null
+            },
+            "m-absurd": {
+              "label": "XXL",
+              "confidence": 0.4,
+              "undetermined": false,
+              "verdict": "too big",
+              "agreement": 1,
+              "holdsForChestCm": [
+                50,
+                66
+              ],
+              "conflictNote": "Your measurements look unusual together (chest 58 cm with waist 110 cm; shoulder 46 cm with chest 58 cm). If one is a typo, fixing it on your passport will sharpen this. On your measurements alone XXL reads \"too big\" — we're recommending it on other evidence, so treat this as a starting point and check the chart."
+            },
+            "m-contra": {
+              "label": "M",
+              "confidence": 0.52,
+              "undetermined": false,
+              "verdict": "relaxed",
+              "agreement": 0.7466666666666667,
+              "holdsForChestCm": [
+                99,
+                105
+              ],
+              "conflictNote": "Your fit reports on 2 measured garments contradict each other — some say you want more room than others give you — so we used your stated regular fit instead of learning from them. Re-rating one or two would settle it. This one is close: it holds for a chest between 99 and 105 cm, and a 2 cm difference in how you measure could change it — measuring again is worth it.",
+              "emptyClosetConfidence": 0.52
+            }
+          },
+          "ms": 2
+        }
+      ],
+      "scores": null,
+      "guardrails": {
+        "B-brand-chart": [
+          {
+            "persona": "m-absurd",
+            "check": "absurd body is capped and named",
+            "passed": true,
+            "detail": "confidence 0.4 (cap 0.4)"
+          },
+          {
+            "persona": "m-contra",
+            "check": "contradictory closet is not learned from, adds no confidence, and says so",
+            "passed": true,
+            "detail": "confidence 0.62 vs 0.62 with an empty closet"
+          }
+        ],
+        "S5-extension": [
+          {
+            "persona": "m-absurd",
+            "check": "absurd body is capped and named",
+            "passed": true,
+            "detail": "confidence 0.4 (cap 0.4)"
+          },
+          {
+            "persona": "m-contra",
+            "check": "contradictory closet is not learned from, adds no confidence, and says so",
+            "passed": true,
+            "detail": "confidence 0.52 vs 0.52 with an empty closet"
+          }
+        ]
+      },
+      "stability": {
+        "B-brand-chart": [
+          {
+            "persona": "m92",
+            "agreement": 0.6
+          },
+          {
+            "persona": "m100",
+            "agreement": 0.9333333333333333
+          },
+          {
+            "persona": "m108",
+            "agreement": 0.8
+          }
+        ],
+        "S5-extension": [
+          {
+            "persona": "m92",
+            "agreement": 0.8133333333333334
+          },
+          {
+            "persona": "m100",
+            "agreement": 0.7466666666666667
+          },
+          {
+            "persona": "m108",
+            "agreement": 1
+          }
+        ]
+      }
+    },
+    {
+      "id": "patagonia-better-sweater-womens",
+      "url": "https://www.patagonia.com/product/womens-better-sweater-fleece-jacket/25543.html",
+      "retailer": "Patagonia",
+      "capture": {
+        "committed": false,
+        "capturedAt": "2026-09-29T00:33:04.441Z",
+        "stats": {
+          "version": "0.1.0",
+          "domChars": 1805527,
+          "payloadChars": 11297,
+          "tablesSeen": 1,
+          "tablesKept": 1,
+          "ldJsonKept": 13,
+          "optionsKept": 0,
+          "swatchValuesKept": 93,
+          "chartImagesKept": 1,
+          "kindSnippets": 0,
+          "masked": 0,
+          "queryParamsDropped": 0,
+          "lang": "en-US",
+          "ms": 19
+        }
+      },
+      "truth": null,
+      "runs": [
+        {
+          "system": "B-brand-chart",
+          "outcome": "answer",
+          "source": {
+            "sizesFrom": "brand-chart",
+            "fetch": "blocked",
+            "measurementKind": "body",
+            "measurementKindFrom": "brand",
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XXS",
+              "bodyChestMinCm": 80,
+              "bodyChestMaxCm": 80
+            },
+            {
+              "label": "XS",
+              "bodyChestMinCm": 82.6,
+              "bodyChestMaxCm": 85.1
+            },
+            {
+              "label": "S",
+              "bodyChestMinCm": 87.6,
+              "bodyChestMaxCm": 90.2
+            },
+            {
+              "label": "M",
+              "bodyChestMinCm": 92.7,
+              "bodyChestMaxCm": 95.3
+            },
+            {
+              "label": "L",
+              "bodyChestMinCm": 99.1,
+              "bodyChestMaxCm": 104.1
+            },
+            {
+              "label": "XL",
+              "bodyChestMinCm": 109.2,
+              "bodyChestMaxCm": 114.3
+            },
+            {
+              "label": "XXL",
+              "bodyChestMinCm": 119.4,
+              "bodyChestMaxCm": 124.5
+            }
+          ],
+          "picks": {
+            "f84": {
+              "label": "XS",
+              "confidence": 0.62,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 0.9333333333333333,
+              "holdsForChestCm": [
+                80.5,
+                87
+              ],
+              "conflictNote": null
+            },
+            "f92": {
+              "label": "M",
+              "confidence": 0.46,
+              "undetermined": false,
+              "verdict": "relaxed",
+              "agreement": 0.64,
+              "holdsForChestCm": [
+                91.5,
+                98.5
+              ],
+              "conflictNote": "This one is close: it holds for a chest between 91.5 and 98.5 cm, and a 2 cm difference in how you measure could change it — measuring again is worth it."
+            },
+            "f100": {
+              "label": "L",
+              "confidence": 0.64,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 0.9866666666666667,
+              "holdsForChestCm": [
+                96.5,
+                108
+              ],
+              "conflictNote": null
+            },
+            "f-absurd": {
+              "label": "XXL",
+              "confidence": 0.4,
+              "undetermined": false,
+              "verdict": "too big",
+              "agreement": 1,
+              "holdsForChestCm": [
+                52,
+                68
+              ],
+              "conflictNote": "Your measurements look unusual together (chest 60 cm with waist 115 cm; shoulder 40 cm with chest 60 cm). If one is a typo, fixing it on your passport will sharpen this. On your measurements alone XXL reads \"too big\" — we're recommending it on other evidence, so treat this as a starting point and check the chart."
+            },
+            "f-contra": {
+              "label": "M",
+              "confidence": 0.46,
+              "undetermined": false,
+              "verdict": "relaxed",
+              "agreement": 0.64,
+              "holdsForChestCm": [
+                91.5,
+                98.5
+              ],
+              "conflictNote": "Your fit reports on 2 measured garments contradict each other — some say you want more room than others give you — so we used your stated regular fit instead of learning from them. Re-rating one or two would settle it. This one is close: it holds for a chest between 91.5 and 98.5 cm, and a 2 cm difference in how you measure could change it — measuring again is worth it.",
+              "emptyClosetConfidence": 0.46
+            }
+          },
+          "ms": 0
+        },
+        {
+          "system": "S5-extension",
+          "outcome": "answer",
+          "source": {
+            "sizesFrom": "page",
+            "fetch": "extension",
+            "extractedBy": "table",
+            "measurementKind": "body",
+            "measurementKindFrom": "brand",
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XXS",
+              "bodyChestMinCm": 78.1,
+              "bodyChestMaxCm": 81.9
+            },
+            {
+              "label": "XS",
+              "bodyChestMinCm": 82.6,
+              "bodyChestMaxCm": 85.1
+            },
+            {
+              "label": "S",
+              "bodyChestMinCm": 87.6,
+              "bodyChestMaxCm": 90.2
+            },
+            {
+              "label": "M",
+              "bodyChestMinCm": 92.7,
+              "bodyChestMaxCm": 95.3
+            },
+            {
+              "label": "L",
+              "bodyChestMinCm": 99.1,
+              "bodyChestMaxCm": 104.1
+            },
+            {
+              "label": "XL",
+              "bodyChestMinCm": 109.2,
+              "bodyChestMaxCm": 114.3
+            },
+            {
+              "label": "XXL",
+              "bodyChestMinCm": 119.4,
+              "bodyChestMaxCm": 124.5
+            }
+          ],
+          "picks": {
+            "f84": {
+              "label": "XS",
+              "confidence": 0.57,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 0.8533333333333334,
+              "holdsForChestCm": [
+                81.5,
+                87
+              ],
+              "conflictNote": null
+            },
+            "f92": {
+              "label": "M",
+              "confidence": 0.46,
+              "undetermined": false,
+              "verdict": "relaxed",
+              "agreement": 0.64,
+              "holdsForChestCm": [
+                91.5,
+                98.5
+              ],
+              "conflictNote": "This one is close: it holds for a chest between 91.5 and 98.5 cm, and a 2 cm difference in how you measure could change it — measuring again is worth it."
+            },
+            "f100": {
+              "label": "L",
+              "confidence": 0.64,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 0.9866666666666667,
+              "holdsForChestCm": [
+                96.5,
+                108
+              ],
+              "conflictNote": null
+            },
+            "f-absurd": {
+              "label": "XXL",
+              "confidence": 0.4,
+              "undetermined": false,
+              "verdict": "too big",
+              "agreement": 1,
+              "holdsForChestCm": [
+                52,
+                68
+              ],
+              "conflictNote": "Your measurements look unusual together (chest 60 cm with waist 115 cm; shoulder 40 cm with chest 60 cm). If one is a typo, fixing it on your passport will sharpen this. On your measurements alone XXL reads \"too big\" — we're recommending it on other evidence, so treat this as a starting point and check the chart."
+            },
+            "f-contra": {
+              "label": "M",
+              "confidence": 0.46,
+              "undetermined": false,
+              "verdict": "relaxed",
+              "agreement": 0.64,
+              "holdsForChestCm": [
+                91.5,
+                98.5
+              ],
+              "conflictNote": "Your fit reports on 2 measured garments contradict each other — some say you want more room than others give you — so we used your stated regular fit instead of learning from them. Re-rating one or two would settle it. This one is close: it holds for a chest between 91.5 and 98.5 cm, and a 2 cm difference in how you measure could change it — measuring again is worth it.",
+              "emptyClosetConfidence": 0.46
+            }
+          },
+          "ms": 1
+        }
+      ],
+      "scores": null,
+      "guardrails": {
+        "B-brand-chart": [
+          {
+            "persona": "f-absurd",
+            "check": "absurd body is capped and named",
+            "passed": true,
+            "detail": "confidence 0.4 (cap 0.4)"
+          },
+          {
+            "persona": "f-contra",
+            "check": "contradictory closet is not learned from, adds no confidence, and says so",
+            "passed": true,
+            "detail": "confidence 0.46 vs 0.46 with an empty closet"
+          }
+        ],
+        "S5-extension": [
+          {
+            "persona": "f-absurd",
+            "check": "absurd body is capped and named",
+            "passed": true,
+            "detail": "confidence 0.4 (cap 0.4)"
+          },
+          {
+            "persona": "f-contra",
+            "check": "contradictory closet is not learned from, adds no confidence, and says so",
+            "passed": true,
+            "detail": "confidence 0.46 vs 0.46 with an empty closet"
+          }
+        ]
+      },
+      "stability": {
+        "B-brand-chart": [
+          {
+            "persona": "f84",
+            "agreement": 0.9333333333333333
+          },
+          {
+            "persona": "f92",
+            "agreement": 0.64
+          },
+          {
+            "persona": "f100",
+            "agreement": 0.9866666666666667
+          }
+        ],
+        "S5-extension": [
+          {
+            "persona": "f84",
+            "agreement": 0.8533333333333334
+          },
+          {
+            "persona": "f92",
+            "agreement": 0.64
+          },
+          {
+            "persona": "f100",
+            "agreement": 0.9866666666666667
+          }
+        ]
+      }
+    },
+    {
+      "id": "rei-rainier-rain-jacket-mens",
+      "url": "https://www.rei.com/product/227570/rei-co-op-rainier-rain-jacket-mens",
+      "retailer": "REI",
+      "capture": null,
+      "truth": null,
+      "runs": [
+        {
+          "system": "B-brand-chart",
+          "outcome": "refuse",
+          "refusal": "unreadable",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "blocked",
+            "sizesSynthesized": true,
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 100
+            },
+            {
+              "label": "S",
+              "chestCm": 105
+            },
+            {
+              "label": "M",
+              "chestCm": 110
+            },
+            {
+              "label": "L",
+              "chestCm": 115
+            },
+            {
+              "label": "XL",
+              "chestCm": 120
+            }
+          ],
+          "picks": {},
+          "ms": 0
+        }
+      ],
+      "scores": null,
+      "guardrails": {
+        "B-brand-chart": []
+      },
+      "stability": {
+        "B-brand-chart": []
+      }
+    },
+    {
+      "id": "uniqlo-airism-cotton-tee-mens",
+      "url": "https://www.uniqlo.com/us/en/products/E474244-000/00",
+      "retailer": "Uniqlo",
+      "capture": {
+        "committed": false,
+        "capturedAt": "2026-09-29T00:33:25.512Z",
+        "stats": {
+          "version": "0.1.0",
+          "domChars": 1262861,
+          "payloadChars": 3703,
+          "tablesSeen": 18,
+          "tablesKept": 2,
+          "ldJsonKept": 2,
+          "optionsKept": 0,
+          "swatchValuesKept": 0,
+          "chartImagesKept": 1,
+          "kindSnippets": 1,
+          "masked": 0,
+          "queryParamsDropped": 2,
+          "lang": "en",
+          "ms": 12
+        }
+      },
+      "truth": null,
+      "runs": [
+        {
+          "system": "B-brand-chart",
+          "outcome": "refuse",
+          "refusal": "unreadable",
+          "source": {
+            "sizesFrom": "estimated",
+            "fetch": "blocked",
+            "sizesSynthesized": true,
+            "categoryGuessed": true
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "chestCm": 92
+            },
+            {
+              "label": "S",
+              "chestCm": 96
+            },
+            {
+              "label": "M",
+              "chestCm": 100
+            },
+            {
+              "label": "L",
+              "chestCm": 104
+            },
+            {
+              "label": "XL",
+              "chestCm": 108
+            }
+          ],
+          "picks": {},
+          "ms": 0
+        },
+        {
+          "system": "S5-extension",
+          "outcome": "answer",
+          "source": {
+            "sizesFrom": "page",
+            "fetch": "extension",
+            "extractedBy": "table",
+            "measurementKind": "body",
+            "measurementKindFrom": "table",
+            "categoryGuessed": false
+          },
+          "sizes": [
+            {
+              "label": "XS",
+              "bodyChestMinCm": 80,
+              "bodyChestMaxCm": 88.3
+            },
+            {
+              "label": "S",
+              "bodyChestMinCm": 88.3,
+              "bodyChestMaxCm": 95.9
+            },
+            {
+              "label": "M",
+              "bodyChestMinCm": 95.9,
+              "bodyChestMaxCm": 104.1
+            },
+            {
+              "label": "L",
+              "bodyChestMinCm": 104.1,
+              "bodyChestMaxCm": 111.8
+            },
+            {
+              "label": "XL",
+              "bodyChestMinCm": 111.8,
+              "bodyChestMaxCm": 120
+            },
+            {
+              "label": "XXL",
+              "bodyChestMinCm": 120,
+              "bodyChestMaxCm": 128.3
+            },
+            {
+              "label": "3XL",
+              "bodyChestMinCm": 128.3,
+              "bodyChestMaxCm": 135.9
+            }
+          ],
+          "picks": {
+            "m92": {
+              "label": "S",
+              "confidence": 0.6,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 0.9066666666666666,
+              "holdsForChestCm": [
+                86,
+                94.5
+              ],
+              "conflictNote": null
+            },
+            "m100": {
+              "label": "M",
+              "confidence": 0.6,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 0.9066666666666666,
+              "holdsForChestCm": [
+                93,
+                102.5
+              ],
+              "conflictNote": null
+            },
+            "m108": {
+              "label": "L",
+              "confidence": 0.6,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 0.9066666666666666,
+              "holdsForChestCm": [
+                101.5,
+                110.5
+              ],
+              "conflictNote": null
+            },
+            "m-absurd": {
+              "label": "3XL",
+              "confidence": 0.4,
+              "undetermined": false,
+              "verdict": "too big",
+              "agreement": 0.9333333333333333,
+              "holdsForChestCm": [
+                50,
+                66
+              ],
+              "conflictNote": "Your measurements look unusual together (chest 58 cm with waist 110 cm; shoulder 46 cm with chest 58 cm). If one is a typo, fixing it on your passport will sharpen this. On your measurements alone 3XL reads \"too big\" — we're recommending it on other evidence, so treat this as a starting point and check the chart."
+            },
+            "m-contra": {
+              "label": "M",
+              "confidence": 0.6,
+              "undetermined": false,
+              "verdict": "true to size",
+              "agreement": 0.9066666666666666,
+              "holdsForChestCm": [
+                93,
+                102.5
+              ],
+              "conflictNote": "Your fit reports on 2 measured garments contradict each other — some say you want more room than others give you — so we used your stated regular fit instead of learning from them. Re-rating one or two would settle it.",
+              "emptyClosetConfidence": 0.6
+            }
+          },
+          "ms": 1
+        }
+      ],
+      "scores": null,
+      "guardrails": {
+        "B-brand-chart": [],
+        "S5-extension": [
+          {
+            "persona": "m-absurd",
+            "check": "absurd body is capped and named",
+            "passed": true,
+            "detail": "confidence 0.4 (cap 0.4)"
+          },
+          {
+            "persona": "m-contra",
+            "check": "contradictory closet is not learned from, adds no confidence, and says so",
+            "passed": true,
+            "detail": "confidence 0.6 vs 0.6 with an empty closet"
+          }
+        ]
+      },
+      "stability": {
+        "B-brand-chart": [],
+        "S5-extension": [
+          {
+            "persona": "m92",
+            "agreement": 0.9066666666666666
+          },
+          {
+            "persona": "m100",
+            "agreement": 0.9066666666666666
+          },
+          {
+            "persona": "m108",
+            "agreement": 0.9066666666666666
+          }
+        ]
+      }
+    }
+  ]
+}

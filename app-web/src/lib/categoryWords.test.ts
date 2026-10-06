@@ -74,8 +74,9 @@ describe("what the shopper is told", () => {
     const r = refusalFor(ex);
     expect(r?.error).toBe("pick-category");
     expect(r?.message).not.toMatch(/paste/i);
-    // A pasted link our server read keeps the old answer.
-    ex.source = { ...ex.source, fetch: "ok" };
+    // A page nobody read keeps the old answer (a pasted link our server read
+    // asks too, since 85b).
+    ex.source = { ...ex.source, fetch: "skipped" };
     expect(refusalFor(ex)?.error).toBe("not-apparel");
   });
 

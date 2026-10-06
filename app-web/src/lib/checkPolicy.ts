@@ -66,14 +66,27 @@ export function refusalFor(extracted: ExtractedProduct, M: EngineText = EN_TEXT)
   // real size chart: a game top-up page, an article, a login wall. The extractor
   // used to default such pages to "tshirt" and hand back a confident size.
   if (source.categoryGuessed && source.sizesFrom === "estimated") {
-    // The shopper clicked the extension on a page they took for a product: no
-    // word rule and no classifier knew the garment, so ask them (Session 84d)
-    // rather than tell them it is not clothing.
-    if (source.fetch === "extension" && !source.notClothing) return { error: "pick-category", message: M.refusePickCategory };
+    // A page someone actually read — the shopper's tab (Session 84d) or our own
+    // fetch (85b) — whose garment no word rule and no classifier knew: ask them,
+    // rather than tell them it is not clothing. Only a classifier sure it is NOT
+    // clothing, or a page nobody read, keeps "not a garment".
+    if ((source.fetch === "extension" || source.fetch === "ok") && !source.notClothing) {
+      return { error: "pick-category", message: M.refusePickCategory };
+    }
     return {
       error: "not-apparel",
       message: M.refuseNotApparel,
     };
+  }
+
+  // ASK when there IS a chart but nobody could name the garment (Session 85b).
+  // The engine used to score it as a T-shirt — the guess's default — so a dress
+  // was sized without its hips and a pair of trousers on the chest. A one-off
+  // listing is left alone: its judgement asks for the garment kind itself.
+  if (source.categoryGuessed && !source.listing) {
+    return source.notClothing
+      ? { error: "not-apparel", message: M.refuseNotApparel }
+      : { error: "pick-category", message: M.refusePickCategory };
   }
 
   // REFUSE a category we can recognise but cannot honestly score — invariant ㉜.

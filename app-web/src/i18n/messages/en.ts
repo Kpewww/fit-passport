@@ -353,6 +353,12 @@ export const en = {
       next: { "enter-chest": "Enter the pit-to-pit width", "enter-waist": "Enter the waist, laid flat", "add-body": "Add your measurements", "confirm-measure": "Confirm a measurement", "choose-category": "Choose top or bottom" },
       openStore: "Open the listing",
     },
+    pickCategory: {
+      title: "What kind of garment is this?",
+      intro: "We read the page but couldn't tell what kind of garment it is. Choose one and we'll check it again.",
+      label: "Garment",
+      submit: "Check my size",
+    },
     measureForm: {
       title: "Enter the seller's measurements",
       intro: "A second-hand listing rarely has a size chart. Copy the seller's numbers from the description or a photo — laid flat, armpit to armpit — and leave out what the listing doesn't say.",

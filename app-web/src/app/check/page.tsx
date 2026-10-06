@@ -25,6 +25,7 @@ import { isResaleHost } from "@/lib/sellerMeasurements";
 import type { Judgement } from "@/lib/listingJudgement";
 import { useGarmentText } from "@/i18n/garment";
 import { Headline } from "@/components/Headline";
+import { PICKABLE_CATEGORIES } from "@/lib/garments";
 
 // three.js only loads if someone opens the 3D view. Boundaried because a failed
 // chunk silently blanks its subtree rather than throwing.
@@ -148,6 +149,9 @@ function CheckInner() {
   // A refusal the user can answer by typing the seller's measurements (a listing
   // with none, or one our server cannot read — eBay refuses it).
   const [canMeasure, setCanMeasure] = useState(false);
+  // No rule and no classifier could name the garment (Session 85b): the user picks
+  // it, and the same link is checked again with that.
+  const [pickFor, setPickFor] = useState<string | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
 
   // The fit currently being previewed on the result. Seeded from the saved
@@ -159,16 +163,17 @@ function CheckInner() {
     fetch("/api/status").then((r) => r.json()).then(setStatus).catch(() => {});
   }, []);
 
-  const runCheck = useCallback(async (targetUrl: string, seller?: SellerInput) => {
+  const runCheck = useCallback(async (targetUrl: string, seller?: SellerInput, category?: string) => {
     setErr(null);
     setCanMeasure(false);
+    setPickFor(null);
     setLoading(true);
     setData(null);
     try {
       const r = await fetch("/api/check", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url: targetUrl, seller }),
+        body: JSON.stringify({ url: targetUrl, seller, category }),
       });
       const j = await r.json();
       const code = typeof j.error === "string" ? j.error : "";
@@ -176,6 +181,7 @@ function CheckInner() {
       if (!r.ok && (code === "no-measurements-listing" || (isResaleHost(host) && (code === "unreadable" || code === "no-chart-on-page")))) {
         setCanMeasure(true);
       }
+      if (!r.ok && code === "pick-category") setPickFor(targetUrl);
       // Prefer the API's human sentence over its machine code. A refusal here is
       // the product working correctly — "we don't size footwear yet, and here is
       // why" — and showing the raw slug `unsupported-category` instead throws away
@@ -354,6 +360,7 @@ function CheckInner() {
           </div>
         )}
         {canMeasure && !loading && <SellerMeasureForm onSubmit={(seller) => runCheck(url, seller)} />}
+        {pickFor && !loading && <CategoryPicker onPick={(category) => runCheck(pickFor, undefined, category)} />}
 
         {loading && <LoadingResult />}
         {data && !loading && data.result.judgement ? (
@@ -794,6 +801,35 @@ type SellerInput = { typed: Array<{ field: "chest" | "waist" | "length"; value: 
  * is how the website judges one: the shopper copies the pit to pit (and, if given,
  * the waist and length) and the same judgement runs as for the extension.
  */
+// "What kind of garment is this?" — the website's twin of the popup's picker
+// (Session 85b). The choices are the categories the engine can score.
+function CategoryPicker({ onPick }: { onPick: (category: string) => void }) {
+  const t = useT("check");
+  const g = useGarmentText();
+  const [category, setCategory] = useState<string>(PICKABLE_CATEGORIES[0]);
+  return (
+    <Card className="mt-6">
+      <h2 className="text-h3 text-ink">{t("pickCategory.title")}</h2>
+      <p className="mt-1 text-sm text-ink-soft">{t("pickCategory.intro")}</p>
+      <form
+        onSubmit={(e) => { e.preventDefault(); onPick(category); }}
+        className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end"
+      >
+        <label className="grid flex-1 gap-1 text-xs text-ink-soft">{t("pickCategory.label")}
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full rounded-xl border border-line bg-white px-3.5 py-2.5 text-sm text-ink focus:border-ink/40 focus:outline-none"
+          >
+            {PICKABLE_CATEGORIES.map((c) => <option key={c} value={c}>{g.label(c)}</option>)}
+          </select>
+        </label>
+        <Button type="submit">{t("pickCategory.submit")}</Button>
+      </form>
+    </Card>
+  );
+}
+
 function SellerMeasureForm({ onSubmit, askCategory = false }: { onSubmit: (s: SellerInput) => void; askCategory?: boolean }) {
   const t = useT("check");
   const [chest, setChest] = useState("");

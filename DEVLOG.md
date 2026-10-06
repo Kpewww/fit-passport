@@ -31,6 +31,33 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-05 · Session 85b — The website asks for the garment too, and so does any page whose chart has no name
+
+**The website's picker.** A link our server read (`fetch: ok`) whose garment no word rule
+and no classifier named now gets `pick-category`, as the extension did since 84d.
+- `/check` shows "What kind of garment is this?" with the categories the engine can
+  score, named by `garment.cat.*`, and checks the same link again with `category`.
+- "Not a garment" stays for a page nobody read (the URL alone) and for a page a
+  classifier was sure is not clothing.
+
+**A chart without a name.** A page with a real size chart whose garment nobody could
+name used to be scored as a T-shirt, the guess's default — a dress without its hips,
+trousers on the chest. It now asks the same question, on both transports. A one-off
+listing is exempt: its judgement asks for the garment kind itself.
+
+**Verified:**
+- `checkPolicy.test.ts`: nobody read → not-apparel; read → pick-category;
+  `notClothing` → not-apparel; a chart without a name → pick-category; named → used;
+  a listing → untouched. Two older expectations were updated to the new answer.
+- In the browser (local build), the first `/api/check` answer was mocked in the
+  server's `pick-category` shape, because our server cannot fetch a made-up shop. The
+  picker showed in EN and ZH, and the second request carried `category: "dress"`.
+- Eval unchanged: S5 4 answered / 5 refused, B 3 / 8, guardrails 8/8 and 6/6. No eval
+  case had a chart without a named garment.
+- 786 tests passed + 1 skipped; typecheck and build clean.
+
+---
+
 ## 2026-10-05 · Session 85a — The site sends people to the Chrome Web Store; the zip moves to Help; a welcome page on install
 
 The listing is live: `ciecejomnniicliemefagfegkmgfkgfe`, 0.6.0, "Add to Chrome". It was

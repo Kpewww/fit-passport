@@ -346,6 +346,12 @@ export const zh: Messages = {
       next: { "enter-chest": "填写腋下平铺宽度", "enter-waist": "填写腰部平铺宽度", "add-body": "补充身形数据", "confirm-measure": "确认尺寸含义", "choose-category": "选择上装或下装" },
       openStore: "打开商品页面",
     },
+    pickCategory: {
+      title: "这是哪类衣服？",
+      intro: "我们读到了这个页面，但没能认出是哪类衣服。选一个品类，我们再帮你查看。",
+      label: "服装类型",
+      submit: "查看推荐",
+    },
     measureForm: {
       title: "填写卖家尺寸",
       intro: "二手商品通常没有尺码表。请从商品描述或图片中抄录卖家的尺寸：衣物平铺，从左腋下量到右腋下。商品没有写的可以不填。",
