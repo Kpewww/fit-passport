@@ -1290,7 +1290,7 @@ machine's, 10/01: chart-picture picker, 0.7.0.)
 - Tie text `undeterminedNoChart` when the wearer's chest is on file and sizes carry no numbers.
 
 **NEW INVARIANT:**
-**(90)** **A word rule, then a classifier, then the shopper — never "not a garment" for a page the
+**(91)** **A word rule, then a classifier, then the shopper — never "not a garment" for a page the
 shopper clicked on unless something positively said it is not clothing.** The shopper's choice never
 overrules what the page said.
 

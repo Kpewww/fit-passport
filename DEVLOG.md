@@ -31,6 +31,15 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 87 — Memory sync: two invariants numbered (90)
+
+Sessions 83 and 84 ran on different machines and each added an invariant (90). Session
+83's (a picture leaves the browser only when picked) keeps (90); Session 84's (a word
+rule, then a classifier, then the shopper) becomes (91). Nothing else referenced either
+number. Docs only.
+
+---
+
 ## 2026-10-06 · Session 86 — Vercel Web Analytics, with the secrets taken out of the URLs first
 
 The founder asked for Vercel Web Analytics: check first, use the project's package
