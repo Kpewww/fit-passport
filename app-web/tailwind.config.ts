@@ -78,6 +78,24 @@ const config: Config = {
         shimmer: {
           "100%": { transform: "translateX(100%)" },
         },
+        // The undo toast (closet, Session 88e): in, out, and its countdown bar.
+        "toast-in": {
+          "0%": { opacity: "0", transform: "translate(-50%, 12px) scale(0.97)" },
+          "100%": { opacity: "1", transform: "translate(-50%, 0) scale(1)" },
+        },
+        "toast-out": {
+          "0%": { opacity: "1", transform: "translate(-50%, 0) scale(1)" },
+          "100%": { opacity: "0", transform: "translate(-50%, 10px) scale(0.97)" },
+        },
+        drain: {
+          "0%": { transform: "scaleX(1)" },
+          "100%": { transform: "scaleX(0)" },
+        },
+        // An in-place confirm opening where its button was.
+        "pop-in": {
+          "0%": { opacity: "0", transform: "scale(0.94)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
         // A metal glint: crosses at a measured pace, then waits — so it reads as a
         // passing reflection rather than a constant animation. The crossing takes
         // 24% of the cycle (~3.1s of 13s); the rest is the pause.
@@ -91,6 +109,11 @@ const config: Config = {
         "fade-in-up": "fade-in-up 0.4s ease-out both",
         "rise": "rise 0.7s cubic-bezier(0.16,1,0.3,1) both",
         shimmer: "shimmer 1.5s infinite",
+        "toast-in": "toast-in 0.28s cubic-bezier(0.16,1,0.3,1) both",
+        "toast-out": "toast-out 0.22s ease-in both",
+        "pop-in": "pop-in 0.16s ease-out both",
+        // Its duration is set inline from the closet's UNDO_MS.
+        drain: "drain 6s linear both",
         glint: "glint 13s cubic-bezier(0.45,0,0.3,1) infinite",
       },
     },

@@ -895,6 +895,10 @@ export const en = {
   },
 
   closet: {
+    exitSelect: "Done",
+    confirmDelete: "Delete",
+    confirmDeleteN: "Delete {n}",
+    confirmDeleteFolder: "Delete folder",
     batchOpen: "Add several",
     batchTitle: "Add several pieces at once",
     batchIntro: "Pick or paste up to {n} photos. Each becomes one piece; fill in its brand, type and size.",
@@ -908,7 +912,6 @@ export const en = {
     selectToDelete: "Delete",
     deleteThis: "Delete this piece",
     deleteSelectedN: "Delete selected ({n})",
-    deleteSelectedConfirm: "Delete {n} pieces? You can undo for a few seconds.",
     deletedN: "Deleted {n}.",
     undo: "Undo",
     photoUpload: "Upload",
@@ -956,7 +959,7 @@ export const en = {
     whyThree: "Three pieces you own that fit well are enough for accurate sizing. Pick different brands — how sizes differ between them is what the engine learns.",
     justLooking: "Just looking around?",
     tryDemo: "Try a demo closet",
-    deleteConfirm: "Delete \"{name}\"? Items move to Uncategorized.",
+    folderPiecesMove: "Its pieces move to Uncategorized.",
     save: "Save",
     moveCollectionUp: "Move collection up",
     moveCollectionDown: "Move collection down",

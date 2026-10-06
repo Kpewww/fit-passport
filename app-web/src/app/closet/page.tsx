@@ -171,6 +171,8 @@ export default function ClosetPage() {
   // (Session 88c). Pieces waiting to go stay hidden through any reload meanwhile.
   const pendingDelete = useRef<{ ids: string[]; timer: ReturnType<typeof setTimeout> } | null>(null);
   const [undoCount, setUndoCount] = useState(0);
+  // Bumped on every delete, so a second delete restarts the toast's countdown.
+  const [undoRound, setUndoRound] = useState(0);
 
   const load = useCallback(async () => {
     const [c, i, sv] = await Promise.all([
@@ -225,6 +227,7 @@ export default function ClosetPage() {
     });
     pendingDelete.current = { ids, timer: setTimeout(commitDelete, UNDO_MS) };
     setUndoCount(ids.length);
+    setUndoRound((r) => r + 1);
   }
 
   function undoDelete() {
@@ -251,7 +254,6 @@ export default function ClosetPage() {
   function removeSelected() {
     const ids = Array.from(selected);
     if (ids.length === 0) return;
-    if (ids.length > 1 && !confirm(t("deleteSelectedConfirm", { n: ids.length }))) return;
     setSelected(new Set());
     setSelectMode(false);
     removeMany(ids);
@@ -464,10 +466,10 @@ export default function ClosetPage() {
                 {t.rich("mergeHelp", { b: (c) => <strong className="font-medium text-ink">{c}</strong> })}
                 <span className="ml-2 tabular-nums text-ink-faint">{t("selected", { n: selected.size })}</span>
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Button size="sm" disabled={selected.size < 2} onClick={doMerge}>{selected.size > 0 ? t("mergeButtonN", { n: selected.size }) : t("mergeButton")}</Button>
-                <Button size="sm" variant="secondary" icon={<Trash size={16} />} disabled={selected.size < 1} onClick={removeSelected}>{t("deleteSelectedN", { n: selected.size })}</Button>
-                <Button size="sm" variant="ghost" onClick={() => { setSelectMode(false); setSelected(new Set()); }}>{t("cancel")}</Button>
+                <ConfirmDelete label={t("deleteSelectedN", { n: selected.size })} confirmLabel={t("confirmDeleteN", { n: selected.size })} disabled={selected.size < 1} onConfirm={removeSelected} variant="secondary" />
+                <Button size="sm" variant="ghost" onClick={() => { setSelectMode(false); setSelected(new Set()); }}>{t("exitSelect")}</Button>
               </div>
             </div>
           )}
@@ -567,12 +569,7 @@ export default function ClosetPage() {
       )}
 
       {/* The comparison bucket — items set aside to look at together */}
-      {undoCount > 0 && (
-        <div role="status" className="fixed bottom-5 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-full bg-ink px-5 py-2.5 text-sm text-paper shadow-lg">
-          <span>{t("deletedN", { n: undoCount })}</span>
-          <button type="button" onClick={undoDelete} className="font-semibold underline-offset-2 hover:underline">{t("undo")}</button>
-        </div>
-      )}
+      <UndoToast count={undoCount} round={undoRound} onUndo={undoDelete} />
       <BucketPanel items={compareItems} onRemove={toggleBucket} onClear={() => setCompareItems([])} onOpen={(it) => setDetailGroup({ key: it.id, label: it.displayName || it.brand, items: [it], isVariant: false })} />
     </Page>
     </FitScaleProvider>
@@ -715,7 +712,6 @@ function CollectionSection({
   }
 
   async function deleteCollection() {
-    if (!confirm(t("deleteConfirm", { name: g.folder(collection.name) }))) return;
     await fetch(`/api/collections?id=${collection.id}`, { method: "DELETE" });
     onReload();
   }
@@ -767,7 +763,7 @@ function CollectionSection({
             {!undeletable && (
               <>
                 <button onClick={() => setRenaming(true)} className="text-ink-faint transition-colors hover:text-ink">{t("rename")}</button>
-                <button onClick={deleteCollection} className="text-ink-faint transition-colors hover:text-bad">{t("delete")}</button>
+                <ConfirmDelete label={t("delete")} confirmLabel={t("confirmDeleteFolder")} hint={t("folderPiecesMove")} onConfirm={deleteCollection} variant="link" />
               </>
             )}
           </div>
@@ -990,6 +986,102 @@ function GalleryCard({
   );
 }
 
+/**
+ * A delete that asks once, in place (Session 88e): the button turns into a red
+ * "Delete" and a "Cancel" where it stood — no dialog box. A tap anywhere else, or
+ * Escape, puts the button back.
+ */
+function ConfirmDelete({
+  label,
+  confirmLabel,
+  onConfirm,
+  variant = "ghost",
+  disabled = false,
+  hint,
+}: {
+  label: string;
+  confirmLabel?: string;
+  /** What else happens, said beside the buttons (a folder's pieces move to Uncategorized). */
+  hint?: string;
+  onConfirm: () => void;
+  variant?: "ghost" | "secondary" | "link";
+  disabled?: boolean;
+}) {
+  const t = useT("closet");
+  const [asking, setAsking] = useState(false);
+  const boxRef = useRef<HTMLSpanElement>(null);
+  const yesRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!asking) return;
+    yesRef.current?.focus();
+    // pointerdown, not blur: Safari does not focus a button on click, so a blur
+    // would fire before the click and swallow it.
+    const away = (e: PointerEvent) => { if (!boxRef.current?.contains(e.target as Node)) setAsking(false); };
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setAsking(false); };
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", esc);
+    return () => { document.removeEventListener("pointerdown", away); document.removeEventListener("keydown", esc); };
+  }, [asking]);
+
+  if (!asking) {
+    return variant === "link" ? (
+      <button type="button" disabled={disabled} onClick={() => setAsking(true)} className="text-ink-faint transition-colors hover:text-bad disabled:opacity-40">{label}</button>
+    ) : (
+      <Button size="sm" variant={variant} icon={<Trash size={16} />} disabled={disabled} onClick={() => setAsking(true)}>{label}</Button>
+    );
+  }
+  const small = variant === "link";
+  return (
+    <span ref={boxRef} className="inline-flex animate-pop-in flex-wrap items-center gap-1.5">
+      <button ref={yesRef} type="button" onClick={() => { setAsking(false); onConfirm(); }}
+        className={`inline-flex items-center gap-1 whitespace-nowrap rounded-full bg-bad font-semibold text-white transition-colors hover:bg-[#7f2323] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bad/40 focus-visible:ring-offset-1 ${small ? "h-7 px-2.5 text-xs" : "h-9 px-3.5 text-sm"}`}>
+        {!small && <Trash size={16} />}
+        {confirmLabel ?? t("confirmDelete")}
+      </button>
+      <button type="button" onClick={() => setAsking(false)}
+        className={`whitespace-nowrap rounded-full font-medium text-ink-soft ring-1 ring-line transition-colors hover:text-ink ${small ? "h-7 px-2.5 text-xs" : "h-9 px-3.5 text-sm"}`}>
+        {t("cancel")}
+      </button>
+      {hint && <span className="text-xs text-ink-soft">{hint}</span>}
+    </span>
+  );
+}
+
+/**
+ * "Deleted 2. Undo" — rises in, drains a bar over the undo window, and fades out
+ * when the window closes or the delete is undone (Session 88e). `round` restarts
+ * the countdown when another delete comes in while it is showing.
+ */
+function UndoToast({ count, round, onUndo }: { count: number; round: number; onUndo: () => void }) {
+  const t = useT("closet");
+  // Kept on screen for the exit animation after the count drops to 0.
+  const [shown, setShown] = useState(0);
+  const [leaving, setLeaving] = useState(false);
+  useEffect(() => {
+    if (count > 0) { setShown(count); setLeaving(false); return; }
+    if (shown === 0) return;
+    setLeaving(true);
+    const id = setTimeout(() => { setShown(0); setLeaving(false); }, 220);
+    return () => clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [count]);
+  if (shown === 0) return null;
+  return (
+    <div role="status" key={round}
+      className={`fixed bottom-5 left-1/2 z-40 -translate-x-1/2 overflow-hidden whitespace-nowrap rounded-xl bg-ink text-sm text-paper shadow-lg ${leaving ? "animate-toast-out" : "animate-toast-in"}`}>
+      <div className="flex items-center gap-4 px-5 pb-3.5 pt-2.5">
+        <Trash size={16} className="text-paper/60" />
+        <span>{t("deletedN", { n: shown })}</span>
+        <button type="button" onClick={onUndo} disabled={leaving} className="font-semibold underline-offset-2 hover:underline">{t("undo")}</button>
+      </div>
+      {/* How long is left to undo. */}
+      <span aria-hidden className={`toast-drain absolute inset-x-5 bottom-1.5 h-[2px] origin-left rounded-full bg-paper/45 ${leaving ? "scale-x-0" : "animate-drain"}`}
+        style={{ animationDuration: `${UNDO_MS}ms` }} />
+    </div>
+  );
+}
+
 type Group = { key: string; label: string; items: Item[]; isVariant: boolean };
 
 /**
@@ -1102,7 +1194,7 @@ function ItemCard({
                   <div className="mt-1 flex justify-center gap-2 text-[11px]">
                     <button onClick={() => onEdit(it.id)} className="text-ink-faint hover:text-brand">{t("edit")}</button>
                     <button onClick={() => onPatch(it.id, { groupId: null, groupName: null })} className="text-ink-faint hover:text-brand">{t("unmerge")}</button>
-                    <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-bad">{t("remove")}</button>
+                    <ConfirmDelete label={t("remove")} onConfirm={() => onRemove(it.id)} variant="link" />
                   </div>
                 </div>
               </div>
@@ -1175,7 +1267,7 @@ function ItemCard({
             onMove={(cid) => onPatch(it.id, { collectionId: cid })}
           />
           <button onClick={() => onEdit(it.id)} className="text-ink-soft hover:text-brand">{t("edit")}</button>
-          <button onClick={() => onRemove(it.id)} className="text-ink-faint hover:text-bad">{t("remove")}</button>
+          <ConfirmDelete label={t("remove")} onConfirm={() => onRemove(it.id)} variant="link" />
         </div>
       )}
     </Card>
@@ -1781,7 +1873,7 @@ function DetailSheet({
               {!group.isVariant && (
                 <div className="ml-auto flex flex-shrink-0 flex-col items-end gap-2">
                   <Button size="sm" variant="secondary" icon={<Pencil size={16} />} onClick={() => setEditId(head.id)}>{t("edit")}</Button>
-                  <Button size="sm" variant="ghost" icon={<Trash size={16} />} onClick={() => onRemove(head.id)}>{t("deleteThis")}</Button>
+                  <ConfirmDelete label={t("deleteThis")} onConfirm={() => onRemove(head.id)} />
                 </div>
               )}
             </div>
@@ -1801,7 +1893,7 @@ function DetailSheet({
                     </span>
                     <span className="flex items-center gap-3 text-xs">
                       <button onClick={() => setEditId(v.id)} className="text-ink-soft hover:text-ink">{t("edit")}</button>
-                      <button onClick={() => onRemove(v.id)} className="text-ink-faint hover:text-bad">{t("remove")}</button>
+                      <ConfirmDelete label={t("remove")} onConfirm={() => onRemove(v.id)} variant="link" />
                     </span>
                   </div>
                 ))}

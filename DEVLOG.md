@@ -31,6 +31,38 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 88e — Delete asks in place, and the undo toast moves
+
+The founder, on 88c: give "Deleted 1" a disappearing animation, and have delete ask
+first — in the same spot, as a red "confirm delete" and a "cancel", not a dialog.
+
+- **`ConfirmDelete`** (closet page): the delete button turns, where it stood, into a red
+  **确认删除** and **取消** (pop-in). A tap elsewhere or Escape puts it back — on
+  `pointerdown`, not blur, because Safari does not focus a clicked button and a blur
+  would swallow the click. Used for the detail sheet's 删除这件, every per-size 移除
+  (sheet and list rows), select mode's 删除所选 (now **确认删除 N 件**), and a folder's
+  删除 (**确认删除分组**, with "its pieces move to Uncategorized" beside it). The two
+  `confirm()` dialogs are gone; select mode's exit button is now **退出选择** so it is not
+  a second "取消".
+- **`UndoToast`**: rises in, a thin line drains over the 6-second undo window, and it
+  fades out when the window closes or on undo; a second delete restarts the line.
+  Keyframes `toast-in`, `toast-out`, `drain`, `pop-in` in the Tailwind config, all off
+  under `prefers-reduced-motion`. (The dev server only picks up new Tailwind keyframes
+  on restart — the first check showed a bar that did not move.)
+
+Checked at 1440 and 390, Chinese: ask, cancel (button back, nothing deleted), confirm,
+toast in with the line at ~71% after 1.5 s, undo, toast out and gone, piece kept;
+select 2, 确认删除 2 件, both gone after the window; folder delete with its hint; no
+browser dialog shown; no overflow.
+
+Seen on the way, not changed: deleting a user's **last** folder brings back all eight
+default folders on the next load (`ensureDefaultCollections` seeds whenever none exist).
+
+/closet First Load JS 136 kB (135 before; todo/engineering/13). 807 tests + 1 skip,
+exit 0; typecheck and build clean.
+
+---
+
 ## 2026-10-06 · Session 88d — Extension 0.8.0: "I own this, add to closet", and a way into the site
 
 The founder's last two asks: one click in the extension screenshots the product and

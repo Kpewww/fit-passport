@@ -10,6 +10,7 @@ Measured with `npm run build`, 2026-10-06:
 |---|---|
 | before Session 88c (earlier sessions' growth) | 132 kB |
 | after 88c (photo sources, delete with undo, batch add, look-alike hint) | 135 kB |
+| after 88e (in-place delete confirm, animated undo toast) | 136 kB |
 
 Loading the batch panel on demand saved 0.1 kB — its parts (brand box, category
 picker, photo sources) are on the page anyway — so it was not kept.

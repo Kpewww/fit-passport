@@ -161,7 +161,11 @@ summary:focus-visible,
   .animate-rise,
   .animate-fade-in-up,
   .animate-glint,
-  .animate-shimmer {
+  .animate-shimmer,
+  .animate-toast-in,
+  .animate-toast-out,
+  .animate-pop-in,
+  .toast-drain {
     animation: none !important;
   }
 }

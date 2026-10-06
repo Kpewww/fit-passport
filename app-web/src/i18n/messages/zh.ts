@@ -886,6 +886,10 @@ export const zh: Messages = {
   },
 
   closet: {
+    exitSelect: "退出选择",
+    confirmDelete: "确认删除",
+    confirmDeleteN: "确认删除 {n} 件",
+    confirmDeleteFolder: "确认删除分组",
     batchOpen: "批量添加",
     batchTitle: "一次添加多件衣物",
     batchIntro: "选择或粘贴最多 {n} 张照片，每张对应一件衣物，再补上品牌、类型和尺码。",
@@ -899,7 +903,6 @@ export const zh: Messages = {
     selectToDelete: "删除",
     deleteThis: "删除这件",
     deleteSelectedN: "删除所选（{n}）",
-    deleteSelectedConfirm: "删除这 {n} 件衣物？几秒内可以撤销。",
     deletedN: "已删除 {n} 件。",
     undo: "撤销",
     photoUpload: "上传",
@@ -947,7 +950,7 @@ export const zh: Messages = {
     whyThree: "3 件你已有且真正合身的衣服，就能为尺码推荐提供可靠依据。请选择不同品牌，让 Fit Passport 了解它们在你身上的尺码差异。",
     justLooking: "想先看看？",
     tryDemo: "体验示例衣橱",
-    deleteConfirm: "删除“{name}”分组？其中衣物将移至“未分类”。",
+    folderPiecesMove: "其中的衣物会移到“未分类”。",
     save: "保存",
     moveCollectionUp: "上移分组",
     moveCollectionDown: "下移分组",
