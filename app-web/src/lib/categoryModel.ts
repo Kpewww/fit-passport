@@ -74,7 +74,7 @@ async function askJev(state: string, key: string): Promise<CategoryAnswer | null
     }),
     signal: AbortSignal.timeout(CATEGORY_MODEL.timeoutMs),
   });
-  if (!r.ok) throw new Error(`jev ${r.status}`);
+  if (!r.ok) throw new Error(`jev ${r.status}: ${(await r.text().catch(() => "")).slice(0, 120)}`);
   const body = await r.json();
   const a = body?.answers?.category;
   if (!a || typeof a.choice !== "string" || typeof a.confidence !== "number") return null;
@@ -117,20 +117,33 @@ async function askHaiku(state: string, key: string): Promise<CategoryAnswer | nu
  */
 type Env = Partial<Record<"TYPESAFE_API_KEY" | "ANTHROPIC_API_KEY" | "CATEGORY_FALLBACK", string>>;
 
-export async function classifyCategory(hint: CategoryHint, env: Env = process.env as Env): Promise<CategoryAnswer | null> {
+export async function classifyCategory(
+  hint: CategoryHint,
+  env: Env = process.env as Env,
+  /** What happened, in words with no secret in them — recorded on the product's
+   *  source so a refusal can be diagnosed from its response (Session 84e). */
+  note: (what: string) => void = () => {},
+): Promise<CategoryAnswer | null> {
   const state = stateOf(hint);
   if (!state) return null;
-  if (cache.has(state)) return cache.get(state)!;
+  if (cache.has(state)) { note("cached"); return cache.get(state)!; }
 
   let answer: CategoryAnswer | null = null;
   let jevFailed = !env.TYPESAFE_API_KEY;
+  if (!env.TYPESAFE_API_KEY) note("jev: no key");
   if (env.TYPESAFE_API_KEY) {
-    try { answer = await askJev(state, env.TYPESAFE_API_KEY); } catch { jevFailed = true; }
+    try {
+      answer = await askJev(state, env.TYPESAFE_API_KEY);
+      note(answer ? `jev: ${answer.category} ${answer.confidence.toFixed(2)}` : "jev: no answer in response");
+    } catch (e) {
+      jevFailed = true;
+      note(`jev failed: ${String((e as Error)?.message ?? e).slice(0, 160)}`);
+    }
   }
   // Haiku only when Jev could not answer at all (no key, an error, a timeout) —
   // never to second-guess a Jev answer — and only when switched on.
   if (jevFailed && env.CATEGORY_FALLBACK === "haiku" && env.ANTHROPIC_API_KEY) {
-    try { answer = await askHaiku(state, env.ANTHROPIC_API_KEY); } catch { answer = null; }
+    try { answer = await askHaiku(state, env.ANTHROPIC_API_KEY); note(`haiku: ${answer?.category ?? "none"}`); } catch { answer = null; }
   }
   // "not_clothing" is returned too, when confident: the caller then keeps the
   // page's refusal as "not a garment" instead of asking the shopper.

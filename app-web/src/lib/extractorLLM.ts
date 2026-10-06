@@ -776,10 +776,11 @@ export async function extractSmart(
     // No word rule knew this name (Session 84c): ask the classifier — the name
     // and the page's category string only. Null keeps the guess, and
     // the refusal policy then asks the shopper.
-    const named = await classifyCategory({
-      name: parsed.productName || parsed.headline,
-      structured: parsed.category ?? null,
-    });
+    const named = await classifyCategory(
+      { name: parsed.productName || parsed.headline, structured: parsed.category ?? null },
+      undefined,
+      (what) => { out.source.categoryNote = what; },
+    );
     if (named?.category === "not_clothing") {
       out.source.notClothing = named.by; // a gift card, a game top-up: say so, ask nothing
     } else if (named) {

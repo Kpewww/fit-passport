@@ -31,6 +31,14 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-05 · Session 84e — The classifier says what it did
+
+The founder set `TYPESAFE_API_KEY`. Three production checks with names no word rule knows ("Linen Kurta", "Velvet Bolero", "Silk Charmeuse Slip") all came back `pick-category`, and nothing showed why: no call, a failed call, or an answer under 0.6.
+
+`source.categoryNote` now records it, with no secret in it ("jev: top 0.91", "jev: no key", "jev failed: 401 …"). A refusal returns `source`, so its response shows the note. 783 tests passed + 1 skipped.
+
+---
+
 ## 2026-10-05 · Session 84d — When nobody can name the garment, the popup asks; a tie says what is missing (extension 0.7.1)
 
 **Ask the shopper.**

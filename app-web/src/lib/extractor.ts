@@ -114,6 +114,8 @@ export type ExtractedProduct = {
     categoryModel?: "jev" | "haiku";
     /** A classifier was confident this is not clothing at all (Session 84d). */
     notClothing?: "jev" | "haiku";
+    /** What the classifier did, without secrets ("jev: top 0.91", "jev: no key"). */
+    categoryNote?: string;
     /**
      * Present only when `sizesFrom === "brand-chart"`. The page a user can open
      * to check every number we showed them, and the date we read it. A curated
