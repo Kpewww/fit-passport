@@ -193,20 +193,26 @@ export type ExtractedProduct = {
 const FIXTURES: Array<{ url: string; data: Omit<ExtractedProduct, "source"> }> = [
   {
     url: DEMO_PRODUCTS[0].url,
+    // The real page's chart (uniqlo.com E474244, captured through the extension
+    // 2026-09-29): BODY measurements in inches, M = chest 37¾–41 in, waist 30–33 in.
+    // Until Session 85 this fixture held made-up GARMENT chests (M 100), so a
+    // 100 cm chest got XL — two sizes past the page's own rule (todo 08). Only what
+    // the page states is kept; the shoulder, sleeve, length and model line had no
+    // source and were dropped.
     data: {
       retailer: "Uniqlo",
       brand: "Uniqlo",
-      productName: "Uniqlo AIRism Cotton Crew Neck T-Shirt",
+      productName: "Uniqlo AIRism Cotton T-Shirt",
       category: "tshirt",
-      material: "Cotton 60% / Polyester 40%",
-      fitNotes: "Regular fit through the body and shoulders.",
-      modelInfo: { heightCm: 183, wearsSize: "M" },
+      material: "61% Cotton, 33% Polyester, 6% Spandex",
       sizes: [
-        { label: "XS", chestCm: 92, shoulderCm: 41, sleeveCm: 19, lengthCm: 66 },
-        { label: "S", chestCm: 96, shoulderCm: 43, sleeveCm: 20, lengthCm: 68 },
-        { label: "M", chestCm: 100, shoulderCm: 44, sleeveCm: 21, lengthCm: 70 },
-        { label: "L", chestCm: 104, shoulderCm: 46, sleeveCm: 22, lengthCm: 72 },
-        { label: "XL", chestCm: 110, shoulderCm: 48, sleeveCm: 23, lengthCm: 74 },
+        { label: "XS", bodyChestMinCm: 80, bodyChestMaxCm: 88.3, bodyWaistMinCm: 66, bodyWaistMaxCm: 71.8 },
+        { label: "S", bodyChestMinCm: 88.3, bodyChestMaxCm: 95.9, bodyWaistMinCm: 67.9, bodyWaistMaxCm: 76.2 },
+        { label: "M", bodyChestMinCm: 95.9, bodyChestMaxCm: 104.1, bodyWaistMinCm: 76.2, bodyWaistMaxCm: 83.8 },
+        { label: "L", bodyChestMinCm: 104.1, bodyChestMaxCm: 111.8, bodyWaistMinCm: 83.8, bodyWaistMaxCm: 92.1 },
+        { label: "XL", bodyChestMinCm: 111.8, bodyChestMaxCm: 120, bodyWaistMinCm: 92.1, bodyWaistMaxCm: 99.7 },
+        { label: "XXL", bodyChestMinCm: 120, bodyChestMaxCm: 128.3, bodyWaistMinCm: 99.7, bodyWaistMaxCm: 108 },
+        { label: "3XL", bodyChestMinCm: 128.3, bodyChestMaxCm: 135.9, bodyWaistMinCm: 108, bodyWaistMaxCm: 116.2 },
       ],
     },
   },

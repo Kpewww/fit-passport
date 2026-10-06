@@ -31,6 +31,33 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-05 · Session 85c — The Uniqlo demo answers what Uniqlo's chart says; the eval captures are accounted for
+
+**todo 08, confirmed and fixed.** The capture of the real Uniqlo AIRism page made on
+this machine (2026-09-29, through the extension) is a **body** chart in inches:
+M = chest 37¾–41 in, waist 30–33 in. The demo fixture held **garment** chests (M 100),
+so the engine added ease on top and a 100 cm chest got **XL**. That is invariant ㊿
+inside our own most-clicked demo.
+- The fixture now carries the page's chest and waist ranges in cm, XS–3XL.
+- The material is as the page states. The unsourced shoulder, sleeve, length and
+  model line were dropped.
+- `demoFixtures.test.ts`: body ranges, no garment chest, and **M** for a 100 cm chest.
+
+The COS and Levi's demos sit on made-up URLs (`demoProducts.ts`), so there is no page
+to check them against. They stay as labelled illustrations; Levi's is internally
+consistent. Zara has no fixture.
+
+**todo 09, closed.** 9 of the 11 captures are on this machine (2026-09-29) and S5 runs.
+H&M and REI still need hand capture (`people/02`).
+
+**READMEs:** the extension row points at the store listing; the zip is the backup on
+/help.
+
+**Verified:** 788 tests passed + 1 skipped; typecheck clean. Eval: no case is a demo
+fixture, so the summary is unchanged.
+
+---
+
 ## 2026-10-05 · Session 85b — The website asks for the garment too, and so does any page whose chart has no name
 
 **The website's picker.** A link our server read (`fetch: ok`) whose garment no word rule

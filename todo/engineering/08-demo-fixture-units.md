@@ -33,3 +33,14 @@ sizes too big. The real page's own rule says a 100 cm chest is an M.
 These are the products a first-time visitor is invited to try. A demo that
 recommends XL to someone whose real answer is M is the worst possible first
 impression for a product whose promise is the right size.
+
+## Resolved (Session 85c, 2026-10-05)
+
+- **Uniqlo:** the real page (E474244, captured through the extension 2026-09-29) is a
+  body chart in inches; the fixture now carries its chest and waist ranges, in cm, for
+  XS–3XL. A 100 cm chest at a regular fit gets **M** (`demoFixtures.test.ts`).
+  Shoulder, sleeve, length and the model line had no source and were dropped.
+- **COS, Levi's:** their demo links (`demoProducts.ts`) are made-up URLs, so there is
+  no page to read; the fixtures stay as illustrations, already labelled "demo" in the
+  UI. Levi's is internally consistent (body ranges, garment chest about 14 cm more);
+  COS is a garment chart. **Zara** has no fixture at all.

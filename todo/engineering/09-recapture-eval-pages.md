@@ -34,3 +34,10 @@ such, and do not tune anything against them (the freeze rule in `eval/README.md`
 
 `todo/decisions/01-commit-captures.md` — committing captures would stop this
 happening on the next move.
+
+## Closed (Session 85c, 2026-10-05)
+
+This machine has 9 of the 11 captures (`app-web/eval/local/captures/`, dated
+2026-09-29), and `npm run eval` runs S5 on them. The two missing ones, H&M and REI,
+refuse automated browsers: that is `todo/people/02`. Whether to commit captures so a
+machine move cannot lose them is still `todo/decisions/01`.
