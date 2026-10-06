@@ -75,6 +75,7 @@ const UpdateSchema = z
     areaNotesJson: z.string().max(2000).optional().nullable(),
     productUrl: z.string().url().optional().nullable(),
     imageDataUrl: z.string().max(400_000).regex(/^data:image\/(png|jpeg|webp);base64,/, "must be a small image").optional().nullable(),
+    photoFrom: z.enum(["own", "shop"]).optional().nullable(),
     color: z.string().max(40).optional().nullable(),
     collectionId: z.string().optional().nullable(),
     sortIndex: z.coerce.number().int().min(0).optional(),
@@ -154,8 +155,14 @@ export async function PATCH(req: Request) {
 
 export async function DELETE(req: Request) {
   const user = await getCurrentUser();
-  const id = new URL(req.url).searchParams.get("id");
-  if (!id) return NextResponse.json({ error: "id required" }, { status: 400 });
-  await prisma.knownGoodItem.deleteMany({ where: { id, userId: user.id } });
-  return NextResponse.json({ ok: true });
+  const params = new URL(req.url).searchParams;
+  // One piece (?id=) or several at once (?ids=a,b — the closet's select mode,
+  // Session 88c). Owner-scoped either way: someone else's id deletes nothing.
+  const ids = [params.get("id"), ...(params.get("ids") ?? "").split(",")]
+    .map((v) => (v ?? "").trim())
+    .filter(Boolean)
+    .slice(0, 200);
+  if (ids.length === 0) return NextResponse.json({ error: "id required" }, { status: 400 });
+  const res = await prisma.knownGoodItem.deleteMany({ where: { id: { in: ids }, userId: user.id } });
+  return NextResponse.json({ ok: true, deleted: res.count });
 }

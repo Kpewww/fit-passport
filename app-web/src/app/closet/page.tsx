@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { Button, Card, Chip, EmptyState, Field, FitStars, LinkButton, Page, PageHeader, Segmented, inputClass } from "@/components/ui";
 import {
@@ -13,6 +13,8 @@ import { CategoryPicker } from "@/components/CategoryPicker";
 import { isValidSize } from "@/lib/sizeSystems";
 import { garmentLabel } from "@/lib/garments";
 import { GarmentIcon } from "@/components/GarmentIcon";
+import { PhotoSource } from "@/components/PhotoSource";
+import { BatchAdd } from "@/components/BatchAdd";
 import { GarmentCover } from "@/components/GarmentCover";
 import { resizeGarmentPhoto } from "@/lib/imageResize";
 import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionInput";
@@ -64,6 +66,9 @@ type SizeRow = {
 // Product line values; their names come from garment.line (messages).
 const GENDERS = ["", "mens", "womens", "unisex"] as const;
 
+/** How long a delete can be undone before it reaches the server. */
+const UNDO_MS = 6000;
+
 const BLANK = { brand: "", displayName: "", category: "tshirt", gender: "", size: "", fitRating: 5, fitDirection: DIRECTION_DEFAULT, areaNotes: "", color: "", onlineAvailable: true, imageDataUrl: "" };
 
 type View = "gallery" | "list" | "folder";
@@ -105,6 +110,7 @@ export default function ClosetPage() {
   // Once the closet has its three pieces, the add flow folds into one row so the
   // clothes, not the form, lead the page.
   const [addOpen, setAddOpen] = useState(false);
+  const [batchOpen, setBatchOpen] = useState(false);
   const [newCollOpen, setNewCollOpen] = useState(false);
   // The to-buy list (/saved): its size for the header link, and a product being
   // moved in from it (?fromSaved=id), which opens the add flow pre-filled.
@@ -161,6 +167,11 @@ export default function ClosetPage() {
     });
   }, [items]);
 
+  // A delete waits a few seconds before it reaches the server, so it can be undone
+  // (Session 88c). Pieces waiting to go stay hidden through any reload meanwhile.
+  const pendingDelete = useRef<{ ids: string[]; timer: ReturnType<typeof setTimeout> } | null>(null);
+  const [undoCount, setUndoCount] = useState(0);
+
   const load = useCallback(async () => {
     const [c, i, sv] = await Promise.all([
       fetch("/api/collections").then((r) => r.json()),
@@ -168,7 +179,8 @@ export default function ClosetPage() {
       fetch("/api/saved").then((r) => r.json()).catch(() => ({ items: [] })),
     ]);
     setCollections(c.collections);
-    setItems(i.items);
+    const waiting = new Set(pendingDelete.current?.ids ?? []);
+    setItems((i.items as Item[]).filter((it) => !waiting.has(it.id)));
     setSavedCount(Array.isArray(sv.items) ? sv.items.length : 0);
   }, []);
   useEffect(() => { load(); }, [load]);
@@ -183,15 +195,66 @@ export default function ClosetPage() {
   }
 
   /** Set, replace (a File) or remove (null) an item's cover photo. */
-  async function setPhoto(id: string, file: File | null) {
+  async function setPhoto(id: string, file: Blob | null) {
     const imageDataUrl = file ? await resizeGarmentPhoto(file) : null;
     if (id === nudgeId) setNudgeId(null);
-    await patch(id, { imageDataUrl });
+    // A photo chosen on the website is the wearer's own; null clears the origin too.
+    await patch(id, { imageDataUrl, photoFrom: imageDataUrl ? "own" : null });
   }
 
-  async function remove(id: string) {
-    await fetch(`/api/closet?id=${id}`, { method: "DELETE" });
+  function commitDelete() {
+    const p = pendingDelete.current;
+    if (!p) return;
+    clearTimeout(p.timer);
+    pendingDelete.current = null;
+    setUndoCount(0);
+    // keepalive: the request survives the page being closed right after.
+    fetch(`/api/closet?ids=${p.ids.map(encodeURIComponent).join(",")}`, { method: "DELETE", keepalive: true }).then(() => load());
+  }
+
+  /** Take pieces out now; they reach the server after UNDO_MS unless undone. */
+  function removeMany(ids: string[]) {
+    if (ids.length === 0) return;
+    commitDelete(); // an earlier delete is final once another starts
+    const gone = new Set(ids);
+    setItems((prev) => prev.filter((it) => !gone.has(it.id)));
+    setDetailGroup((g) => {
+      if (!g) return g;
+      const left = g.items.filter((it) => !gone.has(it.id));
+      return left.length ? { ...g, items: left } : null;
+    });
+    pendingDelete.current = { ids, timer: setTimeout(commitDelete, UNDO_MS) };
+    setUndoCount(ids.length);
+  }
+
+  function undoDelete() {
+    const p = pendingDelete.current;
+    if (!p) return;
+    clearTimeout(p.timer);
+    pendingDelete.current = null;
+    setUndoCount(0);
     load();
+  }
+
+  // Leaving the page makes a waiting delete final rather than forgetting it.
+  useEffect(() => {
+    const flush = () => commitDelete();
+    window.addEventListener("pagehide", flush);
+    return () => { window.removeEventListener("pagehide", flush); flush(); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function remove(id: string) {
+    removeMany([id]);
+  }
+
+  function removeSelected() {
+    const ids = Array.from(selected);
+    if (ids.length === 0) return;
+    if (ids.length > 1 && !confirm(t("deleteSelectedConfirm", { n: ids.length }))) return;
+    setSelected(new Set());
+    setSelectMode(false);
+    removeMany(ids);
   }
 
   // Move an item up/down within its collection's ordering.
@@ -325,6 +388,18 @@ export default function ClosetPage() {
       </div>
       )}
 
+      {/* Several pieces at once, a photo each (Session 88c). */}
+      <div className="mt-3">
+        {batchOpen ? (
+          <BatchAdd onClose={() => setBatchOpen(false)} onAdded={() => load()} />
+        ) : (
+          <button type="button" onClick={() => setBatchOpen(true)}
+            className="inline-flex h-9 items-center gap-1.5 rounded-full px-3 text-xs font-medium text-ink-soft hover:bg-white hover:text-ink">
+            <Stack size={16} /> {t("batchOpen")}
+          </button>
+        )}
+      </div>
+
       {count > 0 && (
         <>
           {/* Toolbar: how to look at the closet, and what to do with it. */}
@@ -336,6 +411,9 @@ export default function ClosetPage() {
               </Button>
               {count >= 2 && !selectMode && (
                 <Button size="sm" variant="ghost" icon={<Stack size={16} />} onClick={() => setSelectMode(true)}>{t("merge")}</Button>
+              )}
+              {count >= 1 && !selectMode && (
+                <Button size="sm" variant="ghost" icon={<Trash size={16} />} onClick={() => setSelectMode(true)}>{t("selectToDelete")}</Button>
               )}
               <LinkButton href="/refresh?collections=all" size="sm" variant="ghost" icon={<Refresh size={16} />}>{t("refreshFit")}</LinkButton>
               <Button size="sm" variant={newCollOpen ? "secondary" : "ghost"} icon={<Plus size={16} />} onClick={() => setNewCollOpen((v) => !v)}>{t("newCollection")}</Button>
@@ -388,6 +466,7 @@ export default function ClosetPage() {
               </p>
               <div className="flex gap-2">
                 <Button size="sm" disabled={selected.size < 2} onClick={doMerge}>{selected.size > 0 ? t("mergeButtonN", { n: selected.size }) : t("mergeButton")}</Button>
+                <Button size="sm" variant="secondary" icon={<Trash size={16} />} disabled={selected.size < 1} onClick={removeSelected}>{t("deleteSelectedN", { n: selected.size })}</Button>
                 <Button size="sm" variant="ghost" onClick={() => { setSelectMode(false); setSelected(new Set()); }}>{t("cancel")}</Button>
               </div>
             </div>
@@ -488,6 +567,12 @@ export default function ClosetPage() {
       )}
 
       {/* The comparison bucket — items set aside to look at together */}
+      {undoCount > 0 && (
+        <div role="status" className="fixed bottom-5 left-1/2 z-40 flex -translate-x-1/2 items-center gap-4 rounded-full bg-ink px-5 py-2.5 text-sm text-paper shadow-lg">
+          <span>{t("deletedN", { n: undoCount })}</span>
+          <button type="button" onClick={undoDelete} className="font-semibold underline-offset-2 hover:underline">{t("undo")}</button>
+        </div>
+      )}
       <BucketPanel items={compareItems} onRemove={toggleBucket} onClear={() => setCompareItems([])} onOpen={(it) => setDetailGroup({ key: it.id, label: it.displayName || it.brand, items: [it], isVariant: false })} />
     </Page>
     </FitScaleProvider>
@@ -576,7 +661,7 @@ function CollectionSection({
   editingId: string | null;
   onEdit: (id: string | null) => void;
   onPatch: (id: string, data: Record<string, unknown>) => void;
-  onPhoto: (id: string, file: File | null) => Promise<void>;
+  onPhoto: (id: string, file: Blob | null) => Promise<void>;
   nudgeId: string | null;
   /** Pieces that look like another of the same brand and type, and have no name. */
   lookalikes: Set<string>;
@@ -788,7 +873,7 @@ function GalleryCard({
   lookalike?: boolean;
   group: Group;
   onOpen: (g: Group) => void;
-  onPhoto: (id: string, file: File | null) => Promise<void>;
+  onPhoto: (id: string, file: Blob | null) => Promise<void>;
   nudge: boolean;
   selectMode: boolean;
   selected: boolean;
@@ -1165,7 +1250,7 @@ function EditRow({
     onSaved();
   }
 
-  async function pickImage(file: File | undefined) {
+  async function pickImage(file: Blob | undefined) {
     if (!file) return;
     try { setF((x) => ({ ...x, imageDataUrl: "" })); const d = await resizeGarmentPhoto(file); setF((x) => ({ ...x, imageDataUrl: d })); } catch { /* ignore */ }
   }
@@ -1182,14 +1267,16 @@ function EditRow({
         <div className="sm:col-span-6 pr-20">
           <Field label={t("photo")} hint={t("optional")}>
             <div className="flex items-center gap-3">
-              <label className="flex h-14 w-14 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-lg text-ink-faint hover:border-brand">
+              <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-lg text-ink-faint">
                 {f.imageDataUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={f.imageDataUrl} alt="" className="h-full w-full object-cover" />
                 ) : <GarmentIcon category={f.category} size={24} />}
-                <input type="file" accept="image/*" className="hidden" onChange={(e) => pickImage(e.target.files?.[0])} />
-              </label>
-              {f.imageDataUrl && <button type="button" onClick={() => setF({ ...f, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-bad">{t("removeLower")}</button>}
+              </span>
+              <div className="min-w-0">
+                <PhotoSource onPick={(b) => pickImage(b[0])} />
+                {f.imageDataUrl && <button type="button" onClick={() => setF({ ...f, imageDataUrl: "" })} className="mt-1 text-xs text-ink-faint hover:text-bad">{t("removeLower")}</button>}
+              </div>
             </div>
           </Field>
         </div>
@@ -1579,7 +1666,7 @@ function DetailSheet({
   onClose: () => void;
   onReload: () => void;
   onPatch: (id: string, data: Record<string, unknown>) => void;
-  onPhoto: (id: string, file: File | null) => Promise<void>;
+  onPhoto: (id: string, file: Blob | null) => Promise<void>;
   onRemove: (id: string) => void;
 }) {
   const t = useT("closet");
@@ -1600,7 +1687,7 @@ function DetailSheet({
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  async function photo(file: File | null | undefined) {
+  async function photo(file: Blob | null | undefined) {
     if (file === undefined) return;
     if (file && !file.type.startsWith("image/")) { setFailed(true); return; }
     setBusy(true);
@@ -1673,11 +1760,9 @@ function DetailSheet({
                 )}
               </div>
               <div className="mt-3 flex flex-wrap items-center gap-2">
-                <label className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full border border-line bg-white px-3.5 text-xs font-medium text-ink transition-colors hover:border-ink/40 focus-within:ring-2 focus-within:ring-brand/40">
-                  <Camera size={16} />
-                  {head.imageDataUrl ? t("replacePhoto") : t("addPhoto")}
-                  <input type="file" accept="image/*" className="sr-only" onChange={(e) => { photo(e.target.files?.[0]); e.target.value = ""; }} />
-                </label>
+                {/* Not while editing: the edit form has its own photo control and
+                    a paste would land in both. */}
+                {!editId && <PhotoSource onPick={(b) => photo(b[0])} />}
                 {head.imageDataUrl && (
                   <Button size="sm" variant="ghost" icon={<Trash size={16} />} onClick={() => photo(null)}>{t("remove")}</Button>
                 )}
@@ -1694,7 +1779,10 @@ function DetailSheet({
                 <FitStars rating={head.fitRating} size={14} />
               </div>
               {!group.isVariant && (
-                <Button size="sm" variant="secondary" icon={<Pencil size={16} />} className="ml-auto" onClick={() => setEditId(head.id)}>{t("edit")}</Button>
+                <div className="ml-auto flex flex-shrink-0 flex-col items-end gap-2">
+                  <Button size="sm" variant="secondary" icon={<Pencil size={16} />} onClick={() => setEditId(head.id)}>{t("edit")}</Button>
+                  <Button size="sm" variant="ghost" icon={<Trash size={16} />} onClick={() => onRemove(head.id)}>{t("deleteThis")}</Button>
+                </div>
               )}
             </div>
 
@@ -1970,7 +2058,7 @@ function AddItemFlow({
     }
   }
 
-  async function onPickImage(file: File | undefined) {
+  async function onPickImage(file: Blob | undefined) {
     if (!file) return;
     try {
       const dataUrl = await resizeGarmentPhoto(file);
@@ -2161,16 +2249,16 @@ function AddItemFlow({
                 <div className="sm:col-span-6">
                   <Field label={t("photo")} hint={t("photoHint")}>
                     <div className="flex items-center gap-3">
-                      <label className="flex h-16 w-16 flex-shrink-0 cursor-pointer items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-xl text-ink-faint hover:border-brand">
+                      <span className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-xl text-ink-faint">
                         {form.imageDataUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={form.imageDataUrl} alt="" className="h-full w-full object-cover" />
                         ) : <GarmentIcon category={form.category} size={28} />}
-                        <input type="file" accept="image/*" className="hidden" onChange={(e) => onPickImage(e.target.files?.[0])} />
-                      </label>
-                      {form.imageDataUrl
-                        ? <button type="button" onClick={() => setForm({ ...form, imageDataUrl: "" })} className="text-xs text-ink-faint hover:text-bad">{t("removePhoto")}</button>
-                        : <span className="min-w-0 text-xs text-ink-faint">{t("uploadHint")}</span>}
+                      </span>
+                      <div className="min-w-0">
+                        <PhotoSource onPick={(b) => onPickImage(b[0])} />
+                        {form.imageDataUrl && <button type="button" onClick={() => setForm({ ...form, imageDataUrl: "" })} className="mt-1 text-xs text-ink-faint hover:text-bad">{t("removePhoto")}</button>}
+                      </div>
                     </div>
                   </Field>
                 </div>

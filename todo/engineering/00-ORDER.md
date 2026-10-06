@@ -13,3 +13,4 @@ visible table). What remains:
 | 10 | A size chart that is a picture inside a Taobao description | Picker built (Session 83); needs a real read and a real listing to check the 30-picture cap |
 | 11 | Marketplaces' per-size 身高/体重 range as a weak signal | Design questions in the file |
 | 12 | How far a seller's measurement can be off (`LISTING.flatNoiseCm`, assumed), and whether to read measuring photos | Listings with known garment measurements; a decision on photos |
+| 13 | /closet is over its JS budget (135 kB vs ~128 kB cap) | Splitting the 2,300-line page — see the file |

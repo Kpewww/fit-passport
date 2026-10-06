@@ -33,7 +33,7 @@ export function qualitySteps(start: number): number[] {
   return steps;
 }
 
-function loadImage(file: File): Promise<HTMLImageElement> {
+function loadImage(file: Blob): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onerror = () => reject(new Error("read failed"));
@@ -49,7 +49,7 @@ function loadImage(file: File): Promise<HTMLImageElement> {
 
 /** Crop to fill `width`×`height`, then encode as JPEG within `budgetBytes` if given. */
 export async function resizeImageToCover(
-  file: File,
+  file: Blob,
   width: number,
   height: number,
   quality = 0.8,
@@ -82,7 +82,7 @@ export function resizeImageToDataUrl(file: File, size = 256, quality = 0.8): Pro
 }
 
 /** A closet cover: 4:5, 600×750, within the ~90 KB budget. */
-export function resizeGarmentPhoto(file: File): Promise<string> {
+export function resizeGarmentPhoto(file: Blob): Promise<string> {
   const p = GARMENT_PHOTO;
   return resizeImageToCover(file, p.width, p.height, p.quality, p.budgetBytes);
 }

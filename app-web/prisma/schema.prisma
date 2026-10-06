@@ -472,6 +472,10 @@ model KnownGoodItem {
   // We deliberately store the user's own photo, not scraped brand imagery, to
   // avoid trademark/copyright issues. See DEVLOG Session 19 note.
   imageDataUrl String?
+  /// Where the photo came from (Session 88c): "own" (the wearer's) or "shop" (a
+  /// screenshot of a shop page, from the extension). Only the owner ever sees closet
+  /// photos; a shop photo must never be shown to anyone else. Null = older rows (own).
+  photoFrom    String?
   // Some garments aren't sold online (local shops, thrift, tailor). When false,
   // the UI shows an "in-store only" note instead of implying a link exists.
   onlineAvailable Boolean @default(true)

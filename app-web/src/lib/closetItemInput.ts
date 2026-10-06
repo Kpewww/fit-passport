@@ -21,6 +21,7 @@ export const ItemSchema = z
     areaNotesJson: z.string().max(2000).optional().nullable(),
     productUrl: z.string().url().optional().nullable(),
     imageDataUrl: z.string().max(400_000).regex(/^data:image\/(png|jpeg|webp);base64,/, "must be a small image").optional().nullable(),
+    photoFrom: z.enum(["own", "shop"]).optional().nullable(),
     color: z.string().max(40).optional().nullable(),
     collectionId: z.string().optional().nullable(),
     groupId: z.string().optional().nullable(),

@@ -31,6 +31,54 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 88c — Deleting, screenshots and batch adding in the closet
+
+Three of the founder's asks for the closet on the website.
+
+**Delete.** It existed, as a small "remove" text link per size inside the detail
+sheet — not findable, no confirm, no undo. Now:
+- **删除这件** beside Edit in the detail sheet; a **删除** toolbar entry into select
+  mode, where **删除所选（N）** sits beside merge (confirm when more than one);
+- every delete can be **undone for 6 seconds**: the pieces leave the page at once and
+  reach the server only after that (`keepalive`, and flushed on `pagehide`), so the
+  undo keeps the same row and its id; a reload meanwhile does not bring them back;
+- `DELETE /api/closet?ids=a,b`, owner-scoped like `?id=`.
+
+**Screenshots** (`components/PhotoSource.tsx`, all three ways the founder chose):
+paste (Cmd/Ctrl+V anywhere outside a text field, or a button using the async
+clipboard where the browser allows it), **capture the screen** (`getDisplayMedia`, one
+frame, the stream stopped at once, then a box to crop — drawn by writing style during
+the drag, never a state update per pointer move), and **take a photo** on touch
+devices. Used by add, edit, the detail sheet and batch.
+
+**Batch add** (`components/BatchAdd.tsx`): up to 20 photos, one row each with the four
+answers of the single flow (brand, type, size, how it sits); a new row starts from the
+one above, and **同上** copies it; rows are saved one by one, a bad row is marked and
+kept while the rest go in.
+
+**Photo origin.** New column `KnownGoodItem.photoFrom` ("own" | "shop", migration
+`20261006120000_closet_photo_from`) for the extension's shop screenshots to come.
+No route but the owner's closet returns closet photos; `closetPhotoPrivacy.test.ts`
+now fails if any other server file names the photo field, or a public route pulls
+closet rows whole.
+
+**Checked in a browser** at 1440 and 390, Chinese: 2 uploaded + 1 pasted photo became
+3 rows; 同上 copied; with one size left empty, 2 saved and that row stayed marked;
+delete then undo kept the piece, delete then waiting removed it; selecting 2 and
+deleting removed both; no overflow. **Screen capture**: the real share picker cannot
+be accepted under automation (the page correctly said nothing was shared), so the
+frame-and-crop path was checked with a canvas stream standing in for the screen;
+the real picker is a manual check.
+
+**Budget, honestly:** /closet First Load JS is **135 kB**, against a cap of ~128 kB
+(R0 116 kB + 10%). It was already **132 kB** before this session (measured by
+building the previous tree). Loading the batch panel on demand saved 0.1 kB and was
+not kept. On the board: `todo/engineering/13`.
+
+806 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-10-06 · Session 88b — Which Maje sweater: naming the piece, and the same style first
 
 The founder owns many Maje sweaters, and "Maje sweater" is not one garment. Three
