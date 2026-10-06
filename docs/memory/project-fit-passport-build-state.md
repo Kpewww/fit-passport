@@ -1303,3 +1303,8 @@ overrules what the page said.
   named (no more silent tshirt default); `/check` has `CategoryPicker`. Listings exempt.
 - Uniqlo demo fixture = the real page body chart (M 95.9–104.1); 100 cm chest → M (`demoFixtures.test.ts`).
 - `eval/category.eval.ts` + `eval/category-names.json` (133) calibrate Jev; needs `TYPESAFE_API_KEY` in `app-web/.env.local`.
+
+**SESSION 86 (2026-10-06).** 791 tests. **Vercel Web Analytics:** `components/SiteAnalytics.tsx` in the root layout;
+`beforeSend` drops query strings and maps `/u/<code>` → `/u/[code]` (the code is a read capability). Installed with
+`--legacy-peer-deps` (npm 11 walks the optional SvelteKit peer into a Vite conflict); plain `npm install`/`npm ci` pass.
+Its script skips `navigator.webdriver` — automated checks see no page views unless they present as a visitor.

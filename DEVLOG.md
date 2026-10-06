@@ -73,7 +73,12 @@ DEPLOYMENT.md notes that it needs Analytics enabled in the dashboard and no vari
 - The script tag is injected; it 404s locally, as it should, since only Vercel serves
   it.
 
-Production check: below.
+**Verified in production** (after the deploy, whose install passed against the new lockfile):
+- The script loads from Vercel's seeded path (Resilient Intake): `/<seed>/script.js` → 200.
+- Each page view is a `POST /<seed>/view` → **200**: a full load of `/` and a client-side navigation to `/help`, both from `@vercel/analytics/next` 2.0.1.
+- **Redaction holds:** `/reset?token=…` is counted as `/reset`, `/u/<code>` as `/u/[code]`, and `/check?url=…` as `/check`. No probe secret appeared in any request.
+- **One thing a test must know:** the script sends nothing when `navigator.webdriver` is set or the user agent says Headless. The first automated check therefore saw no page view at all. The verifying browser was presented as an ordinary visitor on our own site.
+- The Vercel dashboard's Analytics tab is where the counts appear; there is no dashboard access from here.
 
 ---
 
