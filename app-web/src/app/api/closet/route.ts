@@ -2,7 +2,10 @@ import { NextResponse } from "next/server";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { getCurrentUser } from "@/lib/session";
+import { getCurrentUser, readSession } from "@/lib/session";
+import { isExtensionRequest, sessionGate } from "@/lib/checkPolicy";
+import { engineText } from "@/lib/engineText";
+import { localeFromRequest } from "@/i18n/request";
 import { collectionForGarment } from "@/lib/collections";
 import { isValidSize } from "@/lib/sizeSystems";
 import { DIRECTION_MIN, DIRECTION_MAX } from "@/lib/fitDirection";
@@ -18,6 +21,12 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  // The extension adds to the closet too (Session 88d): like /api/saved, a request
+  // from it with no session is refused, never answered by minting an empty account.
+  if (sessionGate(isExtensionRequest(req.headers), readSession() != null) === "not-connected") {
+    const M = engineText(localeFromRequest(req));
+    return NextResponse.json({ error: "not-connected", message: M.notConnected }, { status: 401 });
+  }
   // Closet reports feed the wearer's own ease and brand bias. Bounds a script
   // flooding them; a person adding clothes by hand never gets near it.
   const rl = await rateLimit(clientKey(req, "closet-write"), 120, 10 * 60_000);

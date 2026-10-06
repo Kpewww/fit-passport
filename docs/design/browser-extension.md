@@ -261,3 +261,26 @@ on the page, M at 50% from the closet; picked the picture; S at 61% from the
 picture's garment measurements. **Not yet checked: a real vision read** — the key is
 set in production (`features.chartImage: true`), so the first real pick is the check
 (todo/people/06).
+
+## 11. "I own this, add to closet", and a way into the site (Session 88d, 0.8.0)
+
+- **The screenshot.** Only when the shopper presses the button, the popup calls
+  `chrome.tabs.captureVisibleTab` (covered by `activeTab`, granted by the click on the
+  icon; no new permission) and crops to `found.mainPicture` — the largest picture on
+  screen (≥ 150 × 150 CSS px, not in the header, a form or a profile box), reported by
+  `capture.js` with the viewport width so CSS pixels scale to the screenshot's. The crop
+  is cover-fitted to the site's closet size (600 × 750 JPEG, ~90 KB). The shopper can
+  choose the whole screen or no photo instead.
+- **Saved as the wearer's own closet piece**: brand (now also from JSON-LD), name, type,
+  the size they have, how it sits, the product link, `photoFrom: "shop"`. `/api/closet`
+  POST refuses an extension request with no session, like `/api/saved`.
+- **Shown only to them**: no public route returns closet photos
+  (`closetPhotoPrivacy.test.ts`).
+- **Into the site**: the name in the header opens Fit Passport; a row under every
+  screen links to the closet, to-buy list, passport and /check.
+
+Checked in a headed Chromium: the cropped product picture (13 KB), "Cable-knit cardigan",
+M, sweater, `photoFrom` shop, the product link. Automation cannot click the toolbar
+icon, so `activeTab` is never granted there; the run used a scratch copy of the
+extension with `<all_urls>` added — the shipped manifest is unchanged. The real
+click-granted path is a manual check.

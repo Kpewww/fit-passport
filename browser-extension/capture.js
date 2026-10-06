@@ -39,7 +39,7 @@
 (function (root) {
   "use strict";
 
-  var VERSION = "0.7.2";
+  var VERSION = "0.8.0";
 
   // The server refuses supplied markup over 1,000,000 characters. A capture this
   // big means something went wrong, and the popup says so instead of sending it.
@@ -497,6 +497,28 @@
     return chartLike.concat(others).slice(0, MAX_PICKABLE);
   }
 
+  // Where the main product picture sits on screen (Session 88d), for "I own this —
+  // add it to my closet": the popup screenshots the visible tab and crops to this.
+  // The largest picture whose on-screen part is at least 150 × 150, never in the
+  // header, a form or a shopper's profile box. CSS pixels, clipped to the viewport,
+  // with the viewport's width so the popup can scale to the screenshot's pixels.
+  function mainPicture(imgs, view) {
+    if (!view) return null;
+    var vw = view.innerWidth || 0, vh = view.innerHeight || 0;
+    var best = null, bestArea = 0;
+    for (var i = 0; i < imgs.length; i++) {
+      var img = imgs[i];
+      if (underNeverRead(img) || inPersonalBox(img)) continue;
+      var r = img.getBoundingClientRect ? img.getBoundingClientRect() : null;
+      if (!r) continue;
+      var x = Math.max(0, r.left), y = Math.max(0, r.top);
+      var w = Math.min(vw, r.right) - x, h = Math.min(vh, r.bottom) - y;
+      if (w < 150 || h < 150) continue;
+      if (w * h > bestArea) { bestArea = w * h; best = { x: Math.round(x), y: Math.round(y), w: Math.round(w), h: Math.round(h), vw: vw }; }
+    }
+    return best;
+  }
+
   function insideTable(el) {
     for (var e = el; e; e = e.parentElement) if (tagOf(e) === "TABLE") return true;
     return false;
@@ -735,6 +757,7 @@
 
     // JSON-LD, product-shaped nodes only, cut to an allowlist of keys.
     var hasLdProduct = false;
+    var ldBrand = "";
     var scripts = doc.querySelectorAll('script[type="application/ld+json"]');
     for (var s = 0; s < scripts.length; s++) {
       var data;
@@ -742,6 +765,11 @@
       var kept = ldNodes(data).filter(ldTypeIs).map(function (n) { return pruneLd(n, mask); });
       if (!kept.length) continue;
       if (kept.some(function (n) { return ldTypes(n).indexOf("product") >= 0; })) hasLdProduct = true;
+      // The product's brand as the page states it, for the popup's forms (Session 88d).
+      kept.forEach(function (n) {
+        var b = n.brand && (typeof n.brand === "string" ? n.brand : n.brand.name);
+        if (!ldBrand && typeof b === "string" && b.trim()) ldBrand = collapse(b).slice(0, 80);
+      });
       if (kept.some(function (n) { return typeof n.description === "string" && n.description.trim(); })) hasDescription = true;
       head.push('<script type="application/ld+json">' + scriptJson(kept.length === 1 ? kept[0] : kept) + "</script>");
       stats.ldJsonKept += kept.length;
@@ -914,7 +942,7 @@
         title: h1Text || ogTitle || title.replace(TITLE_SUFFIX_RE, "").trim(),
         productData: hasLdProduct || attrs.length > 0,
         attrs: attrs.length,
-        brand: brandAttr,
+        brand: brandAttr || ldBrand,
         // Only on a marketplace listing (it has a parameter list): nearly every
         // product page has large photos, and there they are not the description.
         pictureDescription: attrs.length > 0 && !hasDescription && largeImages >= PICTURE_DESCRIPTION_MIN,
@@ -925,6 +953,8 @@
         // For the popup's "the chart is a picture" picker only; never sent unless
         // the shopper picks one, and then only that address.
         pictures: pickablePictures(imgs),
+        // Where to crop a screenshot for "add to my closet"; never sent.
+        mainPicture: mainPicture(imgs, doc.defaultView),
         // For the popup's "Save to buy" form only; never sent on their own.
         sizes: popupSizes.slice(0, MAX_SWATCH_VALUES),
         selectedSize: selectedSize,

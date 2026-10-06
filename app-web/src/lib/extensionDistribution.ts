@@ -23,10 +23,10 @@ export const EXTENSION_DISTRIBUTION: ExtensionDistribution = { kind: "store", hr
 
 /** The backup: the same extension as a zip, loaded unpacked in Developer mode. */
 export const EXTENSION_ZIP = {
-  href: "/downloads/fit-passport-extension-0.7.2.zip",
-  version: "0.7.2",
+  href: "/downloads/fit-passport-extension-0.8.0.zip",
+  version: "0.8.0",
   /** Rounded, for the button — measured from the committed file by a test. */
-  sizeKb: 124,
+  sizeKb: 137,
 };
 
 /** The ID an unpacked (zip) install gets — pinned by the manifest `key`. The

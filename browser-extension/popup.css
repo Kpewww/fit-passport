@@ -37,6 +37,16 @@ body {
   color: #fff;
 }
 .brand { font-weight: 600; letter-spacing: 0.01em; }
+button.brand { font: inherit; font-weight: 600; color: inherit; background: none; border: 0; padding: 4px 0; cursor: pointer; }
+button.brand:hover { text-decoration: underline; text-underline-offset: 3px; }
+button.brand:focus-visible { outline: 2px solid #fff; outline-offset: 2px; border-radius: 4px; }
+.seg { display: inline-flex; flex-wrap: wrap; gap: 4px; }
+.seg button { font: inherit; font-size: 12px; padding: 5px 10px; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--ink); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: #fff; border-color: var(--ink); }
+.shot { display: block; width: 96px; height: 120px; object-fit: cover; border-radius: 8px; border: 1px solid var(--line); margin: 6px 0; }
+.links { display: flex; flex-wrap: wrap; gap: 4px 14px; padding: 8px 14px; border-top: 1px solid var(--line); font-size: 12px; }
+.links a { color: var(--brand); text-decoration: none; padding: 4px 0; }
+.links a:hover { text-decoration: underline; }
 
 /* 中 | EN — pushed to the bar's right edge. */
 .lang { margin-left: auto; display: inline-flex; border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 999px; padding: 1px; }

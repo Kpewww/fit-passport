@@ -1221,7 +1221,7 @@ export const en = {
     extension: {
       title: "The browser extension",
       click: "It reads a page only when you click it, and only the tab you are looking at.",
-      reduced: "It sends a reduced copy of the product page — title, product data, size charts and size options — and nothing from forms, the cart, your account, reviews or the rest of the page. You can see exactly what will be sent before anything is. If you tell it which picture on the page is the size chart, it also sends that one picture's address — nothing else about the page's pictures.",
+      reduced: "It sends a reduced copy of the product page — title, product data, size charts and size options — and nothing from forms, the cart, your account, reviews or the rest of the page. You can see exactly what will be sent before anything is. If you tell it which picture on the page is the size chart, it also sends that one picture's address — nothing else about the page's pictures. When you press \"I own this, add to closet\", it takes a screenshot of the tab you are on, crops it to the product picture, and saves it to your closet, where only you can see it.",
       ebay: "With your permission, asked once on a click, it also reads measurement lines from an eBay seller's description.",
       session: "It sends your Fit Passport session with the request, so the answer can use your profile, and saves a product to your to-buy list only when you press Save.",
       local: "It keeps your language choice in the extension's own storage.",

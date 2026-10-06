@@ -22,11 +22,26 @@
   function applyLang() {
     document.documentElement.lang = I18N.lang() === "zh" ? "zh-CN" : "en";
     document.getElementById("server-label").textContent = t("server");
+    renderLinks();
     langSwitch.setAttribute("aria-label", t("language"));
     Array.prototype.forEach.call(langSwitch.querySelectorAll("button"), function (b) {
       b.setAttribute("aria-pressed", String(b.value === I18N.lang()));
     });
   }
+  // ---- straight into the website (Session 88d) ----
+  var SITE_LINKS = [["linkCloset", "/closet"], ["linkSaved", "/saved"], ["linkPassport", "/passport"], ["linkCheck", "/check"]];
+  function renderLinks() {
+    var nav = document.getElementById("links");
+    nav.textContent = "";
+    SITE_LINKS.forEach(function (l) {
+      var a = el("a", { href: origin() + l[1], text: t(l[0]) });
+      a.addEventListener("click", function (e) { e.preventDefault(); openTab(origin() + l[1]); });
+      nav.appendChild(a);
+    });
+    document.getElementById("home").setAttribute("title", t("openSite"));
+  }
+  document.getElementById("home").addEventListener("click", function () { openTab(origin()); });
+
   langSwitch.addEventListener("click", function (e) {
     var b = e.target.closest("button");
     if (!b || b.value === I18N.lang()) return;
@@ -57,6 +72,7 @@
   if (CFG.origins.length < 2) originSelect.closest("footer").hidden = true;
   originSelect.addEventListener("change", function () {
     try { localStorage.setItem(ORIGIN_KEY, originSelect.value); } catch (e) { /* ignore */ }
+    renderLinks();
     start();
   });
 
@@ -252,6 +268,7 @@
         }) : null,
         button(t("rescan"), start),
         button(t("saveToBuy"), function () { saveForm(cap, null, function () { preview(cap, tab); }); }),
+        button(t("ownThis"), function () { closetForm(cap, null, function () { preview(cap, tab); }); }),
       ]),
       el("p", {
         className: "small",
@@ -438,6 +455,7 @@
         }, true),
         button(t("checkAgain"), start),
         cap ? button(t("saveToBuy"), function () { saveForm(cap, data, function () { result(data, cap); }); }) : null,
+        cap ? button(t("ownThis"), function () { closetForm(cap, data, function () { result(data, cap); }); }) : null,
       ])
     );
   }
@@ -480,6 +498,7 @@
       el("div", { className: "actions" }, [
         button(t("openFull"), function () { openTab(origin() + "/check?product=" + encodeURIComponent(data.product.id)); }, !nexts.length),
         cap ? button(t("saveToBuy"), function () { saveForm(cap, data, function () { result(data, cap); }); }) : null,
+        cap ? button(t("ownThis"), function () { closetForm(cap, data, function () { result(data, cap); }); }) : null,
         cap ? button(t("enterMeasurements"), function () { measureForm(cap, j); }) : null,
       ])
     );
@@ -598,6 +617,157 @@
 
   function field(label, input) {
     return el("label", { className: "field" }, [el("span", { text: label }), input]);
+  }
+
+  // ---- "I own this — add it to my closet" (Session 88d) ----
+  //
+  // One click screenshots the tab (captureVisibleTab, covered by activeTab), crops
+  // to the main product picture the capture located, and sizes it like the
+  // website's closet photos (600 × 750, JPEG within ~90 KB — lib/imageResize.ts).
+  // The photo is marked photoFrom "shop": it stays in the wearer's own closet and
+  // no public page ever shows it.
+
+  var PHOTO_W = 600, PHOTO_H = 750, PHOTO_BUDGET = 90 * 1024;
+  var DIRECTIONS = [["too-tight", -10], ["snug", -5], ["just-right", 0], ["roomy", 5], ["too-loose", 10]];
+  // fitDirection.ts ratingFromDirection: the stars follow from how it sits.
+  function ratingFromDirection(n) { var d = Math.abs(n); return d <= 1 ? 5 : d <= 6 ? 4 : d <= 8 ? 3 : 2; }
+
+  function loadImg(src) {
+    return new Promise(function (resolve, reject) {
+      var img = new Image();
+      img.onload = function () { resolve(img); };
+      img.onerror = reject;
+      img.src = src;
+    });
+  }
+
+  /** Crop (in the screenshot's pixels) and cover-fit into the closet photo size. */
+  function closetPhoto(img, sx, sy, sw, sh) {
+    var canvas = document.createElement("canvas");
+    canvas.width = PHOTO_W; canvas.height = PHOTO_H;
+    var ctx = canvas.getContext("2d");
+    ctx.fillStyle = "#F3F3F1";
+    ctx.fillRect(0, 0, PHOTO_W, PHOTO_H);
+    var target = PHOTO_W / PHOTO_H;
+    if (sw / sh > target) { var nw = sh * target; sx += (sw - nw) / 2; sw = nw; }
+    else { var nh = sw / target; sy += (sh - nh) / 2; sh = nh; }
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, PHOTO_W, PHOTO_H);
+    var out = canvas.toDataURL("image/jpeg", 0.82);
+    for (var q = 0.72; out.length * 0.75 > PHOTO_BUDGET && q >= 0.5; q -= 0.1) out = canvas.toDataURL("image/jpeg", q);
+    return out;
+  }
+
+  async function shopPhotos(cap) {
+    var tab = await activeTab();
+    var shot = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
+    var img = await loadImg(shot);
+    var whole = closetPhoto(img, 0, 0, img.naturalWidth, img.naturalHeight);
+    var m = cap.found.mainPicture;
+    if (!m || !m.vw) return { product: null, whole: whole };
+    var k = img.naturalWidth / m.vw; // CSS pixels to screenshot pixels
+    return { product: closetPhoto(img, m.x * k, m.y * k, m.w * k, m.h * k), whole: whole };
+  }
+
+  async function closetForm(cap, data, back) {
+    var f = cap.found;
+    var product = data && data.product;
+    var photos = { product: null, whole: null };
+    try { photos = await shopPhotos(cap); } catch (e) { /* no screenshot: the form still works */ }
+    var choice = photos.product ? "product" : photos.whole ? "whole" : "none";
+
+    var preview = el("img", { className: "shot", alt: "" });
+    var photoRow = el("div", { className: "seg" });
+    function drawPhoto() {
+      var src = photos[choice];
+      preview.hidden = !src;
+      if (src) preview.src = src;
+      Array.prototype.forEach.call(photoRow.children, function (b) { b.setAttribute("aria-pressed", String(b.value === choice)); });
+    }
+    [["product", "photoProduct"], ["whole", "photoWhole"], ["none", "photoNone"]].forEach(function (o) {
+      if (o[0] !== "none" && !photos[o[0]]) return;
+      var b = el("button", { type: "button", value: o[0], text: t(o[1]) });
+      b.addEventListener("click", function () { choice = o[0]; drawPhoto(); });
+      photoRow.appendChild(b);
+    });
+
+    var brandIn = el("input", { type: "text", maxlength: "80", value: (product && product.brand) || f.brand || "" });
+    var nameIn = el("input", { type: "text", maxlength: "80", value: ((product && product.productName) || f.title || "").slice(0, 80) });
+    var cat = product && PICKABLE.indexOf(product.category) >= 0 ? product.category : "";
+    var catIn = el("select", {}, [el("option", { value: "", text: t("chooseCategory") })].concat(PICKABLE.map(function (c) {
+      var o = el("option", { value: c, text: t("pick_" + c) });
+      if (c === cat) o.setAttribute("selected", "");
+      return o;
+    })));
+    var sizes = f.sizes || [];
+    var sizeIn = sizes.length
+      ? el("select", {}, [el("option", { value: "", text: t("chooseSize") })].concat(sizes.map(function (z) {
+          var o = el("option", { value: z, text: z });
+          if (z === f.selectedSize) o.setAttribute("selected", "");
+          return o;
+        })))
+      : el("input", { type: "text", maxlength: "20", value: f.selectedSize || "" });
+    var dirIn = el("select", {}, DIRECTIONS.map(function (d) {
+      var o = el("option", { value: String(d[1]), text: t("dir_" + d[0]) });
+      if (d[1] === 0) o.setAttribute("selected", "");
+      return o;
+    }));
+    var err = el("p", { className: "note", text: "" });
+
+    show(
+      el("p", { className: "title", text: t("closetTitle") }),
+      el("div", { className: "card form" }, [
+        photoRow.children.length ? field(t("fieldPhoto"), photoRow) : null,
+        preview,
+        el("p", { className: "small", text: t("closetPhotoPrivate") }),
+        field(t("fieldBrand"), brandIn),
+        field(t("fieldName"), nameIn),
+        field(t("fieldCategory"), catIn),
+        field(t("fieldSizeOwn"), sizeIn),
+        field(t("fieldFit"), dirIn),
+        err,
+      ]),
+      el("div", { className: "actions" }, [
+        button(t("closetSave"), function () {
+          var body = {
+            brand: brandIn.value.trim(),
+            displayName: nameIn.value.trim() || null,
+            category: catIn.value,
+            size: sizeIn.value.trim(),
+            fitDirection: Number(dirIn.value),
+            fitRating: ratingFromDirection(Number(dirIn.value)),
+            productUrl: /^https?:/.test(cap.url) ? cap.url : null,
+            imageDataUrl: choice === "none" ? null : photos[choice],
+            photoFrom: choice === "none" ? null : "shop",
+          };
+          if (!body.brand || !body.category || !body.size) { err.textContent = t("closetNeed"); return; }
+          submitCloset(cap, body, back);
+        }, true),
+        button(t("back"), back),
+      ])
+    );
+    drawPhoto();
+  }
+
+  async function submitCloset(cap, body, back) {
+    show(el("p", { className: "muted", text: t("saving") }));
+    var r;
+    try {
+      r = await savedRequest("POST", "/api/closet", body);
+    } catch (e) {
+      return message(t("unreachableTitle"), t("unreachableBody", { origin: origin() }), [button(t("back"), back, true)]);
+    }
+    if (r.res.ok) {
+      return message(t("closetSavedTitle"), t("closetSavedBody"), [
+        button(t("linkCloset"), function () { openTab(origin() + "/closet"); }, true),
+        button(t("back"), back),
+      ]);
+    }
+    if (r.res.status === 401) {
+      return message(t(REFUSAL_TITLES["not-connected"]), r.body.message, [button(t("openFitPassport"), function () { openTab(origin()); }, true)]);
+    }
+    if (r.res.status === 429) return message(t("tooManyTitle"), t("tooManyBody"));
+    // 400: the size does not fit the type, most often.
+    message(t("closetFailedTitle"), t("closetFailedBody"), [button(t("back"), function () { closetForm(cap, null, back); }, true)]);
   }
 
   function saveForm(cap, data, back) {

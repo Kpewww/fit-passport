@@ -1308,3 +1308,23 @@ overrules what the page said.
 `beforeSend` drops query strings and maps `/u/<code>` → `/u/[code]` (the code is a read capability). Installed with
 `--legacy-peer-deps` (npm 11 walks the optional SvelteKit peer into a Vite conflict); plain `npm install`/`npm ci` pass.
 Its script skips `navigator.webdriver` — automated checks see no page views unless they present as a visitor.
+
+**SESSION 88 (2026-10-06).** 791 → **807 tests**. Extension **0.8.0** (store still 0.6.0).
+- **Women's sizes:** `womensSizes.ts` (US rung; DE/EU +30, FR +32, IT +36, UK +4; blitzresults +
+  sizechart.com). `normalizeToAlpha(label, line)`; line = page `rawJson.gender` → piece `gender` →
+  sole `shopsFor`. Converters: 男装|女装, EU opens into FR/IT. Bare women's number = DE (a recorded
+  choice: sources disagree on "EU"). Men's not split by country (sources contradict).
+- **Pieces:** `KnownGoodInput.{id,name}`, `Reason.itemId`, `EngineText.pieceLabel`; `styleWords.ts` +
+  `KNOWN_GOOD.styleMismatch` 0.6 (assumed): a same-style piece leads; /check `ClosetBasis`.
+- **Closet:** delete waits `UNDO_MS` 6 s before the server (keepalive, flushed on pagehide);
+  `DELETE /api/closet?ids=`; `PhotoSource` (upload/paste/getDisplayMedia+crop/camera); `BatchAdd` (≤20);
+  `KnownGoodItem.photoFrom`. /closet First Load JS 135 kB, over the ~128 kB cap (todo/engineering/13).
+- **Extension 0.8.0:** "I own this, add to closet" = captureVisibleTab + crop to `found.mainPicture`;
+  site links; `/api/closet` POST has the extension session gate.
+- Test notes: local SQLite needs `npm run db:push` after another machine adds columns; `npm ci` keeps the
+  lockfile (and wipes ad-hoc playwright — install it in the scratchpad instead); an extension test cannot
+  get `activeTab`, use a scratch copy with `<all_urls>`.
+
+**NEW INVARIANT:**
+**(92)** **A closet photo is shown to its owner only.** No public route selects `imageDataUrl` or pulls
+closet rows whole (`closetPhotoPrivacy.test.ts`); a shop screenshot is taken only on the shopper's click.

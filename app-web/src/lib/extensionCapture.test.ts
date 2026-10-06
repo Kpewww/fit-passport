@@ -438,6 +438,25 @@ describe("pictures the shopper may pick as the chart (Session 83)", () => {
   });
 });
 
+describe("the main product picture, for adding to the closet (Session 88d)", () => {
+  it("is the largest picture on screen, outside the header and a profile box, in CSS pixels", () => {
+    const doc = new DOMParser().parseFromString(`<html><body><header><img id="logo" src="https://s.test/l.png"></header>
+      <main><section><div><div><img id="small" src="https://s.test/a.jpg"></div></div></section>
+      <section><div><div><img id="big" src="https://s.test/b.jpg"></div></div></section></main>
+      <div><span>我的档案</span><img id="me" src="https://s.test/me.jpg"></div></body></html>`, "text/html");
+    const rects: Record<string, [number, number, number, number]> = {
+      logo: [0, 0, 1400, 900], small: [40, 120, 200, 260], big: [300, 100, 900, 1200], me: [0, 0, 1400, 900],
+    };
+    for (const [id, [l, t, r, b]] of Object.entries(rects)) {
+      doc.getElementById(id)!.getBoundingClientRect = () => ({ left: l, top: t, right: r, bottom: b, width: r - l, height: b - t, x: l, y: t, toJSON() {} }) as DOMRect;
+    }
+    Object.defineProperty(doc, "defaultView", { value: { innerWidth: 1280, innerHeight: 800 } });
+    const found = fpCapture(doc, { href: URL_ }).found as unknown as { mainPicture: { x: number; y: number; w: number; h: number; vw: number } | null };
+    // "big" clipped to the 1280 × 800 viewport.
+    expect(found.mainPicture).toEqual({ x: 300, y: 100, w: 600, h: 700, vw: 1280 });
+  });
+});
+
 describe("drift — the capture agrees with the server parser", () => {
   it("looks for the same body/garment sentences", () => {
     expect(fpCapture.KIND_BODY.map(String)).toEqual(KIND_PATTERNS.body.map(String));

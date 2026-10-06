@@ -105,3 +105,12 @@ What the original plan said:
   `app-web/store-build/fit-passport-extension-0.7.2-store.zip`. It adds the garment
   picker (84d) and a background worker that opens /extension/welcome on first install.
   No new permission; the Privacy tab's justifications stand.
+
+## Status (2026-10-06)
+
+- **Next store update: 0.8.0** (supersedes 0.7.2; if 0.7.2 is already in review, let it
+  finish and upload 0.8.0 after). Upload `app-web/store-build/fit-passport-extension-0.8.0-store.zip`.
+- New in 0.8.0: "I own this, add to closet" takes a screenshot of the tab when pressed.
+  No new permission, but **update the Privacy tab** as `docs/store/chrome-web-store.md`
+  now says: the `activeTab` justification gains a sentence, and "Website content" covers
+  the cropped screenshot.

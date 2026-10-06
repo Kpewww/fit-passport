@@ -824,3 +824,13 @@ defaults to tshirt silently — ask there too.
 **Next — founder:** upload `store-build/fit-passport-extension-0.7.2-store.zip` as the store update; put
 `TYPESAFE_API_KEY=…` in `app-web/.env.local` so the Jev calibration can run (then set `CATEGORY_MODEL.minConfidence` from
 it); recheck adidas/H&M in your own Chrome.
+
+## Session 88 (2026-10-06) — the founder's seven asks, DONE (88a–88d)
+
+**Shipped:** women's sizes + EU by country; naming the closet piece behind an answer and the
+same style first; delete with undo, screenshot/paste/camera photos, batch add; extension 0.8.0
+with "I own this, add to closet" and links into the site.
+**Next — founder:** upload `store-build/fit-passport-extension-0.8.0-store.zip` as the store update
+and amend the Privacy tab (`todo/people/05`); try the real screen-share picker and the toolbar-click
+screenshot by hand. **Engineering:** /closet over its JS budget (`todo/engineering/13`); Maje/Sandro
+T0–T4 ladders once read from the brands' guides.

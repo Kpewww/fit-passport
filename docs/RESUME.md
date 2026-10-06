@@ -3,7 +3,7 @@
 > The cold-start brief for a new chat: what this is, the hard constraints, what
 > already exists, and what to do next. Keep it current at the end of every session.
 >
-> **Last updated: Session 80 · 2026-09-30 — LIVE, 700 tests + 1 honest skip.**
+> **Last updated: Session 88 · 2026-10-06 — LIVE, 807 tests + 1 honest skip.**
 >
 > **Deliberately path- and machine-independent.** This file has been rewritten
 > twice because it named one particular computer, and every path in it died the
@@ -189,6 +189,19 @@ Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密�
 - **Session 82**:导航改为 衣橱 / 护照 / 搭配 / 社区 / 插件 / 尺码 / 帮助;标题保留 ？！ 和「」(半宽);
   Chrome 商店上架资料已备好(`docs/store/`,`pack-extension.mjs --store`,`/privacy`),还差创始人:
   注册付款、公开的联系邮箱(`lib/siteContact.ts`)、trader 声明、上传。插件 0.6.0。
+
+- **Session 83–86**(另一台机器为主):选尺码表图片读图(83)、Jev 认品类 + 问用户品类(84)、
+  网站引导到 Chrome 商店(85,0.6.0 已上架)、Vercel Web Analytics(86)。
+
+- **Session 88**(创始人七项要求):
+  - **男女装尺码**:`lib/womensSizes.ts`(美码为基准，德/欧 +30、法 +32、意 +36、英 +4);
+    引擎按男女装线读数字尺码;换算器有 男装|女装,**EU 为主、可展开法国/意大利**。
+  - **分清同款单品**:推荐理由点名用的是哪件(`pieceLabel`),/check 列出「依据的衣橱单品」;
+    `styleWords.ts` 同款式优先(`KNOWN_GOOD.styleMismatch` = 0.6,假设值);衣橱提示给同款起名。
+  - **衣橱**:删除可撤销 6 秒、多选删除;照片可上传 / 粘贴 / 截屏裁剪 / 拍照(`PhotoSource`);
+    批量添加(`BatchAdd`);`photoFrom` 列(迁移 `20261006120000_closet_photo_from`)。
+  - **插件 0.8.0**:「我有这件，加入衣橱」截图裁到商品图(activeTab,无新权限，只给本人看);
+    弹窗可直接进网站(衣橱/待购/档案/查尺码)。商店下一次更新上传 0.8.0,并改隐私声明。
 
 **下一步:见 `todo/`(做什么)与 `docs/memory/project-fit-passport-next-steps.md`
 底部(为什么)。** 客户访谈**已由创始人推迟**;插件**已不再受访谈证据门槛限制**

@@ -31,6 +31,41 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 88d — Extension 0.8.0: "I own this, add to closet", and a way into the site
+
+The founder's last two asks: one click in the extension screenshots the product and
+adds it to the closet; and a way from the extension straight into the website.
+
+- **"我有这件，加入衣橱" / "I own this, add to closet"** on the preview, the result and
+  the listing judgement. The popup calls `chrome.tabs.captureVisibleTab` — covered by
+  `activeTab`, so **no new permission** — and crops to the largest picture on screen,
+  which `capture.js` now reports (`found.mainPicture`, CSS pixels plus the viewport
+  width, never in the header, a form or a profile box). The crop is fitted to the
+  site's closet photo size. Choices: product picture, whole screen, no photo. The form
+  asks brand (now read from JSON-LD too), name, type, the size you have, how it sits.
+  Saved with `photoFrom: "shop"` and the product link; shown to no one else (88c's test).
+- `/api/closet` POST now refuses an extension request without a session (like
+  `/api/saved`), instead of minting an empty account.
+- **Into the site:** the header's "Fit Passport" opens the site; a row under every
+  screen links to 我的衣橱 / 待购 / 我的档案 / 查尺码 (the server footer is hidden in the
+  store build, so the links live outside it).
+- Privacy page: one sentence on the screenshot. Store doc and `todo/people/05`: the next
+  store update is **0.8.0** (it includes 0.7.2), and the Privacy tab's `activeTab`
+  justification and "Website content" declaration gain the screenshot.
+
+**Checked** in a headed Chromium with 0.8.0 loaded: the form showed the cropped product
+picture (13 KB); saving put "Cable-knit cardigan", M, sweater, `photoFrom: "shop"` and
+the product link into the closet. Automation cannot click the toolbar icon, so it never
+gets `activeTab` ("Either the '<all_urls>' or 'activeTab' permission is required"); the
+run used a scratch copy with `<all_urls>` added. **The shipped manifest is unchanged,
+and the real click-granted screenshot is a manual check.** The first run also caught
+the size field labelled "size you plan to buy" (from the to-buy form) — now "the size
+you have".
+
+807 tests + 1 skip, exit 0; typecheck and build clean.
+
+---
+
 ## 2026-10-06 · Session 88c — Deleting, screenshots and batch adding in the closet
 
 Three of the founder's asks for the closet on the website.
