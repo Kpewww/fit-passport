@@ -1,31 +1,34 @@
-// Where the browser extension is offered. ONE place, so moving to the Chrome Web
-// Store is one edit: replace this constant with `{ kind: "store", href: <listing> }`
-// and every page that offers the extension follows.
+// Where the browser extension is offered. ONE place: every page that offers the
+// extension reads this.
 //
-// Until then it is a zip on our own site, loaded unpacked in Developer mode. That
-// is a real hurdle for a shopper, so every page that offers the zip also says, in
-// one line, why it is not in the store yet — rather than making it look like the
-// finished install path.
+// Since 2026-10-05 the extension is in the Chrome Web Store, and that is the way
+// in: "Add to Chrome" goes straight to the listing, and Chrome keeps it updated.
+// The zip of `browser-extension/` stays as a backup for anyone who cannot use the
+// store (a managed browser, another Chromium browser) — offered on /help only.
 //
-// `extensionZip.test.ts` pins the version and file name here against the manifest
-// and against the committed zip, so the link can never point at a stale package.
+// `extensionZip.test.ts` pins the zip's version and file name against the
+// manifest and the committed file, so the backup link can never point at a stale
+// package. The store's version is whatever Google last approved; the page does
+// not print it.
 
 export type ExtensionDistribution =
-  | {
-      kind: "zip";
-      href: string;
-      version: string;
-      /** Rounded, for the button — measured from the committed file by a test. */
-      sizeKb: number;
-    }
-  | { kind: "store"; href: string; version: string };
+  | { kind: "store"; href: string }
+  | { kind: "zip"; href: string; version: string; sizeKb: number };
 
-export const EXTENSION_DISTRIBUTION: ExtensionDistribution = {
-  kind: "zip",
-  href: "/downloads/fit-passport-extension-0.7.1.zip",
-  version: "0.7.1",
-  sizeKb: 123,
+/** The listing, by the item ID Google assigned. */
+export const STORE_EXTENSION_ID = "ciecejomnniicliemefagfegkmgfkgfe";
+export const STORE_URL = `https://chromewebstore.google.com/detail/fit-passport/${STORE_EXTENSION_ID}`;
+
+export const EXTENSION_DISTRIBUTION: ExtensionDistribution = { kind: "store", href: STORE_URL };
+
+/** The backup: the same extension as a zip, loaded unpacked in Developer mode. */
+export const EXTENSION_ZIP = {
+  href: "/downloads/fit-passport-extension-0.7.2.zip",
+  version: "0.7.2",
+  /** Rounded, for the button — measured from the committed file by a test. */
+  sizeKb: 124,
 };
 
-/** The pinned extension ID (from the manifest `key`) — the same for every install. */
+/** The ID an unpacked (zip) install gets — pinned by the manifest `key`. The
+ *  store install has its own (STORE_EXTENSION_ID); the server checks neither. */
 export const EXTENSION_ID = "odbdhmcfjbhikmlfmgafbkkbknkkaecp";

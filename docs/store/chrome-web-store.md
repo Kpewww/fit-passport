@@ -1,5 +1,9 @@
 # Chrome Web Store listing — what to paste where
 
+**Live since 2026-10-05:** https://chromewebstore.google.com/detail/fit-passport/ciecejomnniicliemefagfegkmgfkgfe
+(0.6.0). Next update: 0.7.2 — a background worker that opens the welcome page on
+first install, no new permission.
+
 Everything the Developer Dashboard asks for, ready to paste. The upload is
 `app-web/store-build/fit-passport-extension-<version>-store.zip`, built with
 `node scripts/pack-extension.mjs --store` (from `app-web/`). Who does what, and

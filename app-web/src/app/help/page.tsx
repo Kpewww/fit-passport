@@ -8,7 +8,8 @@ import { Card } from "@/components/ui";
 import { BadgeSeal } from "@/components/Badges";
 import { BADGES, METAL_STYLE } from "@/lib/badges";
 import { Logo } from "@/components/Logo";
-import { ArrowLeft, ArrowRight } from "@/components/Icon";
+import { ArrowLeft, ArrowRight, Download } from "@/components/Icon";
+import { EXTENSION_ZIP, STORE_URL } from "@/lib/extensionDistribution";
 import { useT } from "@/i18n/client";
 import { useBadgeWords } from "@/i18n/badges";
 import { Headline } from "@/components/Headline";
@@ -16,8 +17,12 @@ import { Headline } from "@/components/Headline";
 // Earn conditions come straight from each badge's own `blurb` in badges.ts —
 // a single source of truth, so this table can never drift from the real rules.
 
+const bold = (c: string) => <b>{c}</b>;
+const code = (c: string) => <code className="rounded bg-paper-soft px-1.5 py-0.5 text-[0.9em]">{c}</code>;
+
 export default function HelpPage() {
   const t = useT("help");
+  const te = useT("extension");
   const w = useBadgeWords();
   return (
     <main className="flex-1">
@@ -38,6 +43,48 @@ export default function HelpPage() {
           <HelpRow q={t("editQ")} a={t("editA")} />
           <HelpRow q={t("directoryQ")} a={t("directoryA")} />
         </Section>
+
+        {/* The extension's backup install (Session 85). The Chrome Web Store is the
+            way in; this is for a browser that cannot use it. Anchored, so
+            /extension can link straight here. */}
+        <div id="manual-install" className="scroll-mt-24">
+          <Section title={t("manualTitle")}>
+            <Card>
+              <p className="text-sm text-ink-soft">
+                {t.rich("manualLede", {
+                  link: (c) => <a href={STORE_URL} target="_blank" rel="noopener noreferrer" className="text-brand hover:underline">{c}</a>,
+                })}
+              </p>
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <a
+                  href={EXTENSION_ZIP.href}
+                  download
+                  className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-ink px-5 text-sm font-medium text-paper transition-colors hover:bg-ink/85"
+                >
+                  <Download size={18} /> {te("download")}
+                </a>
+                <span className="text-xs text-ink-faint">
+                  {t("manualVersion", { version: EXTENSION_ZIP.version, size: EXTENSION_ZIP.sizeKb })}
+                </span>
+              </div>
+              <ol className="mt-5 space-y-3">
+                {[
+                  te.rich("install.unzip", { b: bold }),
+                  te.rich("install.devMode", { b: bold, code }),
+                  te.rich("install.load", { b: bold }),
+                  te.rich("install.connect", { link: (c) => <Link href="/" className="underline underline-offset-2 hover:text-ink">{c}</Link> }),
+                ].map((step, i) => (
+                  <li key={i} className="flex gap-3 text-sm text-ink-soft">
+                    <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-line text-xs tabular-nums">{i + 1}</span>
+                    <p className="pt-0.5">{step}</p>
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-4 text-xs text-ink-faint">{t("manualDevMode")}</p>
+              <p className="mt-2 text-xs text-ink-faint">{t("manualSwitch")}</p>
+            </Card>
+          </Section>
+        </div>
 
         {/* Outfits */}
         <Section title={t("outfits")}>

@@ -70,8 +70,8 @@ What the original plan said:
 ## Progress (2026-09-30)
 
 - Registered; the 0.6.0 store package is uploaded as a **draft**. Store item ID:
-  `ciecejomnniicliemefagfegkmgfkfe` (the listing will be
-  `https://chromewebstore.google.com/detail/ciecejomnniicliemefagfegkmgfkfe`).
+  `ciecejomnniicliemefagfegkmgfkgfe` (corrected 2026-10-05: first recorded one
+  character short) — https://chromewebstore.google.com/detail/fit-passport/ciecejomnniicliemefagfegkmgfkgfe
   The unpacked/zip build keeps its own ID; the server checks neither.
 - Declared **non-trader** for now. Switch to trader when any of these happens:
   charging users, affiliate commission, ads, or operating as a company.
@@ -96,3 +96,12 @@ What the original plan said:
   `node scripts/pack-extension.mjs --store` if the source changed). 0.7.1 adds the
   "What kind of garment is this?" picker (Session 84d).
 - Server fixes for "not a garment" (84a–c) apply to the installed 0.6.0 already.
+
+## Status (2026-10-05, later)
+
+- **Live:** 0.6.0 is published; the listing answers with "Add to Chrome". The site now
+  sends everyone there (Session 85a); the zip is a backup on /help.
+- **Next store update: 0.7.2** (supersedes 0.7.1) — upload
+  `app-web/store-build/fit-passport-extension-0.7.2-store.zip`. It adds the garment
+  picker (84d) and a background worker that opens /extension/welcome on first install.
+  No new permission; the Privacy tab's justifications stand.

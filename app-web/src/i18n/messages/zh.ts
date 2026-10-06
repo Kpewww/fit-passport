@@ -80,8 +80,7 @@ export const zh: Messages = {
       title: "「穿」越时空，<br/><accent>合身随行。</accent>",
       lede: "无论在哪个品牌，Fit Passport 都会记住你的尺寸、偏好，以及真正适合你的衣服。",
       cta: "添加到 Chrome",
-      noteZip: "免费 · {size} KB · 仅在你点击时读取当前页面",
-      noteStore: "免费 · 仅在你点击时读取当前页面",
+      noteStore: "免费 · 来自 Chrome 应用商店 · 仅在你点击时读取当前页面",
       pasteLink: "也可粘贴商品链接",
       placeholder: "粘贴商品链接……",
       linkLabel: "商品链接",
@@ -1183,6 +1182,13 @@ export const zh: Messages = {
   help: {
     title: "合身有据，使用有方。",
     lede: "了解 Fit Passport 的功能与使用方式，沿着每条路线解锁徽章。",
+    manualTitle: "手动安装插件",
+    manualLede:
+      "插件已上架 Chrome 应用商店——<link>在那里添加</link>。如果你无法使用商店（例如受管理的浏览器，或 Edge、Brave、Arc 等其他 Chromium 浏览器），可以下载后自己加载：四个步骤，大约一分钟。",
+    manualVersion: "版本 {version} · {size} KB",
+    manualSwitch:
+      "以前用这种方式安装过？请在 chrome://extensions 中移除那一份，改从商店添加 Fit Passport：商店版会自动更新，同时保留两份会出现两个插件。",
+    manualDevMode: "Chrome 可能会提示“开发者模式扩展程序”，手动安装的插件出现这一提示属于正常现象。",
     basics: "从这里开始",
     whatQ: "Fit Passport 是什么？",
     whatA:
@@ -1240,13 +1246,15 @@ export const zh: Messages = {
     title: "合身答案，就在眼前。",
     lede: "打开任意商品页面，点击 Fit Passport，即可查看推荐尺码、判断依据，以及每项数据的来源。",
     cardName: "Fit Passport Chrome 插件",
-    versionZip: "版本 {version} · {size} KB · 免费",
-    versionStore: "版本 {version} · 免费",
-    download: "下载插件",
+    storeNote: "免费 · 来自 Chrome 应用商店 · 自动更新",
     addToChrome: "添加到 Chrome",
-    notInStore:
-      "插件暂未上架 Chrome 应用商店，目前需要手动安装——四个步骤，大约一分钟。我们已在 Chrome 中完成测试；Edge、Brave 和 Arc 等 Chromium 浏览器也支持相同的安装方式。",
-    installTitle: "安装插件",
+    download: "下载插件",
+    stepsTitle: "使用方法",
+    steps: {
+      add: "在 Chrome 应用商店点击<b>“添加到 Chrome”</b>。安装完成后会自动打开欢迎页。",
+      pin: "点击 Chrome 工具栏中的拼图图标，<b>固定</b> Fit Passport，之后一键即可打开。",
+      use: "在商品页点击图标，再点击<b>“查看推荐”</b>。如果商店把尺码表放在“尺码指南”按钮后面，请先打开它——插件不会替你点击页面中的任何内容。",
+    },
     install: {
       unzip: "下载上方文件并<b>解压</b>，将文件夹保存在不会被删除的位置——Chrome 会从这里加载插件。",
       devMode: "在 Chrome 中打开 <code>chrome://extensions</code>，然后开启右上角的<b>“开发者模式”</b>。",
@@ -1254,17 +1262,13 @@ export const zh: Messages = {
       connect:
         "在同一浏览器中打开一次 <link>Fit Passport</link>，完成插件与合身护照的连接。连接前，插件会先提示你完成这一步，不会使用空白档案进行判断。",
     },
-    pinTip: "提示：点击 Chrome 工具栏中的拼图图标，将 Fit Passport 固定在工具栏，之后一键即可打开。",
-    usingTitle: "使用插件",
-    using1: "打开商品页面并点击 Fit Passport 图标。提交前，你可以先查看插件从页面读取到的信息；点击<b>“查看推荐”</b>，即可获得结果。",
-    using2:
-      "许多商店只有在打开“尺码指南”后才会加载尺码表。如果插件未找到尺码表，请先在商品页中打开尺码指南，再点击<b>“重新扫描”</b>。插件不会替你点击页面中的任何内容。",
     readsTitle: "只读取必要信息",
     readsBody:
       "插件只会在你主动点击时读取当前页面，并仅复制商品名称、尺码表和可选尺码等必要信息。购物车、账户、地址和表单内容都会被排除。以真实商品页为例，插件只读取了 <b>1.78 MB 页面中的 11 KB</b> 数据。",
     whyTitle: "为什么需要插件",
     whyBody:
       "许多大型商店会阻止服务器读取商品页面，因此直接粘贴链接并非始终有效。浏览器插件会在你正在浏览的页面中读取信息，能够处理普通链接无法读取的页面。",
+    privacyLink: "发送和保存的全部内容，见<link>隐私政策</link>。",
     troubleTitle: "如果遇到问题",
     trouble: {
       connectQ: "提示“请先连接 Fit Passport”",
@@ -1276,8 +1280,21 @@ export const zh: Messages = {
       marketQ: "在淘宝或天猫使用",
       marketA:
         "淘宝或天猫可能会要求你登录后才显示商品，请先在同一浏览器中完成登录。插件会从页面的“参数信息”中读取品牌与性别，并从“尺码信息”中读取尺码表。如果尺码表尚未加载，请滚动到“尺码信息”区域，再点击“重新扫描”。淘宝页面中的“我的档案”信息不会被发送。",
-      devModeQ: "Chrome 提示“开发者模式扩展程序”",
-      devModeA: "手动安装的插件可能会出现这一提示。Fit Passport 上架 Chrome 应用商店后，该提示将不再出现。",
+    },
+    manualLink: "无法使用 Chrome 应用商店？<link>手动安装</link>。",
+    welcome: {
+      metaTitle: "欢迎 · Fit Passport",
+      eyebrow: "已安装",
+      title: "Fit Passport 已加入你的浏览器",
+      connected: "已连接：打开这一页时，插件已经和你在这个浏览器中的合身护照连在一起。",
+      pinTitle: "固定图标",
+      pinBody: "点击 Chrome 工具栏中的拼图图标，再点击 Fit Passport 旁边的图钉。",
+      tryTitle: "试一试",
+      tryBody: "打开任意服装商店的商品页，点击 Fit Passport 图标，再点击“查看推荐”。",
+      chartTip: "许多商店只有在打开“尺码指南”后才会加载尺码表。请先打开它，再点击图标——或者点击“重新扫描”。",
+      passportTitle: "让推荐更懂你",
+      passportBody: "补充胸围，或添加一件合身的衣服，推荐就有了真实的依据。",
+      passportCta: "设置我的合身护照",
     },
   },
 

@@ -43,6 +43,12 @@ size. A saved product is **not** in your closet and never feeds a recommendation
 "Bought it — add to closet" on the website moves it there once you say how it fits.
 No new permission: it uses the same session and host permission as a check.
 
+## Background worker (0.7.2)
+
+`background.js` does one thing: on **first install** it opens `/extension/welcome` on
+the first server in `config.js` (production in the store build). It needs no
+permission — `chrome.tabs.create` works without `tabs` — and updates open nothing.
+
 ## Install (development)
 
 1. `chrome://extensions` → enable **Developer mode**.

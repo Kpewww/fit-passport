@@ -31,6 +31,52 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-05 · Session 85a — The site sends people to the Chrome Web Store; the zip moves to Help; a welcome page on install
+
+The listing is live: `ciecejomnniicliemefagfegkmgfkgfe`, 0.6.0, "Add to Chrome". It was
+checked from here and returned 200. The founder asked for the site to lead with it:
+- install guidance on the site;
+- the zip as a backup under Help;
+- `/extension` as a short introduction;
+- a welcome page after install.
+
+**Changed:**
+- `extensionDistribution.ts`: `EXTENSION_DISTRIBUTION` is
+  `{ kind: "store", href: STORE_URL }`. The zip became `EXTENSION_ZIP` (still pinned to
+  the manifest by `extensionZip.test.ts`). `STORE_EXTENSION_ID` sits beside the zip's
+  pinned `EXTENSION_ID`.
+- **Homepage:** the hero's and the closing "Add to Chrome" open the listing in a new
+  tab ("Free · from the Chrome Web Store · reads only the page you click it on").
+  `LinkButton` gained `external`.
+- **`/extension`** is now an introduction:
+  - "Add to Chrome";
+  - three steps — add, pin, use (open the size guide first);
+  - what it reads, and why an extension;
+  - a privacy link and three questions;
+  - "Can't use the store? Install it by hand" → `/help#manual-install`.
+- **`/help#manual-install`:** the zip download, the four steps (the same words as
+  before), the developer-mode note, and how to switch from the zip copy to the store
+  one.
+- **`/extension/welcome`** (noindex) says "you're connected", which is true: the
+  visit mints the session the popup uses. It shows how to pin the icon and try it,
+  and links to set up the passport.
+- **Extension 0.7.2:** `background.js` opens that page on **first install** only, from
+  the first server in `config.js`. No new permission.
+- Copy in EN/ZH. Dropped: the zip-only lines (versionZip, notInStore, installTitle,
+  using1/2, the dev-mode question).
+- `todo/people/05`: the item ID had been recorded one character short — corrected.
+  Next store update: 0.7.2.
+
+**Verified:**
+- Local production build, both languages, 1440 and 390 px: every page without
+  horizontal overflow; two store links on the homepage, one on `/extension`; the zip
+  only on `/help`.
+- 0.7.2 loaded into a fresh Chromium opens exactly one tab, at
+  `…/extension/welcome`.
+- 785 tests passed + 1 skipped; typecheck and build clean.
+
+---
+
 ## 2026-10-05 · Session 84e — The classifier says what it did
 
 The founder set `TYPESAFE_API_KEY`. Three production checks with names no word rule knows ("Linen Kurta", "Velvet Bolero", "Silk Charmeuse Slip") all came back `pick-category`, and nothing showed why: no call, a failed call, or an answer under 0.6.

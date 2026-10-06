@@ -6,7 +6,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { buildExtensionZip, extensionFiles, extensionVersion, zipFileName, EXT_DIR, OUT_DIR, DEV_ORIGIN } from "../../scripts/pack-extension.mjs";
-import { EXTENSION_DISTRIBUTION, EXTENSION_ID } from "./extensionDistribution";
+import { EXTENSION_DISTRIBUTION, EXTENSION_ID, EXTENSION_ZIP, STORE_EXTENSION_ID, STORE_URL } from "./extensionDistribution";
 
 /** Read a stored (uncompressed) zip back into name → text. */
 function unzip(zip: Buffer): Map<string, string> {
@@ -34,14 +34,18 @@ describe("the extension download", () => {
     ).toBe(0);
   });
 
-  it("links to the file that exists, at the manifest's version", () => {
+  it("offers the backup zip at the manifest's version, and the file exists", () => {
     const v = extensionVersion();
-    expect(EXTENSION_DISTRIBUTION.version).toBe(v);
-    if (EXTENSION_DISTRIBUTION.kind === "zip") {
-      expect(EXTENSION_DISTRIBUTION.href).toBe(`/downloads/${zipFileName(v)}`);
-      const kb = statSync(join(OUT_DIR, zipFileName(v))).size / 1024;
-      expect(Math.abs(EXTENSION_DISTRIBUTION.sizeKb - kb)).toBeLessThan(2);
-    }
+    expect(EXTENSION_ZIP.version).toBe(v);
+    expect(EXTENSION_ZIP.href).toBe(`/downloads/${zipFileName(v)}`);
+    const kb = statSync(join(OUT_DIR, zipFileName(v))).size / 1024;
+    expect(Math.abs(EXTENSION_ZIP.sizeKb - kb)).toBeLessThan(2);
+  });
+
+  it("leads with the Chrome Web Store listing (Session 85)", () => {
+    expect(STORE_EXTENSION_ID).toMatch(/^[a-p]{32}$/);
+    expect(EXTENSION_DISTRIBUTION).toEqual({ kind: "store", href: STORE_URL });
+    expect(STORE_URL).toBe(`https://chromewebstore.google.com/detail/fit-passport/${STORE_EXTENSION_ID}`);
   });
 
   it("agrees with the version the extension reports about itself", () => {

@@ -83,8 +83,7 @@ export const en = {
       title: "Know what fits,<br/><accent>anywhere.</accent>",
       lede: "Check your size on any product page. We weigh it against the clothes you already own — and show our working.",
       cta: "Add Fit Passport to Chrome",
-      noteZip: "Free · {size} KB · reads only the page you click it on",
-      noteStore: "Free · reads only the page you click it on",
+      noteStore: "Free · from the Chrome Web Store · reads only the page you click it on",
       pasteLink: "Or paste a product link",
       placeholder: "Paste a product URL…",
       linkLabel: "Product link",
@@ -1192,6 +1191,13 @@ export const en = {
   help: {
     title: "Help & guide",
     lede: "Everything Fit Passport does, and how to earn every badge.",
+    manualTitle: "Install the extension by hand",
+    manualLede:
+      "The extension is in the Chrome Web Store — <link>add it there</link>. If you can't use the store (a managed browser, or another Chromium browser such as Edge, Brave or Arc), download it and load it yourself: four steps, about a minute.",
+    manualVersion: "Version {version} · {size} KB",
+    manualSwitch:
+      "Installed it this way before? Remove that copy in chrome://extensions and add Fit Passport from the store instead: the store version updates itself, and two copies would both show up.",
+    manualDevMode: "Chrome may mention a developer-mode extension — expected for an extension added this way.",
     basics: "The basics",
     whatQ: "What is Fit Passport?",
     whatA:
@@ -1253,13 +1259,15 @@ export const en = {
     title: "Check your size on the page you're already on",
     lede: "Open any product page, click Fit Passport, and get the size — with the reasons and where every number came from.",
     cardName: "Fit Passport for Chrome",
-    versionZip: "Version {version} · {size} KB · free",
-    versionStore: "Version {version} · free",
-    download: "Download the extension",
+    storeNote: "Free · from the Chrome Web Store · updates itself",
     addToChrome: "Add to Chrome",
-    notInStore:
-      "It isn’t in the Chrome Web Store yet, so for now you add it yourself — four steps, about a minute. Tested in Chrome; other Chromium browsers (Edge, Brave, Arc) install it the same way.",
-    installTitle: "Install it",
+    download: "Download the extension",
+    stepsTitle: "How it works",
+    steps: {
+      add: "<b>Add to Chrome</b> from the Chrome Web Store. A welcome page opens when it is installed.",
+      pin: "Click the puzzle-piece icon in Chrome’s toolbar and <b>pin</b> Fit Passport, so it’s one click away.",
+      use: "On a product page, click the icon, then <b>Check my size</b>. If the store keeps its size chart behind a “Size guide” button, open it first — the extension never clicks anything on the page for you.",
+    },
     install: {
       unzip: "Download the file above and <b>unzip it</b>. Keep the folder somewhere it won’t be deleted — Chrome loads the extension from it.",
       devMode: "In Chrome, go to <code>chrome://extensions</code> and turn on <b>Developer mode</b> (top right).",
@@ -1267,18 +1275,13 @@ export const en = {
       connect:
         "Open <link>Fit Passport</link> once in the same browser. That connects the extension to your passport — without it, the extension will ask you to connect first rather than check against an empty profile.",
     },
-    pinTip: "Tip: click the puzzle-piece icon in Chrome’s toolbar and pin Fit Passport, so it’s one click away.",
-    usingTitle: "Using it",
-    using1:
-      "Open a product page and click the Fit Passport icon. You’ll see what it found on the page before anything is sent; press <b>Check my size</b> to get the answer.",
-    using2:
-      "Many stores only load their size chart when you open their “Size guide”. If the extension says it found no chart, open the size guide on the page, then press <b>Re-scan</b>. It never clicks anything on the page for you.",
     readsTitle: "What it reads",
     readsBody:
       "Only the page you click it on, only when you click. It builds a small copy of the product parts — name, size chart, size options — and leaves everything else behind: your cart, your account, your address, forms. On a real product page that’s <b>11 KB out of 1.78 MB</b>.",
     whyTitle: "Why an extension",
     whyBody:
       "Many large stores block our servers from reading their pages — pasting a link works on some stores and not others. The extension reads the page in your own browser instead, the page you’re already looking at, so it works where a link can’t.",
+    privacyLink: "Everything it sends and what we keep: <link>privacy policy</link>.",
     troubleTitle: "If something goes wrong",
     trouble: {
       connectQ: "It says “connect Fit Passport first”.",
@@ -1290,8 +1293,21 @@ export const en = {
       marketQ: "On Taobao or Tmall.",
       marketA:
         "Tmall may ask you to log in before it shows the product — do that in the same browser first. The extension reads the brand and gender from the page's 参数信息 list and the chart from 尺码信息; if it finds no chart, scroll to 尺码信息 so it loads, then press Re-scan. The size profile Taobao shows you there (我的档案) is never sent.",
-      devModeQ: "Chrome mentions a developer-mode extension.",
-      devModeA: "That can happen with extensions added this way. It goes away once Fit Passport is in the Chrome Web Store.",
+    },
+    manualLink: "Can’t use the Chrome Web Store? <link>Install it by hand</link>.",
+    welcome: {
+      metaTitle: "Welcome · Fit Passport",
+      eyebrow: "Installed",
+      title: "Fit Passport is in your browser",
+      connected: "You’re connected: opening this page linked the extension to your Fit Passport in this browser.",
+      pinTitle: "Pin it",
+      pinBody: "Click the puzzle-piece icon in Chrome’s toolbar, then the pin beside Fit Passport.",
+      tryTitle: "Try it",
+      tryBody: "Open a product page in a clothing store, click the Fit Passport icon, then Check my size.",
+      chartTip: "Many stores load their size chart only when you open their “Size guide”. Open it first, then click the icon — or press Re-scan.",
+      passportTitle: "Make the answers yours",
+      passportBody: "Add your chest measurement, or one garment that fits you well, and the recommendation has something real to go on.",
+      passportCta: "Set up my passport",
     },
   },
 

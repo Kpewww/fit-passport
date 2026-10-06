@@ -100,9 +100,18 @@ export function LinkButton({
   icon,
   arrow,
   className = "",
-}: ButtonLookProps & { href: string; children: ReactNode }) {
+  external = false,
+}: ButtonLookProps & { href: string; children: ReactNode; /** Another site (the Chrome Web Store): a new tab. */ external?: boolean }) {
+  const cls = `${btnBase} ${btnVariants[variant]} ${btnSizes[size]} ${className}`;
+  if (external) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={cls}>
+        <ButtonInner icon={icon} arrow={arrow}>{children}</ButtonInner>
+      </a>
+    );
+  }
   return (
-    <Link href={href} className={`${btnBase} ${btnVariants[variant]} ${btnSizes[size]} ${className}`}>
+    <Link href={href} className={cls}>
       <ButtonInner icon={icon} arrow={arrow}>{children}</ButtonInner>
     </Link>
   );

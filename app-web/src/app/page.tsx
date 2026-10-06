@@ -233,19 +233,18 @@ function Hero({
             retailers block servers from reading their pages (measured, Sessions
             70–75d), while the extension reads the page in the shopper's own
             browser. So the link box is still here, folded, and labelled for what
-            it is — see docs/design/browser-extension.md. */}
+            it is — see docs/design/browser-extension.md. Since Session 85 the
+            button goes straight to the Chrome Web Store listing. */}
         <div className="mt-10 flex flex-col items-center gap-3 animate-rise" style={{ animationDelay: "180ms" }}>
-          <Link
-            href="/extension"
+          <a
+            href={EXTENSION_DISTRIBUTION.href}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex min-h-[48px] items-center gap-2.5 rounded-full bg-paper px-7 text-sm font-medium text-ink transition-colors hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper"
           >
             <BrowserIcon size={18} /> {t("hero.cta")}
-          </Link>
-          <p className="text-xs text-paper/60">
-            {EXTENSION_DISTRIBUTION.kind === "zip"
-              ? t("hero.noteZip", { size: EXTENSION_DISTRIBUTION.sizeKb })
-              : t("hero.noteStore")}
-          </p>
+          </a>
+          <p className="text-xs text-paper/60">{t("hero.noteStore")}</p>
         </div>
 
         <details className="group mx-auto mt-8 max-w-xl text-left animate-rise" style={{ animationDelay: "220ms" }}>
@@ -562,7 +561,7 @@ function ClosingCTA({ newUser }: { newUser: boolean }) {
       </h2>
       <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
         <LinkButton href="/passport" size="lg">{t("closing.create")}</LinkButton>
-        <LinkButton href="/extension" variant="secondary" size="lg" icon={<BrowserIcon size={18} />}>{t("closing.extension")}</LinkButton>
+        <LinkButton href={EXTENSION_DISTRIBUTION.href} external variant="secondary" size="lg" icon={<BrowserIcon size={18} />}>{t("closing.extension")}</LinkButton>
       </div>
       {newUser && (
         <div className="mt-6">
