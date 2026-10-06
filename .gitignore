@@ -38,6 +38,8 @@ app-web/eval/local/
 # The Chrome Web Store package (pack-extension.mjs --store): uploaded by hand,
 # rebuilt from browser-extension/ at any time.
 app-web/store-build/
+# Videos of the mark's reveal, made by app-web/scripts/record-logo.mjs (Session 89).
+app-web/brand-build/
 
 # Vercel CLI link metadata (project/org ids)
 app-web/.vercel

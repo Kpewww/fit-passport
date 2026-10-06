@@ -6,12 +6,13 @@
 // session. So the page can say "you're connected" truthfully without asking the
 // visitor to do anything. It then shows how to pin the icon and how to try it.
 //
-// Server component, no JavaScript of its own; not for search engines.
+// Server component; its only script is the mark's quick reveal. Not for search engines.
 
 import type { Metadata } from "next";
 import { Card, LinkButton, Page, PageHeader } from "@/components/ui";
 import { CheckCircle, Pin, Ruler } from "@/components/Icon";
 import { getT } from "@/i18n/server";
+import { AnimatedFitPassportLogoLazy } from "@/components/AnimatedFitPassportLogoLazy";
 
 export function generateMetadata(): Metadata {
   const t = getT("extension");
@@ -22,6 +23,8 @@ export default function ExtensionWelcomePage() {
   const t = getT("extension");
   return (
     <Page width="read">
+      {/* The quick reveal: the first thing a new install sees (Session 89). */}
+      <AnimatedFitPassportLogoLazy variant="quick" size={56} className="mb-6 text-ink" />
       <PageHeader eyebrow={t("welcome.eyebrow")} title={t("welcome.title")} />
 
       <div className="mt-8 flex items-start gap-3 rounded-2xl bg-ok-tint px-5 py-4 text-sm text-ok">

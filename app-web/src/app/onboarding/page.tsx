@@ -28,6 +28,7 @@ import {
 import { useT } from "@/i18n/client";
 import { useGarmentText } from "@/i18n/garment";
 import { Headline } from "@/components/Headline";
+import { AnimatedFitPassportLogoLazy } from "@/components/AnimatedFitPassportLogoLazy";
 
 type Profile = {
   sex: "male" | "female" | "unspecified" | null;
@@ -106,6 +107,8 @@ export default function OnboardingPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-2xl px-4 sm:px-6 py-10">
+        {/* The quick reveal on the first step only (Session 89). */}
+        {stepIndex === 0 && <AnimatedFitPassportLogoLazy variant="quick" size={48} className="mb-5 text-ink" />}
         <p className="text-xs uppercase tracking-[0.18em] text-ink-faint">
           {t("stepOf", { n: stepIndex + 1, total: ONBOARDING_STEPS.length })}
         </p>

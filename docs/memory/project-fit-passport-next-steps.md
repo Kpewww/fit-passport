@@ -834,3 +834,10 @@ with "I own this, add to closet" and links into the site.
 and amend the Privacy tab (`todo/people/05`); try the real screen-share picker and the toolbar-click
 screenshot by hand. **Engineering:** /closet over its JS budget (`todo/engineering/13`); Maje/Sandro
 T0–T4 ladders once read from the brands' guides.
+
+## Session 89 (2026-10-06) — the mark's animated reveal, DONE
+
+**Shipped:** hero reveal on the homepage, quick on welcome/onboarding, `/brand/reveal` for presenting, a
+frame-by-frame video export. **Next — founder:** `brew install ffmpeg` and re-run `scripts/record-logo.mjs`
+for MP4 (Keynote/PowerPoint); say if the extension popup should get the quick reveal (needs a framework-free
+version).

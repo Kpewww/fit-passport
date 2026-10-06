@@ -1247,6 +1247,10 @@ export const en = {
     },
   },
 
+  brandReveal: {
+    metaTitle: "The mark, revealed",
+    keys: "Space or click: play again · D: dark or light · Q: full or quick · C: the line",
+  },
   help: {
     title: "Help & guide",
     lede: "Everything Fit Passport does, and how to earn every badge.",

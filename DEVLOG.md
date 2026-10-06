@@ -31,6 +31,69 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 89 — The mark, revealed as a thread
+
+The founder's brief (pasted, 2026-10-06): thin Ink Black threads explore an invisible
+maze, take wrong turns and retract; one remains and traces the mark — enter left, the
+upper turn and hidden FP, descend, the lower loop — then crossfades into the exact
+canonical logo. Editorial and quiet: no glow, particles, circuit look or bounce. Hero
+~2.6 s with a ~150 ms settle, a quick variant, reduced motion respected; React +
+Framer Motion + SVG, no Three.js, no video asset. For the website and presentations.
+Decided with the founder: hero on the homepage hero, reversed (white on its ink),
+once per session; a full-screen presentation page and a video export; quick on web
+pages only (not yet the extension popup).
+
+**`AnimatedFitPassportLogo`** (`variant="hero" | "quick"`):
+- **The settled frame is the master.** The thread is drawn on an overlay with the
+  mark's own viewBox and size, over the real `<Logo>`; when the reveal ends, only
+  `<Logo>` remains. Measured with Playwright: the settled reveal against a static
+  `<Logo>` (`/brand/reveal?still=1`) — **0 differing pixels** in all 12 cases (marks
+  of 168, 280 and 403 px at 2×; porcelain and ink; hero and quick). The same
+  comparison against a mid-draw frame finds 49,894, so it does detect a difference.
+- **A derived centerline** (`lib/logoCenterline.ts`): the mark is a filled outline, so
+  four strokes follow its centre — rough paths snapped to the midpoint between the
+  fill's edges, smoothed and thinned by `brand/tests/centerline-fit.mjs`, which
+  reproduces the committed paths exactly. At a 22-unit stroke (the master's measured
+  median) they cover **98.2%** of the mark with **1.8%** spill (target ≥ 90 / ≤ 10).
+  The lower loop is drawn from the stem end, so the descent carries into it.
+- **Exploration (hero):** three threads on smooth curves sweep into the mark's space,
+  curl back and retract; a fourth reaches the entry, and its tail pulls in while the
+  mark's line thickens from a hairline to the mark's weight. The first version used
+  right-angle "corridors" and read as a step chart — replaced.
+- **Timing, measured on a paused clock:** hero settles at **2.59 s**, quick at
+  **0.89 s**.
+  - The crossfade brings the mark in under the still-opaque thread before the thread
+    fades; fading both at once dipped the mark to grey for a few frames (seen in a
+    recorded frame, fixed).
+  - Each stroke fades in as it starts, so a round end never shows as a dot first.
+- **Once per session** for hero, marked when it finishes: marked at the start, React's
+  development double effect made the second run skip the reveal.
+- Reduced motion shows the mark at once.
+
+**Where it plays:** homepage hero (80 px, white), `/extension/welcome` and the first
+onboarding step (quick, ink). On those two the reveal loads on demand
+(`AnimatedFitPassportLogoLazy`): imported directly it added ~33 kB to pages that had
+no Framer Motion. First Load JS: `/` 165 → 174 kB, `/extension/welcome` 97.7 → 98.7 kB,
+`/onboarding` 104 → 105 kB.
+
+**For presentations:** `/brand/reveal` (noindex), full screen over the site's chrome:
+Space or click replays, D switches the ground, Q the variant, C shows "One thread
+through the maze of fit." / 「一根线，穿过合身的迷宫。」; query parameters set the same,
+`?still=1` is the end frame. **`scripts/record-logo.mjs`** records it frame by frame:
+- Playwright's fake clock is installed and **paused**, then stepped 1/60 s per frame.
+  An unpaused fake clock still runs in real time, and the first attempt's video ran
+  2–3× fast because each screenshot let it advance.
+- Every layer is on Framer's frame clock: an empty `onUpdate` keeps the HTML layers
+  off the Web Animations API, and the caption is a Framer fade, not a CSS transition.
+- MP4 with a system ffmpeg; this machine has none, so WebM via Playwright's bundled
+  one (which needs `pipe:0`, not `-`). Four 1920×1080 videos recorded in 37 s into
+  `app-web/brand-build/` (git-ignored) and checked by playing them back in Chromium.
+
+Seen at 390 and 1440, porcelain and ink; no overflow. 815 tests + 1 skip, exit 0;
+typecheck and build clean.
+
+---
+
 ## 2026-10-06 · Session 88e — Delete asks in place, and the undo toast moves
 
 The founder, on 88c: give "Deleted 1" a disappearing animation, and have delete ask

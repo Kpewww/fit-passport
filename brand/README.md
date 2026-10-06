@@ -161,3 +161,28 @@ retired; if you find it in a logo document it is stale.
 The mark is monochrome and inherits `currentColor`, so this changes nothing about
 the geometry - only the ground it is tested and presented on. `tests/size-test.mjs`
 tests against `#F3F3F1`.
+
+## Motion — the reveal (Session 89)
+
+The mark has one animation, `AnimatedFitPassportLogo` (`app-web/src/components/`):
+a few thin threads search a space with no walls drawn and pull back; one reaches the
+mark's entry and draws the mark in the concept's order (LOGO_CONCEPT §9: enter from
+the left, the upper turn and hidden FP, descend, the lower loop); the last 150 ms
+crossfade into the mark itself.
+
+- **The settled frame is this master, untouched.** The thread is drawn on an overlay
+  over `<Logo>`; when it ends, only `<Logo>` remains. Measured: the settled reveal and
+  a static `<Logo>` differ by **0 pixels** at three sizes, on both grounds, both
+  variants.
+- **The thread follows a derived centerline** (`app-web/src/lib/logoCenterline.ts`),
+  made from this master by `tests/centerline-fit.mjs`: at a 22-unit stroke it covers
+  98.2% of the mark and spills 1.8% past it. It is a drawing aid, never a resting
+  frame. If the master changes, re-run that script with `--write`.
+- Variants: **hero** about 2.6 s (the founder's brief; the concept's 1.2–1.8 s was for
+  the draw alone) and **quick** about 0.9 s. `prefers-reduced-motion` shows the mark
+  at once.
+- **For slides:** `/brand/reveal` plays it full screen (Space replays, D switches the
+  ground, Q switches the variant, C shows "One thread through the maze of fit.";
+  `?still=1` is the end frame). `app-web/scripts/record-logo.mjs` records it frame by
+  frame to `app-web/brand-build/` (not committed): MP4 with a system ffmpeg, WebM with
+  only Playwright's.

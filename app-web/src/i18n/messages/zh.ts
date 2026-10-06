@@ -1238,6 +1238,10 @@ export const zh: Messages = {
     },
   },
 
+  brandReveal: {
+    metaTitle: "标志动画",
+    keys: "空格或点击：重播 · D：深色或浅色 · Q：完整版或快速版 · C：标语",
+  },
   help: {
     title: "合身有据，使用有方。",
     lede: "了解 Fit Passport 的功能与使用方式，沿着每条路线解锁徽章。",

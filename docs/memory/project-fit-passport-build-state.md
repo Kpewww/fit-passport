@@ -1328,3 +1328,17 @@ Its script skips `navigator.webdriver` — automated checks see no page views un
 **NEW INVARIANT:**
 **(92)** **A closet photo is shown to its owner only.** No public route selects `imageDataUrl` or pulls
 closet rows whole (`closetPhotoPrivacy.test.ts`); a shop screenshot is taken only on the shopper's click.
+
+**SESSION 89 (2026-10-06).** 807 → **815 tests**. **The mark's reveal:** `components/AnimatedFitPassportLogo.tsx`
+(`hero` ~2.6 s once per session / `quick` ~0.9 s), thread on an overlay over `<Logo>`, centerline in
+`lib/logoCenterline.ts` (re-derive with `brand/tests/centerline-fit.mjs --write`), timing in `lib/logoReveal.ts`.
+Homepage hero (white), `/extension/welcome` + onboarding step 1 via `AnimatedFitPassportLogoLazy` (keeps Framer
+off their first load). `/brand/reveal` presents it; `scripts/record-logo.mjs` → `app-web/brand-build/`.
+- Recording gotchas: Playwright `clock.install()` keeps running in real time — `pauseAt` it; Framer hands HTML
+  opacity/transform to WAAPI (real time) unless the element has `onUpdate`; CSS transitions are real time too.
+  Playwright's bundled ffmpeg only does mjpeg→VP8 WebM and needs `-i pipe:0`.
+- Test selector: the overlay is `svg[data-fp-reveal]` (plain `svg[aria-hidden]` matches nav icons).
+
+**NEW INVARIANT:**
+**(93)** **The reveal ends on `<Logo>` itself, never a drawn approximation.** The centerline is a drawing aid;
+the settled frame must stay pixel-identical to a static `<Logo>` (0 px at 12 size/ground/variant cases).
