@@ -37,6 +37,8 @@ The founder set `TYPESAFE_API_KEY`. Three production checks with names no word r
 
 `source.categoryNote` now records it, with no secret in it ("jev: top 0.91", "jev: no key", "jev failed: 401 …"). A refusal returns `source`, so its response shows the note. 783 tests passed + 1 skipped.
 
+**After the deploy, production answered** (real Jev calls, the same three names): Linen Kurta → `top` at 0.70, then sized; Velvet Bolero → `jacket` at 0.98, then sized; Silk Charmeuse Slip → `underwear` at 0.95, refused as unsupported (a slip is both a dress and lingerie; Jev chose lingerie). The first round most likely ran before the key reached the running deployment. These checks left two products on one anonymous account in production.
+
 ---
 
 ## 2026-10-05 · Session 84d — When nobody can name the garment, the popup asks; a tie says what is missing (extension 0.7.1)
