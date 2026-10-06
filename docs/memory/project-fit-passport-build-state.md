@@ -1293,3 +1293,13 @@ machine's, 10/01: chart-picture picker, 0.7.0.)
 **(90)** **A word rule, then a classifier, then the shopper — never "not a garment" for a page the
 shopper clicked on unless something positively said it is not clothing.** The shopper's choice never
 overrules what the page said.
+
+**SESSION 85 (2026-10-05).** 783 → **788 tests**. Extension **0.7.2** (store has 0.6.0).
+- **Store-first:** `EXTENSION_DISTRIBUTION = { kind: "store", href: STORE_URL }` (item `ciecejomnniicliemefagfegkmgfkgfe`);
+  the zip is `EXTENSION_ZIP`, offered only on `/help#manual-install`. Homepage CTAs open the listing;
+  `/extension` is a short intro; `/extension/welcome` (noindex) is opened by `background.js` on first install.
+  `LinkButton` has `external`.
+- **pick-category** now also for server-read pages (`fetch: ok`) and for ANY page with a chart whose garment nobody
+  named (no more silent tshirt default); `/check` has `CategoryPicker`. Listings exempt.
+- Uniqlo demo fixture = the real page body chart (M 95.9–104.1); 100 cm chest → M (`demoFixtures.test.ts`).
+- `eval/category.eval.ts` + `eval/category-names.json` (133) calibrate Jev; needs `TYPESAFE_API_KEY` in `app-web/.env.local`.

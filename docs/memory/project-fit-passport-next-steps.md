@@ -818,3 +818,9 @@ H&M links in your own Chrome (open the size guide first); after 0.6.0 is approve
 0.7.1 store zip. **Engineering:** calibrate `CATEGORY_MODEL.minConfidence` once a key exists;
 the website's /check could offer the same picker; a page WITH a chart and an unknown name still
 defaults to tshirt silently — ask there too.
+
+## Session 85 (2026-10-05) — store-first site, category picker everywhere, Uniqlo demo, DONE (85a–c); 85d prepared
+
+**Next — founder:** upload `store-build/fit-passport-extension-0.7.2-store.zip` as the store update; put
+`TYPESAFE_API_KEY=…` in `app-web/.env.local` so the Jev calibration can run (then set `CATEGORY_MODEL.minConfidence` from
+it); recheck adidas/H&M in your own Chrome.
