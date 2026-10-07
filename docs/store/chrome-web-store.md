@@ -1,10 +1,10 @@
 # Chrome Web Store listing — what to paste where
 
 **Live since 2026-10-05:** https://chromewebstore.google.com/detail/fit-passport/ciecejomnniicliemefagfegkmgfkgfe
-(0.6.0). Next update: **0.8.0** (supersedes 0.7.2) — 0.7.2's background worker that
-opens the welcome page on first install, plus "I own this, add to closet" (a
-screenshot of the tab, cropped to the product picture) and links into the site. No
-new permission: the screenshot uses `chrome.tabs.captureVisibleTab` under `activeTab`.
+— **0.7.1** is what the store installs as of 2026-10-06 (seen in an installed copy).
+Next update: **0.9.0**, which supersedes 0.7.2 and 0.8.0 — upload it alone; it carries
+0.7.2's welcome page on first install and 0.8.0's "I own this, add to closet" (a
+screenshot of the tab, cropped to the product picture) and links into the site.
 
 **Then 0.9.0 (supersedes 0.8.0, Session 92): the site moved to https://www.fitpassport.fit.**
 0.9.0 changes the host permission from `https://fit-passport.vercel.app/*` to
@@ -101,13 +101,8 @@ pinned by `extensionZip.test.ts`:
 
 | Permission | Justification |
 |---|---|
-| `activeTab` | Reads the product page the user is viewing, only after they click the extension's icon. |
+| `activeTab` | Reads the product page the user is viewing, only after they click the extension's icon. Only when the user presses "I own this, add to closet", the visible tab is captured once, cropped to the product picture, and saved to that user's own closet (shown to no one else). |
 | `scripting` | Runs the extension's own page-reading script in that tab after the click, to build a reduced copy of the product's title, size chart and size options. |
-
-`activeTab` also covers 0.8.0's screenshot: only when the user presses "I own this, add
-to closet", the visible tab is captured once, cropped to the product picture, and saved
-to that user's own closet (shown to no one else). Add this sentence to the `activeTab`
-justification when uploading 0.8.0.
 | Host `https://www.fitpassport.fit/*` | Sends that reduced copy to the Fit Passport service with the user's session and receives the size recommendation; saves a product to the user's to-buy list when they press Save. |
 | Optional host `https://*.ebaydesc.com/*` | eBay shows a seller's description in a frame from itm.ebaydesc.com. Requested only when the user presses "Read the seller's description", to read measurement lines such as "Pit to pit 22 in". |
 

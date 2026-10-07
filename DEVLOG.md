@@ -31,6 +31,17 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 92e — Store guide brought up to date
+
+The founder asked for one current walkthrough of the store update. `docs/store/chrome-web-store.md`:
+the live version is 0.7.1 (what the store installs), the next upload is 0.9.0 alone, and the
+`activeTab` screenshot sentence now sits inside the permission table instead of breaking it.
+Also checked the sitemap Search Console reported as "Couldn't fetch": as Googlebot,
+`https://www.fitpassport.fit/sitemap.xml` returns 200, `application/xml`, six URLs, and
+robots.txt names it — the site side is fine.
+
+---
+
 ## 2026-10-06 · Session 92b–d — One account per browser, a rough guess from a small closet, a straight stem
 
 **92b — the extension and the website were on different accounts.** The founder's
