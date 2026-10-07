@@ -6,6 +6,17 @@ opens the welcome page on first install, plus "I own this, add to closet" (a
 screenshot of the tab, cropped to the product picture) and links into the site. No
 new permission: the screenshot uses `chrome.tabs.captureVisibleTab` under `activeTab`.
 
+**Then 0.9.0 (supersedes 0.8.0, Session 92): the site moved to https://www.fitpassport.fit.**
+0.9.0 changes the host permission from `https://fit-passport.vercel.app/*` to
+`https://www.fitpassport.fit/*` and opens every page through the site's session
+hand-over. What to change in the dashboard with that upload: the homepage, support and
+privacy-policy URLs below (already the new address), and the host-permission line in
+the Privacy tab. A new host permission means Chrome disables the installed extension
+until each user accepts it: "the extension will be disabled until the user accepts the
+new permission" ([permission warnings](https://developer.chrome.com/docs/extensions/develop/concepts/permission-warnings)).
+Until 0.9.0 is live, older versions keep working: the old address still answers their
+API calls.
+
 Everything the Developer Dashboard asks for, ready to paste. The upload is
 `app-web/store-build/fit-passport-extension-<version>-store.zip`, built with
 `node scripts/pack-extension.mjs --store` (from `app-web/`). Who does what, and
@@ -50,7 +61,7 @@ pinned by `extensionZip.test.ts`:
 >   exactly what will be sent first.
 > • English and Chinese.
 >
-> You need a free Fit Passport at fit-passport.vercel.app; no sign-up form —
+> You need a free Fit Passport at fitpassport.fit; no sign-up form —
 > open the site once and you have one.
 
 **Description — 中文**
@@ -68,7 +79,7 @@ pinned by `extensionZip.test.ts`:
 >   选项的精简副本，不包含表单、购物车、账户或评价，并在发送前把内容展示给你。
 > • 支持中文和英文。
 >
-> 需要一个免费的 Fit Passport（fit-passport.vercel.app），无需注册表单，打开网站
+> 需要一个免费的 Fit Passport（fitpassport.fit），无需注册表单，打开网站
 > 即可拥有。
 
 **Images** (in `docs/store/`, made by `docs/store/make-images.mjs`):
@@ -77,8 +88,8 @@ pinned by `extensionZip.test.ts`:
   `-en.png` and `-zh.png` (upload the `-zh` set to the Chinese listing);
 - small promo tile, 440×280: `promo-tile-440x280.png`.
 
-**Official URL / homepage:** https://fit-passport.vercel.app
-**Support URL:** https://fit-passport.vercel.app/help
+**Official URL / homepage:** https://www.fitpassport.fit
+**Support URL:** https://www.fitpassport.fit/help
 
 ## Privacy tab
 
@@ -97,7 +108,7 @@ pinned by `extensionZip.test.ts`:
 to closet", the visible tab is captured once, cropped to the product picture, and saved
 to that user's own closet (shown to no one else). Add this sentence to the `activeTab`
 justification when uploading 0.8.0.
-| Host `https://fit-passport.vercel.app/*` | Sends that reduced copy to the Fit Passport service with the user's session and receives the size recommendation; saves a product to the user's to-buy list when they press Save. |
+| Host `https://www.fitpassport.fit/*` | Sends that reduced copy to the Fit Passport service with the user's session and receives the size recommendation; saves a product to the user's to-buy list when they press Save. |
 | Optional host `https://*.ebaydesc.com/*` | eBay shows a seller's description in a frame from itm.ebaydesc.com. Requested only when the user presses "Read the seller's description", to read measurement lines such as "Pit to pit 22 in". |
 
 **Remote code:** No. All JavaScript is in the package.
@@ -116,7 +127,7 @@ activity.
 **Certify all three:** not sold to third parties; not used or transferred for
 purposes unrelated to the single purpose; not used to determine creditworthiness.
 
-**Privacy policy URL:** https://fit-passport.vercel.app/privacy — contact: fitpassporteam@gmail.com (set 2026-09-30).
+**Privacy policy URL:** https://www.fitpassport.fit/privacy — contact: fitpassporteam@gmail.com (set 2026-09-30).
 
 ## Distribution tab
 
@@ -126,11 +137,11 @@ listing.
 
 ## Test instructions tab (for the reviewer)
 
-> 1. Open https://fit-passport.vercel.app once in this browser (this creates a free
+> 1. Open https://www.fitpassport.fit once in this browser (this creates a free
 >    Fit Passport; no sign-up). Optionally enter a chest measurement on the Passport page.
 > 2. Open a clothing product page, for example
 >    https://www.patagonia.com/product/mens-better-sweater-fleece-jacket/25528.html
 >    and open its "Size Chart" (many shops load the chart only when it is opened).
 > 3. Click the Fit Passport icon → "Check my size". A size and its reasons appear.
-> 4. "Save to buy" → Save; the product appears at https://fit-passport.vercel.app/saved.
+> 4. "Save to buy" → Save; the product appears at https://www.fitpassport.fit/saved.
 > No credentials are needed.

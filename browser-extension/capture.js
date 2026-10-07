@@ -39,7 +39,7 @@
 (function (root) {
   "use strict";
 
-  var VERSION = "0.8.0";
+  var VERSION = "0.9.0";
 
   // The server refuses supplied markup over 1,000,000 characters. A capture this
   // big means something went wrong, and the popup says so instead of sending it.

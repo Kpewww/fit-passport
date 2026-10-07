@@ -10,6 +10,13 @@
 // `/api/*` calls fire. Those calls then all carry the same cookie, so
 // getCurrentUser() upserts a single stable user. API requests are skipped so
 // they never race to create their own.
+//
+// Session 92: at the OLD address (fit-passport.vercel.app) every page moves to
+// www.fitpassport.fit (lib/site.ts). A person's page view goes through
+// /api/session/carry, so the account in this browser comes along; a person with no
+// session yet gets one minted here first, so the extensions before 0.9.0 — which
+// still call this address's API with this address's cookie — share it with the site.
+// Crawlers and assets get a plain permanent redirect.
 
 import { NextResponse, type NextRequest } from "next/server";
 import {
@@ -17,24 +24,43 @@ import {
   decodeSessionEdge,
   encodeSessionEdge,
 } from "@/lib/authEdge";
+import { legacyMove } from "@/lib/site";
 
 export async function middleware(req: NextRequest) {
   const existing = req.cookies.get(SESSION_COOKIE)?.value;
   const valid = await decodeSessionEdge(existing);
+
+  const move = legacyMove({
+    host: req.headers.get("host"),
+    method: req.method,
+    path: req.nextUrl.pathname + req.nextUrl.search,
+    userAgent: req.headers.get("user-agent"),
+    fetchMode: req.headers.get("sec-fetch-mode"),
+    accept: req.headers.get("accept"),
+  });
+  if (move?.kind === "permanent") return NextResponse.redirect(move.location, 308);
+  if (move?.kind === "carry") {
+    const res = NextResponse.redirect(move.location, 307);
+    res.headers.set("cache-control", "no-store");
+    if (!valid) await mint(res);
+    return res;
+  }
+
   if (valid) return NextResponse.next();
-
-  // Mint a fresh anonymous session id (Edge-safe UUID).
-  const userId = crypto.randomUUID();
-  const cookie = await encodeSessionEdge({ userId, canEdit: true });
-
   const res = NextResponse.next();
+  await mint(res);
+  return res;
+}
+
+/** Set a fresh anonymous session on the response (Edge-safe UUID). */
+async function mint(res: NextResponse) {
+  const cookie = await encodeSessionEdge({ userId: crypto.randomUUID(), canEdit: true });
   res.cookies.set(SESSION_COOKIE, cookie, {
     httpOnly: true,
     sameSite: "lax",
     path: "/",
     maxAge: 60 * 60 * 24 * 365,
   });
-  return res;
 }
 
 // Only run on page navigations — not on API routes, static assets, or images.

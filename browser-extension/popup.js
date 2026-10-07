@@ -35,12 +35,12 @@
     nav.textContent = "";
     SITE_LINKS.forEach(function (l) {
       var a = el("a", { href: origin() + l[1], text: t(l[0]) });
-      a.addEventListener("click", function (e) { e.preventDefault(); openTab(origin() + l[1]); });
+      a.addEventListener("click", function (e) { e.preventDefault(); openSite(l[1]); });
       nav.appendChild(a);
     });
     document.getElementById("home").setAttribute("title", t("openSite"));
   }
-  document.getElementById("home").addEventListener("click", function () { openTab(origin()); });
+  document.getElementById("home").addEventListener("click", function () { openSite("/"); });
 
   langSwitch.addEventListener("click", function (e) {
     var b = e.target.closest("button");
@@ -113,6 +113,15 @@
   function openTab(url) {
     chrome.tabs.create({ url: url });
     window.close();
+  }
+
+  // Every page of the site opens through /api/session/carry (Session 92). The first
+  // time, it brings over the account this browser had at the old address,
+  // fit-passport.vercel.app — the API calls now go to the new one, which would
+  // otherwise start an empty account. After that it is one redirect; on localhost it
+  // is only a redirect.
+  function openSite(path) {
+    openTab(origin() + "/api/session/carry?next=" + encodeURIComponent(path));
   }
 
   function kb(chars) {
@@ -354,7 +363,7 @@
     var code = typeof body.error === "string" ? body.error : "";
     if (status === 401) {
       return message(t(REFUSAL_TITLES["not-connected"]), body.message, [
-        button(t("openFitPassport"), function () { openTab(origin()); }, true),
+        button(t("openFitPassport"), function () { openSite("/"); }, true),
       ]);
     }
     if (status === 429) {
@@ -451,7 +460,7 @@
       data.source && data.source.sizesFrom === "estimated" && pickButton(cap, false) ? el("div", { className: "actions" }, [pickButton(cap, false)]) : null,
       el("div", { className: "actions" }, [
         button(t("openFull"), function () {
-          openTab(origin() + "/check?product=" + encodeURIComponent(data.product.id));
+          openSite("/check?product=" + encodeURIComponent(data.product.id));
         }, true),
         button(t("checkAgain"), start),
         cap ? button(t("saveToBuy"), function () { saveForm(cap, data, function () { result(data, cap); }); }) : null,
@@ -476,7 +485,7 @@
     var j = data.result.judgement;
     var known = j.outcome !== "unknown";
     var nexts = (j.next || []).map(function (n) {
-      if (n === "add-body") return button(t(NEXT_KEYS[n]), function () { openTab(origin() + "/passport"); });
+      if (n === "add-body") return button(t(NEXT_KEYS[n]), function () { openSite("/passport"); });
       return button(t(NEXT_KEYS[n]), function () { measureForm(cap, j); });
     });
     show(
@@ -496,7 +505,7 @@
       nexts.length ? el("div", { className: "actions" }, nexts) : null,
       pickButton(cap, false) ? el("div", { className: "actions" }, [pickButton(cap, !nexts.length && !known)]) : null,
       el("div", { className: "actions" }, [
-        button(t("openFull"), function () { openTab(origin() + "/check?product=" + encodeURIComponent(data.product.id)); }, !nexts.length),
+        button(t("openFull"), function () { openSite("/check?product=" + encodeURIComponent(data.product.id)); }, !nexts.length),
         cap ? button(t("saveToBuy"), function () { saveForm(cap, data, function () { result(data, cap); }); }) : null,
         cap ? button(t("ownThis"), function () { closetForm(cap, data, function () { result(data, cap); }); }) : null,
         cap ? button(t("enterMeasurements"), function () { measureForm(cap, j); }) : null,
@@ -758,12 +767,12 @@
     }
     if (r.res.ok) {
       return message(t("closetSavedTitle"), t("closetSavedBody"), [
-        button(t("linkCloset"), function () { openTab(origin() + "/closet"); }, true),
+        button(t("linkCloset"), function () { openSite("/closet"); }, true),
         button(t("back"), back),
       ]);
     }
     if (r.res.status === 401) {
-      return message(t(REFUSAL_TITLES["not-connected"]), r.body.message, [button(t("openFitPassport"), function () { openTab(origin()); }, true)]);
+      return message(t(REFUSAL_TITLES["not-connected"]), r.body.message, [button(t("openFitPassport"), function () { openSite("/"); }, true)]);
     }
     if (r.res.status === 429) return message(t("tooManyTitle"), t("tooManyBody"));
     // 400: the size does not fit the type, most often.
@@ -845,7 +854,7 @@
     var status = r.res.status;
     if (r.res.ok) {
       return message(t("savedTitle"), t("savedBody"), [
-        button(t("viewSaved"), function () { openTab(origin() + "/saved"); }, true),
+        button(t("viewSaved"), function () { openSite("/saved"); }, true),
         button(t("back"), back),
       ]);
     }
@@ -855,13 +864,13 @@
       if (fields.size && fields.size !== item.size) {
         actions.push(button(t("updateSize", { size: fields.size }), function () { updateSize(item, fields.size, back); }, true));
       }
-      actions.push(button(t("viewSaved"), function () { openTab(origin() + "/saved"); }, actions.length === 0));
+      actions.push(button(t("viewSaved"), function () { openSite("/saved"); }, actions.length === 0));
       actions.push(button(t("back"), back));
       return message(t("alreadyTitle"), t("alreadyBody", { size: item.size || t("noSize") }), actions);
     }
     if (status === 401) {
       return message(t(REFUSAL_TITLES["not-connected"]), r.body.message, [
-        button(t("openFitPassport"), function () { openTab(origin()); }, true),
+        button(t("openFitPassport"), function () { openSite("/"); }, true),
       ]);
     }
     if (status === 429) return message(t("tooManyTitle"), t("tooManyBody"), [button(t("back"), back)]);
@@ -877,7 +886,7 @@
       var r = await savedRequest("PATCH", "/api/saved", { id: item.id, size: size });
       if (r.res.ok) {
         return message(t("updated", { size: size }), null, [
-          button(t("viewSaved"), function () { openTab(origin() + "/saved"); }, true),
+          button(t("viewSaved"), function () { openSite("/saved"); }, true),
           button(t("back"), back),
         ]);
       }

@@ -17,7 +17,7 @@ options) and `DEPLOYMENT.md` (which lists the env keys).
 | Anthropic | *not set* | **$0** | LLM + vision extraction inert |
 | Replicate | *not set* | **$0** | photoreal try-on falls back to an SVG mannequin |
 | Resend | *not set* | **$0** | reset links shown on screen instead of emailed |
-| Domain | none | **$0** | on `fit-passport.vercel.app` |
+| Domain | `fitpassport.fit`, Cloudflare Registrar | yearly renewal | registered 2026-10-06; Cloudflare sells at cost, and the amount is on the founder's invoice, not recorded here (UNVERIFIED) |
 
 Everything key-gated degrades gracefully, so the app is fully usable at zero cost.
 **That is the current state and it is genuinely free.**

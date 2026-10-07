@@ -114,3 +114,15 @@ What the original plan said:
   No new permission, but **update the Privacy tab** as `docs/store/chrome-web-store.md`
   now says: the `activeTab` justification gains a sentence, and "Website content" covers
   the cropped screenshot.
+
+## Status (2026-10-06, later) — the new address
+
+- **Next store update: 0.9.0** (supersedes 0.8.0; if 0.8.0 is already in review, let it
+  finish and upload 0.9.0 after). Upload `app-web/store-build/fit-passport-extension-0.9.0-store.zip`.
+- 0.9.0 talks to https://www.fitpassport.fit. With the upload, change the homepage,
+  support and privacy-policy URLs and the host-permission justification as
+  `docs/store/chrome-web-store.md` says, plus 0.8.0's Privacy-tab changes if they were
+  not made yet.
+- The new host permission disables the installed extension until each user accepts
+  it (Chrome's own rule, sourced in that file). Users who accept keep their account:
+  the first page the popup opens fetches it from the old address.

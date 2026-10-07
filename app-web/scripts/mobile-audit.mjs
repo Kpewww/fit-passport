@@ -11,7 +11,7 @@
 // So this measures element rectangles rather than document scroll width.
 //
 // Usage:  node scripts/mobile-audit.mjs            (needs the app running)
-//         BASE=https://fit-passport.vercel.app node scripts/mobile-audit.mjs
+//         BASE=https://www.fitpassport.fit node scripts/mobile-audit.mjs
 //         PAGES=/,/check node scripts/mobile-audit.mjs
 //
 // Needs playwright, which is NOT a project dependency (it would add ~100MB to

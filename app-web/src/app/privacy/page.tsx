@@ -13,7 +13,7 @@ import { useT } from "@/i18n/client";
 
 const SECTIONS = [
   { key: "keeps", items: ["profile", "closet", "products", "account", "community"] },
-  { key: "cookies", items: ["session", "lang", "none"] },
+  { key: "cookies", items: ["session", "lang", "move", "none"] },
   { key: "extension", items: ["click", "reduced", "ebay", "session", "local"] },
   { key: "others", items: ["private", "never", "services"] },
   { key: "choices", items: ["edit", "deactivate"] },

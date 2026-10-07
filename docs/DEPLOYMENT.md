@@ -151,7 +151,7 @@ history has already drifted and this shortcut is unsafe — get a shadow databas
 | `DATABASE_URL` | Neon **pooled** (`-pooler`) connection string | the running app |
 | `DIRECT_URL` | the same string **without** `-pooler` | `prisma migrate deploy` at build time — see §2 |
 | `SESSION_SECRET` | 32 random bytes | signs session cookies |
-| `APP_URL` | `https://your-app.vercel.app` | absolute links in reset emails |
+| `APP_URL` | `https://www.fitpassport.fit` (production since 2026-10-06) | absolute links in reset emails |
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST URL | shared rate-limit counters |
 | `UPSTASH_REDIS_REST_TOKEN` | its REST token | ditto |
 
@@ -259,6 +259,29 @@ After the first deploy, walk the critical path:
 
 The last two matter most: they're the privacy invariant. `/api/view/[code]` must
 never return `chestCm`/`waistCm`/etc.
+
+### The address (since 2026-10-06, Session 92)
+
+Production is **https://www.fitpassport.fit** — a Cloudflare-registered domain, DNS
+records at Cloudflare set to "DNS only" (grey cloud), added to the Vercel project; the
+bare `fitpassport.fit` redirects to `www` in Vercel's domain settings. The first
+address, `fit-passport.vercel.app`, is the same deployment and stays attached:
+
+```
+curl -sI https://fit-passport.vercel.app/help -A Googlebot
+                 → 308, location https://www.fitpassport.fit/help
+curl -sI https://fit-passport.vercel.app/help -H "sec-fetch-mode: navigate"
+                 → 307 to https://www.fitpassport.fit/api/session/carry?next=%2Fhelp
+curl -s  https://fit-passport.vercel.app/api/status
+                 → 200 (never moved: extensions before 0.9.0 call it)
+```
+
+The 307 is the session hand-over (`app-web/src/lib/sessionCarry.ts`): a person's
+account comes along, because an unclaimed account is a cookie that belongs to one
+host. Don't detach the old address while anyone runs an extension older than 0.9.0;
+once it is detached, `/api/session/carry` must stop asking it (point `LEGACY_ORIGIN`
+in `app-web/src/lib/site.ts` at nothing, or make carry a plain redirect), or carry
+fails for every browser that has not been carried yet.
 
 ---
 

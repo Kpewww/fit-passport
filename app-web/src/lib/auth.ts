@@ -119,3 +119,42 @@ export function decodeSession(cookie: string | undefined): SessionPayload | null
     return null;
   }
 }
+
+// ---------- carrying a session to the new address (Session 92) ----------
+//
+// The old address signs a pass for the session it holds; the new address checks it
+// and keeps the session as its own cookie (lib/sessionCarry.ts has the flow). The
+// signature covers "carry." + body, so a pass can never be used as a session cookie
+// and a session cookie can never be used as a pass. A pass is bound to the browser
+// that asked for it (`state`, a random value only that browser holds in a cookie)
+// and dies after CARRY_TTL_MS.
+
+export const CARRY_TTL_MS = 60_000;
+
+export type CarryPass = SessionPayload & { state: string; exp: number };
+
+export function encodeCarryPass(session: SessionPayload, state: string, now = Date.now()): string {
+  const pass: CarryPass = { userId: session.userId, canEdit: session.canEdit, state, exp: now + CARRY_TTL_MS };
+  const body = Buffer.from(JSON.stringify(pass)).toString("base64url");
+  return `${body}.${sign(`carry.${body}`)}`;
+}
+
+/** The session a pass carries, or null if it is forged, expired or for another browser. */
+export function decodeCarryPass(pass: string | null | undefined, state: string | null | undefined, now = Date.now()): SessionPayload | null {
+  if (!pass || !state) return null;
+  const dot = pass.lastIndexOf(".");
+  if (dot < 0) return null;
+  const body = pass.slice(0, dot);
+  const a = Buffer.from(pass.slice(dot + 1));
+  const b = Buffer.from(sign(`carry.${body}`));
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  let p: Partial<CarryPass>;
+  try {
+    p = JSON.parse(Buffer.from(body, "base64url").toString());
+  } catch {
+    return null;
+  }
+  if (typeof p.userId !== "string" || typeof p.canEdit !== "boolean" || typeof p.exp !== "number") return null;
+  if (p.exp < now || p.state !== state) return null;
+  return { userId: p.userId, canEdit: p.canEdit };
+}

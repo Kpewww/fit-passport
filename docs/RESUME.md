@@ -65,7 +65,7 @@ DEVLOG + memory。**
 
 ## 现状(Session 76 · 2026-09-29)
 
-**已上线:https://fit-passport.vercel.app** — Vercel + Neon Postgres + Upstash
+**已上线:https://www.fitpassport.fit**(2026-10-06 起;旧地址 fit-passport.vercel.app 跳转过来,会话随之迁移) — Vercel + Neon Postgres + Upstash
 Redis,**265 测试**,push 到 `main` 即自动部署。生产管理员 `AK`,密码在 Session 41
 播种时随机生成(**与本地播种脚本的默认值不同**)。
 

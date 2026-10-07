@@ -45,9 +45,24 @@ No new permission: it uses the same session and host permission as a check.
 
 ## Background worker (0.7.2)
 
-`background.js` does one thing: on **first install** it opens `/extension/welcome` on
-the first server in `config.js` (production in the store build). It needs no
+`background.js` does one thing: on **first install** it opens `/extension/welcome` (through the session
+hand-over since 0.9.0, below) on the first server in `config.js` (production in the store build). It needs no
 permission — `chrome.tabs.create` works without `tabs` — and updates open nothing.
+
+## The new address (0.9.0)
+
+The site moved to **https://www.fitpassport.fit** on 2026-10-06 (Session 92), and
+0.9.0 talks to it: the host permission and the default server are the new address.
+The old one, `fit-passport.vercel.app`, still answers the API for 0.8.0 and earlier.
+
+An unclaimed account is a cookie, and a cookie belongs to one address, so every page
+the popup opens (and the welcome page) goes through `/api/session/carry` on the new
+address. The first time, it fetches the account this browser had at the old address
+with a one-minute pass only this browser can use; after that it is one redirect. The
+flow and its safety are in `app-web/src/lib/sessionCarry.ts`.
+
+The new host permission means Chrome asks people who update from the store to
+approve it before 0.9.0 runs.
 
 ## Install (development)
 

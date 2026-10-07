@@ -846,3 +846,13 @@ version).
 
 **Next — founder:** review the new reveal and intro (videos in `app-web/brand-build/`); then the **extension
 version** (framework-free, for the popup), which the founder asked for after this is approved.
+
+## Session 92 (2026-10-06) — moved to www.fitpassport.fit, DONE
+
+**Shipped:** the site's address, the old address's pages moving with the session carried, extension 0.9.0.
+**Next — founder:** set Vercel `APP_URL=https://www.fitpassport.fit` and redeploy; in Search Console's
+`fitpassport.fit` property submit `https://www.fitpassport.fit/sitemap.xml` and request indexing of the
+homepage; then, in the old `fit-passport.vercel.app` property, Settings → Change of address → fitpassport.fit;
+upload `store-build/fit-passport-extension-0.9.0-store.zip` with the URL and permission changes
+(`todo/people/05`). **Later:** detach the old address only once no one runs an extension older than 0.9.0 —
+and retire `LEGACY_ORIGIN` in the same change.

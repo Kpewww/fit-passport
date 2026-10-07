@@ -1350,3 +1350,16 @@ progress value (`lib/logoReveal.ts` `threads()`); connectors fade so the mark's 
 session's first `/`; `HomeIntro.tsx` draws a giant mark and flies it onto `[data-fp-hero-mark]`; every other arrival
 plays the inline hero reveal (`yieldToIntro`). `/help` "The mark" links `/brand/reveal`. `record-logo.mjs --intro`.
 - Gotcha: a lead-in must end along the piece's start direction or it folds back (B's "^").
+
+**SESSION 92 (2026-10-06).** 818 → **835 tests**. **New address https://www.fitpassport.fit** (`lib/site.ts`
+`SITE_ORIGIN`; robots/sitemap read it). Old address `fit-passport.vercel.app`: pages move in `middleware.ts`
+(`legacyMove`), `/api/*` stays. Session hand-over: `/api/session/carry` (new) → `/send` (old, signs
+`encodeCarryPass` in `lib/auth.ts`, HMAC over `"carry." + body`, 60 s, bound to `fp_carry` state) →
+`/receive` (new; `receiveDecision`: adopt only if the new account is empty — `accountHasData`); `fp_carried`
+short-cuts later visits. Extension **0.9.0**: host permission + default origin the new address, every page opens
+via `openSite()` → carry. Privacy page lists `fp_carry`/`fp_carried`. E2E: 14 checks on two local hosts (DEVLOG).
+
+**NEW INVARIANT:**
+**(94)** **The old address never moves `/api/*`, and a session crosses addresses only on a pass bound to the
+browser that asked.** Older extensions depend on the first; the second is what stops a link from signing
+someone into another person's account.

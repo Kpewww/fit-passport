@@ -8,7 +8,7 @@
 //
 //   node scripts/record-logo.mjs                     both grounds, both variants
 //   node scripts/record-logo.mjs --bg ink --variant hero --caption
-//   node scripts/record-logo.mjs --origin https://fit-passport.vercel.app
+//   node scripts/record-logo.mjs --origin https://www.fitpassport.fit
 //   node scripts/record-logo.mjs --intro                 the homepage's full-screen
 //                                                        first-visit intro, landing
 //                                                        on the hero (Session 90)

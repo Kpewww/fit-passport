@@ -7,9 +7,9 @@
 // holds host permission for is treated as same-site. The first entry is the
 // default.
 globalThis.FP_CONFIG = {
-  version: "0.8.0",
+  version: "0.9.0",
   origins: [
-    { label: "fit-passport.vercel.app", url: "https://fit-passport.vercel.app" },
+    { label: "www.fitpassport.fit", url: "https://www.fitpassport.fit" },
     { label: "localhost:3000 (development)", url: "http://localhost:3000" },
   ],
   // "Save this capture", for the evaluation (app-web/eval/README.md). The store

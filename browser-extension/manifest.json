@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Fit Passport",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "default_locale": "en",
   "description": "__MSG_extDescription__",
   "permissions": [
@@ -9,7 +9,7 @@
     "scripting"
   ],
   "host_permissions": [
-    "https://fit-passport.vercel.app/*",
+    "https://www.fitpassport.fit/*",
     "http://localhost:3000/*"
   ],
   "optional_host_permissions": [

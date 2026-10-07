@@ -19,7 +19,7 @@ import {
   type SessionPayload,
 } from "./auth";
 
-const COOKIE_OPTS = {
+export const COOKIE_OPTS = {
   httpOnly: true,
   sameSite: "lax" as const,
   path: "/",

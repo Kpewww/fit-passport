@@ -31,6 +31,81 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 92 — Moved to www.fitpassport.fit, with everyone's account
+
+The founder bought `fitpassport.fit` on Cloudflare and added it to the Vercel project:
+`www.fitpassport.fit` is production, the bare domain redirects to it, DNS records are
+"DNS only", and a Search Console Domain property is verified. This session moves the
+site there without anyone losing their closet and without breaking the extension that
+is already installed.
+
+**The problem.** An unclaimed account is nothing but the `fp_session` cookie, and a
+cookie belongs to one host. Opened at the new address, a closet built at
+`fit-passport.vercel.app` would look empty, with no password to get it back. And the
+store's 0.6.0 (and the 0.8.0 download) call the old address's `/api/*` with the old
+address's cookie.
+
+**What the old address does now** (`middleware.ts`, `lib/site.ts` `legacyMove`):
+- `/api/*` is never moved, so every older extension keeps working as before.
+- Crawlers, link previews and anything that is not a page view (pictures, the app's own
+  data fetches) get a **308 to the same path** at the new address, which is what
+  Search Console's change of address checks.
+- A person opening a page (`Sec-Fetch-Mode: navigate`, or `Accept: text/html` from a
+  browser that sends no Sec-Fetch headers) gets a **307 through the session
+  hand-over**. Someone with no session yet gets one minted on that response first, so
+  an older extension installed today shares one account with the site.
+
+**The hand-over** (`lib/sessionCarry.ts`, `app/api/session/{carry,send,receive}`):
+new `/carry` gives the browser a random `state` (`fp_carry` cookie, 5 min) → old `/send`
+signs a pass for the session it holds (`lib/auth.ts` `encodeCarryPass`: HMAC over
+`"carry." + body`, so a pass is never a session cookie or the reverse; 60 s) → new
+`/receive` checks the pass against `fp_carry`, keeps the session, and lands on the
+page. The `state` binding is the point: a pass works only in the browser that started
+the hand-over, so nobody can send a link that signs someone into *their* account and
+then watch what that person adds. Which account wins: the carried one, unless the new
+address already holds an account in use (`accountHasData`: claimed, any closet, saved,
+outfit, outcome, collection, product, post or pet, or any body field); one in use is
+never replaced. `fp_carried` (1 year) cuts later visits to one redirect. `next` only
+ever lands on this site (`safeNext`). The privacy page lists both new cookies.
+
+**Extension 0.9.0:** host permission and default server `https://www.fitpassport.fit`
+(the old host permission dropped: 0.9.0 never calls it); every page the popup opens,
+and the welcome page, goes through `/api/session/carry`, which fetches the old
+account the first time. A new host permission makes Chrome disable the installed
+extension until the user accepts it — Chrome's rule, quoted with its source in
+`docs/store/chrome-web-store.md`.
+
+**Also:** robots.txt and sitemap.xml name the new address (`SITE_ORIGIN`); README,
+RESUME, the store copy, DEPLOYMENT (a new "The address" section with the curl
+checks) and the cost model too. Coursework documents keep the old address: they are
+dated records, and it still works.
+
+**Verified.** 835 tests + 1 skip, exit 0 (17 new in `sessionCarry.test.ts`: the
+addresses, what moves and how, `safeNext`, the pass's expiry, binding, forgery and
+separation from session cookies, and which account is kept). Then the whole flow in
+Chromium on two local hosts (`old.localhost` / `new.localhost`), 14 checks, all pass:
+old-only data appears at the new address after five hops (old page → carry → send →
+receive → page), and after one on the next visit; an older extension's API call to
+the old address still returns the closet; a pass replayed in another browser is
+refused; an account in use at the new address is kept; an empty one gives way; a new
+person at the old address ends with one account on both hosts; Googlebot gets a 308;
+the popup's link brings the old account.
+
+**Gotcha, for the next two-host test:** self-hosted Next (`next dev`/`next start`)
+builds the request URL from its own hostname, not the Host header, and relativizes a
+middleware redirect against it; with `localhost` vs `127.0.0.1` it also rewrote the
+host. Two `*.localhost` names plus `experimental.trustHostHeader` (for the test only,
+not committed) gave a faithful run. The routes build absolute URLs from
+`siteOrigin()`, never `req.url`, for the same reason. Vercel builds the URL from the
+real host; the production checks below confirm it.
+
+**Next — founder:** set `APP_URL=https://www.fitpassport.fit` in Vercel (reset-email
+links); submit the new sitemap and request indexing in the `fitpassport.fit` property;
+run Change of address from the old property; upload 0.9.0 to the store with the new
+URLs and the host-permission line (`todo/people/05`).
+
+---
+
 ## 2026-10-06 · Session 91 — Findable on Google
 
 The founder asked how to get the site into Google search. robots.txt and sitemap.xml

@@ -1,8 +1,7 @@
 // robots.txt — what search engines may crawl (Session 91). Public pages only: the
 // API, admin, and anything tied to one person's account stay out of search results.
 import type { MetadataRoute } from "next";
-
-const SITE = "https://fit-passport.vercel.app";
+import { SITE_ORIGIN as SITE } from "@/lib/site";
 
 export default function robots(): MetadataRoute.Robots {
   return {

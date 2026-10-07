@@ -1210,6 +1210,7 @@ export const zh: Messages = {
       title: "Cookie",
       session: "fp_session 让你保持登录，包括你首次访问时网站为你创建的未认领账户，有效期一年。",
       lang: "fp-lang 记住你选择的语言。",
+      move: "fp_carry 和 fp_carried：Fit Passport 已从 fit-passport.vercel.app 搬到 fitpassport.fit，你在旧地址的账户会跟着你过来。旧地址会交出一张只在一分钟内、只在这个浏览器里有效的通行证；fp_carry 最多保留五分钟，用来表明是这个浏览器发起的。之后 fp_carried 会记住搬家已经完成，有效期一年。",
       none: "没有广告或统计类 Cookie，也不会跨网站追踪你。我们用 Vercel Web Analytics 统计页面访问量：它不使用 Cookie，也不会保留超过 24 小时的访客标识；统计之前，网址中的账户代码和“?”之后的内容都会被删去。",
     },
     extension: {

@@ -13,6 +13,7 @@ importScripts("config.js");
 chrome.runtime.onInstalled.addListener(function (details) {
   if (details.reason !== "install") return;
   var cfg = globalThis.FP_CONFIG;
-  var origin = cfg && cfg.origins && cfg.origins[0] ? cfg.origins[0].url : "https://fit-passport.vercel.app";
-  chrome.tabs.create({ url: origin + "/extension/welcome" });
+  var origin = cfg && cfg.origins && cfg.origins[0] ? cfg.origins[0].url : "https://www.fitpassport.fit";
+  // Through the session hand-over, as every page the popup opens (popup.js openSite).
+  chrome.tabs.create({ url: origin + "/api/session/carry?next=" + encodeURIComponent("/extension/welcome") });
 });

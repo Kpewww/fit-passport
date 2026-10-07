@@ -7,7 +7,7 @@
 
 团队:Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang
 
-**线上地址:https://fit-passport.vercel.app**
+**线上地址:https://www.fitpassport.fit**(最初的地址 fit-passport.vercel.app 会跳转过来)
 
 各品牌的尺码从来对不上。Fit Passport 让你拥有**一份可携带的档案** —— 你的身体尺寸、
 偏好的松紧程度,以及那些已经穿着合身的衣服 —— 然后通过**浏览器插件**把它翻译到你正在看的
@@ -97,7 +97,7 @@ node scripts/moderate.mjs unhide POST <id>     # 恢复被误隐藏的内容
 被停用的账号对所有外部访问都不可见。详见
 [docs/design/identity-and-sharing.md](docs/design/identity-and-sharing.md)。
 网站和插件保存、发送什么,用大白话写在
-[`/privacy`](https://fit-passport.vercel.app/privacy)。
+[`/privacy`](https://www.fitpassport.fit/privacy)。
 
 ### 关于图片的说明
 

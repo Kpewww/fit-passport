@@ -3,7 +3,7 @@
 *[English](README.md) · [简体中文](README.zh-CN.md)*
 
 > **One body. One fit identity. Any store.**
-> A consumer-owned fit layer for apparel. Live at **https://fit-passport.vercel.app**
+> A consumer-owned fit layer for apparel. Live at **https://www.fitpassport.fit** (the first address, fit-passport.vercel.app, redirects there)
 
 Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang
 
@@ -88,7 +88,7 @@ the cm fields, community listing is opt-in, body type can be hidden, and
 deactivated accounts are invisible to all external access. See
 [docs/design/identity-and-sharing.md](docs/design/identity-and-sharing.md).
 What the site and the extension keep and send, in plain words:
-[`/privacy`](https://fit-passport.vercel.app/privacy).
+[`/privacy`](https://www.fitpassport.fit/privacy).
 
 ### A note on imagery
 

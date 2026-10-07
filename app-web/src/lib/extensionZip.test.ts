@@ -63,11 +63,11 @@ describe("the extension download", () => {
     const files = unzip(buildExtensionZip(EXT_DIR, { store: true }));
     const manifest = JSON.parse(files.get("manifest.json")!);
     expect(manifest.key).toBeUndefined();
-    expect(manifest.host_permissions).toEqual(["https://fit-passport.vercel.app/*"]);
+    expect(manifest.host_permissions).toEqual(["https://www.fitpassport.fit/*"]);
     expect(manifest.version).toBe(extensionVersion());
     expect(files.get("config.js")).not.toContain(DEV_ORIGIN);
     expect(files.get("config.js")).not.toContain("captureTool");
-    expect(files.get("config.js")).toContain('url: "https://fit-passport.vercel.app"');
+    expect(files.get("config.js")).toContain('url: "https://www.fitpassport.fit"');
     // Every other file is exactly the download's.
     const download = unzip(buildExtensionZip());
     expect([...files.keys()]).toEqual([...download.keys()]);

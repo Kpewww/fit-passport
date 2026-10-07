@@ -84,3 +84,23 @@ nothing.
 **Also note:** `npm run db:pg:schema` only writes the schema file and is safe.
 `npm run db:pg:generate` is the one that overwrites the local Prisma Client with
 the Postgres build — run `npx prisma generate` afterwards.
+
+---
+
+**SESSION 92 (2026-10-06) — the address is https://www.fitpassport.fit.** Bought by the founder on
+Cloudflare (registrar + DNS, records "DNS only" = grey cloud, so Vercel issues the certificate);
+added to the same Vercel project; bare `fitpassport.fit` 308s to `www` in Vercel's domain settings.
+Search Console: a Domain property `fitpassport.fit` (DNS-verified) beside the old URL-prefix one.
+- **`fit-passport.vercel.app` stays attached** — same deployment, same DB, same `SESSION_SECRET`.
+  `middleware.ts` + `lib/site.ts`: GET/HEAD page views there move; `/api/*` never does (extensions
+  before 0.9.0 call it with that host's cookie). Crawlers/assets: 308 same path. A person: 307
+  through `/api/session/carry` (`lib/sessionCarry.ts`), so the account (a host-only cookie) comes
+  along on a one-minute pass bound to a `state` cookie of the browser that asked; the new address
+  takes it only if its own account is empty. Detaching the old address breaks carry until
+  `LEGACY_ORIGIN` is retired in code.
+- **GOTCHA testing two hosts locally:** self-hosted Next relativizes a middleware redirect against
+  ITS OWN hostname (not the Host header), and treats `localhost`/`127.0.0.1` as one — use
+  `new.localhost` / `old.localhost` with `FP_SITE_ORIGIN` / `FP_LEGACY_ORIGIN` and, for the test
+  only, `experimental.trustHostHeader`. Route handlers likewise: build absolute URLs from
+  `siteOrigin()`, never `req.url`.
+- `APP_URL` (reset-email links) must be `https://www.fitpassport.fit` in Vercel — the founder's to set.
