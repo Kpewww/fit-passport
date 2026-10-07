@@ -31,6 +31,7 @@ import {
   type FitPreference,
 } from "./sizing";
 import { domainForCategory } from "./sizeSystems";
+import { roughGuess } from "./roughGuess";
 import { biasForBrand, type BrandBias } from "./brandBias";
 import { directionToLadderShift, isDirectional, nearestOption } from "./fitDirection";
 import { styleKeys, styleRelation } from "./styleWords";
@@ -48,6 +49,7 @@ import {
   BODY_RANGE,
   BRAND_BIAS_WEIGHT,
   CONFIDENCE_CAPS,
+  ROUGH_GUESS_WEIGHT,
   DEFAULT_WEIGHTS,
   DIMENSIONS,
   DIRECTION,
@@ -1007,6 +1009,31 @@ export function recommend(
 
   ranked.sort((a, b) => b.score - a.score);
 
+  // ---- A rough guess from a small closet (roughGuess.ts, Session 92c) ---------
+  // Only on a dead heat, so it can never move a size a real signal chose; under a
+  // low confidence ceiling, and its reason says how to make it a real answer.
+  let unplaced: KnownGoodInput | null = null;
+  if (isUndetermined(ranked)) {
+    const guess = roughGuess(product, sizes, knownGood);
+    if (guess?.kind === "unreadable") unplaced = guess.piece;
+    else if (guess) {
+      const piece = M.pieceLabel(guess.piece.brand, guess.piece.size, guess.piece.name);
+      const pick = ranked.find((r) => r.label === guess.label);
+      if (pick) {
+        pick.reasons.push({
+          signal: "known-good",
+          weight: W.knownGood * ROUGH_GUESS_WEIGHT,
+          message: guess.kind === "same-label" ? M.roughSameLabel(piece) : M.roughFromPiece(piece),
+          ...(guess.piece.id ? { itemId: guess.piece.id } : {}),
+        });
+        pick.score = combine(pick.reasons, W.minDataFloor);
+        const cap = guess.kind === "same-label" ? CONFIDENCE_CAPS.roughSameLabel : CONFIDENCE_CAPS.roughGuess;
+        for (const r of ranked) r.confidence = Math.min(r.confidence, cap);
+        ranked.sort((a, b) => b.score - a.score);
+      }
+    }
+  }
+
   // Confidence should track how DECISIVE the pick is, not only how much data we
   // had: a pick that flips when the wearer's measurement moves by the error a tape
   // measure already carries is a coin-flip, and deserves lower confidence. This
@@ -1141,7 +1168,9 @@ export function recommend(
     // 84, an H&M top with its chart behind a button): say what is actually missing.
     ? (input.profile.chestCm != null && !input.profile.chestIsEstimated && !input.sizes.some(hasMeasurement)
         ? M.undeterminedNoChart
-        : M.undeterminedHelp)
+        : M.undeterminedHelp) +
+      // A closet piece that could not be placed: say which, not just "can't tell".
+      (unplaced ? `\n${M.roughUnreadable(M.pieceLabel(unplaced.brand, unplaced.size, unplaced.name))}` : "")
     : [
         ...(topReasons.length > 0 ? topReasons : [M.limitedData]),
         ...contextReasons,

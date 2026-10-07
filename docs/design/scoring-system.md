@@ -20,13 +20,13 @@ provenances:
 |---|---|---|
 | **measured** | Computed from data we hold, with the n stated | **1** |
 | **cited** | A published source states this value — not just the idea | **2** |
-| **assumed** | A judgement, usually hand-tuned against a handful of cases | **108** |
+| **assumed** | A judgement, usually hand-tuned against a handful of cases | **111** |
 
 `scoringConstants.test.ts` fails if a value has no provenance, if a provenance
 names no value, if a measured entry does not state its n, or if an assumed value
 is missing from the calibration table below.
 
-**Read the counts plainly.** 108 of 111 numbers are judgements. The
+**Read the counts plainly.** 111 of 114 numbers are judgements. The
 literature the engine cites supports the SHAPE of the model — fit as a bipolar
 ordinal (too small … too big), fit as a multi-measurement signal — and not a
 single one of its values. That is normal for a scorer before it has outcome data,
@@ -417,6 +417,9 @@ number we have not yet earned; the test fails if one is missing here.
 | `CONFIDENCE_CAPS.crossDomain` | 0.35 | assumed | closet evidence from shoes should not lend confidence to a shirt |
 | `CONFIDENCE_CAPS.verdictOff` | 0.6 | assumed | a size our own model calls wrong cannot be a confident pick |
 | `CONFIDENCE_CAPS.estimatedBody` | 0.4 | assumed | a regional average is a prior, not the wearer |
+| `CONFIDENCE_CAPS.roughGuess` | 0.3 | assumed | the founder asked for a rough guess from one or two closet pieces (Session 92c); set below crossDomain, since this guess is also across garment types or brands |
+| `CONFIDENCE_CAPS.roughSameLabel` | 0.45 | assumed | a same-brand piece with the page's own size label is better evidence than a cross-type guess, worse than a measured anchor; between the two caps either side |
+| `ROUGH_GUESS_WEIGHT` | 0.25 | assumed | only needs to break a dead heat, the one case it runs in; a quarter of the closet weight |
 | `CONFIDENCE_CAPS.provenance.estimated` | 0.5 | assumed | invented chart numbers; policy ceiling |
 | `CONFIDENCE_CAPS.provenance.brand-chart` | 0.75 | assumed | real brand numbers, but not this product's; policy ceiling |
 | `CONFIDENCE_CAPS.provenance.seller` | 0.75 | assumed | a seller's hand measurement of this very garment: real, but taken by tape, flat; set level with a brand chart |

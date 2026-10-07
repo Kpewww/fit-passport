@@ -143,7 +143,16 @@ export const CONFIDENCE_CAPS = {
   implausibleBody: 0.4,
   /** By where the size chart came from (applied at the route). */
   provenance: { estimated: 0.5, "brand-chart": 0.75, seller: 0.75 },
+  /** A rough guess from a small closet when nothing else applied (roughGuess.ts):
+   *  a piece placed across garment types or brands. Below crossDomain on purpose. */
+  roughGuess: 0.3,
+  /** The same, from a same-brand piece whose size label the page offers. */
+  roughSameLabel: 0.45,
 } as const;
+
+/** How hard a rough guess pushes its size, as a fraction of the closet weight: only
+ *  enough to break a dead heat, which is the only time it runs. */
+export const ROUGH_GUESS_WEIGHT = 0.25;
 
 /**
  * Stability — does the pick survive the noise already in its inputs (stability.ts)?
@@ -370,6 +379,9 @@ export const PROVENANCE: Record<string, ConstantSource> = {
   "CONFIDENCE_CAPS.crossDomain": A("closet evidence from shoes should not lend confidence to a shirt"),
   "CONFIDENCE_CAPS.verdictOff": A("a size our own model calls wrong cannot be a confident pick"),
   "CONFIDENCE_CAPS.estimatedBody": A("a regional average is a prior, not the wearer"),
+  "CONFIDENCE_CAPS.roughGuess": A("the founder asked for a rough guess from one or two closet pieces (Session 92c); set below crossDomain, since this guess is also across garment types or brands"),
+  "CONFIDENCE_CAPS.roughSameLabel": A("a same-brand piece with the page's own size label is better evidence than a cross-type guess, worse than a measured anchor; between the two caps either side"),
+  ROUGH_GUESS_WEIGHT: A("only needs to break a dead heat, the one case it runs in; a quarter of the closet weight"),
   "CONFIDENCE_CAPS.provenance.estimated": A("invented chart numbers; policy ceiling"),
   "CONFIDENCE_CAPS.provenance.brand-chart": A("real brand numbers, but not this product's; policy ceiling"),
   "CONFIDENCE_CAPS.provenance.seller": A("a seller's hand measurement of this very garment: real, but taken by tape, flat; set level with a brand chart"),

@@ -37,6 +37,10 @@ export interface EngineText {
   /** A closet piece as a reason names it: brand, the wearer's own name for it, size. */
   pieceLabel(brand: string, size: string, name?: string | null): string;
   anchorSteps(steps: number, label: string): string;
+  // ---- a rough guess from a small closet (roughGuess.ts, Session 92c) ----
+  roughSameLabel(label: string): string;
+  roughFromPiece(label: string): string;
+  roughUnreadable(label: string): string;
   // ---- purchase outcomes ----
   exchanged(from: string, to: string, brand: string | null): string;
   returned(size: string, brand: string | null, how: "tight" | "loose" | "unknown"): string;
@@ -143,6 +147,11 @@ export const EN_TEXT: EngineText = {
   anchorMatches: (label, category) => `Matches your ${label} (${category})`,
   pieceLabel: (brand, size, name) => (name ? `${brand} "${name}" ${size}` : `${brand} ${size}`),
   anchorSteps: (steps, label) => `${steps} step${steps > 1 ? "s" : ""} from your ${label}`,
+  roughSameLabel: (label) =>
+    `A rough guess: your ${label} is the same brand, and this page has the same size label. Add your chest, or a piece of this type that fits, for a real answer.`,
+  roughFromPiece: (label) =>
+    `A rough guess from your ${label}: sizes carry over only roughly between brands and garment types. Add your chest, or a piece of this type that fits, for a real answer.`,
+  roughUnreadable: (label) => `Your ${label} can't be placed on this page's sizes yet, so there is nothing to guess from.`,
   exchanged: (from, to, brand) => `You exchanged a ${from} for a ${to} in ${brand ?? "similar"}`,
   returned: (size, brand, how) =>
     `You returned a ${size} in ${brand ?? "similar"} (${how === "tight" ? "too tight" : how === "loose" ? "too loose" : "fit issue"})`,
@@ -294,6 +303,9 @@ export const ZH_TEXT: EngineText = {
   anchorMatches: (label, category) => `与已有的 ${label}（${ZH_CATEGORY[category] ?? "衣物"}）尺码相符。`,
   pieceLabel: (brand, size, name) => (name ? `${brand}「${name}」${size}` : `${brand} ${size}`),
   anchorSteps: (steps, label) => `与已有的 ${label} 相差 ${steps} 个尺码等级。`,
+  roughSameLabel: (label) => `粗略估计：你已有同品牌的 ${label}，这个页面上有相同的尺码标签。补充胸围，或添加一件同类型且合身的衣物，即可得到真正的推荐。`,
+  roughFromPiece: (label) => `根据你的 ${label} 粗略估计：不同品牌、不同类型的尺码只能大致对应。补充胸围，或添加一件同类型且合身的衣物，即可得到真正的推荐。`,
+  roughUnreadable: (label) => `你的 ${label} 的尺码还无法对应到这个页面的尺码上，所以暂时没有可以估计的依据。`,
   exchanged: (from, to, brand) => `你曾将${brandText(brand)}的 ${from} 换成 ${to}。`,
   returned: (size, brand, how) =>
     `你曾退回${brandText(brand)}的 ${size}，原因是${how === "tight" ? "太紧" : how === "loose" ? "太松" : "合身度不合适"}。`,
