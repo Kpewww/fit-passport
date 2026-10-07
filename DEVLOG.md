@@ -31,6 +31,19 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 91 — Findable on Google
+
+The founder asked how to get the site into Google search. robots.txt and sitemap.xml
+both returned 404. Added: Google Search Console verification (the founder's meta
+code, via the root layout's `verification`), `app/robots.ts` (crawl public pages;
+API, admin and anything tied to one person's account disallowed) and `app/sitemap.ts`
+(home, /extension, /check, /help, /community, /privacy). The founder then verifies in
+Search Console, submits sitemap.xml and requests indexing of the homepage.
+
+818 tests + 1 skip, exit 0; build clean.
+
+---
+
 ## 2026-10-06 · Session 90 — Two threads at the mark's weight, and a full-screen first visit
 
 The founder on Session 89's reveal: keep the busy thin lines, but the lines that make

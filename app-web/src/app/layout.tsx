@@ -36,7 +36,12 @@ const fraunces = localFont({
 
 export function generateMetadata(): Metadata {
   const { meta } = messagesFor(getLocale());
-  return { title: meta.title, description: meta.description };
+  return {
+    title: meta.title,
+    description: meta.description,
+    // Google Search Console ownership (the founder's property, 2026-10-06).
+    verification: { google: "9G3w815c4J5-aqhos5aiIKBwEfnh0MoJJK4rCmUK0J0" },
+  };
 }
 
 export default function RootLayout({
