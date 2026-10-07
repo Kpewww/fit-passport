@@ -1243,6 +1243,7 @@ export const zh: Messages = {
     keys: "空格或点击：重播 · D：深色或浅色 · Q：完整版或快速版 · C：标语",
   },
   help: {
+    watchReveal: "观看标志动画",
     title: "合身有据，使用有方。",
     lede: "了解 Fit Passport 的功能与使用方式，沿着每条路线解锁徽章。",
     manualTitle: "手动安装插件",

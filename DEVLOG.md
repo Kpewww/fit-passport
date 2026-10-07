@@ -31,6 +31,68 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 90 — Two threads at the mark's weight, and a full-screen first visit
+
+The founder on Session 89's reveal: keep the busy thin lines, but the lines that make
+the mark must be the mark's own weight — two dominant threads, since one cannot draw it
+— and then fade into the logo with its gaps appearing; there was a break near the end
+(the drawing jumped between four separate strokes); the hero should play on every
+arrival, except the first open, which should be a full-screen black intro whose giant
+mark shrinks into the hero; and the presentation should be reachable from /help.
+Decided with the founder: A from the top-left draws the small p, B from the
+bottom-right the big P; the intro once per browser session; a click or key skips it.
+
+**Two threads** (`lib/logoReveal.ts`, `lib/logoCenterline.ts`):
+- The mark has six free ends and a four-way junction, so no single line covers it. The
+  centerline is re-derived as four pieces split at the junction — `entryBar`,
+  `innerCurl`, `lowerLoop`, `spineUp` (stem, junction, big loop) — plus two
+  **connectors** built from the pieces' ends and directions: `notch` (through the
+  junction) and `crossing` (the stem passing under the lower bar). Cover 98.5%, spill
+  1.9% (`brand/tests/centerline-fit.mjs`, which now trims only free ends).
+- A = lead-in + entryBar + notch + innerCurl; B = lead-in + lowerLoop + crossing +
+  spineUp. Both at the mark's 22-unit stroke from their first frame. Each is driven
+  by **one** progress value along its whole route; every piece's drawn length derives
+  from it, and the lead-in shows as a moving window whose tail is drawn into the mark.
+- B's first lead-in folded back on itself at the tip (a "^" seen in a recorded frame):
+  it now rises up the right side and comes down into the tip along the loop's own
+  direction. Lead-ins end on a waypoint placed back along the piece's start direction;
+  a test checks the arrival angle.
+- When both are done the connectors fade: the gaps appear. Then the Session 89
+  crossfade (the mark in under the opaque thread, then the thread out).
+- **No break, measured**: on a paused clock, each thread's head never moves more than
+  2.0× the step before or after it (a jump between pieces would be a spike of 5× or
+  more); unit tests check every piece starts where the previous one ended.
+- Hero keeps three thin lines; quick has none; the new **intro** variant has eight
+  across the screen.
+
+**Homepage** (`components/HomeIntro.tsx`, `lib/homeIntro.ts`):
+- An inline `<head>` script marks `<html data-fp-intro="play">` before the first paint
+  on `/`, when this session has not had the intro and reduced motion is off; CSS shows
+  the server-rendered overlay, locks scrolling and hides the hero's mark only then — no
+  flash either way, nothing without JS.
+- The intro draws a giant mark (`min(62vmin, 520px)`) on ink, then flies it onto the
+  hero's mark (measured box, 0.55 s, no overshoot) while the black fades onto the
+  hero's identical ink; the hero's own `<Logo>` remains. Any click or key skips to the
+  landing.
+- Every other arrival — a reload in the session, or client navigation back to `/` —
+  plays the inline hero reveal (the once-per-session rule moved to the intro).
+
+**Checked in a browser** (1440 and 390): a fresh session plays the intro, then the
+page returns to normal (attribute cleared, scroll restored, hero mark visible); a
+reload plays the inline reveal; client navigation to `/` plays it; a click skips;
+reduced motion plays nothing; no sideways overflow. **Pixel identity**: the settled
+reveal vs `?still=1` 0 px in all 12 cases; the intro's landing vs the static hero mark
+0 of 25,600 px, same box. Timing on a paused clock: hero 2.59 s, quick 0.89 s; the
+intro lands at 3.15 s with no visible jump across the swap (frames 2.95–3.35 s).
+
+/help's "The mark": the mark and a "Watch it come together" / 「观看标志动画」 link open
+`/brand/reveal`. `scripts/record-logo.mjs --intro` records the homepage intro.
+
+First Load JS `/` 174 → 178 kB (165 before Session 89, +7.9%). 818 tests + 1 skip,
+exit 0; typecheck and build clean.
+
+---
+
 ## 2026-10-06 · Session 89 — The mark, revealed as a thread
 
 The founder's brief (pasted, 2026-10-06): thin Ink Black threads explore an invisible

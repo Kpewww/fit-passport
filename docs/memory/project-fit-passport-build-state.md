@@ -1342,3 +1342,11 @@ off their first load). `/brand/reveal` presents it; `scripts/record-logo.mjs` �
 **NEW INVARIANT:**
 **(93)** **The reveal ends on `<Logo>` itself, never a drawn approximation.** The centerline is a drawing aid;
 the settled frame must stay pixel-identical to a static `<Logo>` (0 px at 12 size/ground/variant cases).
+
+**SESSION 90 (2026-10-06).** 815 → **818 tests**. Reveal redrawn by **two threads at the mark's weight**:
+A (top-left: entryBar → notch → innerCurl), B (bottom-right: lowerLoop → crossing → spineUp); each driven by one
+progress value (`lib/logoReveal.ts` `threads()`); connectors fade so the mark's gaps appear. Variants hero / quick /
+**intro**. Homepage: inline `<head>` script (`lib/homeIntro.ts`) marks `html[data-fp-intro="play"]` before paint on a
+session's first `/`; `HomeIntro.tsx` draws a giant mark and flies it onto `[data-fp-hero-mark]`; every other arrival
+plays the inline hero reveal (`yieldToIntro`). `/help` "The mark" links `/brand/reveal`. `record-logo.mjs --intro`.
+- Gotcha: a lead-in must end along the piece's start direction or it folds back (B's "^").

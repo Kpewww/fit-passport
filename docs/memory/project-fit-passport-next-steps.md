@@ -841,3 +841,8 @@ T0–T4 ladders once read from the brands' guides.
 frame-by-frame video export. **Next — founder:** `brew install ffmpeg` and re-run `scripts/record-logo.mjs`
 for MP4 (Keynote/PowerPoint); say if the extension popup should get the quick reveal (needs a framework-free
 version).
+
+## Session 90 (2026-10-06) — two-thread reveal + full-screen first-visit intro, DONE
+
+**Next — founder:** review the new reveal and intro (videos in `app-web/brand-build/`); then the **extension
+version** (framework-free, for the popup), which the founder asked for after this is approved.

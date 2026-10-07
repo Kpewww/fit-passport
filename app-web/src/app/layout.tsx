@@ -1,3 +1,4 @@
+import { HOME_INTRO_SCRIPT } from "@/lib/homeIntro";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -47,7 +48,14 @@ export default function RootLayout({
   // getT(), client components useT() — and only this language's messages ship.
   const locale = getLocale();
   return (
-    <html lang={htmlLang(locale)} className="h-full">
+    // suppressHydrationWarning: the intro script below may mark <html> before React
+    // hydrates, and that attribute is meant to differ from the server's.
+    <html lang={htmlLang(locale)} className="h-full" suppressHydrationWarning>
+      <head>
+        {/* Decides, before the first paint, whether the homepage's first-visit intro
+            plays (lib/homeIntro.ts). */}
+        <script dangerouslySetInnerHTML={{ __html: HOME_INTRO_SCRIPT }} />
+      </head>
       {/* overflow-x-clip: oversized display type / parallax words must never
           make the page scrollable sideways. */}
       <body className={`${inter.variable} ${fraunces.variable} font-sans min-h-full flex flex-col overflow-x-clip bg-paper text-ink antialiased`}>

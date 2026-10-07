@@ -15,6 +15,7 @@ import { EXTENSION_DISTRIBUTION } from "@/lib/extensionDistribution";
 import { useT } from "@/i18n/client";
 import { Headline } from "@/components/Headline";
 import { AnimatedFitPassportLogo } from "@/components/AnimatedFitPassportLogo";
+import { HomeIntro } from "@/components/HomeIntro";
 
 type Step = {
   key: string;
@@ -124,6 +125,9 @@ export default function Home() {
 
   return (
     <main className="flex-1">
+      {/* The first visit of a session opens on a full-screen intro that lands on the
+          hero's mark (Session 90). */}
+      <HomeIntro />
       <Hero url={url} setUrl={setUrl} goCheck={goCheck} reduce={!!reduce} />
 
       {returning && (
@@ -217,9 +221,13 @@ function Hero({
         style={{ y, opacity, ...GPU_LAYER }}
         className="mx-auto max-w-5xl px-4 pb-20 pt-20 text-center sm:px-6 sm:pb-28 sm:pt-28"
       >
-        {/* The mark, revealed as a thread — once per visit (Session 89). White on the
-            hero's ink: the reverse of the concept's ink-on-porcelain, the founder's call. */}
-        <AnimatedFitPassportLogo variant="hero" size={80} className="mb-8 text-paper" />
+        {/* The mark, revealed as two threads on every arrival (Sessions 89–90); on a
+            session's first visit it stands still and the full-screen intro lands on it.
+            White on the hero's ink: the reverse of the concept's ink-on-porcelain, the
+            founder's call. */}
+        <span data-fp-hero-mark className="mb-8 inline-flex text-paper">
+          <AnimatedFitPassportLogo variant="hero" size={80} yieldToIntro />
+        </span>
         <p className="eyebrow text-paper/60 animate-rise">{t("hero.eyebrow")}</p>
         <h1 className="hero-title mx-auto mt-7 max-w-4xl font-serif text-6xl font-semibold leading-[0.95] tracking-tight animate-rise sm:text-8xl" style={{ animationDelay: "60ms" }}>
           <Headline>{t.rich("hero.title", { accent: (c) => <span className="italic font-normal text-brand">{c}</span> })}</Headline>

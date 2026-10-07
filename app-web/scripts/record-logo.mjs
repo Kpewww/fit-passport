@@ -9,6 +9,9 @@
 //   node scripts/record-logo.mjs                     both grounds, both variants
 //   node scripts/record-logo.mjs --bg ink --variant hero --caption
 //   node scripts/record-logo.mjs --origin https://fit-passport.vercel.app
+//   node scripts/record-logo.mjs --intro                 the homepage's full-screen
+//                                                        first-visit intro, landing
+//                                                        on the hero (Session 90)
 //   options: --size 1920x1080  --fps 60  --hold 1.2 (seconds held on the settled mark)
 //
 // Needs the site running (default http://localhost:3000, i.e. `npm run dev`), and
@@ -42,6 +45,9 @@ const grounds = arg("bg") ? [arg("bg")] : ["porcelain", "ink"];
 const variants = arg("variant") ? [arg("variant")] : ["hero", "quick"];
 // Must match REVEAL_TIMING in AnimatedFitPassportLogo.tsx.
 const DURATION = { hero: 2.6, quick: 0.9 };
+// The intro: the reveal, then the 0.55 s landing (HomeIntro.tsx).
+const INTRO_DURATION = 2.6 + 0.55;
+const intro = flag("intro");
 
 function findFfmpeg() {
   if (spawnSync("ffmpeg", ["-version"]).status === 0) return { bin: "ffmpeg", mp4: true };
@@ -61,25 +67,31 @@ if (!ff.mp4) console.log("No system ffmpeg: writing WebM. For MP4 (Keynote / Pow
 mkdirSync(OUT, { recursive: true });
 
 const browser = await chromium.launch();
-for (const bg of grounds) {
-  for (const variant of variants) {
-    const name = `fit-passport-reveal-${variant}-${bg}${caption ? "-caption" : ""}-${W}x${H}.${ff.mp4 ? "mp4" : "webm"}`;
+const jobs = intro
+  ? [{ name: `fit-passport-intro-${W}x${H}`, url: `${origin}/`, ready: ".fp-intro svg[data-fp-reveal]", seconds: INTRO_DURATION + hold }]
+  : grounds.flatMap((bg) => variants.map((variant) => {
+      const q = new URLSearchParams({ clean: "1", variant, bg: bg === "ink" ? "ink" : "porcelain", ...(caption ? { caption: "1" } : {}) });
+      return { name: `fit-passport-reveal-${variant}-${bg}${caption ? "-caption" : ""}-${W}x${H}`, url: `${origin}/brand/reveal?${q}`, ready: "svg[data-fp-reveal]", seconds: DURATION[variant] + hold + (caption ? 0.8 : 0) };
+    }));
+for (const job of jobs) {
+  {
+    const name = `${job.name}.${ff.mp4 ? "mp4" : "webm"}`;
     const file = join(OUT, name);
     const page = await (await browser.newContext({ viewport: { width: W, height: H }, deviceScaleFactor: 1 })).newPage();
     // A fake clock keeps running in real time unless paused; paused, only runFor moves it.
     await page.clock.install({ time: 0 });
     await page.clock.pauseAt(1000);
-    const q = new URLSearchParams({ clean: "1", variant, bg: bg === "ink" ? "ink" : "porcelain", ...(caption ? { caption: "1" } : {}) });
-    await page.goto(`${origin}/brand/reveal?${q}`, { waitUntil: "domcontentloaded" });
+    // A fresh context is a fresh session, so the homepage plays its intro.
+    await page.goto(job.url, { waitUntil: "domcontentloaded" });
     // Hydration takes real time; the fake clock stands still meanwhile, so the reveal
     // waits at its first frame.
     // Checked before each step, so the first frame recorded is the reveal's first.
     for (let i = 0; i < 200; i++) {
-      if (await page.locator("svg[data-fp-reveal]").count()) break;
+      if (await page.locator(job.ready).count()) break;
       await page.clock.runFor(16);
       await page.waitForTimeout(100);
     }
-    if (!(await page.locator("svg[data-fp-reveal]").count())) throw new Error(`the reveal never started on ${origin}`);
+    if (!(await page.locator(job.ready).count())) throw new Error(`the reveal never started on ${job.url}`);
 
     const args = ff.mp4
       ? ["-y", "-f", "image2pipe", "-framerate", String(fps), "-c:v", "mjpeg", "-i", "pipe:0", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "14", "-preset", "slow", "-movflags", "+faststart", file]
@@ -89,7 +101,7 @@ for (const bg of grounds) {
     enc.stderr.on("data", (d) => { errText += d; });
     const done = new Promise((res) => enc.on("close", res));
 
-    const frames = Math.ceil((DURATION[variant] + hold + (caption ? 0.8 : 0)) * fps);
+    const frames = Math.ceil(job.seconds * fps);
     for (let i = 0; i < frames; i++) {
       enc.stdin.write(await page.screenshot({ type: "jpeg", quality: 95 }));
       await page.clock.runFor(1000 / fps);

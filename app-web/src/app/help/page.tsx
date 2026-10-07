@@ -134,9 +134,10 @@ export default function HelpPage() {
                 its colour from `currentColor`, so this needs no separate asset. */}
             <div className="bg-ink px-6 py-10 text-paper sm:px-10 sm:py-12">
               <div className="flex flex-col items-center gap-7 text-center sm:flex-row sm:gap-10 sm:text-left">
-                <div className="flex-shrink-0">
+                {/* The mark opens its animated reveal (Session 90). */}
+                <Link href="/brand/reveal" aria-label={t("watchReveal")} className="flex-shrink-0 rounded-lg transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-paper/60">
                   <Logo size={112} />
-                </div>
+                </Link>
                 <div className="min-w-0">
                   <p className="font-serif text-2xl leading-snug sm:text-[1.75rem]">
                     {t("markLine")}
@@ -144,6 +145,9 @@ export default function HelpPage() {
                   <p className="mt-3 text-sm leading-relaxed text-paper/70">
                     {t.rich("markBody", { strong: (c) => <strong className="text-paper">{c}</strong> })}
                   </p>
+                  <Link href="/brand/reveal" className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-paper underline-offset-4 hover:underline">
+                    {t("watchReveal")} <ArrowRight size={14} />
+                  </Link>
                 </div>
               </div>
             </div>

@@ -162,27 +162,37 @@ The mark is monochrome and inherits `currentColor`, so this changes nothing abou
 the geometry - only the ground it is tested and presented on. `tests/size-test.mjs`
 tests against `#F3F3F1`.
 
-## Motion — the reveal (Session 89)
+## Motion — the reveal (Sessions 89–90)
 
-The mark has one animation, `AnimatedFitPassportLogo` (`app-web/src/components/`):
-a few thin threads search a space with no walls drawn and pull back; one reaches the
-mark's entry and draws the mark in the concept's order (LOGO_CONCEPT §9: enter from
-the left, the upper turn and hidden FP, descend, the lower loop); the last 150 ms
-crossfade into the mark itself.
+The mark has one animation, `AnimatedFitPassportLogo` (`app-web/src/components/`).
+Thin hairlines search a space with no walls drawn and pull back, while **two threads
+at the mark's own weight** draw it (the founder's route, Session 90):
 
-- **The settled frame is this master, untouched.** The thread is drawn on an overlay
-  over `<Logo>`; when it ends, only `<Logo>` remains. Measured: the settled reveal and
-  a static `<Logo>` differ by **0 pixels** at three sizes, on both grounds, both
-  variants.
-- **The thread follows a derived centerline** (`app-web/src/lib/logoCenterline.ts`),
-  made from this master by `tests/centerline-fit.mjs`: at a 22-unit stroke it covers
-  98.2% of the mark and spills 1.8% past it. It is a drawing aid, never a resting
-  frame. If the master changes, re-run that script with `--write`.
-- Variants: **hero** about 2.6 s (the founder's brief; the concept's 1.2–1.8 s was for
-  the draw alone) and **quick** about 0.9 s. `prefers-reduced-motion` shows the mark
-  at once.
+- **A**, from the top-left: the entry, the bar, through the junction, the small p.
+- **B**, from the bottom-right: the lower loop's tip, round the loop, up the spine
+  (under the lower bar, up the stem, through the junction) and round the big P.
+
+Each thread runs on one progress value along its whole route, so it never jumps
+between pieces. The mark has six free ends and a four-way junction, so two lines must
+cross two of its gaps; those two stretches fade once both threads are done, and the
+mark's real gaps appear. The last 150 ms crossfade into the mark itself.
+
+- **The settled frame is this master, untouched.** The threads are drawn on an overlay
+  over `<Logo>`; when they end, only `<Logo>` remains. Measured: 0 differing pixels
+  against a static `<Logo>` at three sizes, both grounds, both variants — and for the
+  homepage intro's landing on the hero mark.
+- **The threads follow a derived centerline** (`app-web/src/lib/logoCenterline.ts`),
+  made from this master by `tests/centerline-fit.mjs`: at a 22-unit stroke the four
+  pieces cover 98.5% of the mark and spill 1.9% past it. A drawing aid, never a
+  resting frame. If the master changes, re-run that script with `--write`.
+- Variants: **hero** about 2.6 s (every arrival at the homepage), **quick** about
+  0.9 s, and **intro** — the homepage's first visit of a session: full screen on ink,
+  a giant mark that then flies into the hero's mark while the black fades
+  (`HomeIntro.tsx`, decided before paint by `lib/homeIntro.ts`; a click or key skips).
+  `prefers-reduced-motion` shows the mark at once and never plays the intro.
 - **For slides:** `/brand/reveal` plays it full screen (Space replays, D switches the
   ground, Q switches the variant, C shows "One thread through the maze of fit.";
-  `?still=1` is the end frame). `app-web/scripts/record-logo.mjs` records it frame by
-  frame to `app-web/brand-build/` (not committed): MP4 with a system ffmpeg, WebM with
-  only Playwright's.
+  `?still=1` is the end frame), also linked from /help's "The mark".
+  `app-web/scripts/record-logo.mjs` records it frame by frame (`--intro` for the
+  homepage intro) to `app-web/brand-build/` (not committed): MP4 with a system ffmpeg,
+  WebM with only Playwright's.

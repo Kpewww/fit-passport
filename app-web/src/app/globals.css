@@ -189,3 +189,12 @@ summary:focus-visible,
   content-visibility: auto;
   contain-intrinsic-size: auto 420px;
 }
+
+/* The homepage's first-visit intro (Session 90, lib/homeIntro.ts). Shown only when the
+   inline head script marked <html> before the first paint, so the page never flashes
+   before it, and it never flashes when it does not play. While it plays the page is
+   held still, and the hero's mark waits hidden for the intro to land on it. */
+.fp-intro { display: none; }
+html[data-fp-intro="play"] .fp-intro { display: flex; }
+html[data-fp-intro="play"] { overflow: hidden; }
+html[data-fp-intro="play"] [data-fp-hero-mark] { visibility: hidden; }
