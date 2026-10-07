@@ -17,16 +17,15 @@
 // (and then watch what that person adds). A pass in a log or a history entry is
 // useless without that browser's cookie, and is dead within a minute anyway.
 //
-// Which account wins when the new address already has one: the old one is taken
-// only if the new one holds nothing (receiveDecision). An account someone has
-// already used at the new address is never replaced.
+// Which account a browser ends with when the two addresses hold different ones:
+// lib/accountMerge.ts (Session 92b). They become one, and nothing either held is lost.
 //
 // Every page of the old address comes through here for a person (middleware.ts), and
-// so does every page extension 0.9.0 opens. After the first hand-over, fp_carried
-// short-cuts it to one redirect.
+// so does every page extension 0.9.0 opens. Once both addresses hold the same
+// account it is one redirect: the old address says which account it holds (a hint),
+// and from 0.9.0, fp_carried says the hand-over has run.
 
 import { prisma } from "./db";
-import type { SessionPayload } from "./auth";
 
 export const CARRY_STATE_COOKIE = "fp_carry";
 export const CARRIED_COOKIE = "fp_carried";
@@ -66,11 +65,8 @@ export async function accountHasData(userId: string): Promise<boolean> {
   return Object.values(u.fitProfile ?? {}).some((v) => v != null);
 }
 
-export type ReceiveDecision = "adopt" | "keep";
-
-/** Whether the new address takes the carried session or keeps its own. */
-export function receiveDecision(carried: SessionPayload, current: SessionPayload | null, currentHasData: boolean): ReceiveDecision {
-  if (!current) return "adopt";
-  if (current.userId === carried.userId) return "keep";
-  return currentHasData ? "keep" : "adopt";
+/** What lib/accountMerge.ts mergePlan() weighs about an account. */
+export async function accountSide(userId: string): Promise<{ id: string; claimed: boolean; hasData: boolean }> {
+  const u = await prisma.user.findUnique({ where: { id: userId }, select: { claimed: true } });
+  return { id: userId, claimed: !!u?.claimed, hasData: await accountHasData(userId) };
 }

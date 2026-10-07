@@ -5,8 +5,9 @@
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { CARRY_TTL_MS, decodeCarryPass, decodeSession, encodeCarryPass, encodeSession } from "./auth";
-import { isCarryState, receiveDecision, safeNext } from "./sessionCarry";
-import { LEGACY_ORIGIN, SITE_ORIGIN, isLegacyHost, isSiteHost, legacyMove } from "./site";
+import { mergePlan } from "./accountMerge";
+import { isCarryState, safeNext } from "./sessionCarry";
+import { LEGACY_ORIGIN, SITE_ORIGIN, accountHint, isLegacyHost, isSiteHost, legacyMove } from "./site";
 
 const CHROME = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36";
 const GOOGLEBOT = "Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko; compatible; Googlebot/2.1; +http://www.google.com/bot.html) Chrome/129.0.0.0 Safari/537.36";
@@ -125,16 +126,48 @@ describe("the one-minute pass", () => {
   });
 });
 
-describe("which account the new address keeps", () => {
-  const old = { userId: "u_old", canEdit: true };
+describe("one account per browser (Session 92b)", () => {
+  const side = (id: string, claimed: boolean, hasData: boolean) => ({ id, claimed, hasData });
 
-  it("takes the carried one when there is none here, or only an empty one", () => {
-    expect(receiveDecision(old, null, false)).toBe("adopt");
-    expect(receiveDecision(old, { userId: "u_fresh", canEdit: true }, false)).toBe("adopt");
+  it("takes the old account when the new address holds an empty one, and folds the empty one in", () => {
+    expect(mergePlan(side("new", false, false), side("old", false, true))).toEqual({ kind: "fold", keep: "old", fold: "new" });
   });
 
-  it("never replaces an account already in use here", () => {
-    expect(receiveDecision(old, { userId: "u_new", canEdit: true }, true)).toBe("keep");
-    expect(receiveDecision(old, old, true)).toBe("keep");
+  it("keeps the new address's account when it is in use, and folds the old one into it", () => {
+    // The founder's case: measurements typed into the website, an older extension on the old cookie.
+    expect(mergePlan(side("new", false, true), side("old", false, true))).toEqual({ kind: "fold", keep: "new", fold: "old" });
+    expect(mergePlan(side("new", false, true), side("old", false, false))).toEqual({ kind: "fold", keep: "new", fold: "old" });
+    expect(mergePlan(side("new", false, false), side("old", false, false))).toEqual({ kind: "fold", keep: "new", fold: "old" });
+  });
+
+  it("keeps a claimed account over an unclaimed one, at either address", () => {
+    expect(mergePlan(side("new", false, true), side("old", true, true))).toEqual({ kind: "fold", keep: "old", fold: "new" });
+    expect(mergePlan(side("new", true, false), side("old", false, true))).toEqual({ kind: "fold", keep: "new", fold: "old" });
+  });
+
+  it("never folds a claimed account: two with passwords both stay", () => {
+    expect(mergePlan(side("new", true, true), side("old", true, true))).toEqual({ kind: "keep-both", keep: "new" });
+  });
+
+  it("has nothing to do when both addresses hold the same account", () => {
+    expect(mergePlan(side("a", false, true), side("a", false, true))).toEqual({ kind: "same", keep: "a" });
+  });
+});
+
+describe("the old address's hint of its account", () => {
+  it("is short, one-way and stable", async () => {
+    const h = await accountHint("u_old");
+    expect(h).toMatch(/^[0-9a-f]{16}$/);
+    expect(await accountHint("u_old")).toBe(h);
+    expect(await accountHint("u_new")).not.toBe(h);
+    expect(h).not.toContain("u_old");
+  });
+
+  it("rides along on a person's move", () => {
+    expect(legacyMove({ ...page, hint: "0123456789abcdef" })).toEqual({
+      kind: "carry",
+      location: "https://www.fitpassport.fit/api/session/carry?next=%2Fcloset%3Ftab%3Dsaved&h=0123456789abcdef",
+    });
+    expect(legacyMove({ ...page, userAgent: GOOGLEBOT, hint: "0123456789abcdef" })?.location).toBe("https://www.fitpassport.fit/closet?tab=saved");
   });
 });

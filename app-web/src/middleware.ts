@@ -24,37 +24,41 @@ import {
   decodeSessionEdge,
   encodeSessionEdge,
 } from "@/lib/authEdge";
-import { legacyMove } from "@/lib/site";
+import { accountHint, legacyMove } from "@/lib/site";
 
 export async function middleware(req: NextRequest) {
   const existing = req.cookies.get(SESSION_COOKIE)?.value;
   const valid = await decodeSessionEdge(existing);
 
-  const move = legacyMove({
+  const request = {
     host: req.headers.get("host"),
     method: req.method,
     path: req.nextUrl.pathname + req.nextUrl.search,
     userAgent: req.headers.get("user-agent"),
     fetchMode: req.headers.get("sec-fetch-mode"),
     accept: req.headers.get("accept"),
-  });
+  };
+  const move = legacyMove(request);
   if (move?.kind === "permanent") return NextResponse.redirect(move.location, 308);
   if (move?.kind === "carry") {
-    const res = NextResponse.redirect(move.location, 307);
+    // The account this browser holds here goes along as a hint (Session 92b), so the
+    // new address knows when it holds a different one and the two must become one.
+    const userId = valid?.userId ?? crypto.randomUUID();
+    const res = NextResponse.redirect(legacyMove({ ...request, hint: await accountHint(userId) })!.location, 307);
     res.headers.set("cache-control", "no-store");
-    if (!valid) await mint(res);
+    if (!valid) await mint(res, userId);
     return res;
   }
 
   if (valid) return NextResponse.next();
   const res = NextResponse.next();
-  await mint(res);
+  await mint(res, crypto.randomUUID());
   return res;
 }
 
 /** Set a fresh anonymous session on the response (Edge-safe UUID). */
-async function mint(res: NextResponse) {
-  const cookie = await encodeSessionEdge({ userId: crypto.randomUUID(), canEdit: true });
+async function mint(res: NextResponse, userId: string) {
+  const cookie = await encodeSessionEdge({ userId, canEdit: true });
   res.cookies.set(SESSION_COOKIE, cookie, {
     httpOnly: true,
     sameSite: "lax",

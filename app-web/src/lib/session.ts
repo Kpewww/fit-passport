@@ -12,6 +12,7 @@
 
 import { cookies } from "next/headers";
 import { prisma } from "./db";
+import { resolveAccount } from "./accountMerge";
 import {
   SESSION_COOKIE,
   decodeSession,
@@ -61,7 +62,7 @@ export async function getCurrentUser() {
     // create the same id, one wins and the other hits a unique-constraint error
     // (P2002) — we just re-read in that case.
     try {
-      return await prisma.user.upsert({
+      return await followFold(await prisma.user.upsert({
         where: { id: session.userId },
         update: {},
         create: {
@@ -69,10 +70,10 @@ export async function getCurrentUser() {
           claimed: false,
           fitProfile: { create: { preferredFit: "regular", region: "US" } },
         },
-      });
+      }), session);
     } catch {
       const existing = await prisma.user.findUnique({ where: { id: session.userId } });
-      if (existing) return existing;
+      if (existing) return followFold(existing, session);
       // fall through to a fresh session below
     }
   }
@@ -86,6 +87,24 @@ export async function getCurrentUser() {
   });
   setSession({ userId: user.id, canEdit: true });
   return user;
+}
+
+/**
+ * A session naming an account that was folded into another (lib/accountMerge.ts)
+ * lands on that one, and its cookie is rewritten so the next request goes straight
+ * there. This is what puts an older extension — which calls the old address with
+ * the old address's cookie — on the same account as the website.
+ */
+async function followFold<U extends { id: string; mergedIntoId: string | null }>(user: U, session: SessionPayload): Promise<U> {
+  if (!user.mergedIntoId) return user;
+  const target = await prisma.user.findUnique({ where: { id: await resolveAccount(user.id) } });
+  if (!target) return user;
+  try {
+    setSession({ userId: target.id, canEdit: session.canEdit });
+  } catch {
+    // Outside a route handler the cookie cannot be written; the next request follows again.
+  }
+  return target as unknown as U;
 }
 
 /**

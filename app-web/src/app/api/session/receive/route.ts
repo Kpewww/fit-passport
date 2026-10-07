@@ -1,12 +1,17 @@
 // GET /api/session/receive?pass=…&next=/closet — Session 92. Step 3 of carrying a
 // session (lib/sessionCarry.ts): at the new address, check the pass against this
-// browser's `state`, keep the carried session as this address's own unless an
-// account already in use is here, and land on `next`.
+// browser's `state`, and land on `next` with ONE account for this browser.
+//
+// No account here: the carried one is taken. A different one here: the two become one
+// (lib/accountMerge.ts, Session 92b) — the claimed one stays, else the one here unless
+// it is empty, and an unclaimed other is folded into it, so the old address (and an
+// older extension using it) follows to the same account from its next request.
 
 import { NextResponse, type NextRequest } from "next/server";
+import { foldAccount, mergePlan, resolveAccount } from "@/lib/accountMerge";
 import { SESSION_COOKIE, decodeCarryPass, encodeSession } from "@/lib/auth";
 import { COOKIE_OPTS, readSession } from "@/lib/session";
-import { CARRIED_COOKIE, CARRY_STATE_COOKIE, accountHasData, isCarryState, receiveDecision, safeNext } from "@/lib/sessionCarry";
+import { CARRIED_COOKIE, CARRY_STATE_COOKIE, accountSide, isCarryState, safeNext } from "@/lib/sessionCarry";
 import { isSiteHost, siteOrigin } from "@/lib/site";
 
 export async function GET(req: NextRequest) {
@@ -30,11 +35,18 @@ export async function GET(req: NextRequest) {
   if (pass && !carried) return res;
 
   if (carried) {
+    const there = await resolveAccount(carried.userId);
     const current = readSession();
-    const inUse = current != null && current.userId !== carried.userId && (await accountHasData(current.userId));
-    if (receiveDecision(carried, current, inUse) === "adopt") {
-      res.cookies.set(SESSION_COOKIE, encodeSession(carried), COOKIE_OPTS);
+    let keep = there;
+    let canEdit = carried.canEdit;
+    if (current) {
+      const mine = await resolveAccount(current.userId);
+      const plan = mergePlan(await accountSide(mine), await accountSide(there));
+      if (plan.kind === "fold") await foldAccount(plan.fold, plan.keep);
+      keep = plan.keep;
+      if (keep === mine) canEdit = current.canEdit;
     }
+    if (keep !== current?.userId) res.cookies.set(SESSION_COOKIE, encodeSession({ userId: keep, canEdit }), COOKIE_OPTS);
   }
   res.cookies.set(CARRIED_COOKIE, "1", { ...COOKIE_OPTS, secure: siteOrigin().startsWith("https:") });
   return res;

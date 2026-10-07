@@ -54,14 +54,16 @@ describe("a saved product joins the closet only as a garment the user has worn",
 describe("nothing that learns or counts reads the to-buy list", () => {
   // The whole point of a separate table (schema comment on SavedItem): the engine,
   // badges, the public view, the community and evidence never see a product that
-  // nobody has worn. Only the list's own route and the closet's move may touch it.
+  // nobody has worn. Only the list's own route and the closet's move may touch it —
+  // and folding one browser's two accounts into one (Session 92b), which moves the
+  // list with its account and reads nothing in it.
   const SRC = join(dirname(fileURLToPath(import.meta.url)), "..");
   const files = (d: string): string[] =>
     readdirSync(d).flatMap((f) => {
       const p = join(d, f);
       return statSync(p).isDirectory() ? files(p) : /\.(ts|tsx)$/.test(f) && !/\.test\./.test(f) ? [p] : [];
     });
-  const ALLOWED = new Set(["app/api/saved/route.ts", "app/api/closet/route.ts"]);
+  const ALLOWED = new Set(["app/api/saved/route.ts", "app/api/closet/route.ts", "lib/accountMerge.ts"]);
   it("finds savedItem only where it is allowed", () => {
     const readers = files(SRC)
       .filter((f) => /prisma\.savedItem|savedItem\./.test(readFileSync(f, "utf8")))

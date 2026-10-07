@@ -278,7 +278,11 @@ curl -s  https://fit-passport.vercel.app/api/status
 
 The 307 is the session hand-over (`app-web/src/lib/sessionCarry.ts`): a person's
 account comes along, because an unclaimed account is a cookie that belongs to one
-host. Don't detach the old address while anyone runs an extension older than 0.9.0;
+host. When a browser holds a different account at each address, the hand-over makes
+them one (`app-web/src/lib/accountMerge.ts`, Session 92b): the claimed one stays, else
+the new address's unless it is empty; an unclaimed other is folded in and points to it
+(`User.mergedIntoId`), and `getCurrentUser()` follows that pointer, so an older
+extension on the old cookie lands on the same account. Don't detach the old address while anyone runs an extension older than 0.9.0;
 once it is detached, `/api/session/carry` must stop asking it (point `LEGACY_ORIGIN`
 in `app-web/src/lib/site.ts` at nothing, or make carry a plain redirect), or carry
 fails for every browser that has not been carried yet.

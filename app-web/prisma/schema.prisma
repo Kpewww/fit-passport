@@ -87,6 +87,12 @@ model User {
   /// can be abused into minting admins.
   role String @default("USER")
 
+  /// Set when this account was folded into another (Session 92b): the same browser
+  /// held it at one address and that one at the other, and the two became one.
+  /// A session that still names this id is moved to the other by getCurrentUser().
+  /// Only ever set on an UNCLAIMED account — one with a password is never folded.
+  mergedIntoId String?
+
   /// DEMO ONLY: show every badge as earned regardless of stats.
   ///
   /// This exists so the founder's demo account can present the whole prestige

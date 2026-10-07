@@ -1219,7 +1219,7 @@ export const en = {
       title: "Cookies",
       session: "fp_session keeps you signed in to your account — including the unclaimed one the site makes on your first visit. It lasts a year.",
       lang: "fp-lang remembers the language you chose.",
-      move: "fp_carry and fp_carried: Fit Passport moved from fit-passport.vercel.app to fitpassport.fit, and an account you had at the old address comes with you. The old address hands over a pass that works for one minute and only in this browser; fp_carry, kept for five minutes at most, is how this browser shows it asked. fp_carried then remembers for a year that the move is done.",
+      move: "fp_carry and fp_carried: Fit Passport moved from fit-passport.vercel.app to fitpassport.fit, and an account you had at the old address comes with you. The old address hands over a pass that works for one minute and only in this browser; fp_carry, kept for five minutes at most, is how this browser shows it asked. fp_carried then remembers for a year that the move is done. If this browser held a different account at each address, they become one: the one with a password stays (otherwise the one at the new address, unless it is empty), and the other's closet, saved products and measurements move into it, overwriting nothing.",
       none: "No advertising or analytics cookies, and no tracking across other sites. Page visits are counted with Vercel Web Analytics, which uses no cookies and keeps no visitor identity beyond 24 hours; account codes and anything after a “?” in the address are removed before a visit is counted.",
     },
     extension: {

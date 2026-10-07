@@ -60,11 +60,25 @@ export function legacyMove(req: {
   /** Sec-Fetch-Mode — "navigate" for a page the browser is opening. */
   fetchMode: string | null;
   accept: string | null;
+  /** accountHint() of the session this browser holds here, so the new address can
+   *  tell whether it already holds the same account (Session 92b). */
+  hint?: string;
 }): LegacyMove | null {
   if (!isLegacyHost(req.host)) return null;
   if (req.method !== "GET" && req.method !== "HEAD") return null;
   const same = siteOrigin() + req.path;
   const page = req.fetchMode ? req.fetchMode === "navigate" : (req.accept ?? "").includes("text/html");
   if (!page || BOT.test(req.userAgent ?? "")) return { kind: "permanent", location: same };
-  return { kind: "carry", location: `${siteOrigin()}/api/session/carry?next=${encodeURIComponent(req.path)}` };
+  const h = req.hint ? `&h=${req.hint}` : "";
+  return { kind: "carry", location: `${siteOrigin()}/api/session/carry?next=${encodeURIComponent(req.path)}${h}` };
+}
+
+/**
+ * A short one-way tag of an account id: enough for the new address to see that the
+ * old one holds the same account as it does, without putting the id in an address.
+ * Web Crypto, so the middleware (Edge) and the routes (Node) compute the same tag.
+ */
+export async function accountHint(userId: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(`fp-carry-hint:${userId}`));
+  return Array.from(new Uint8Array(digest).slice(0, 8), (b) => b.toString(16).padStart(2, "0")).join("");
 }
