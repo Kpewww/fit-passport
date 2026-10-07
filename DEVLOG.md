@@ -99,6 +99,17 @@ not committed) gave a faithful run. The routes build absolute URLs from
 `siteOrigin()`, never `req.url`, for the same reason. Vercel builds the URL from the
 real host; the production checks below confirm it.
 
+**Production, after the deploy (commit 8f2a9d3, live ~70 s after the push).** curl:
+Googlebot at `fit-passport.vercel.app/help?x=1` gets 308 to
+`https://www.fitpassport.fit/help?x=1`; a browser page view at the old `/closet` gets
+307 to `/api/session/carry?next=%2Fcloset` with a minted session; the old
+`/api/status` is 200; `/`, `/closet`, `/help`, `/privacy`, `/robots.txt` and
+`/sitemap.xml` on the new address are 200, and both name the new address; the bare
+domain 308s to `www`; `/api/session/send` on the new address is 404. Chromium: old
+`/closet` lands on the new `/closet` in five hops with one account on both addresses,
+`fp_carried` set (Secure) and `fp_carry` gone; the next old link takes three hops and
+keeps the account; an older extension's call to the old API is 200.
+
 **Next — founder:** set `APP_URL=https://www.fitpassport.fit` in Vercel (reset-email
 links); submit the new sitemap and request indexing in the `fitpassport.fit` property;
 run Change of address from the old property; upload 0.9.0 to the store with the new
