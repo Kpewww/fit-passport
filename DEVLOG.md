@@ -102,6 +102,13 @@ and `crossing` runs straight. Re-derived with `--write`: cover 98.6%, spill 1.8%
 
 848 tests + 1 skip, exit 0; build clean.
 
+**Production, after the deploy (9ded1cf, live ~70 s after the push; the migration ran in
+`vercel-build`).** The founder's shape in Chromium against the real addresses: a test
+piece on the old account, chest 96 on the website's; before, the old API (as 0.7.1)
+returned no chest and the cookies named two accounts; after one old link, the old API
+returned chest 96 and the piece, and both cookies named one account. The test piece
+and the chest were then deleted. Session 92's production checks re-run: all pass.
+
 ---
 
 ## 2026-10-06 · Session 92 — Moved to www.fitpassport.fit, with everyone's account
