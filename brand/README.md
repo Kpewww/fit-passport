@@ -183,8 +183,11 @@ mark's real gaps appear. The last 150 ms crossfade into the mark itself.
   homepage intro's landing on the hero mark.
 - **The threads follow a derived centerline** (`app-web/src/lib/logoCenterline.ts`),
   made from this master by `tests/centerline-fit.mjs`: at a 22-unit stroke the four
-  pieces cover 98.5% of the mark and spill 1.9% past it. A drawing aid, never a
-  resting frame. If the master changes, re-run that script with `--write`.
+  pieces cover 98.6% of the mark and spill 1.8% past it. A drawing aid, never a
+  resting frame. If the master changes, re-run that script with `--write`. The
+  stem's slanted cut end above the lower bar is straightened by the script
+  (`straighten`), or the snap reads the slant as an edge and the thread kinks there
+  (Session 92d).
 - Variants: **hero** about 2.6 s (every arrival at the homepage), **quick** about
   0.9 s, and **intro** — the homepage's first visit of a session: full screen on ink,
   a giant mark that then flies into the hero's mark while the black fades

@@ -1363,3 +1363,16 @@ via `openSite()` → carry. Privacy page lists `fp_carry`/`fp_carried`. E2E: 14 
 **(94)** **The old address never moves `/api/*`, and a session crosses addresses only on a pass bound to the
 browser that asked.** Older extensions depend on the first; the second is what stops a link from signing
 someone into another person's account.
+
+**SESSION 92b–d (2026-10-06).** 835 → **848 tests**. **One account per browser** (`lib/accountMerge.ts`): the founder's
+store 0.7.1 used the old address's cookie, the site the new one — two accounts. The hand-over now folds them:
+`mergePlan` (claimed stays; else new address's unless empty; two claimed untouched), `foldAccount` (closet, folders,
+products, checks, outcomes, outfits, pets, saved; profile fills gaps only) + `User.mergedIntoId` (migration
+`20261006180000_user_merged_into`); `getCurrentUser()` follows it and rewrites the cookie. Old middleware sends
+`accountHint` (`&h=`) so carry re-runs whenever the two differ. **Rough guess** (`lib/roughGuess.ts`): only on a dead
+heat — same-brand same label (cap 0.45) or S–XL ladder across types (cap 0.3), never from shoes; else names the
+unplaceable piece. **Logo:** `centerline-fit.mjs` `straighten` on spineUp's start — the stem's kink at the crossing is gone.
+
+**NEW INVARIANT:**
+**(95)** **A browser ends with one account at both addresses, and a claimed account is never folded.** Folding moves an
+unclaimed account's things into the one that stays and overwrites nothing; a rough guess runs only on a dead heat.

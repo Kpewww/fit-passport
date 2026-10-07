@@ -31,6 +31,79 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-06 · Session 92b–d — One account per browser, a rough guess from a small closet, a straight stem
+
+**92b — the extension and the website were on different accounts.** The founder's
+test: a check in the extension said it could not tell the sizes apart; the founder
+filled in every measurement on the website, chest and shoulder included; the extension
+still could not tell; and the site opened from the extension did not show the account
+they expected. Cause, checked in the founder's Chrome: the extension installed is the
+**store build 0.7.1**, which calls `fit-passport.vercel.app/api/*` with the old address's
+cookie, while the website at the new address runs on its own cookie. Two accounts in
+one browser. Session 92's hand-over only *took* the old account when the new one was
+empty; once the founder had typed into the new one, it kept it, and the old address
+(and the extension on it) kept the other.
+
+Now the hand-over makes them one (`lib/accountMerge.ts`):
+- `mergePlan`: the claimed account stays over an unclaimed one; between two unclaimed,
+  the new address's stays unless it is empty and the other is not; two claimed
+  accounts are both left alone (each has a password, and may be open elsewhere).
+- `foldAccount` (one transaction): an unclaimed loser's closet, folders (same-name
+  folders joined), products, checks, outcomes, outfits, pets and comfort checks move
+  over; saved products move unless already saved; its profile fills the gaps in the
+  staying one's and overwrites nothing. It then points to the staying account:
+  `User.mergedIntoId` (migration `20261006180000_user_merged_into`, written by hand
+  as one `ADD COLUMN`, the same shape as `photoFrom`'s).
+- `getCurrentUser()` follows that pointer and rewrites the cookie, so the old
+  extension's next call lands on the same account; `/send` does the same at the old
+  address before signing a pass.
+- The old address now sends a hint of its account (`accountHint`: 16 hex of a SHA-256,
+  not the id) with every person's move, minted or not. The new address runs the
+  hand-over whenever the hint differs from its own account, not only on a first visit.
+  With no hint (0.9.0's links) it runs once per browser (`fp_carried`).
+- Community activity is not moved (an unclaimed account is never listed). The privacy
+  page's cookie paragraph says all of this, in both languages.
+
+Verified on two local hosts in Chromium, 15 new checks plus Session 92's 14, all pass.
+The founder's case reproduced first: two pieces on the old account, chest 96 and
+shoulder 45 typed on the website; before the fix the old address's API returned no
+chest; after one old link, the extension's call returns chest 96, both pieces are on
+the website, and the old cookie names the same account; the next old link is one hop.
+A claimed account at the old address with an unclaimed one carrying measurements at
+the new: the website ends on the claimed account, with the chest and the piece. Two
+claimed accounts: both untouched. A 0.9.0 browser that later gains a second account at
+the old address: one account after the next old link.
+
+**92c — a rough guess from one or two closet pieces.** The founder: with a piece or
+two in the closet and nothing else, give a rough, low-confidence guess rather than
+nothing. `lib/roughGuess.ts`, run by the engine only when the ranking is otherwise a
+dead heat, so it can never move a size a real signal chose:
+1. a same-brand piece whose size label the page offers ("T2" and "2" read as one
+   label, `labelKey`): confidence at most 0.45 (`CONFIDENCE_CAPS.roughSameLabel`);
+2. otherwise a piece on the S–XL ladder, placed on the page's ladder across garment
+   types and brands (the middle piece of several; a reported "runs tight" moves it a
+   step): at most 0.3 (`roughGuess`), below the cross-domain cap;
+3. otherwise the tie stays, and says which piece could not be placed.
+Shoes and other non-clothing pieces are never used. The reason says it is a rough
+guess and what makes it a real one. All three constants are `assumed`, with their
+reasoning in `PROVENANCE`, and the calibration table in `docs/design/scoring-system.md`
+is regenerated. Still open: a brand's own numeric sizes (Maje "2" against a page in
+S–XL) need that brand's guide: the Maje/Sandro T0–T4 ladders, already on the
+Session 88 next-steps list.
+
+**92d — the kink in the stem.** The founder saw the reveal's thread bend just above
+where the stem passes under the lower bar. The stem's cut end there is slanted; the
+centerline snap read the slant as an edge, so the thread started 5 units off the stem
+and swung back in, and the `crossing` connector followed that wrong direction.
+`brand/tests/centerline-fit.mjs` now straightens marked ends (drop the last 16 units,
+redraw them along the 12 before); `spineUp` starts on the stem's line at (244.8, 289.8)
+and `crossing` runs straight. Re-derived with `--write`: cover 98.6%, spill 1.8% (was
+98.5 / 1.9). Before/after renders of the crossing checked by eye.
+
+848 tests + 1 skip, exit 0; build clean.
+
+---
+
 ## 2026-10-06 · Session 92 — Moved to www.fitpassport.fit, with everyone's account
 
 The founder bought `fitpassport.fit` on Cloudflare and added it to the Vercel project:

@@ -10,7 +10,8 @@
 //      fill's two edges along its normal (not at crossings: a side wider than 20 units
 //      means another stroke, so the sample stays put);
 //   3. smooth, repeat, trim FREE ends by 7 units (never an end another piece joins),
-//      keep every 6th point, and write a smooth curve through them;
+//      STRAIGHTEN the ends marked so (below), keep every 6th point, and write a
+//      smooth curve through them;
 //   4. join the pieces a thread passes between with two CONNECTORS, built from the
 //      ends and their directions so the thread runs on without a kink: `notch`
 //      (through the junction, bar to inner bar) and `crossing` (the stem passing
@@ -36,7 +37,11 @@ const ROUGH = {
   innerCurl: { d: "M 290 146 L 420 146 C 452 146, 466 120, 461 102 C 455 80, 425 70, 398 77 C 380 82, 366 96, 357 112", trim: [false, true] },
   lowerLoop: { d: "M 386 273 C 368 305, 335 316, 295 318 C 240 320, 170 333, 125 362 C 95 382, 88 420, 92 445 C 97 475, 120 492, 145 490 C 175 488, 192 465, 205 438 C 220 405, 230 365, 236 333", trim: [true, false] },
   // The spine: up the stem, through the junction, round the big upper loop.
-  spineUp: { d: "M 245 290 C 252 245, 262 195, 269 150 C 285 100, 320 35, 400 14 C 470 4, 528 50, 526 110 C 524 160, 482 204, 420 208 L 316 208", trim: [false, true] },
+  // Its start is the stem's cut end above the lower bar, cut at a slant: within a
+  // stroke's width of it the snap reads the slanted cut as an edge and bent the
+  // thread there (the founder saw the kink, Session 92d). So that end is
+  // straightened: the last 16 units are dropped and redrawn along the stem.
+  spineUp: { d: "M 245 290 C 252 245, 262 195, 269 150 C 285 100, 320 35, 400 14 C 470 4, 528 50, 526 110 C 524 160, 482 204, 420 208 L 316 208", trim: [false, true], straighten: [16, 0] },
 };
 /** Connectors, as [from piece's end, to piece's start]. */
 const CONNECT = { notch: ["entryBar", "innerCurl"], crossing: ["lowerLoop", "spineUp"] };
@@ -84,12 +89,28 @@ const result = await page.evaluate(({ mark, rough, connect, stroke }) => {
     let e = 0, b = pts.length - 1; while (atEnd && b > 0 && e < by) { e += Math.hypot(pts[b][0] - pts[b - 1][0], pts[b][1] - pts[b - 1][1]); b--; }
     return pts.slice(a, b + 1);
   };
+  // Redraw the last `by` units of a run of points straight along the direction of
+  // the 12 units before them, so a misread end continues its piece without a kink.
+  const straightenEnd = (pts, by) => {
+    if (!by) return pts;
+    const d = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+    let cut = 0, b = pts.length - 1;
+    while (b > 0 && cut < by) { cut += d(pts[b], pts[b - 1]); b--; }
+    let back = 0, a = b;
+    while (a > 0 && back < 12) { back += d(pts[a], pts[a - 1]); a--; }
+    const l = d(pts[a], pts[b]) || 1, dir = [(pts[b][0] - pts[a][0]) / l, (pts[b][1] - pts[a][1]) / l];
+    const kept = pts.slice(0, b + 1), n = Math.max(1, Math.round(cut / 3));
+    for (let i = 1; i <= n; i++) kept.push([pts[b][0] + dir[0] * (cut * i) / n, pts[b][1] + dir[1] * (cut * i) / n]);
+    return kept;
+  };
+  const straighten = (pts, [atStart, atEnd] = [0, 0]) =>
+    straightenEnd(straightenEnd(pts, atEnd).reverse(), atStart).reverse();
   const fitted = {};
   const ends = {};
-  for (const [k, { d, trim: t }] of Object.entries(rough)) {
+  for (const [k, { d, trim: t, straighten: st }] of Object.entries(rough)) {
     let pts = sample(d, 3);
     for (let i = 0; i < 10; i++) pts = smooth(snap(pts, 20), 3);
-    const kept = trim(pts, 7, t);
+    const kept = straighten(trim(pts, 7, t), st);
     const thin = kept.filter((_, i) => i % 6 === 0 || i === kept.length - 1);
     fitted[k] = curve(thin);
     const dir = (a, b) => { const l = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1; return [(b[0] - a[0]) / l, (b[1] - a[1]) / l]; };

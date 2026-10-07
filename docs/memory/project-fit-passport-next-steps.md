@@ -856,3 +856,10 @@ homepage; then, in the old `fit-passport.vercel.app` property, Settings → Chan
 upload `store-build/fit-passport-extension-0.9.0-store.zip` with the URL and permission changes
 (`todo/people/05`). **Later:** detach the old address only once no one runs an extension older than 0.9.0 —
 and retire `LEGACY_ORIGIN` in the same change.
+
+## Session 92b–d (2026-10-06) — one account per browser, rough guess, straight stem, DONE
+
+**Next — founder:** open the site once from the store extension (any link in its popup) — that folds the two
+accounts in your browser into one; then re-check in the extension. Reload/re-record the reveal videos if wanted
+(`scripts/record-logo.mjs`). **Engineering:** Maje/Sandro numeric ladders (a brand "2" against S–XL still can't be
+placed); a "connected as …" line in the popup would make a wrong account visible at a glance.
