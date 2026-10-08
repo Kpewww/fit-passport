@@ -230,7 +230,7 @@ function Hero({
         </span>
         <p className="eyebrow text-paper/60 animate-rise">{t("hero.eyebrow")}</p>
         <h1 className="hero-title mx-auto mt-7 max-w-4xl font-serif text-6xl font-semibold leading-[0.95] tracking-tight animate-rise sm:text-8xl" style={{ animationDelay: "60ms" }}>
-          <Headline>{t.rich("hero.title", { accent: (c) => <span className="italic font-normal text-brand">{c}</span> })}</Headline>
+          <Headline>{t.rich("hero.title", { accent: (c) => <span className="hero-line italic font-normal text-brand">{c}</span> })}</Headline>
         </h1>
         <p className="mx-auto mt-8 max-w-lg text-base leading-relaxed text-paper/65 animate-rise sm:text-lg" style={{ animationDelay: "120ms" }}>
           {/* Three sentences became one. The headline already says what this is;

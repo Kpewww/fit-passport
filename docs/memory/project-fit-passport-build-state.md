@@ -1376,3 +1376,11 @@ unplaceable piece. **Logo:** `centerline-fit.mjs` `straighten` on spineUp's star
 **NEW INVARIANT:**
 **(95)** **A browser ends with one account at both addresses, and a claimed account is never folded.** Folding moves an
 unclaimed account's things into the one that stays and overwrites nothing; a rough guess runs only on a dead heat.
+
+**SESSION 95 (2026-10-08).** 848 → **849 tests**. Extension **0.9.1** (store 0.9.0 live). Chinese display brackets
+cut by margin (`.cjk-open`/`.cjk-close` in globals.css), not `halt` — Songti SC has none; the zh hero is
+`width: fit-content` with line 2 (`.hero-line`) justified. `/outfits` uses `PageHeader`. Brand chart + page labels:
+letters only when the chart is letters and the page offers ≥2 (`extractorLLM.ts` `chartKey`/`isLetterSize`);
+capture.js reads on-screen swatches first. `BadgeMedallion` trig rounded (`q()`) — hydration-safe.
+- Testing two hosts or live shop pages: `browser-extension/scripts/try-pages.mjs` (needs playwright resolvable —
+  symlink a node_modules temporarily) with `--save-captures` gives HTML to replay through `/api/check`.

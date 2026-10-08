@@ -64,6 +64,13 @@ flow and its safety are in `app-web/src/lib/sessionCarry.ts`.
 The new host permission means Chrome asks people who update from the store to
 approve it before 0.9.0 runs.
 
+## 0.9.1
+
+Size buttons on screen are read first; hidden ones only when none are on screen (a
+picker still closed in a drawer). Patagonia's product page also carries its review
+filters, hidden, with every size the brand sells, and all 49 had reached the save form
+and the check (Session 95, a live run). No permission change.
+
 ## Install (development)
 
 1. `chrome://extensions` → enable **Developer mode**.

@@ -31,6 +31,83 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-08 · Session 95 — The headline's brackets, a roomier /outfits, a real-use pass, 3D try-on explored
+
+The founder: 0.9.0 is live and `APP_URL` is set. Asked for the Chinese hero to line up,
+/outfits to breathe, the product to be tested in real use, and 3D try-on explored and
+put on the list.
+
+**「穿」越时空 / 合身随行.** Measured on this Mac: Songti SC, the serif Chrome draws
+Chinese in, has no `halt` alternates, so each bracket kept its full em (128 px at 128
+px). The first line was six ems wide, its ink started half an em in, and 」 left a hole
+before 越. Measured ink in the em box: 「 0.62–0.86, 」 0.13–0.37. Now:
+- the brackets' empty halves are cut by margin (`.cjk-open` −0.5em, `.cjk-close`
+  −0.4em, which leaves 」 a little air before 越), and `text-spacing-trim: space-all`
+  stops a browser cutting them again;
+- the hero is one block as wide as its longer line, and 合身随行 is justified to it.
+  Both lines span 400–1040 px at 1440 wide, centred at 720. At 390 wide: 19–371, no
+  overflow.
+- The other option, natural spacing with both lines centred, was rendered too and
+  is one CSS line away.
+
+**/outfits.** The header was hand-made: the lede sat 4 px under the title and ran a
+full row wide. It now uses the house `PageHeader`, as the closet does, and the
+composer gets room:
+- fields `space-y-5`; scene and note in two columns from `sm` up, one on a phone;
+- a piece's picker on its own row on a phone;
+- the colour box no longer truncates its hint;
+- "单品" set like the other labels.
+The footer said 穿搭 where the nav says 搭配; now both say 搭配.
+
+**Tested in real use** (local server, headless Chromium unless noted):
+- Every page in both languages at 390 and 1440: no failed request, no page error, no
+  horizontal overflow. One React warning: `BadgeMedallion`'s trig coordinates differed
+  in the last digit between Node and the browser (a hydration mismatch on / and /help).
+  Rounded to two decimals; the warning is gone.
+- A new user: the intro plays and a click skips it. The passport saves itself (chest,
+  shoulder, height, weight read back from the API) and shows the card after a reload.
+  The closet's four-step add works. A delete confirms in place, leaves with "Deleted 1.
+  Undo", and undo restores it. The server delete waits out the undo window and is
+  flushed with `keepalive` on `pagehide`.
+- **The extension on live pages** (`try-pages.mjs`, headed, against the local API):
+  - Uniqlo, Nike and Patagonia answer (M, 60–65%), and Save works (409 on a repeat).
+  - Arc'teryx, Everlane and Gap need their size guide opened (the expected refusal).
+  - H&M and REI block automated browsers.
+- **Bug found and fixed: Patagonia ranked 50 sizes.**
+  - The capture read every `data-value` on the page, including the hidden review
+    filters (every size Patagonia sells, plus star ratings).
+  - The server then read "44" and "42" as men's EU jackets and gave them the brand
+    chart's S and XS numbers.
+  - Server (`extractorLLM.ts`, helps every installed version): beside a chart printed in
+    letters, a page offering two or more letter sizes keeps only those. A number never
+    takes a letter row's numbers (`chartKey`). Test added.
+  - Extension **0.9.1** (`capture.js`): on-screen swatches first, all of them only when
+    none are on screen.
+  - Re-run live: Patagonia offers exactly XS–3XL, still M; Uniqlo and Nike unchanged.
+- **A one-piece closet on real pages** (captures saved by the extension, then
+  `/api/check` as fresh users):
+  - one Uniqlo hoodie M gives M at 55% on both Patagonia and Uniqlo ("Matches your
+    Uniqlo M"), in English and Chinese;
+  - one Patagonia jacket L gives L;
+  - an empty closet stays "can't tell yet".
+- `npm run eval`: this machine has no captures, so only B ran; guardrails 6/6. The run's
+  output was not kept.
+
+**3D try-on**: explored, not built — `todo/engineering/14-3d-try-on.md`, sourced:
+- Recommended first: a fit map on a body built from the passport, coloured by the
+  engine's own ease, with no cloth simulation.
+- Then draped garments from GarmentCode (MIT) and NVIDIA Warp (Apache 2.0 per its
+  docs), or photoreal look-only images (FASHN, about US$0.075 each).
+- Ruled out:
+  - SMPL-X (non-commercial);
+  - the open VTON models (CC BY-NC-SA);
+  - body-scan vendors (they would hold users' bodies).
+- Decisions are the founder's.
+
+849 tests + 1 skip, exit 0; build clean.
+
+---
+
 ## 2026-10-08 · Session 94c — Jev on real shop titles
 
 - Took the public Shopify catalogues (`/products.json`) of 11 apparel shops: 2394 distinct titles. **The word rules miss 542 of them (23%)**, the share Jev is actually asked about. Most misses are model names: Allbirds shoes ("Men's Tree Dasher 2"), Chubbies trunks ("The Tahoes 8\""), Summersalt swimsuits ("The Sidestroke"), bags and gift items.

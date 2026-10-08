@@ -70,11 +70,21 @@ body {
 :lang(zh) h2.font-serif {
   line-height: 1.2;
 }
-/* 「」 in a display headline: the font's half-width alternates, so a bracket does
-   not leave an empty half em beside it (Headline.tsx). No effect where the font
-   has no `halt` feature. */
-.cjk-halt {
-  font-feature-settings: "halt" 1;
+/* 「」 in a display headline (Headline.tsx). A bracket's ink sits in one half of
+   its em box — 「 in the right half, 」 in the left — so the empty half is cut with
+   a negative margin. Not with the font's `halt` alternates, as before: Songti SC,
+   the serif a Mac draws Chinese in, has none, and on the homepage each bracket kept
+   its full em, 128 px at 128 px (measured, Session 95), pushing 「穿」越时空 off
+   centre with a hole after 」. text-spacing-trim is set to keep a browser from
+   trimming as well, which would cut the same half twice. */
+.cjk-open {
+  margin-left: -0.5em;
+}
+.cjk-close {
+  margin-right: -0.4em;
+}
+:lang(zh) .font-serif {
+  text-spacing-trim: space-all;
 }
 :lang(zh) .eyebrow {
   letter-spacing: 0.12em;
@@ -86,10 +96,22 @@ body {
 }
 /* The homepage hero is two lines in Chinese on every screen (copy spec 01.9 §8):
    「穿」越时空 / 合身随行, the line-end marks not drawn (Headline.tsx). The first line
-   is six glyph widths — less where the font has half-width brackets — so on a phone
-   the size follows the width; from sm up it matches the closing headline. */
+   is five glyph widths (the brackets are half each), so on a phone the size follows
+   the width; from sm up it matches the closing headline.
+   The two lines are one block of one width (Session 95, the founder: the lines'
+   lengths and spacing did not match): the headline is as wide as its longer line,
+   and the shorter line is spread to that width, so both start and end together. */
 :lang(zh) .hero-title {
-  font-size: min(4.5rem, calc((100vw - 2rem) / 6.2));
+  font-size: min(4.5rem, calc((100vw - 2rem) / 5.2));
+  width: fit-content;
+}
+:lang(zh) .hero-title br {
+  display: none;
+}
+:lang(zh) .hero-title .hero-line {
+  display: block;
+  text-align: justify;
+  text-align-last: justify;
 }
 @media (min-width: 640px) {
   :lang(zh) .hero-title {

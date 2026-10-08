@@ -6,7 +6,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Close, Refresh, Sparkle } from "@/components/Icon";
 import Link from "next/link";
-import { Button, Card, EmptyState, Field, inputClass } from "@/components/ui";
+import { Button, Card, EmptyState, Field, PageHeader, inputClass } from "@/components/ui";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { OutfitMannequin, type OutfitLayer } from "@/components/OutfitMannequin";
 import { OutfitCard, type OutfitView } from "@/components/OutfitCard";
@@ -15,7 +15,6 @@ import { garmentLabel } from "@/lib/garments";
 import { GarmentIcon } from "@/components/GarmentIcon";
 import { useT } from "@/i18n/client";
 import { useGarmentText } from "@/i18n/garment";
-import { Headline } from "@/components/Headline";
 
 type Item = { brand: string; category: string; color: string; size: string; onlineAvailable: boolean };
 type Outfit = OutfitView;
@@ -130,40 +129,42 @@ export default function OutfitsPage() {
   return (
     <main className="flex-1">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 py-10">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-serif text-h1 text-ink"><Headline>{t("title")}</Headline></h1>
-            <p className="mt-1 text-ink-soft">{t("lede")}</p>
-          </div>
-          <Link href="/community" className="whitespace-nowrap text-sm text-ink-faint hover:text-ink">{t("feed")} <ArrowRight size={14} className="-mt-px inline" /></Link>
-        </div>
+        {/* The house header (ui.tsx), as on the closet: the lede kept to a readable
+            measure and spaced off the title, the feed link on the lede's last line.
+            A hand-made header here had the lede 4 px under the title and a full row
+            wide, and the founder found it cramped in both languages (Session 95). */}
+        <PageHeader
+          title={t("title")}
+          lede={t("lede")}
+          action={<Link href="/community" className="whitespace-nowrap text-sm text-ink-faint hover:text-ink">{t("feed")} <ArrowRight size={14} className="-mt-px inline" /></Link>}
+        />
 
         {/* Composer */}
-        <Card className="mt-6 grid gap-6 sm:grid-cols-[1fr,auto]">
-          <div className="space-y-3">
+        <Card className="mt-10 grid gap-8 sm:grid-cols-[1fr,auto]">
+          <div className="min-w-0 space-y-5">
             <Field label={t("titleLabel")}><input className={inputClass} value={title} placeholder={t("titlePlaceholder")} onChange={(e) => setTitle(e.target.value)} /></Field>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid gap-5 sm:grid-cols-2 sm:gap-x-6">
               <Field label={t("occasion")} hint={t("optional")}><input className={inputClass} value={occasion} placeholder={t("occasionPlaceholder")} onChange={(e) => setOccasion(e.target.value)} /></Field>
               <Field label={t("note")} hint={t("optional")}><input className={inputClass} value={description} placeholder={t("notePlaceholder")} onChange={(e) => setDescription(e.target.value)} /></Field>
             </div>
 
-            <div className="space-y-2">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">{t("pieces")}</p>
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-ink">{t("pieces")}</p>
               {items.map((it, i) => (
-                <div key={i} className="grid grid-cols-[1fr,1fr,auto] items-center gap-2 rounded-lg border border-line p-2">
-                  <div className="w-full"><CategoryPicker value={it.category} onChange={(v) => setItems(items.map((x, j) => j === i ? { ...x, category: v } : x))} /></div>
-                  <input className={inputClass} placeholder={t("colorPlaceholder")} value={it.color}
+                <div key={i} className="grid grid-cols-[1fr,auto] items-center gap-x-3 gap-y-2.5 rounded-xl border border-line p-3 sm:grid-cols-[1fr,1fr,auto]">
+                  <div className="col-span-2 w-full min-w-0 sm:col-span-1"><CategoryPicker value={it.category} onChange={(v) => setItems(items.map((x, j) => j === i ? { ...x, category: v } : x))} /></div>
+                  <input className={inputClass + " min-w-0"} placeholder={t("colorPlaceholder")} value={it.color}
                     onChange={(e) => setItems(items.map((x, j) => j === i ? { ...x, color: e.target.value } : x))} />
                   <button onClick={() => setItems(items.filter((_, j) => j !== i))}
                     className="px-1 text-ink-faint hover:text-bad" aria-label={t("removePiece")} disabled={items.length === 1}><Close size={16} /></button>
-                  <label className="col-span-3 flex items-center gap-1.5 text-[11px] text-ink-soft">
+                  <label className="col-span-2 flex items-center gap-2 text-xs text-ink-soft sm:col-span-3">
                     <input type="checkbox" checked={!it.onlineAvailable} className="accent-brand"
                       onChange={(e) => setItems(items.map((x, j) => j === i ? { ...x, onlineAvailable: !e.target.checked } : x))} />
                     {t("inStoreOnly")}
                   </label>
                 </div>
               ))}
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-x-5 gap-y-2 pt-1">
                 <button onClick={() => setItems([...items, { ...BLANK_ITEM }])} className="text-sm text-brand hover:underline">{t("addBlank")}</button>
                 <button onClick={() => setPickerOpen((v) => !v)} className="text-sm text-brand hover:underline">
                   {pickerOpen ? t("closeCloset") : t("addFromCloset")}

@@ -39,7 +39,7 @@
 (function (root) {
   "use strict";
 
-  var VERSION = "0.9.0";
+  var VERSION = "0.9.1";
 
   // The server refuses supplied markup over 1,000,000 characters. A capture this
   // big means something went wrong, and the popup says so instead of sending it.
@@ -869,7 +869,16 @@
 
     // Swatch buttons carrying a size in data-size / data-value / data-option-value.
     // Only short values; the server keeps only those shaped like a size label.
-    var swatches = doc.querySelectorAll("[data-size],[data-value],[data-option-value]");
+    // The ones on screen when there are any (0.9.1): Patagonia's page also holds its
+    // review filters, hidden, with every size the brand sells — kids', women's, waist,
+    // shoes, 49 in all — and the jacket's own seven were among them (Session 95, a
+    // live run). A size picker still closed in a drawer shows none, and then all are
+    // read, as before.
+    var allSwatches = doc.querySelectorAll("[data-size],[data-value],[data-option-value]");
+    var swatches = Array.prototype.filter.call(allSwatches, function (el) {
+      return el.getClientRects && el.getClientRects().length > 0;
+    });
+    if (!swatches.length) swatches = allSwatches;
     var values = [];
     var seenValue = Object.create(null);
     for (var w = 0; w < swatches.length && values.length < MAX_SWATCH_VALUES; w++) {

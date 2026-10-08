@@ -331,6 +331,22 @@ describe("extractSmart — provenance of page sizes", () => {
     expect(out.source.extractedBy).toBeUndefined();
   });
 
+  it("keeps the page's letter sizes, and only those, beside a letter brand chart (Session 95)", async () => {
+    // A live run on Patagonia's men's Better Sweater: the page's swatches came with
+    // kids', women's, waist and shoe sizes from elsewhere on the page, 49 in all, and
+    // "44" and "42" took the chart's S and XS numbers as men's EU jackets.
+    UNREACHABLE();
+    const junk = ["0", "1", "2", "3", "4", "5", "6", "6.5", "28", "30", "32", "34", "36", "38", "40", "42", "44", "000"];
+    const letters = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "3XL"];
+    const html = `<html><body><h1>Men's Better Sweater Fleece Jacket</h1>
+      ${[...letters, ...junk].map((v) => `<button data-value="${v}"></button>`).join("")}</body></html>`;
+    const out = await extractSmart("https://www.patagonia.com/product/mens-better-sweater-fleece-jacket/25528.html", { html });
+    expect(out.source.sizesFrom).toBe("brand-chart");
+    expect(out.sizes.map((s) => s.label)).toEqual(letters);
+    const s = out.sizes.find((z) => z.label === "S");
+    expect(s?.bodyChestMinCm).toBeGreaterThan(0);
+  });
+
   it("drops the brand-chart credit when the LLM reads the page instead (invariant (56))", async () => {
     // Before Session 75 only the table and 号型 branches cleared it, so a
     // Patagonia page read by the LLM still claimed "body measurements, from the

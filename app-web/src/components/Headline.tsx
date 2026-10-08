@@ -9,9 +9,9 @@
 // - ，。、；：… at the end of a line are not drawn;
 // - one inside a line becomes a gap, and the clauses either side wrap as wholes;
 // - ？ and ！ stay — they carry meaning (选多大 才合身？); so do 「」, the device of
-//   「穿」越时空, set with the font's half-width alternates (`halt`) so they do
-//   not open a hole either side. A first version drew 「穿」 as a blue 穿 without
-//   brackets; the founder found it worse, and the brackets came back.
+//   「穿」越时空, each with its empty half em cut (globals.css .cjk-open/.cjk-close)
+//   so they do not open a hole either side. A first version drew 「穿」 as a blue 穿
+//   without brackets; the founder found it worse, and the brackets came back.
 // What is dropped stays in the DOM, visually hidden, for screen readers and copy.
 // English is untouched.
 
@@ -84,6 +84,6 @@ function bareText(text: string, atLineEnd: boolean, key: string): ReactNode[] {
 
 function withBrackets(text: string, key: string): ReactNode[] {
   return text.split(/([「」])/).filter(Boolean).map((part, i) =>
-    part === "「" || part === "」" ? <span key={`${key}.b${i}`} className="cjk-halt">{part}</span> : part,
+    part === "「" || part === "」" ? <span key={`${key}.b${i}`} className={part === "「" ? "cjk-open" : "cjk-close"}>{part}</span> : part,
   );
 }

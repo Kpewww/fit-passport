@@ -126,3 +126,11 @@ What the original plan said:
 - The new host permission disables the installed extension until each user accepts
   it (Chrome's own rule, sourced in that file). Users who accept keep their account:
   the first page the popup opens fetches it from the old address.
+
+## Status (2026-10-08)
+
+- **0.9.0 is live** (the founder). Next store update: **0.9.1** — upload
+  `app-web/store-build/fit-passport-extension-0.9.1-store.zip`. A fix only: no new
+  permission, the listing and Privacy tab stay as they are. It reads on-screen size
+  buttons first (Patagonia's hidden review filters had put 49 sizes in the save form).
+

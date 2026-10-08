@@ -55,7 +55,7 @@ export const zh: Messages = {
       extension: "浏览器插件",
       closet: "我的衣橱",
       passport: "合身护照",
-      outfits: "穿搭",
+      outfits: "搭配",
       directory: "社区名录",
       badges: "徽章",
       help: "帮助与指南",

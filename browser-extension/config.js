@@ -7,7 +7,7 @@
 // holds host permission for is treated as same-site. The first entry is the
 // default.
 globalThis.FP_CONFIG = {
-  version: "0.9.0",
+  version: "0.9.1",
   origins: [
     { label: "www.fitpassport.fit", url: "https://www.fitpassport.fit" },
     { label: "localhost:3000 (development)", url: "http://localhost:3000" },

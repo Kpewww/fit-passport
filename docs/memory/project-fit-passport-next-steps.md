@@ -874,3 +874,9 @@ a chart page no longer refuses on Jev's "not clothing" — it asks the garment
 **Next — founder:** 0.9.0 review result; adidas/H&M retest; read the phone share in Vercel Analytics
 before planning the app. **Engineering:** Jev's confident "not clothing" on URL-only pages
 (no chart) still refuses. Measured on 138 real titles (94c): 1 real garment at 0.71, synthetic up to 0.99 — founder to decide whether that branch should ask instead.
+
+## Session 95 (2026-10-08) — hero alignment, /outfits spacing, real-use pass, 3D try-on explored, DONE
+
+**Next — founder:** upload `store-build/fit-passport-extension-0.9.1-store.zip` (fix only, no permission change);
+choose a 3D try-on path and budget (`todo/engineering/14-3d-try-on.md`); say if the hero should keep the justified
+second line or use natural spacing. **Engineering:** 3D fit map (path A) once chosen; /closet JS budget (todo/eng/13).

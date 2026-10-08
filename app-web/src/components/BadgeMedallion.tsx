@@ -44,6 +44,11 @@ type Outline = { start: Pt; segs: Seg[] };
  * the SAME outline. Defining it once is the point — a badge that's a shield in
  * SVG and a plain disc in 3D would look like two different awards.
  */
+/** Trig to two decimals. Node and the browser can differ in a sine's last digit, and
+ *  an SVG attribute that differs between the server's HTML and the client's render is
+ *  a hydration mismatch (seen on / and /help, Session 95). */
+const q = (v: number) => Math.round(v * 100) / 100;
+
 function outline(shape: BadgeShape, c: number, r: number): Outline | null {
   const at = (ang: number, rad: number): Pt => [c + Math.cos(ang) * rad, c + Math.sin(ang) * rad];
 
@@ -245,8 +250,8 @@ export function BadgeMedallion({
     const r2 = rOuter + notchLen;
     return (
       <line key={i}
-        x1={c + Math.cos(a) * r1} y1={c + Math.sin(a) * r1}
-        x2={c + Math.cos(a) * r2} y2={c + Math.sin(a) * r2}
+        x1={q(c + Math.cos(a) * r1)} y1={q(c + Math.sin(a) * r1)}
+        x2={q(c + Math.cos(a) * r2)} y2={q(c + Math.sin(a) * r2)}
         stroke={p.rim} strokeWidth={size * 0.018} strokeLinecap="round" opacity={0.5} />
     );
   });
@@ -258,8 +263,8 @@ export function BadgeMedallion({
     const r2 = rOuter - size * 0.07;
     return (
       <line key={`g${i}`}
-        x1={c + Math.cos(a) * r1} y1={c + Math.sin(a) * r1}
-        x2={c + Math.cos(a) * r2} y2={c + Math.sin(a) * r2}
+        x1={q(c + Math.cos(a) * r1)} y1={q(c + Math.sin(a) * r1)}
+        x2={q(c + Math.cos(a) * r2)} y2={q(c + Math.sin(a) * r2)}
         stroke={p.light} strokeOpacity={0.18} strokeWidth={size * 0.006} />
     );
   }) : null;
@@ -270,7 +275,7 @@ export function BadgeMedallion({
   const points = finish === 4 ? Array.from({ length: 8 }, (_, i) => {
     const a = (i / 8) * Math.PI * 2 - Math.PI / 2;
     const rr = rOuter + size * 0.03;
-    return <circle key={`p${i}`} cx={c + Math.cos(a) * rr} cy={c + Math.sin(a) * rr} r={size * 0.012} fill={p.mid} opacity={0.7} />;
+    return <circle key={`p${i}`} cx={q(c + Math.cos(a) * rr)} cy={q(c + Math.sin(a) * rr)} r={size * 0.012} fill={p.mid} opacity={0.7} />;
   }) : null;
 
   return (
@@ -483,9 +488,9 @@ function Laurel({ c, r, size, color, light }: { c: number; r: number; size: numb
       const t = 0.12 + i * 0.11; // fraction along the arc from bottom upward
       const a = Math.PI / 2 + side * t * Math.PI; // start at bottom, sweep up
       const rr = r + size * 0.02;
-      const x = c + Math.cos(a) * rr;
-      const y = c + Math.sin(a) * rr;
-      const rot = (a * 180) / Math.PI + (side === 1 ? -90 : 90);
+      const x = q(c + Math.cos(a) * rr);
+      const y = q(c + Math.sin(a) * rr);
+      const rot = q((a * 180) / Math.PI + (side === 1 ? -90 : 90));
       const w = size * 0.05 * (1 - i * 0.09);
       const h = size * 0.11 * (1 - i * 0.06);
       return (

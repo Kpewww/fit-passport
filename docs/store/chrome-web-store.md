@@ -1,21 +1,12 @@
 # Chrome Web Store listing — what to paste where
 
 **Live since 2026-10-05:** https://chromewebstore.google.com/detail/fit-passport/ciecejomnniicliemefagfegkmgfkgfe
-— **0.7.1** is what the store installs as of 2026-10-06 (seen in an installed copy).
-Next update: **0.9.0**, which supersedes 0.7.2 and 0.8.0 — upload it alone; it carries
-0.7.2's welcome page on first install and 0.8.0's "I own this, add to closet" (a
-screenshot of the tab, cropped to the product picture) and links into the site.
-
-**Then 0.9.0 (supersedes 0.8.0, Session 92): the site moved to https://www.fitpassport.fit.**
-0.9.0 changes the host permission from `https://fit-passport.vercel.app/*` to
-`https://www.fitpassport.fit/*` and opens every page through the site's session
-hand-over. What to change in the dashboard with that upload: the homepage, support and
-privacy-policy URLs below (already the new address), and the host-permission line in
-the Privacy tab. A new host permission means Chrome disables the installed extension
-until each user accepts it: "the extension will be disabled until the user accepts the
-new permission" ([permission warnings](https://developer.chrome.com/docs/extensions/develop/concepts/permission-warnings)).
-Until 0.9.0 is live, older versions keep working: the old address still answers their
-API calls.
+— **0.9.0** is live as of 2026-10-08 (the founder): the new address, www.fitpassport.fit.
+Next update: **0.9.1**, a fix only — no new permission, nothing to change in the
+Privacy tab. On a page that also holds hidden size lists (Patagonia's review filters
+list every size the brand sells), it now reads the size buttons on screen first, so
+the save form and the check see the garment's own sizes. Upload
+`app-web/store-build/fit-passport-extension-0.9.1-store.zip`.
 
 Everything the Developer Dashboard asks for, ready to paste. The upload is
 `app-web/store-build/fit-passport-extension-<version>-store.zip`, built with

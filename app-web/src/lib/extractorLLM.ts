@@ -889,12 +889,20 @@ export async function extractSmart(
     // provenance still claimed "brand-chart".
     const fromChart =
       out.source.sizesFrom === "brand-chart"
-        ? new Map(
-            out.sizes.map((s) => [normalizeToAlpha(s.label) ?? s.label.toUpperCase(), s]),
-          )
+        ? new Map(out.sizes.map((s) => [chartKey(s.label), s]))
         : null;
 
-    out.sizes = labels.map((label) => {
+    // A chart on letters (XS–3XL) meeting a page that offers letters as well as
+    // numbers: the numbers are not this garment's sizes. A live run of the extension
+    // on Patagonia's men's Better Sweater (Session 95) sent 49 labels, the jacket's
+    // XXS–3XL plus kids', women's, waist and shoe sizes from elsewhere on the page.
+    // The ranking listed all 49, and "44" and "42", read as men's EU jackets, took the
+    // chart's S and XS numbers. Two or more letter sizes on the page settle it.
+    const chartOnLetters = fromChart != null && out.sizes.length > 0 && out.sizes.every((s) => isLetterSize(s.label));
+    const letterLabels = labels.filter(isLetterSize);
+    const offered = chartOnLetters && letterLabels.length >= 2 ? letterLabels : labels;
+
+    out.sizes = offered.map((label) => {
       const code = isTop ? parseChineseSizeCode(label) : null;
       if (code) {
         // A 号型 label carries the intended BODY bust — feed it to the range
@@ -905,7 +913,7 @@ export async function extractSmart(
           bodyChestMaxCm: code.girthCm + 3,
         };
       }
-      const matched = fromChart?.get(normalizeToAlpha(label) ?? label.toUpperCase());
+      const matched = fromChart?.get(chartKey(label));
       if (matched) return { ...matched, label }; // the page's label, the chart's numbers
       return { label };
     });
@@ -939,4 +947,20 @@ export async function extractSmart(
     out.source.sizesFrom = "estimated";
   }
   return out;
+}
+
+/** A size printed as letters ("M", "XXS", "3XL", "M/L"), not a number that a table
+ *  maps to letters ("44" is a men's EU jacket S only on one reading). */
+function isLetterSize(label: string): boolean {
+  const s = label.trim().toUpperCase();
+  if (!/^[A-Z0-9/]+$/.test(s) || !/[A-Z]/.test(s)) return false;
+  // 4XL and up have no rung on the ladder (sizing.ts) but are letters all the same.
+  return normalizeToAlpha(s) != null || /^[4-9]X?L$/.test(s);
+}
+
+/** How a page label finds its brand-chart row: letters by their ladder rung, anything
+ *  else only by the same text — never a number read as letters. */
+function chartKey(label: string): string {
+  const s = label.trim().toUpperCase();
+  return (isLetterSize(s) && normalizeToAlpha(s)) || s;
 }

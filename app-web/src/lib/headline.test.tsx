@@ -30,11 +30,11 @@ describe("the Chinese form of a display headline", () => {
     expect(html).toContain('<span class="inline-block">选多大</span>');
   });
 
-  it("keeps 「穿」 in its brackets, set half-width", () => {
+  it("keeps 「穿」 in its brackets, each with its empty half cut", () => {
     // A first version drew a blue 穿 without brackets; the founder found it worse.
     const node = bareHeadline(["「穿」越时空，", <br key="b" />, "合身随行。"]);
     expect(drawn(node)).toBe("「穿」越时空/合身随行");
-    expect(renderToStaticMarkup(<>{node}</>)).toContain('<span class="cjk-halt">「</span>穿<span class="cjk-halt">」</span>');
+    expect(renderToStaticMarkup(<>{node}</>)).toContain('<span class="cjk-open">「</span>穿<span class="cjk-close">」</span>');
   });
 
   it("puts a gap after a clause that ends just before an element on the same line", () => {
