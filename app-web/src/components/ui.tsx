@@ -36,8 +36,11 @@ type ButtonProps = ButtonLookProps & {
   onClick?: () => void;
 };
 
+// A button's label never wraps, and a button never shrinks below it: beside a long
+// line of text in a flex row, the text gives way, not the button. "记录穿着感受" broke
+// over two lines next to a long product name on the homepage (Session 96).
 const btnBase =
-  "group/btn inline-flex items-center justify-center gap-2 rounded-full font-medium transition-[background-color,border-color,color,transform] duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 focus-visible:ring-offset-paper";
+  "group/btn inline-flex flex-shrink-0 items-center justify-center gap-2 whitespace-nowrap rounded-full font-medium transition-[background-color,border-color,color,transform] duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-45 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 focus-visible:ring-offset-2 focus-visible:ring-offset-paper";
 const btnVariants: Record<Variant, string> = {
   primary: "bg-ink text-paper hover:bg-black active:scale-[0.98]",
   secondary: "border border-line bg-white text-ink hover:border-ink/40",

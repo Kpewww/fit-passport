@@ -31,6 +31,40 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-08 · Session 96 — Buttons that do not break, a studio for outfits, a bug sweep
+
+The founder: the homepage's "记录穿着感受" button broke over two lines beside a long
+product name, and the /outfits composer read as scattered.
+
+**Buttons.** The card's text block could not shrink, so the flex row squeezed the
+button. Fixed at the root in `ui.tsx`: every `Button`/`LinkButton` is
+`whitespace-nowrap flex-shrink-0`, and the card's text is `min-w-0`, so the product
+name wraps and the button stays one line (zh 1440, zh 390, en 1024 checked).
+
+**/outfits as a studio.** Two panes:
+- A stage: the mannequin at 220 px, a Stylized | Photoreal switch above it, a caption
+  below.
+- Two numbered steps: ① the pieces, ② a name.
+  - The pieces are one list with hairlines, each row a garment icon, the type, and a
+    colour box with a live colour dot.
+  - The name step uses "· optional" beside the label, not across the row.
+- A footer bar saying what posting does, beside the post button.
+- The page is `max-w-5xl`, and my looks show three across on large screens.
+- New copy keys in both languages (`detailsTitle`, `postHint`, `stylized`,
+  `photorealShort`, `pieceCount.one/other`).
+- Walked through in a browser: two pieces, the colour dot turns navy, post, the card
+  appears, delete removes it, no errors. Its delete still uses the browser's
+  `confirm()`, unlike the closet's in-place confirm — left for a later pass.
+
+**Sweep.** Every page, both languages, 390 and 1440:
+- no overflow, no failed request, no page error;
+- no pill button outside its container or the screen. The one flag was the menu
+  button's deliberate −8 px margin, still inside the screen.
+
+849 tests + 1 skip, exit 0; build clean.
+
+---
+
 ## 2026-10-08 · Session 95 — The headline's brackets, a roomier /outfits, a real-use pass, 3D try-on explored
 
 The founder: 0.9.0 is live and `APP_URL` is set. Asked for the Chinese hero to line up,

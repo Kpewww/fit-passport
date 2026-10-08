@@ -663,8 +663,8 @@ function ReturningUserDashboard({ status }: { status: Status }) {
       </Card>
 
       {status.lastRecommendation && (
-        <Card className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
-          <div>
+        <Card className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+          <div className="min-w-0">
             <p className="eyebrow text-ink-faint">{t("dashboard.lastRecommendation")}</p>
             <p className="mt-1 text-ink">
               {/* productLabel: extractors usually derive the product name from the
