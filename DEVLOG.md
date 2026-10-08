@@ -31,6 +31,21 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-08 · Session 94 — A sweep after the move and the 0.9.0 submission
+
+Checked against production (www.fitpassport.fit):
+- 16 pages and files answer 200, the 0.9.0 backup zip among them; the homepage links to the store listing.
+- The old address and the bare domain redirect with 308. The old API still answers (401 without a session), so installed versions before 0.9.0 keep working.
+- An extension request without a session gets 401 on both addresses.
+- The session hand-over redirects to the old address to fetch the account.
+- The sitemap lists only the new address; robots.txt keeps `/api`, `/admin` and `/account` out.
+- `mobile-audit` on production: 26 of 26 pages without horizontal scroll.
+- `fit-passport.vercel.app` is left in the source only where it is meant to be: the legacy origin, the move notice and comments.
+
+Fixed: `closetPhotoPrivacy.test.ts` compared paths with `/` and failed on Windows (``). It now normalises them. 848 tests passed + 1 skipped; typecheck clean.
+
+---
+
 ## 2026-10-06 · Session 92e — Store guide brought up to date
 
 The founder asked for one current walkthrough of the store update. `docs/store/chrome-web-store.md`:

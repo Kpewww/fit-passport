@@ -9,7 +9,9 @@
 
 import { describe, expect, it } from "vitest";
 import { readFileSync, readdirSync, statSync } from "node:fs";
-import { dirname, join, relative } from "node:path";
+import { dirname, join, relative as relativeNative } from "node:path";
+// POSIX separators, so the lists below match on Windows too (they failed there with "\").
+const relative = (from: string, to: string) => relativeNative(from, to).split("\\").join("/");
 import { fileURLToPath } from "node:url";
 
 const SRC = join(dirname(fileURLToPath(import.meta.url)), "..");
