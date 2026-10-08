@@ -1,8 +1,22 @@
 # 3D try-on
 
 **Asked by the founder, 2026-10-08 (Session 95):** add 3D try-on to the to-do list, and
-explore how it could be built first. This file is that exploration. Nothing is built.
-Choosing a path is a founder decision (end of file).
+explore how it could be built first. This file is that exploration.
+
+**Correction and status (Session 97).** This file first said "Nothing is built"; that was
+wrong. A measured dress form and a garment shell had existed since Sessions 66–67
+(`lib/bodyMesh.ts`, `components/BodyMesh3D.tsx`, `docs/design/3d-body-and-tryon.md`), behind a
+small link on /check that showed only for garment charts. The founder chose **path A**:
+- **Done (Session 97):** the fit map on /check (`components/FitMap3D.tsx`,
+  `lib/fitMapColours.ts`, `lib/dressForm3d.ts`). The body is coloured per part by
+  `SizeScore.zones`. It appears for body charts too, loads on scroll, and has a size
+  switcher and printed centimetres. Proportions now come from ANSUR II.
+- **In progress, Track 2:** the realistic Anny body behind the same `BodyGeometryData`
+  interface:
+  - an offline bake;
+  - a browser fit to the wearer's girths;
+  - a lab page for the founder's review;
+  - a ship gate. See the plan in DEVLOG Session 97.
 
 ## What exists today
 

@@ -257,3 +257,20 @@ and both the 3D work and the highest-value engine work want the same change.
 **Step 4 — photo → prior.** Only if interviews ask for it; §2 and §6 stand.
 
 **Step 5 — real garment geometry.** Blocked on data that does not exist publicly.
+
+**Session 97 (2026-10-08) — step 2 done as a fit map, and a realistic body begun.**
+The ease shell became a **fit map**: the founder chose it over draped garments and photoreal
+images (`todo/engineering/14-3d-try-on.md`). The body is coloured per part by the engine's own
+`SizeScore.zones` (`lib/fitMapColours.ts`).
+- **Colours:** warm for tight, as CLO and Browzwear do; cobalt for room; light for a part
+  that fits; the form's grey where nothing was measured.
+- **The shell** takes the chart's waist and hip girths when it has them.
+- **On /check:** the card shows for body charts too (most US retailers had no 3D before).
+  It loads on scroll and prints every part's centimetres beside the colour.
+- **Proportions** moved from artist's conventions to ANSUR II (2012) ratios of means, by
+  sex: landmark heights and depth/breadth per level.
+- **The renderer takes any body** as `BodyGeometryData`. The realistic Anny body (Apache 2.0)
+  is being built against it:
+  - a coarse 1,229-vertex topology with a smoothed mannequin head;
+  - an offline bake, and a fit to the wearer's girths in the browser.
+

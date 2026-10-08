@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, lazy, useCallback, useEffect, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { Alert, ArrowRight, ArrowUpRight, BrowserIcon, CaretDown, Check, Globe, Info, LinkIcon, Robot, Ruler, Scales, Warning } from "@/components/Icon";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -19,7 +19,7 @@ import type { SizeDomain } from "@/lib/sizeSystems";
 import { FitFigure } from "@/components/FitFigure";
 import { SafeBoundary } from "@/components/SafeBoundary";
 import { CONFIDENCE_WEIGHTS } from "@/lib/confidenceWeights";
-import { chestEaseCm } from "@/lib/bodyMesh";
+import { VERDICT_COLOUR, FORM_COLOUR, type Zone } from "@/lib/fitMapColours";
 import { useT } from "@/i18n/client";
 import { DEMO_PRODUCTS } from "@/lib/demoProducts";
 import { isResaleHost } from "@/lib/sellerMeasurements";
@@ -29,10 +29,10 @@ import { Headline } from "@/components/Headline";
 import { GarmentIcon } from "@/components/GarmentIcon";
 import { PICKABLE_CATEGORIES } from "@/lib/garments";
 
-// three.js only loads if someone opens the 3D view. Boundaried because a failed
-// chunk silently blanks its subtree rather than throwing.
-const BodyMesh3D = lazy(() =>
-  import("@/components/BodyMesh3D").then((m) => ({ default: m.BodyMesh3D })),
+// three.js only loads when the fit map scrolls into view. Boundaried because a
+// failed chunk silently blanks its subtree rather than throwing.
+const FitMap3D = lazy(() =>
+  import("@/components/FitMap3D").then((m) => ({ default: m.FitMap3D })),
 );
 
 type SizeScore = {
@@ -42,6 +42,8 @@ type SizeScore = {
   confidence: number;
   reasons: Array<{ signal: string; weight: number; message: string; itemId?: string }>;
   verdict?: "too small" | "snug" | "true to size" | "relaxed" | "too big";
+  /** How this size sits on each measured part (Session 97). */
+  zones?: Zone[];
 };
 
 // Ordinal verdict → chip colour. Green = as you asked; amber = usable but off;
@@ -102,6 +104,10 @@ type Body = {
   chestCm: number | null;
   waistCm: number | null;
   shoulderCm: number | null;
+  hipCm?: number | null;
+  heightCm?: number | null;
+  inseamCm?: number | null;
+  sex?: "male" | "female" | null;
   estimated: boolean;
 };
 
@@ -864,6 +870,13 @@ function Result({
         </div>
       </div>
 
+      {/* THE FIT MAP (Session 97): the answer's size on the wearer's own measured
+          body, each part coloured by the engine's own numbers. Body charts get it
+          too — they carry per-part fit as well as garment charts do. */}
+      {body && !result.undetermined && result.ranked.some((r) => r.zones?.length) && (
+        <FitMapCard body={body} product={product} ranked={result.ranked} bestLabel={result.best.label} />
+      )}
+
       {/* SEE THE GAP — the ease arithmetic the engine already does, drawn. Only
           renders when we have a body chest AND a garment chest to compare; there
           is nothing honest to draw otherwise.
@@ -883,7 +896,6 @@ function Result({
               shoulderCm: o.shoulderCm,
             }))}
           />
-          <EaseIn3D body={body} product={product} bestLabel={result.best.label} />
         </Card>
       )}
 
@@ -1378,99 +1390,128 @@ export default function CheckPage() {
  * A shell at the garment's measurements around a form at yours, which is the
  * arithmetic and nothing more (invariant ⑲).
  */
-function EaseIn3D({
+function FitMapCard({
   body,
   product,
+  ranked,
   bestLabel,
 }: {
-  body: { chestCm: number | null; shoulderCm: number | null; estimated?: boolean };
+  body: Body;
   product: Product;
+  ranked: SizeScore[];
   bestLabel: string;
 }) {
   const t = useT("check");
-  const drawable = product.sizeOptions.filter((o) => o.chestCm != null);
-  const [open, setOpen] = useState(false);
-  const [label, setLabel] = useState(bestLabel);
+  const tf = useT("fit");
+  // In the chart's own order (XS before S), not the ranking's: a switcher reads as a ladder.
+  const sizes = product.sizeOptions
+    .map((o) => ranked.find((r) => r.label === o.label))
+    .filter((r): r is SizeScore => !!r?.zones?.length);
+  const [label, setLabel] = useState(sizes.some((s) => s.label === bestLabel) ? bestLabel : sizes[0]?.label);
+  // three.js loads only once the card is on screen.
+  const hostRef = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el || visible) return;
+    if (typeof IntersectionObserver === "undefined") { setVisible(true); return; }
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) { setVisible(true); io.disconnect(); }
+    }, { rootMargin: "200px" });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [visible]);
 
-  if (body.chestCm == null || drawable.length === 0) return null;
-  const current = drawable.find((o) => o.label === label) ?? drawable[0];
-  const ease = chestEaseCm(
-    { chestCm: body.chestCm },
-    { label: current.label, chestCm: current.chestCm, shoulderCm: current.shoulderCm },
-  );
-
-  if (!open) {
-    return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="mt-3 inline-flex min-h-[44px] items-center gap-1 text-xs font-medium text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand sm:min-h-0"
-      >
-        {t("threeD.open")} <ArrowRight size={14} />
-      </button>
-    );
-  }
+  const current = sizes.find((s) => s.label === label) ?? sizes[0];
+  if (!current) return null;
+  const option = product.sizeOptions.find((o) => o.label === current.label);
+  const garment = option && option.chestCm != null
+    ? { label: option.label, chestCm: option.chestCm, shoulderCm: option.shoulderCm, waistCm: option.waistCm ?? null, hipCm: option.hipCm ?? null }
+    : null;
+  const ORDER: Zone["key"][] = ["shoulder", "chest", "waist", "hip"];
+  const zones = (current.zones ?? []).slice().sort((a, b) => ORDER.indexOf(a.key) - ORDER.indexOf(b.key));
+  const cm = (d: number) => `${d > 0 ? "+" : d < 0 ? "−" : ""}${Math.abs(d).toFixed(1)} cm`;
+  const VERDICTS = ["too small", "snug", "true to size", "relaxed", "too big"] as const;
 
   return (
-    <div className="mt-4 border-t border-line pt-4">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <SafeBoundary
-          fallback={
-            <p className="text-xs text-ink-faint">{t("threeD.cantStart")}</p>
-          }
-        >
-          <Suspense fallback={<div className="h-[220px] w-[220px] animate-pulse rounded-xl bg-paper-dim" />}>
-            <BodyMesh3D
-              size={220}
-              measurements={{ chestCm: body.chestCm, shoulderCm: body.shoulderCm }}
-              garment={{
-                label: current.label,
-                chestCm: current.chestCm,
-                shoulderCm: current.shoulderCm,
-              }}
-            />
-          </Suspense>
-        </SafeBoundary>
+    <Card>
+      <div ref={hostRef} className="flex flex-col gap-6 md:flex-row md:items-start">
+        <div className="flex flex-shrink-0 justify-center rounded-2xl bg-paper-soft md:w-[300px]">
+          <SafeBoundary fallback={<p className="flex h-[300px] items-center px-6 text-center text-xs text-ink-faint">{t("fitMap.cantStart")}</p>}>
+            {visible ? (
+              <Suspense fallback={<div className="h-[300px] w-[300px] animate-pulse rounded-2xl bg-paper-dim" />}>
+                <FitMap3D
+                  size={300}
+                  measurements={{
+                    heightCm: body.heightCm, chestCm: body.chestCm, waistCm: body.waistCm, hipCm: body.hipCm,
+                    shoulderCm: body.shoulderCm, inseamCm: body.inseamCm, sex: body.sex,
+                  }}
+                  zones={current.zones}
+                  garment={garment}
+                />
+              </Suspense>
+            ) : (
+              <div className="h-[300px] w-[300px]" />
+            )}
+          </SafeBoundary>
+        </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap gap-1.5">
-            {drawable.map((o) => (
+          <h3 className="text-h3 font-semibold text-ink">{t("fitMap.title", { size: current.label })}</h3>
+          <p className="mt-0.5 text-xs text-ink-faint">{t("fitMap.sub")}</p>
+
+          <div className="mt-4 flex flex-wrap gap-1.5" role="radiogroup" aria-label={t("fitMap.sizes")}>
+            {sizes.map((s) => (
               <button
-                key={o.label}
+                key={s.label}
                 type="button"
-                onClick={() => setLabel(o.label)}
-                className={`min-h-[34px] rounded-lg border px-2.5 text-xs font-semibold transition-colors ${
-                  o.label === current.label
-                    ? "border-brand bg-brand text-white"
-                    : "border-line bg-paper-soft text-ink-soft hover:border-ink/30"
+                role="radio"
+                aria-checked={s.label === current.label}
+                onClick={() => setLabel(s.label)}
+                className={`min-h-[36px] min-w-[44px] rounded-full border px-3 text-xs font-semibold transition-colors ${
+                  s.label === current.label ? "border-ink bg-ink text-paper" : "border-line bg-white text-ink-soft hover:border-ink/30"
                 }`}
               >
-                {o.label}
+                {s.label}
+                {s.label === bestLabel && (
+                  <span aria-label={t("fitMap.recommended")} className={`ml-1.5 inline-block h-1.5 w-1.5 rounded-full align-middle ${s.label === current.label ? "bg-paper" : "bg-brand"}`} />
+                )}
               </button>
             ))}
           </div>
 
-          {ease != null && (
-            <p className="mt-3 text-sm text-ink">
-              <span className="font-semibold tabular-nums">
-                {ease > 0 ? `+${ease.toFixed(1)}` : ease.toFixed(1)} cm
-              </span>{" "}
-              <span className="text-ink-soft">
-                {ease >= 0 ? t("threeD.room") : t("threeD.smaller")}
-              </span>
-            </p>
-          )}
+          <ul className="mt-5 divide-y divide-line rounded-2xl border border-line">
+            {zones.map((z) => (
+              <li key={z.key} className="flex items-center gap-3 px-4 py-3 text-sm">
+                <span aria-hidden className="h-3 w-3 flex-shrink-0 rounded-full ring-1 ring-ink/10" style={{ background: VERDICT_COLOUR[z.verdict] }} />
+                <span className="font-medium text-ink">{t(`fitMap.parts.${z.key}`)}</span>
+                <span className="ml-auto font-semibold tabular-nums text-ink">{cm(z.deltaCm)}</span>
+                <span className="w-24 text-right text-xs text-ink-soft">{tf(`verdict.${z.verdict}`)}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-[11px] text-ink-faint">{t("fitMap.signHint")}</p>
 
-          <p className="mt-3 text-[11px] leading-relaxed text-ink-faint">
-            {t.rich(
-              ease != null && ease < 0 ? "threeD.shellAmber" : "threeD.shellBlue",
-              { b: (c) => <strong>{c}</strong> },
-              { label: current.label, shoulder: current.shoulderCm != null ? t("threeD.andShoulder") : "" },
-            )}
-            {body.estimated && t("threeD.estimated")}
+          <div className="mt-4 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px] text-ink-soft">
+            {VERDICTS.map((v) => (
+              <span key={v} className="inline-flex items-center gap-1.5">
+                <span aria-hidden className="h-2.5 w-2.5 rounded-full ring-1 ring-ink/10" style={{ background: VERDICT_COLOUR[v] }} />
+                {tf(`verdict.${v}`)}
+              </span>
+            ))}
+            <span className="inline-flex items-center gap-1.5">
+              <span aria-hidden className="h-2.5 w-2.5 rounded-full ring-1 ring-ink/10" style={{ background: FORM_COLOUR }} />
+              {t("fitMap.notMeasured")}
+            </span>
+          </div>
+
+          <p className="mt-4 text-[11px] leading-relaxed text-ink-faint">
+            {t("fitMap.caption")}
+            {garment && <> {t("fitMap.captionShell", { size: current.label })}</>}
+            {body.estimated && <> {t("fitMap.estimated")}</>}
           </p>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

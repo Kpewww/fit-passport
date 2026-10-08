@@ -52,7 +52,7 @@ export async function computeRecommendation(
    * user's OWN session — the privacy invariant governs `/api/view/[code]`, where
    * a third party holds only an account code, and is untouched by this.
    */
-  body: { chestCm: number | null; waistCm: number | null; shoulderCm: number | null; estimated: boolean };
+  body: ViewBody;
 }> {
   const [profile, knownGood, priorOutcomes] = await Promise.all([
     prisma.fitProfile.findUnique({ where: { userId } }),
@@ -146,24 +146,14 @@ export async function computeRecommendation(
     return {
       result: listingOutput(product.sizeOptions[0].label, judgement),
       effectiveFit,
-      body: {
-        chestCm: engineInput.profile.chestCm ?? null,
-        waistCm: engineInput.profile.waistCm ?? null,
-        shoulderCm: engineInput.profile.shoulderCm ?? null,
-        estimated: !!engineInput.profile.chestIsEstimated,
-      },
+      body: bodyForView(engineInput.profile, profile),
     };
   }
 
   return {
     result: recommend(engineInput, { locale }),
     effectiveFit,
-    body: {
-      chestCm: engineInput.profile.chestCm ?? null,
-      waistCm: engineInput.profile.waistCm ?? null,
-      shoulderCm: engineInput.profile.shoulderCm ?? null,
-      estimated: !!engineInput.profile.chestIsEstimated,
-    },
+    body: bodyForView(engineInput.profile, profile),
   };
 }
 
@@ -214,5 +204,38 @@ function listingOutput(label: string, j: Judgement): EngineOutput & { judgement:
     stability: null,
     alternative: null,
     judgement: j,
+  };
+}
+
+/**
+ * The wearer's body as the result page draws it (Session 97, the 3D fit map): the
+ * girths the engine scored with, plus the lengths and sex that only shape the
+ * drawing. The wearer's own numbers, returned to their own session; nothing here
+ * goes to anyone else.
+ */
+export type ViewBody = {
+  chestCm: number | null;
+  waistCm: number | null;
+  shoulderCm: number | null;
+  hipCm: number | null;
+  heightCm: number | null;
+  inseamCm: number | null;
+  sex: "male" | "female" | null;
+  estimated: boolean;
+};
+
+function bodyForView(
+  scored: EngineInput["profile"],
+  stored: { heightCm?: number | null; hipCm?: number | null; inseamCm?: number | null; sex?: string | null } | null | undefined,
+): ViewBody {
+  return {
+    chestCm: scored.chestCm ?? null,
+    waistCm: scored.waistCm ?? null,
+    shoulderCm: scored.shoulderCm ?? null,
+    hipCm: stored?.hipCm ?? null,
+    heightCm: stored?.heightCm ?? null,
+    inseamCm: stored?.inseamCm ?? null,
+    sex: stored?.sex === "male" || stored?.sex === "female" ? stored.sex : null,
+    estimated: !!scored.chestIsEstimated,
   };
 }

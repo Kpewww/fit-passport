@@ -29,18 +29,56 @@ export const TORSO_DEPTH_RATIO = 2 / 3;
 // as claiming otherwise.
 
 /**
- * Landmark heights as a fraction of stature.
- * ⚠ Also conventions — widely cited artist's/anthropometric proportions, not a
- * survey table this project has verified. Where the user gives us a real length
- * (inseam), that wins over the fraction.
+ * Landmark heights as a fraction of stature, and depth ÷ breadth at each girth —
+ * from ANSUR II (Gordon et al. 2012, NATICK/TR-15/007), the US Army anthropometric
+ * survey: 1,986 women and 4,082 men. Ratios of the published MEANS (each landmark's
+ * mean height over mean stature, mean depth over mean breadth), not means of ratios.
+ * Session 97 replaced artist's conventions (.82/.72/.62/.52/.47 and one 2/3 depth
+ * for every level) with these. Page numbers are the report's printed pages.
+ *
+ * They decide WHERE a girth sits and how it is SHARED between front-to-back and
+ * side-to-side; the girth itself is always the user's. A population mean is not
+ * this user, and the UI says the figure is drawn to their numbers, not scanned.
  */
+export const ANSUR_II = {
+  female: {
+    height: { shoulder: 0.820, chest: 0.719, waist: 0.602, hip: 0.519, crotch: 0.480, neck: 0.857 },
+    depthOverBreadth: { chest: 0.92, waist: 0.71, hip: 0.66 },
+  },
+  male: {
+    height: { shoulder: 0.820, chest: 0.735, waist: 0.602, hip: 0.513, crotch: 0.482, neck: 0.864 },
+    depthOverBreadth: { chest: 0.88, waist: 0.73, hip: 0.71 },
+  },
+} as const;
+// Sources, ANSUR II summary statistics (mean, mm, F / M): stature 1628.5 / 1756.2;
+// acromial height p.48; chest height p.96; waist height (omphalion) p.224;
+// trochanterion height p.210; crotch height p.98; cervicale height p.88;
+// chest breadth/depth pp.90/94; waist breadth/depth pp.216/220; hip breadth p.144
+// with buttock depth p.78 (not quite one plane — the closest pair the survey has).
+
+export type Sex = "female" | "male";
+type LevelKey = "shoulder" | "chest" | "waist" | "hip" | "crotch" | "neck";
+
+/** A landmark's height fraction for this body: by sex, or the mean of the two. */
+export function landmarkFraction(key: LevelKey, sex?: Sex | null): number {
+  if (sex) return ANSUR_II[sex].height[key];
+  return (ANSUR_II.female.height[key] + ANSUR_II.male.height[key]) / 2;
+}
+
+/** Depth ÷ breadth at a girth: by sex, or the mean of the two. */
+export function depthRatio(key: "chest" | "waist" | "hip", sex?: Sex | null): number {
+  if (sex) return ANSUR_II[sex].depthOverBreadth[key];
+  return (ANSUR_II.female.depthOverBreadth[key] + ANSUR_II.male.depthOverBreadth[key]) / 2;
+}
+
+/** The mean fractions, for callers that only need the order of the landmarks. */
 export const LANDMARK_FRACTION = {
   crown: 1.0,
-  shoulder: 0.82,
-  chest: 0.72,
-  waist: 0.62,
-  hip: 0.52,
-  crotch: 0.47,
+  shoulder: landmarkFraction("shoulder"),
+  chest: landmarkFraction("chest"),
+  waist: landmarkFraction("waist"),
+  hip: landmarkFraction("hip"),
+  crotch: landmarkFraction("crotch"),
 } as const;
 
 /** Fallback stature when the user has not given one, in cm. */
@@ -53,6 +91,8 @@ export type BodyMeasurementsInput = {
   hipCm?: number | null;
   shoulderCm?: number | null; // ACROSS the back, not a circumference
   inseamCm?: number | null;
+  /** Picks the survey's proportions; absent, the mean of both is drawn. */
+  sex?: Sex | null;
 };
 
 export type CrossSection = {
@@ -99,7 +139,7 @@ export function ellipseSemiAxes(
  * by the fit engine and must never be — `populationPrior.ts` is the only place
  * allowed to guess at a body for scoring purposes, under its own governance.
  */
-const FILL_RATIO: Record<string, Array<{ from: keyof BodyMeasurementsInput; ratio: number }>> = {
+const FILL_RATIO: Record<string, Array<{ from: "chestCm" | "waistCm" | "hipCm"; ratio: number }>> = {
   chestCm: [{ from: "waistCm", ratio: 1.15 }, { from: "hipCm", ratio: 1.0 }],
   waistCm: [{ from: "chestCm", ratio: 0.87 }, { from: "hipCm", ratio: 0.87 }],
   hipCm: [{ from: "waistCm", ratio: 1.15 }, { from: "chestCm", ratio: 1.0 }],
@@ -131,13 +171,17 @@ export function landmarkHeightCm(
   const h = statureCm(m);
   // A real inseam pins the crotch, and everything below the waist scales with it
   // rather than with the generic fraction.
+  if (key === "crown") return h;
   if (key === "crotch" && m.inseamCm != null) return m.inseamCm;
   if (key === "hip" && m.inseamCm != null) {
+    // The survey's hip sits this far up from crotch to waist; keep that share.
     const crotch = m.inseamCm;
-    const waist = h * LANDMARK_FRACTION.waist;
-    return crotch + (waist - crotch) * 0.45;
+    const waist = h * landmarkFraction("waist", m.sex);
+    const share = (landmarkFraction("hip", m.sex) - landmarkFraction("crotch", m.sex)) /
+      (landmarkFraction("waist", m.sex) - landmarkFraction("crotch", m.sex));
+    return crotch + (waist - crotch) * share;
   }
-  return h * LANDMARK_FRACTION[key];
+  return h * landmarkFraction(key, m.sex);
 }
 
 /**
@@ -153,7 +197,7 @@ export function bodyCrossSections(m: BodyMeasurementsInput): CrossSection[] {
 
   const hip = fillCircumference("hipCm", m);
   if (hip) {
-    const { halfWidth, halfDepth } = ellipseSemiAxes(hip.value);
+    const { halfWidth, halfDepth } = ellipseSemiAxes(hip.value, depthRatio("hip", m.sex));
     out.push({
       key: "hip", y: landmarkHeightCm("hip", m), halfWidth, halfDepth,
       circumferenceCm: hip.estimated ? null : hip.value, estimated: hip.estimated,
@@ -162,7 +206,7 @@ export function bodyCrossSections(m: BodyMeasurementsInput): CrossSection[] {
 
   const waist = fillCircumference("waistCm", m);
   if (waist) {
-    const { halfWidth, halfDepth } = ellipseSemiAxes(waist.value);
+    const { halfWidth, halfDepth } = ellipseSemiAxes(waist.value, depthRatio("waist", m.sex));
     out.push({
       key: "waist", y: landmarkHeightCm("waist", m), halfWidth, halfDepth,
       circumferenceCm: waist.estimated ? null : waist.value, estimated: waist.estimated,
@@ -171,7 +215,7 @@ export function bodyCrossSections(m: BodyMeasurementsInput): CrossSection[] {
 
   const chest = fillCircumference("chestCm", m);
   if (chest) {
-    const { halfWidth, halfDepth } = ellipseSemiAxes(chest.value);
+    const { halfWidth, halfDepth } = ellipseSemiAxes(chest.value, depthRatio("chest", m.sex));
     out.push({
       key: "chest", y: landmarkHeightCm("chest", m), halfWidth, halfDepth,
       circumferenceCm: chest.estimated ? null : chest.value, estimated: chest.estimated,
@@ -182,7 +226,7 @@ export function bodyCrossSections(m: BodyMeasurementsInput): CrossSection[] {
   // back, not a circumference, so it sets the half-width directly and only the
   // depth is a convention. When it is missing, the chest section carries up.
   if (chest) {
-    const chestAxes = ellipseSemiAxes(chest.value);
+    const chestAxes = ellipseSemiAxes(chest.value, depthRatio("chest", m.sex));
     const measured = m.shoulderCm != null;
     const halfWidth = measured ? m.shoulderCm! / 2 : chestAxes.halfWidth * 1.02;
     out.push({
@@ -264,6 +308,9 @@ export type GarmentMeasurements = {
   chestCm: number | null;
   /** Garment shoulder breadth (across the back), cm. */
   shoulderCm: number | null;
+  /** Garment waist and hip circumferences, cm, when the chart gives them (Session 97). */
+  waistCm?: number | null;
+  hipCm?: number | null;
 };
 
 export type ShellRing = {
@@ -298,24 +345,39 @@ export function garmentShellRings(
 ): ShellRing[] {
   if (garment.chestCm == null || body.length < 2) return [];
 
-  const chestSec = body.find((s) => s.key === "chest");
-  const shoulderSec = body.find((s) => s.key === "shoulder");
+  const at = (key: CrossSection["key"]) => body.find((s) => s.key === key);
+  const chestSec = at("chest");
+  const shoulderSec = at("shoulder");
   if (!chestSec) return [];
 
+  // Each ring is shaped like the body at its level — the same depth:breadth — so
+  // the gap between shell and body reads as the ease, all the way round.
+  const shaped = (circ: number, sec: CrossSection) => ellipseSemiAxes(circ, sec.halfDepth / sec.halfWidth);
   const rise = body[body.length - 1].y - body[0].y;
-  const chestAxes = ellipseSemiAxes(garment.chestCm);
+  const chestAxes = shaped(garment.chestCm, chestSec);
+  const waistSec = at("waist");
+  const hipSec = at("hip");
 
   const rings: ShellRing[] = [];
 
-  // Bottom: straight down from the chest, at the chest's own girth.
-  rings.push({
-    y: chestSec.y - rise * SHELL_DROP,
-    halfWidth: chestAxes.halfWidth,
-    halfDepth: chestAxes.halfDepth,
-    measured: false,
-  });
+  // Below the chest: the chart's own waist and hip where it gives them (Session 97).
+  // Where it does not, the chest held straight down — the assumption that adds least.
+  if (garment.hipCm != null && hipSec) {
+    rings.push({ y: hipSec.y, ...shaped(garment.hipCm, hipSec), measured: true });
+  }
+  if (garment.waistCm != null && waistSec) {
+    rings.push({ y: waistSec.y, ...shaped(garment.waistCm, waistSec), measured: true });
+  }
+  if (rings.length === 0) {
+    rings.push({
+      y: chestSec.y - rise * SHELL_DROP,
+      halfWidth: chestAxes.halfWidth,
+      halfDepth: chestAxes.halfDepth,
+      measured: false,
+    });
+  }
 
-  // The chest itself — the one ring the chart actually states.
+  // The chest itself — the one ring every garment chart states.
   rings.push({
     y: chestSec.y,
     halfWidth: chestAxes.halfWidth,

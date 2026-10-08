@@ -118,7 +118,14 @@ describe("landmark heights", () => {
   it("lets a real inseam override the proportional crotch", () => {
     // A measurement always beats a convention where we have one.
     expect(landmarkHeightCm("crotch", { heightCm: 180, inseamCm: 79 })).toBe(79);
-    expect(landmarkHeightCm("crotch", { heightCm: 180 })).toBeCloseTo(180 * 0.47, 6);
+    // ANSUR II's crotch height, the mean of its women and men (Session 97).
+    expect(landmarkHeightCm("crotch", { heightCm: 180 })).toBeCloseTo(180 * (0.480 + 0.482) / 2, 6);
+  });
+
+  it("draws to the survey's own proportions for the sex the wearer gave (ANSUR II)", () => {
+    expect(landmarkHeightCm("chest", { heightCm: 100, sex: "female" })).toBeCloseTo(71.9, 6);
+    expect(landmarkHeightCm("chest", { heightCm: 100, sex: "male" })).toBeCloseTo(73.5, 6);
+    expect(landmarkHeightCm("waist", { heightCm: 100 })).toBeCloseTo(60.2, 6);
   });
 
   it("keeps the landmarks in anatomical order", () => {
@@ -232,3 +239,37 @@ describe("chestEaseCm", () => {
     expect(chestEaseCm({ chestCm: 100 }, { label: "M", chestCm: null, shoulderCm: null })).toBeNull();
   });
 });
+
+describe("cross-section shape (ANSUR II, Session 97)", () => {
+  it("shares a girth between depth and width by the survey's ratio at that level, keeping the girth", () => {
+    const [hip, waist, chest] = bodyCrossSections({ chestCm: 100, waistCm: 80, hipCm: 100, sex: "male" });
+    expect(chest.halfDepth / chest.halfWidth).toBeCloseTo(0.88, 6);
+    expect(waist.halfDepth / waist.halfWidth).toBeCloseTo(0.73, 6);
+    expect(hip.halfDepth / hip.halfWidth).toBeCloseTo(0.71, 6);
+    const perimeter = (a: number, b: number) => Math.PI * (3 * (a + b) - Math.sqrt((3 * a + b) * (a + 3 * b)));
+    expect(perimeter(chest.halfWidth, chest.halfDepth)).toBeCloseTo(100, 6);
+  });
+});
+
+describe("the shell at the chart's waist and hip (Session 97)", () => {
+  const body = bodyCrossSections({ chestCm: 96, waistCm: 82, hipCm: 98, heightCm: 176, sex: "male" });
+  const perimeter = (r: { halfWidth: number; halfDepth: number }) =>
+    Math.PI * (3 * (r.halfWidth + r.halfDepth) - Math.sqrt((3 * r.halfWidth + r.halfDepth) * (r.halfWidth + 3 * r.halfDepth)));
+
+  it("puts measured rings at the body's waist and hip, at the garment's girths", () => {
+    const rings = garmentShellRings(body, { label: "M", chestCm: 104, shoulderCm: 46, waistCm: 96, hipCm: 102 });
+    const y = (k: string) => body.find((s) => s.key === k)!.y;
+    const waist = rings.find((r) => Math.abs(r.y - y("waist")) < 1e-9)!;
+    const hip = rings.find((r) => Math.abs(r.y - y("hip")) < 1e-9)!;
+    expect(perimeter(waist)).toBeCloseTo(96, 6);
+    expect(perimeter(hip)).toBeCloseTo(102, 6);
+    expect(waist.measured && hip.measured).toBe(true);
+  });
+
+  it("keeps the straight-down convention when the chart gives neither", () => {
+    const rings = garmentShellRings(body, { label: "M", chestCm: 104, shoulderCm: null });
+    expect(rings[0].measured).toBe(false);
+    expect(perimeter(rings[0])).toBeCloseTo(104, 6);
+  });
+});
+

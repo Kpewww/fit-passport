@@ -1384,3 +1384,15 @@ letters only when the chart is letters and the page offers ≥2 (`extractorLLM.t
 capture.js reads on-screen swatches first. `BadgeMedallion` trig rounded (`q()`) — hydration-safe.
 - Testing two hosts or live shop pages: `browser-extension/scripts/try-pages.mjs` (needs playwright resolvable —
   symlink a node_modules temporarily) with `--save-captures` gives HTML to replay through `/api/check`.
+
+**SESSION 97 (2026-10-08).** 849 → **863 tests**. **3D fit map on /check** (Track 1): `SizeScore.zones`
+(`fitEngine.ts`, `zoneVerdict`), `/api/check` body adds hip/height/inseam/sex (`recommendService.ts` `bodyForView`),
+`bodyMesh.ts` proportions = **ANSUR II** ratios by sex (cited, pages in module), shell takes chart waist/hip,
+`lib/fitMapColours.ts` (palette + `BodyGeometryData` interface), `lib/dressForm3d.ts` (indexed loft),
+`components/FitMap3D.tsx` (one renderer per body; size change recolours only). `/check` card loads on scroll.
+Old `EaseIn3D` + `check.threeD.*` removed; `BodyMesh3D` still serves /passport. /check is 126 kB vs ~119 kB cap
+(pre-existing, todo/eng/13). **Track 2 (Anny) next** — see DEVLOG Session 97.
+
+**NEW INVARIANT:**
+**(96)** **A fit-map colour says only what `SizeScore.zones` says.** No zone → the form's grey; the centimetres
+and verdict word are printed beside every coloured part.

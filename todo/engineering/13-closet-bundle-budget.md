@@ -18,3 +18,12 @@ picker, photo sources) are on the page anyway — so it was not kept.
 What could bring it back under: split `app/closet/page.tsx` (2,300+ lines, one client
 bundle) so the detail sheet, the add flow and the folder view load when opened;
 check what the shared chunk pulls in for this page (`ANALYZE`-style bundle report).
+
+## /check is over too (found Session 97)
+
+`npm run build`, 2026-10-08: **/check 125 kB** before Session 97's fit map, **126 kB** after.
+Its R0 baseline was 108 kB (DEVLOG, Session 76), so the cap is ~119 kB. The last recorded
+reading was 114 kB (Session 78b); the growth since came from later sessions, not one change.
+The fit map adds 1 kB, since three.js and the 3D code load lazily. Same remedy as /closet:
+split the 1,500-line page so the result's secondary cards load when shown.
+

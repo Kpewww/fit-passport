@@ -31,6 +31,101 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-08 · Session 97 — The 3D fit map on /check (Track 1); a realistic body planned behind it
+
+The founder chose path A of `todo/engineering/14-3d-try-on.md`: a fit map on the user's
+measured body, first on the size-check result. The realistic Anny body is built in
+parallel behind the same interface (Track 2), with its face made not uncanny.
+
+**A correction first.** Exploration found a measured dress form and a garment shell already
+built in Sessions 66–67 (`lib/bodyMesh.ts`, `components/BodyMesh3D.tsx`). Session 95's todo
+said "Nothing is built"; it now says what exists. That 3D view had four limits:
+- it showed only for garment charts, so Nike, Patagonia and Uniqlo body charts got none;
+- the shell was one colour, set by the chest's sign;
+- the body was drawn from chest and shoulder only;
+- it sat behind a link.
+
+**Track 1, shipped:**
+- **Per-part fit from the engine.** `SizeScore.zones` gives `{key, deltaCm, verdict}` for
+  each part both the wearer and the chart measured. These are the same deltas the score is
+  built from, so a colour can never say something the score did not.
+  - `zoneVerdict` scales the chest's thresholds by each part's sigma: the shoulder (2.5 cm)
+    turns tight sooner than the chest (4 cm), as the score treats it.
+  - `lib/fitZones.test.ts`.
+- **The whole body reaches the page.** `/api/check` and `/api/recommend` `body` adds
+  `hipCm`, `heightCm`, `inseamCm` and `sex`, via `recommendService.ts` `bodyForView`. These
+  are the wearer's own numbers, sent to their own session.
+- **Proportions from a source.** `bodyMesh.ts` moved from artist's conventions
+  (.82/.72/.62/.52/.47, and one 2/3 depth) to **ANSUR II** (Gordon et al. 2012,
+  NATICK/TR-15/007). These are ratios of means, by sex, or the mean of both when the sex is
+  not given:
+  - landmark heights: chest .719 F / .735 M, waist .602, hip .519 / .513, crotch .480 / .482;
+  - depth/breadth per level: chest .92 / .88, waist .71 / .73, hip .66 / .71.
+  - The girth stays the user's (`ellipseSemiAxes`, Ramanujan); only its shape is the
+    survey's. Page numbers are in the module.
+- **The shell** takes the chart's waist and hip when given; otherwise the chest is held
+  straight down, as before. Each ring has the body's depth/breadth at its level.
+- **Colours** (`lib/fitMapColours.ts`, pure):
+
+  | | Colour |
+  |---|---|
+  | too small | `#9b2c2c` |
+  | snug | amber `#c2761b` |
+  | true to size | `#eceae4` (lighter than the form, so "checked and fits" differs from "not measured") |
+  | relaxed | `#8fa0ec` |
+  | too big | cobalt `#2438d6` |
+  | not measured | the form's `#9aa0ad` |
+
+  - Warm-for-tight follows CLO's Fit Map and Browzwear's tension map. Red–green is avoided
+    (Crameri et al. 2020).
+  - The blend runs straight between parts and fades over 8 cm beyond the last. Only the
+    torso is coloured, and the output is linear-sRGB for three.js.
+- **Renderer** (`components/FitMap3D.tsx`, with `lib/dressForm3d.ts` for the lofting):
+  - takes any `BodyGeometryData`, so Anny can take the dress form's place;
+  - indexed geometry with wrapped rings, so the seam has no crease;
+  - one renderer per body; changing size only recolours and swaps the shell;
+  - the WebGL discipline is unchanged (lazy, boundaried, `forceContextLoss`, ref-driven
+    drag, no spin under reduced motion).
+- **/check:** a card "How {size} sits on you", under the answer, for body charts too.
+  - The 3D loads when the card scrolls into view.
+  - Sizes are in the chart's order, with a dot on the pick.
+  - One row per part (colour, part, `+4.3 cm`, verdict word), a legend including "not
+    measured", and the caption: drawn to your measurements, ANSUR II proportions, not a
+    photo.
+  - The old `EaseIn3D` link and its `check.threeD.*` copy are gone; the 2D `FitFigure`
+    card stays.
+
+**Verified:**
+- 863 tests + 1 skip, exit 0 (new: zones 4, colours 6, ANSUR proportions and shell rings 4).
+- In Chromium (SwiftShader WebGL), both languages, 1440 and 390, no console errors:
+  - Patagonia men's (a body chart): M, chest +4.3 cm, relaxed. A blue band at the chest;
+    the rest is the form's grey.
+  - COS (a garment chart): EU 48 has shoulders −1.0 true to size and chest +2.0 relaxed,
+    inside the pale shell. EU 44 has shoulders −3.0 snug (amber) and chest −6.0 too small
+    (red).
+  - Uniqlo demo: M is relaxed at the chest but −6.2 too small at the waist. The map makes
+    a tension visible that the single answer cannot.
+- 20 round trips /check → /closet: no WebGL context warning. Reduced motion: the canvas
+  holds still.
+- **Budget:** /check First Load 126 kB, against 125 kB on the commit before. three.js stays
+  lazy. /check was already over its ~119 kB cap (R0 108 kB) from earlier sessions, so it is
+  now recorded in `todo/engineering/13` beside /closet.
+
+**Track 2, next: Anny** (Apache 2.0 code, CC0 assets).
+- Coarse topology `notoes_collapse10pc` (1,229 vertices), no eyes or tongue, a head smoothed
+  to a mannequin's.
+- An offline bake of phenotype corners (Anny's mapping is piecewise-multilinear) and
+  measure-change deltas.
+- A browser fit of chest, waist and hip girth and shoulder breadth, by our own plane slices
+  (MakeHuman's ruler lists are AGPL, so they are not copied), with residuals shown.
+- A lab page `/lab/body` for the founder's review, then a ship gate:
+  - ≤ 1 cm residuals;
+  - ≤ 300 KB gzipped;
+  - 30 fps on an integrated GPU;
+  - the founder approves the head.
+
+---
+
 ## 2026-10-08 · Session 96 — Buttons that do not break, a studio for outfits, a bug sweep
 
 The founder: the homepage's "记录穿着感受" button broke over two lines beside a long

@@ -880,3 +880,9 @@ before planning the app. **Engineering:** Jev's confident "not clothing" on URL-
 **Next — founder:** upload `store-build/fit-passport-extension-0.9.1-store.zip` (fix only, no permission change);
 choose a 3D try-on path and budget (`todo/engineering/14-3d-try-on.md`); say if the hero should keep the justified
 second line or use natural spacing. **Engineering:** 3D fit map (path A) once chosen; /closet JS budget (todo/eng/13).
+
+## Session 96–97 (2026-10-08) — studio /outfits, buttons, 3D fit map Track 1, DONE
+
+**Next — engineering:** Track 2, Anny: bake (`tools/anny/bake.py`, coarse topology, mannequin head) → browser fit
+(`lib/annyBody.ts`) → `/lab/body` → the founder's ship gate. **Founder:** upload extension 0.9.1; review the fit map
+on /check (a body chart and a garment chart).

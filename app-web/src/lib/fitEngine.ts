@@ -197,7 +197,26 @@ export type SizeScore = {
   confidence: number; // 0..1
   reasons: Reason[];
   verdict?: FitVerdict; // present when we have enough measurement data to judge
+  /**
+   * How this size sits on each measured part of the body (Session 96, for the 3D fit
+   * view): the same deltas the score is made of, so a colour on the body can never
+   * say something the score did not. Present only for parts both the wearer and the
+   * chart gave a number for.
+   */
+  zones?: ZoneFit[];
 };
+
+/** One part of the body: centimetres of room (+) or short (−), and what that means. */
+export type ZoneFit = { key: Dim; deltaCm: number; verdict: FitVerdict };
+
+/**
+ * A part's verdict, on the chest's thresholds scaled by how forgiving that part is:
+ * the chest's own verdict is unchanged, and the shoulder (sigma 2.5 cm against the
+ * chest's 4) turns tight or loose sooner, as the score already treats it.
+ */
+export function zoneVerdict(deltaCm: number, sigmaCm: number): FitVerdict {
+  return verdictFromDelta(deltaCm * (DIMENSIONS.chest.sigmaCm / sigmaCm));
+}
 
 // How relevant the user's closet evidence is to the product's garment domain.
 //   "match"    — closet has items in the same domain (e.g. tops → tops)
@@ -369,7 +388,7 @@ function scoreMeasurementFit(
   resolvedEase?: ResolvedEase,
   /** How to word the reason (engineText.ts). */
   M: EngineText = EN_TEXT,
-): { score: number; reason: Reason | null; verdict?: FitVerdict } {
+): { score: number; reason: Reason | null; verdict?: FitVerdict; zones?: ZoneFit[] } {
   // `resolvedEase` is optional so every existing caller and test keeps the exact
   // behaviour it had: with nothing learned, this is `easeChestCm(pref)` verbatim.
   const ease = (resolvedEase?.easeCm ?? easeChestCm(pref)) + easeAdjustForCategory(category);
@@ -452,6 +471,7 @@ function scoreMeasurementFit(
     score: raw,
     reason: { signal: "measurement-fit", weight: W.chestFit * raw, message: msg },
     verdict: chestDelta != null ? verdictFromDelta(chestDelta) : undefined,
+    zones: dims.map((d) => ({ key: d.key, deltaCm: Math.round(d.delta * 10) / 10, verdict: zoneVerdict(d.delta, d.sigma) })),
   };
 }
 
@@ -1004,6 +1024,7 @@ export function recommend(
       confidence,
       reasons,
       verdict: fit.verdict,
+      ...(fit.zones?.length ? { zones: fit.zones } : {}),
     };
   });
 
