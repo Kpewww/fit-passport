@@ -54,6 +54,8 @@ describe("refusalFor — the existing refusals, unchanged by the move", () => {
     expect(refusalFor(product({ fetch: "extension", sizesFrom: "page", categoryGuessed: true }))?.error).toBe("pick-category");
     // Named by the page, the chart is used as before.
     expect(refusalFor(product({ fetch: "ok", sizesFrom: "page" }))).toBeNull();
+    // Even when the classifier said "not clothing": the chart outweighs it (Session 94).
+    expect(refusalFor(product({ fetch: "ok", sizesFrom: "page", categoryGuessed: true, notClothing: "jev" }))?.error).toBe("pick-category");
     // A one-off listing asks for the kind in its own judgement.
     expect(refusalFor(product({ fetch: "extension", sizesFrom: "seller", categoryGuessed: true, listing: true }))).toBeNull();
   });

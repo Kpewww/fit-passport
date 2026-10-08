@@ -31,6 +31,15 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-08 · Session 94b — Jev calibrated; a chart outweighs "not clothing"; the app parked
+
+- Ran `eval/category.eval.ts` with a local key (never printed): 133 labelled names, 0 failed calls. Threshold → answered / right: 0.60 → 123 / 94.3%, **0.65 → 122 / 95.1%**, 0.70 → 120 / 95.8%, 0.90 → 111 / 97.3%. `CATEGORY_MODEL.minConfidence` 0.6 → **0.65**, now *measured* (n = 133); `docs/design/scoring-system.md` regenerated. Results: `app-web/eval/results/category-calibration-2026-10-08.json`.
+- 14 wrong answers, among them real garments called "not clothing" with high confidence: Cargo Parachutes 0.99, Rugby 0.94, and "Essential No. 4" (an unclear name) 0.86. A threshold cannot fix that, so `checkPolicy.ts` changed: when the page **has a size chart** and no one named the garment, the shopper is now asked (`pick-category`) even if Jev said "not clothing". The chart is the stronger evidence. Pages with no chart keep the old rule. Test added in `checkPolicy.test.ts`.
+- New: `todo/decisions/06-mobile-app.md`, what to decide before planning a phone app. Parked for a detailed plan later; the store-rule figures in it are marked unsourced until checked.
+- 848 passed + 1 skipped; typecheck clean.
+
+---
+
 ## 2026-10-08 · Session 94 — A sweep after the move and the 0.9.0 submission
 
 Checked against production (www.fitpassport.fit):

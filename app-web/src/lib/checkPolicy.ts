@@ -83,10 +83,11 @@ export function refusalFor(extracted: ExtractedProduct, M: EngineText = EN_TEXT)
   // The engine used to score it as a T-shirt — the guess's default — so a dress
   // was sized without its hips and a pair of trousers on the chest. A one-off
   // listing is left alone: its judgement asks for the garment kind itself.
+  // A classifier's "not clothing" does not refuse here (Session 94): a size chart
+  // is the stronger evidence, and the calibration caught Jev calling real
+  // garments "not clothing" at 0.94 and 0.99 ("Rugby", "Cargo Parachutes").
   if (source.categoryGuessed && !source.listing) {
-    return source.notClothing
-      ? { error: "not-apparel", message: M.refuseNotApparel }
-      : { error: "pick-category", message: M.refusePickCategory };
+    return { error: "pick-category", message: M.refusePickCategory };
   }
 
   // REFUSE a category we can recognise but cannot honestly score — invariant ㉜.

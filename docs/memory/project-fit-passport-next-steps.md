@@ -863,3 +863,14 @@ and retire `LEGACY_ORIGIN` in the same change.
 accounts in your browser into one; then re-check in the extension. Reload/re-record the reveal videos if wanted
 (`scripts/record-logo.mjs`). **Engineering:** Maje/Sandro numeric ladders (a brand "2" against S–XL still can't be
 placed); a "connected as …" line in the popup would make a wrong account visible at a glance.
+
+## Session 94 (2026-10-08) — post-move sweep, Jev calibrated, app parked, DONE
+
+**Shipped:** production sweep after the move (all clean; one Windows-only test fixed);
+`CATEGORY_MODEL.minConfidence` 0.6 → 0.65, measured on n = 133 names (95.1% right);
+a chart page no longer refuses on Jev's "not clothing" — it asks the garment
+(Jev called "Cargo Parachutes" not clothing at 0.99). Phone app parked in
+`todo/decisions/06-mobile-app.md` for a detailed plan later.
+**Next — founder:** 0.9.0 review result; adidas/H&M retest; read the phone share in Vercel Analytics
+before planning the app. **Engineering:** Jev's confident "not clothing" on URL-only pages
+(no chart) still refuses — widen `category-names.json` with real names before trusting it there.

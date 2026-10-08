@@ -1,0 +1,195 @@
+{
+  "runAt": "2026-10-08T08:29:54.042Z",
+  "model": "jev-latest",
+  "n": 133,
+  "target": 0.95,
+  "choices": [
+    "tshirt",
+    "top",
+    "shirt",
+    "polo",
+    "sweater",
+    "hoodie",
+    "jacket",
+    "pants",
+    "jeans",
+    "shorts",
+    "skirt",
+    "dress",
+    "jumpsuit",
+    "swimsuit",
+    "underwear",
+    "shoes",
+    "socks",
+    "accessory",
+    "not_clothing"
+  ],
+  "table": [
+    {
+      "threshold": 0.3,
+      "answered": 132,
+      "ofAll": 133,
+      "accuracy": 0.9015151515151515
+    },
+    {
+      "threshold": 0.35,
+      "answered": 132,
+      "ofAll": 133,
+      "accuracy": 0.9015151515151515
+    },
+    {
+      "threshold": 0.4,
+      "answered": 132,
+      "ofAll": 133,
+      "accuracy": 0.9015151515151515
+    },
+    {
+      "threshold": 0.45,
+      "answered": 130,
+      "ofAll": 133,
+      "accuracy": 0.9153846153846154
+    },
+    {
+      "threshold": 0.5,
+      "answered": 125,
+      "ofAll": 133,
+      "accuracy": 0.928
+    },
+    {
+      "threshold": 0.55,
+      "answered": 125,
+      "ofAll": 133,
+      "accuracy": 0.928
+    },
+    {
+      "threshold": 0.6,
+      "answered": 123,
+      "ofAll": 133,
+      "accuracy": 0.943089430894309
+    },
+    {
+      "threshold": 0.65,
+      "answered": 122,
+      "ofAll": 133,
+      "accuracy": 0.9508196721311475
+    },
+    {
+      "threshold": 0.7,
+      "answered": 120,
+      "ofAll": 133,
+      "accuracy": 0.9583333333333334
+    },
+    {
+      "threshold": 0.75,
+      "answered": 115,
+      "ofAll": 133,
+      "accuracy": 0.9652173913043478
+    },
+    {
+      "threshold": 0.8,
+      "answered": 115,
+      "ofAll": 133,
+      "accuracy": 0.9652173913043478
+    },
+    {
+      "threshold": 0.85,
+      "answered": 114,
+      "ofAll": 133,
+      "accuracy": 0.9649122807017544
+    },
+    {
+      "threshold": 0.9,
+      "answered": 111,
+      "ofAll": 133,
+      "accuracy": 0.972972972972973
+    }
+  ],
+  "recommended": 0.65,
+  "wrong": [
+    {
+      "name": "Quilted Liner",
+      "expected": "jacket",
+      "got": "not_clothing",
+      "confidence": 0.45
+    },
+    {
+      "name": "Waffle Henley",
+      "expected": "tshirt",
+      "got": "polo",
+      "confidence": 0.29
+    },
+    {
+      "name": "Long Sleeve Henley",
+      "expected": "tshirt",
+      "got": "shirt",
+      "confidence": 0.59
+    },
+    {
+      "name": "Ruched Corset",
+      "expected": "top",
+      "got": "underwear",
+      "confidence": 0.74
+    },
+    {
+      "name": "Rugby",
+      "expected": "polo",
+      "got": "not_clothing",
+      "confidence": 0.94
+    },
+    {
+      "name": "Tech Fleece Full-Zip",
+      "expected": "hoodie",
+      "got": "jacket",
+      "confidence": 0.67
+    },
+    {
+      "name": "Cargo Parachutes",
+      "expected": "pants",
+      "got": "not_clothing",
+      "confidence": 0.99
+    },
+    {
+      "name": "Tailored Cigarette Fit",
+      "expected": "pants",
+      "got": "not_clothing",
+      "confidence": 0.46
+    },
+    {
+      "name": "Sarong Wrap",
+      "expected": "skirt",
+      "got": "accessory",
+      "confidence": 0.57
+    },
+    {
+      "name": "Knit Sweater Mini",
+      "expected": "dress",
+      "got": "sweater",
+      "confidence": 0.98
+    },
+    {
+      "name": "Rash Guard",
+      "expected": "top",
+      "got": "swimsuit",
+      "confidence": 0.61
+    },
+    {
+      "name": "The Margot",
+      "expected": "unclear",
+      "got": "dress",
+      "confidence": 0.42
+    },
+    {
+      "name": "The Everyday",
+      "expected": "unclear",
+      "got": "not_clothing",
+      "confidence": 0.41
+    },
+    {
+      "name": "Essential No. 4",
+      "expected": "unclear",
+      "got": "not_clothing",
+      "confidence": 0.86
+    }
+  ],
+  "failed": []
+}
