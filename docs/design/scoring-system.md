@@ -379,7 +379,7 @@ number we have not yet earned; the test fails if one is missing here.
 | `DIMENSIONS.shoulder.weight` | 0.18 | assumed | remainder after chest and waist |
 | `DIMENSIONS.shoulder.sigmaCm` | 2.5 | assumed | shoulders are the least forgiving dimension |
 | `DIMENSIONS.hip.weight` | 0.6 | assumed | as much as chest: a dress or jumpsuit that will not pass the hips does not fit, and size guides say to size to the larger measurement. At waist weight (0.22) a 99 cm hip still got S on a chart whose S stops at 96 (onepiece.test.ts) |
-| `CATEGORY_MODEL.minConfidence` | 0.65 | measured | eval/category.eval.ts, n = 133 labelled names (eval/category-names.json), 2026-10-08: the lowest threshold whose answers are right at least 95% of the time. 0.65 answers 122/133 at 95.1%; 0.6 gave 94.3%. Results: eval/results/category-calibration-2026-10-08.json |
+| `CATEGORY_MODEL.minConfidence` | 0.65 | measured | eval/category.eval.ts, n = 133 labelled names (eval/category-names.json), 2026-10-08: the lowest threshold whose answers are right at least 95% of the time. 0.65 answers 122/133 at 95.1%; 0.6 gave 94.3%. Results: eval/results/category-calibration-2026-10-08.json. Checked on n = 138 real shop titles the word rules miss (category-names-real.json): at 0.65, 76 answered, no garment named as the wrong garment; 4 of 5 misses were non-garment names called not_clothing |
 | `CATEGORY_MODEL.timeoutMs` | 3000 | assumed | a check already waits on the page parse; a slow classifier must not hold it |
 | `CATEGORY_MODEL.maxStateChars` | 400 | assumed | a name, a breadcrumb and a category string fit easily; caps cost |
 | `CATEGORY_MODEL.cacheEntries` | 500 | assumed | per server instance; a clear when full is enough at this traffic |

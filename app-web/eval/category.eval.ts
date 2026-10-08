@@ -10,6 +10,9 @@
 // the results file holds names, answers and confidences only.
 //
 //   npx vitest run --config vitest.eval.config.ts eval/category.eval.ts
+//
+// CATEGORY_NAMES=category-names-real.json runs the real shop titles (Session 94c)
+// instead of the written ones. A label "a|b" accepts either answer.
 
 import { describe, expect, it } from "vitest";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
@@ -28,7 +31,9 @@ function keyFromEnvLocal(): string | undefined {
 }
 
 type Row = { name: string; category: string; set: "easy" | "hard" };
-const { names } = JSON.parse(readFileSync(join(HERE, "category-names.json"), "utf8")) as { names: Row[] };
+const NAMES = process.env.CATEGORY_NAMES || "category-names.json";
+const { names } = JSON.parse(readFileSync(join(HERE, NAMES), "utf8")) as { names: Row[] };
+const accepts = (label: string, got: string | null) => got != null && label !== "unclear" && label.split("|").includes(got);
 const key = keyFromEnvLocal();
 
 describe("category classifier calibration", () => {
@@ -42,7 +47,7 @@ describe("category classifier calibration", () => {
     }
 
     // "unclear" names have no right answer: any confident garment is wrong for them.
-    const right = (a: (typeof answers)[number]) => a.category !== "unclear" && a.got === a.category;
+    const right = (a: (typeof answers)[number]) => accepts(a.category, a.got);
     const thresholds = Array.from({ length: 13 }, (_, i) => Math.round((0.3 + i * 0.05) * 100) / 100);
     const table = thresholds.map((t) => {
       const answered = answers.filter((a) => a.confidence != null && a.confidence >= t);
@@ -53,6 +58,7 @@ describe("category classifier calibration", () => {
 
     const out = {
       runAt: new Date().toISOString(),
+      names: NAMES,
       model: "jev-latest",
       n: answers.length,
       target: TARGET,
@@ -62,10 +68,14 @@ describe("category classifier calibration", () => {
       wrong: answers.filter((a) => a.confidence != null && !right(a)).map(({ name, category, got, confidence }) => ({ name, expected: category, got, confidence })),
       failed: answers.filter((a) => a.confidence == null).map(({ name, note }) => ({ name, note })),
     };
-    const file = join(HERE, "results", `category-calibration-${out.runAt.slice(0, 10)}.json`);
+    const tag = NAMES === "category-names.json" ? "" : "-" + NAMES.replace(/^category-names-|.json$/g, "");
+    const file = join(HERE, "results", `category-calibration${tag}-${out.runAt.slice(0, 10)}.json`);
     writeFileSync(file, JSON.stringify(out, null, 2) + "\n");
     console.log(table.map((r) => `${r.threshold.toFixed(2)}  answered ${r.answered}/${r.ofAll}  accuracy ${r.accuracy == null ? "—" : (100 * r.accuracy).toFixed(1) + "%"}`).join("\n"));
     console.log(`recommended threshold (≥ ${TARGET * 100}% right): ${out.recommended}`);
+    // A garment called "not clothing" refuses the shopper outright where no chart exists.
+    const notClothingOnGarments = answers.filter((a) => a.got === "not_clothing" && a.category !== "unclear" && !accepts(a.category, "not_clothing"));
+    console.log(`garments called not_clothing: ${notClothingOnGarments.map((a) => `${a.name} ${a.confidence}`).join("; ") || "none"}`);
     console.log(`wrong: ${out.wrong.length}, failed: ${out.failed.length} → ${file}`);
     expect(out.failed.length).toBeLessThan(names.length);
   });

@@ -873,4 +873,4 @@ a chart page no longer refuses on Jev's "not clothing" — it asks the garment
 `todo/decisions/06-mobile-app.md` for a detailed plan later.
 **Next — founder:** 0.9.0 review result; adidas/H&M retest; read the phone share in Vercel Analytics
 before planning the app. **Engineering:** Jev's confident "not clothing" on URL-only pages
-(no chart) still refuses — widen `category-names.json` with real names before trusting it there.
+(no chart) still refuses. Measured on 138 real titles (94c): 1 real garment at 0.71, synthetic up to 0.99 — founder to decide whether that branch should ask instead.

@@ -31,6 +31,16 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-08 · Session 94c — Jev on real shop titles
+
+- Took the public Shopify catalogues (`/products.json`) of 11 apparel shops: 2394 distinct titles. **The word rules miss 542 of them (23%)**, the share Jev is actually asked about. Most misses are model names: Allbirds shoes ("Men's Tree Dasher 2"), Chubbies trunks ("The Tahoes 8\""), Summersalt swimsuits ("The Sidestroke"), bags and gift items.
+- Labelled 138 of the misses by hand from the name alone (`eval/category-names-real.json`; `unclear` when the name names no garment, `a|b` when two categories are fair). `category.eval.ts` now takes `CATEGORY_NAMES=` and accepts `a|b`.
+- At the 0.65 threshold: 76 / 138 answered, 93.4% right. Of the 5 misses, none put one garment in another's category. 4 were names that do not say what they are, which Jev called `not_clothing`; 2 of those really are not clothing (tentree's planting subscriptions). The fifth is a real garment called `not_clothing` at 0.71 ("Stave 1/4 Snap"). Below the threshold it abstains, and the shopper picks the garment.
+- Garments called `not_clothing` at any confidence: 7 of 138, all at 0.71 or below. With the synthetic set (Cargo Parachutes 0.99, Rugby 0.94), a `not_clothing` answer is not safe at any threshold. On a page without a chart it still refuses (open question for the founder).
+- Threshold kept at 0.65; its provenance now cites both sets. Results: `app-web/eval/results/category-calibration-real-2026-10-08.json`.
+
+---
+
 ## 2026-10-08 · Session 94b — Jev calibrated; a chart outweighs "not clothing"; the app parked
 
 - Ran `eval/category.eval.ts` with a local key (never printed): 133 labelled names, 0 failed calls. Threshold → answered / right: 0.60 → 123 / 94.3%, **0.65 → 122 / 95.1%**, 0.70 → 120 / 95.8%, 0.90 → 111 / 97.3%. `CATEGORY_MODEL.minConfidence` 0.6 → **0.65**, now *measured* (n = 133); `docs/design/scoring-system.md` regenerated. Results: `app-web/eval/results/category-calibration-2026-10-08.json`.

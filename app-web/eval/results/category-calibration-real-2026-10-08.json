@@ -1,0 +1,346 @@
+{
+  "runAt": "2026-10-08T08:49:14.418Z",
+  "names": "category-names-real.json",
+  "model": "jev-latest",
+  "n": 138,
+  "target": 0.95,
+  "choices": [
+    "tshirt",
+    "top",
+    "shirt",
+    "polo",
+    "sweater",
+    "hoodie",
+    "jacket",
+    "pants",
+    "jeans",
+    "shorts",
+    "skirt",
+    "dress",
+    "jumpsuit",
+    "swimsuit",
+    "underwear",
+    "shoes",
+    "socks",
+    "accessory",
+    "not_clothing"
+  ],
+  "table": [
+    {
+      "threshold": 0.3,
+      "answered": 132,
+      "ofAll": 138,
+      "accuracy": 0.75
+    },
+    {
+      "threshold": 0.35,
+      "answered": 125,
+      "ofAll": 138,
+      "accuracy": 0.776
+    },
+    {
+      "threshold": 0.4,
+      "answered": 119,
+      "ofAll": 138,
+      "accuracy": 0.7899159663865546
+    },
+    {
+      "threshold": 0.45,
+      "answered": 110,
+      "ofAll": 138,
+      "accuracy": 0.8181818181818182
+    },
+    {
+      "threshold": 0.5,
+      "answered": 104,
+      "ofAll": 138,
+      "accuracy": 0.8269230769230769
+    },
+    {
+      "threshold": 0.55,
+      "answered": 91,
+      "ofAll": 138,
+      "accuracy": 0.8681318681318682
+    },
+    {
+      "threshold": 0.6,
+      "answered": 83,
+      "ofAll": 138,
+      "accuracy": 0.891566265060241
+    },
+    {
+      "threshold": 0.65,
+      "answered": 76,
+      "ofAll": 138,
+      "accuracy": 0.9342105263157895
+    },
+    {
+      "threshold": 0.7,
+      "answered": 69,
+      "ofAll": 138,
+      "accuracy": 0.9420289855072463
+    },
+    {
+      "threshold": 0.75,
+      "answered": 66,
+      "ofAll": 138,
+      "accuracy": 0.9545454545454546
+    },
+    {
+      "threshold": 0.8,
+      "answered": 56,
+      "ofAll": 138,
+      "accuracy": 0.9464285714285714
+    },
+    {
+      "threshold": 0.85,
+      "answered": 51,
+      "ofAll": 138,
+      "accuracy": 0.9411764705882353
+    },
+    {
+      "threshold": 0.9,
+      "answered": 45,
+      "ofAll": 138,
+      "accuracy": 0.9333333333333333
+    }
+  ],
+  "recommended": 0.75,
+  "wrong": [
+    {
+      "name": "Women's Tree Breezer Bow - Natural Black",
+      "expected": "unclear",
+      "got": "top",
+      "confidence": 0.24
+    },
+    {
+      "name": "Women's Wool Breezers - Dapple Grey",
+      "expected": "unclear",
+      "got": "pants",
+      "confidence": 0.5
+    },
+    {
+      "name": "The Sunset Chaser (Comfort Crew)- Black",
+      "expected": "hoodie|sweater",
+      "got": "tshirt",
+      "confidence": 0.37
+    },
+    {
+      "name": "The Patch Daddy 5.5\" (Originals)",
+      "expected": "shorts",
+      "got": "not_clothing",
+      "confidence": 0.63
+    },
+    {
+      "name": "The Ol' St. Nicks 5.5\"",
+      "expected": "shorts",
+      "got": "not_clothing",
+      "confidence": 0.31
+    },
+    {
+      "name": "The Tahoes 8\" (Everywear Stretch)",
+      "expected": "shorts",
+      "got": "tshirt",
+      "confidence": 0.26
+    },
+    {
+      "name": "The Malibu Sunset (Breezetech)",
+      "expected": "unclear",
+      "got": "tshirt",
+      "confidence": 0.31
+    },
+    {
+      "name": "The Gold Coast (Breezetech)",
+      "expected": "unclear",
+      "got": "tshirt",
+      "confidence": 0.32
+    },
+    {
+      "name": "The Duck & Covers (Boys Originals)- Green",
+      "expected": "unclear",
+      "got": "tshirt",
+      "confidence": 0.48
+    },
+    {
+      "name": "The Cobblestones 5.5\" (Stretch)",
+      "expected": "shorts",
+      "got": "jeans",
+      "confidence": 0.41
+    },
+    {
+      "name": "The Sandstones 5.5\" (Waffle Cord Originals)",
+      "expected": "shorts",
+      "got": "tshirt",
+      "confidence": 0.12
+    },
+    {
+      "name": "Traverse Texture Fit Bundle",
+      "expected": "unclear",
+      "got": "not_clothing",
+      "confidence": 0.57
+    },
+    {
+      "name": "Hyperloop Q-Zip | Pacific Blue Signature-fit",
+      "expected": "sweater|hoodie|jacket",
+      "got": "tshirt",
+      "confidence": 0.27
+    },
+    {
+      "name": "Black Cheeky Hipster",
+      "expected": "underwear",
+      "got": "tshirt",
+      "confidence": 0.26
+    },
+    {
+      "name": "18-Hour Jersey Lounge Set",
+      "expected": "unclear",
+      "got": "pants",
+      "confidence": 0.54
+    },
+    {
+      "name": "The Golfer’s Zoo",
+      "expected": "unclear",
+      "got": "not_clothing",
+      "confidence": 0.62
+    },
+    {
+      "name": "Nova Wallet",
+      "expected": "accessory",
+      "got": "not_clothing",
+      "confidence": 0.51
+    },
+    {
+      "name": "ACE Full-Zip Sweat Set",
+      "expected": "unclear",
+      "got": "hoodie",
+      "confidence": 0.5
+    },
+    {
+      "name": "Holiday Gift Pack",
+      "expected": "unclear",
+      "got": "not_clothing",
+      "confidence": 1
+    },
+    {
+      "name": "SuperForm Rib Kick Flare",
+      "expected": "pants",
+      "got": "jeans",
+      "confidence": 0.36
+    },
+    {
+      "name": "Grass Capri",
+      "expected": "pants",
+      "got": "shorts",
+      "confidence": 0.4
+    },
+    {
+      "name": "ThinkFast Mesh Shortsleeve",
+      "expected": "tshirt",
+      "got": "shorts",
+      "confidence": 0.56
+    },
+    {
+      "name": "Puddle Capri",
+      "expected": "pants",
+      "got": "shorts",
+      "confidence": 0.2
+    },
+    {
+      "name": "The Sidestroke - Strawberry",
+      "expected": "unclear",
+      "got": "swimsuit",
+      "confidence": 0.56
+    },
+    {
+      "name": "The Perfect Wrap One-Piece - Terrace Floral",
+      "expected": "swimsuit|jumpsuit",
+      "got": "dress",
+      "confidence": 0.64
+    },
+    {
+      "name": "The Eyelet Ruffle Oasis - Lava",
+      "expected": "unclear",
+      "got": "top",
+      "confidence": 0.49
+    },
+    {
+      "name": "The Kids' Matching Family Pajama Set - 'Tis the Season Tartan",
+      "expected": "unclear",
+      "got": "pants",
+      "confidence": 0.41
+    },
+    {
+      "name": "The Long Torso Ruffle Backflip - Hyacinth in Sunburst & Teal",
+      "expected": "unclear",
+      "got": "top",
+      "confidence": 0.53
+    },
+    {
+      "name": "The Surf - Sky & Blue Mountain",
+      "expected": "unclear",
+      "got": "tshirt",
+      "confidence": 0.42
+    },
+    {
+      "name": "The Jack in Valley Plaid Waffle",
+      "expected": "unclear",
+      "got": "shirt",
+      "confidence": 0.51
+    },
+    {
+      "name": "The Short Sleeve California in Redwood Hacci",
+      "expected": "unclear",
+      "got": "tshirt",
+      "confidence": 0.61
+    },
+    {
+      "name": "The Legend in Grey Smoke",
+      "expected": "unclear",
+      "got": "not_clothing",
+      "confidence": 0.65
+    },
+    {
+      "name": "The Canal Popover in Rinsed Indigo",
+      "expected": "shirt|sweater|hoodie",
+      "got": "not_clothing",
+      "confidence": 0.33
+    },
+    {
+      "name": "Weekend Getaway",
+      "expected": "unclear",
+      "got": "not_clothing",
+      "confidence": 1
+    },
+    {
+      "name": "Family Tree - One Month",
+      "expected": "unclear",
+      "got": "not_clothing",
+      "confidence": 0.95
+    },
+    {
+      "name": "Stave 1/4 Snap",
+      "expected": "sweater|hoodie",
+      "got": "not_clothing",
+      "confidence": 0.71
+    },
+    {
+      "name": "TreeBlend Baker Longsleeve",
+      "expected": "tshirt|top",
+      "got": "shirt",
+      "confidence": 0.44
+    },
+    {
+      "name": "TreeBlend Baker Henley",
+      "expected": "tshirt|shirt",
+      "got": "not_clothing",
+      "confidence": 0.3
+    },
+    {
+      "name": "Reynard Crew",
+      "expected": "hoodie|sweater|tshirt",
+      "got": "not_clothing",
+      "confidence": 0.37
+    }
+  ],
+  "failed": []
+}

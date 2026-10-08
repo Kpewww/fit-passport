@@ -1,0 +1,976 @@
+{
+ "about": "Real product titles, copied as published in each shop's public Shopify catalogue (/products.json) on 2026-10-08, chosen from the 542 of 2394 titles that the word rules in extractor.ts do NOT know (the only names the classifier is asked about). Labels are by hand from the name alone: 'unclear' when the name names no garment (any confident answer counts as wrong), 'a|b' when more than one of our categories is a fair answer. shopType is the shop's own product_type, kept for checking the labels; the classifier is not shown it.",
+ "source": "Shopify /products.json?limit=250 of allbirds, chubbiesshorts, cutsclothing, girlfriend, gymshark, mackweldon, outdoorvoices, summersalt, taylorstitch, tentree (.com); 2026-10-08",
+ "wordRuleCoverage": {
+  "titles": 2394,
+  "unknownToWordRules": 542
+ },
+ "names": [
+  {
+   "name": "Women's Allbirds Flip Flop - Dusty Pink",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Men's Cruiser Slip On - Natural Black (Blizzard Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Men's Dasher NZ - Light Burnt Olive (Natural White Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Women's Tree Breezer Bow - Natural Black",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Men's Allbirds Slide - Spice",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Women's Wool Lounger Mule - Stony Cream (Stony Cream Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Men's Cruiser Coastal - True Navy (Blizzard Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": null
+  },
+  {
+   "name": "Women's Varsity - Mushroom (Blizzard Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Smallbirds Wool Loungers - Big Kids - Natural White (Natural White Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Women's Wool Breezers - Dapple Grey",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Men's Tree Skippers - Sesame (White Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Women's Lounger Lift - Hanami Blue (Blizzard Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Men's Wool Cruiser Waterproof - Dark Grey (Light Grey Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Men's Strider Explore - Hazy Burgundy (Weathered Brown Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Women's Tree Pipers - Mulberry (Purple Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Men's Canvas Pacer Mids - Natural White (Blizzard Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "Women's Couriers - Blizzard (Natural White Sole)",
+   "category": "shoes",
+   "set": "hard",
+   "shop": "allbirds.com",
+   "shopType": "Shoes"
+  },
+  {
+   "name": "The Groovy With It Packers 5.5\" (Classic Lined Swim Trunk)",
+   "category": "shorts|swimsuit",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Electric Dusks 4\" (Classic Lined Swim Trunk)",
+   "category": "shorts|swimsuit",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Prowls (Boys Lined Swim Trunk)- Pink",
+   "category": "shorts|swimsuit",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Washed Ashores 5.5\" (Classic Swim Trunk)- Gray",
+   "category": "shorts|swimsuit",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Island Hoppers (Swim Brief)",
+   "category": "swimsuit",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Frozen Lake (Blocked Quarter Zip)",
+   "category": "sweater|hoodie|jacket",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Ol' Log Cabin (Quilted Quarter-Zip)",
+   "category": "sweater|hoodie|jacket",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Ol' Log Cabin (Comfort Crew)",
+   "category": "hoodie|sweater",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Sunset Chaser (Comfort Crew)- Black",
+   "category": "hoodie|sweater",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Patch Daddy 5.5\" (Originals)",
+   "category": "shorts",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Ol' St. Nicks 5.5\"",
+   "category": "shorts",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": "BlackFriday"
+  },
+  {
+   "name": "The Tahoes 8\" (Everywear Stretch)",
+   "category": "shorts",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Malibu Sunset (Breezetech)",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Gold Coast (Breezetech)",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Duck & Covers (Boys Originals)- Green",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Dunes (Boys Originals Shorties)",
+   "category": "shorts",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Cobblestones 5.5\" (Stretch)",
+   "category": "shorts",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Sandstones 5.5\" (Waffle Cord Originals)",
+   "category": "shorts",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Alpine Skies 7\" (Classic Swim Trunk w/ SP WB)",
+   "category": "shorts|swimsuit",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Seahawks Game Day Fit (Boys Classic Lined Trunk)",
+   "category": "shorts|swimsuit",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Neon Glades (Boys Lined Classic Swim Trunk- Shorter)",
+   "category": "shorts|swimsuit",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": null
+  },
+  {
+   "name": "The Bay Breezes 5.5\" (Classic Swim Trunk)",
+   "category": "shorts|swimsuit",
+   "set": "hard",
+   "shop": "chubbiesshorts.com",
+   "shopType": "Swim"
+  },
+  {
+   "name": "Cuts Tote Bag | Black",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "cutsclothing.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "Traverse Texture Fit Bundle",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "cutsclothing.com",
+   "shopType": "Bundles"
+  },
+  {
+   "name": "Hyperloop Q-Zip | Pacific Blue Signature-fit",
+   "category": "sweater|hoodie|jacket",
+   "set": "hard",
+   "shop": "cutsclothing.com",
+   "shopType": "Sweatshirts"
+  },
+  {
+   "name": "AO Long Sleeve Henley Curve-Hem | Ocean Storm Signature-fit PYCA Pro®",
+   "category": "tshirt|shirt",
+   "set": "hard",
+   "shop": "cutsclothing.com",
+   "shopType": "Shirts"
+  },
+  {
+   "name": "Legacy Bomber | Burnt Oak Signature-fit",
+   "category": "jacket",
+   "set": "hard",
+   "shop": "cutsclothing.com",
+   "shopType": "Outerwear"
+  },
+  {
+   "name": "Capri Camp Collar | Black Signature-Fit",
+   "category": "shirt",
+   "set": "hard",
+   "shop": "cutsclothing.com",
+   "shopType": null
+  },
+  {
+   "name": "Organic Cotton Boxer Brief 3-Pack | Black",
+   "category": "underwear",
+   "set": "hard",
+   "shop": "cutsclothing.com",
+   "shopType": null
+  },
+  {
+   "name": "Skyline Sport Skort",
+   "category": "skirt|shorts",
+   "set": "hard",
+   "shop": "girlfriend.com",
+   "shopType": "Sport Skort"
+  },
+  {
+   "name": "Black Cheeky Hipster",
+   "category": "underwear",
+   "set": "hard",
+   "shop": "girlfriend.com",
+   "shopType": "Cheeky Hipster"
+  },
+  {
+   "name": "Java Sport Brief",
+   "category": "underwear",
+   "set": "hard",
+   "shop": "girlfriend.com",
+   "shopType": "Sport Brief"
+  },
+  {
+   "name": "Black Luxe High-Rise Capri",
+   "category": "pants",
+   "set": "hard",
+   "shop": "girlfriend.com",
+   "shopType": "Luxe High-Rise Capri"
+  },
+  {
+   "name": "E-Gift Card",
+   "category": "not_clothing",
+   "set": "hard",
+   "shop": "girlfriend.com",
+   "shopType": "Gift Card"
+  },
+  {
+   "name": "Black Compressive High-Rise Capri",
+   "category": "pants",
+   "set": "hard",
+   "shop": "girlfriend.com",
+   "shopType": "Compressive High-Rise Capri"
+  },
+  {
+   "name": "Gymshark Power Satchel - Black",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "gymshark.com",
+   "shopType": "Unisex>Accessories>Bags>crossbody"
+  },
+  {
+   "name": "Gymshark Diffuse Sweat Headband - Soft Brown",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "gymshark.com",
+   "shopType": "Womens>Accessories>Headwear>headband"
+  },
+  {
+   "name": "Gymshark Cotton Lifting Straps - Black/Brand Blue",
+   "category": "accessory|not_clothing",
+   "set": "hard",
+   "shop": "gymshark.com",
+   "shopType": "Unisex>Accessories>Equipment>lifting_straps"
+  },
+  {
+   "name": "Gymshark Power Backpack - Grounded Green",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "gymshark.com",
+   "shopType": "Unisex>Accessories>Bags>backpack"
+  },
+  {
+   "name": "Gymshark Power Washed Henley - Black/Wash",
+   "category": "tshirt|shirt",
+   "set": "hard",
+   "shop": "gymshark.com",
+   "shopType": "Mens>Apparel>LS Tops>henley"
+  },
+  {
+   "name": "Gymshark Sleek Waistpack - Black",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "gymshark.com",
+   "shopType": "Unisex>Accessories>Bags>crossbody"
+  },
+  {
+   "name": "Gymshark Collectible Pin - Shadow Blue",
+   "category": "accessory|not_clothing",
+   "set": "hard",
+   "shop": "gymshark.com",
+   "shopType": "Unisex>Accessories>Misc.>misc"
+  },
+  {
+   "name": "Gymshark Shape One Piece - Black",
+   "category": "jumpsuit|swimsuit",
+   "set": "hard",
+   "shop": "gymshark.com",
+   "shopType": "Womens>Apparel>One Pieces>one_piece"
+  },
+  {
+   "name": "Gymshark Washed Waffle 1/4 Zip - Soft Brown/Wash",
+   "category": "sweater|hoodie",
+   "set": "hard",
+   "shop": "gymshark.com",
+   "shopType": "Womens>Apparel>Pullovers>1_4_zip"
+  },
+  {
+   "name": "Harry’s Plus Shave Set",
+   "category": "not_clothing",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "Quilted Rib Popover",
+   "category": "sweater|hoodie|shirt",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Tops"
+  },
+  {
+   "name": "ACE Sweatshort 7\"",
+   "category": "shorts",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Final Sale"
+  },
+  {
+   "name": "Stealth Pro Boxer Brief",
+   "category": "underwear",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Final Sale"
+  },
+  {
+   "name": "3-Pack AIRKNITˣ Cotton V-Neck Undershirt",
+   "category": "tshirt|underwear",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Undershirts"
+  },
+  {
+   "name": "18-Hour Jersey Lounge Set",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Tops"
+  },
+  {
+   "name": "3-Pack 24/7 Woven Boxers Art Deco",
+   "category": "underwear",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Bundles"
+  },
+  {
+   "name": "The Golfer’s Zoo",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "Atlas Duffle",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "SILVER Long Sleeve Henley",
+   "category": "tshirt|shirt",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Final Sale"
+  },
+  {
+   "name": "Nova Card Case",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Final Sale"
+  },
+  {
+   "name": "Ion Briefcase",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Final Sale"
+  },
+  {
+   "name": "SILVER Active Gaiter",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Final Sale"
+  },
+  {
+   "name": "Nova Wallet",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Final Sale"
+  },
+  {
+   "name": "ACE Full-Zip Sweat Set",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Bundles"
+  },
+  {
+   "name": "Holiday Gift Pack",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "mackweldon.com",
+   "shopType": "Underwear"
+  },
+  {
+   "name": "The Exercise 3\" Skort",
+   "category": "skirt|shorts",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Skorts/Skirts"
+  },
+  {
+   "name": "SuperForm Rib Kick Flare",
+   "category": "pants",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Pants"
+  },
+  {
+   "name": "SuperForm Rib Longsleeve",
+   "category": "tshirt|top",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Longsleeve"
+  },
+  {
+   "name": "CloudKnit Heavyweight Shortsleeve",
+   "category": "tshirt",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Shortsleeve"
+  },
+  {
+   "name": "Grass Capri",
+   "category": "pants",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Leggings"
+  },
+  {
+   "name": "Bloomer",
+   "category": "shorts|underwear",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Shorts"
+  },
+  {
+   "name": "ThinkFast Mesh Shortsleeve",
+   "category": "tshirt",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Shortsleeve"
+  },
+  {
+   "name": "SolarCool Camp Collar",
+   "category": "shirt",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Shortsleeve"
+  },
+  {
+   "name": "OV Signature Tote",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "RecFleece 1/4 Zip",
+   "category": "sweater|hoodie",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "2nd Layer"
+  },
+  {
+   "name": "RecFleece Relaxed Full Zip",
+   "category": "sweater|hoodie|jacket",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "2nd Layer"
+  },
+  {
+   "name": "Waffle Longsleeve",
+   "category": "tshirt|top",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Longsleeve"
+  },
+  {
+   "name": "Club Skort",
+   "category": "skirt|shorts",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Skorts/Skirts"
+  },
+  {
+   "name": "Puddle Capri",
+   "category": "pants",
+   "set": "hard",
+   "shop": "outdoorvoices.com",
+   "shopType": "Leggings"
+  },
+  {
+   "name": "The Sidestroke - Strawberry",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "One Pieces - Sidestrokes"
+  },
+  {
+   "name": "The Softest Ribbed Long Sleeve Mock Neck - Sea Urchin",
+   "category": "top|tshirt|sweater",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "Tops & Shirts"
+  },
+  {
+   "name": "The Ruched High Leg High Rise Bottom - Spritz",
+   "category": "swimsuit|underwear",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "Swim Bottoms"
+  },
+  {
+   "name": "The Perfect Wrap One-Piece - Terrace Floral",
+   "category": "swimsuit|jumpsuit",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "One Pieces - Other"
+  },
+  {
+   "name": "The High Neck One-Piece - Sea Urchin",
+   "category": "swimsuit|jumpsuit",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "One Pieces - Other"
+  },
+  {
+   "name": "The Eyelet Ruffle Oasis - Lava",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "One Pieces - Other"
+  },
+  {
+   "name": "The Waterside Ruffle Rash Guard - Bluestone",
+   "category": "swimsuit|top",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "Cover-Up Tops"
+  },
+  {
+   "name": "The Kids' Matching Family Pajama Set - 'Tis the Season Tartan",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "Pajamas"
+  },
+  {
+   "name": "The Softest French Terry Relaxed Colorblock Crew - Main",
+   "category": "hoodie|sweater",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "Sweatshirts"
+  },
+  {
+   "name": "The Coziest Cashmere Blend Crew - Wolf & Toffee",
+   "category": "sweater",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "Sweaters"
+  },
+  {
+   "name": "The Breaker Belted One-Piece - White Sand",
+   "category": "swimsuit|jumpsuit",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "One Pieces - Other"
+  },
+  {
+   "name": "The Long Torso Ruffle Backflip - Hyacinth in Sunburst & Teal",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "One Pieces - Other"
+  },
+  {
+   "name": "The Surf - Sky & Blue Mountain",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "One Pieces - Other"
+  },
+  {
+   "name": "The High Leg High Rise Bottom - Sea Urchin",
+   "category": "swimsuit|underwear",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "Swim Bottoms"
+  },
+  {
+   "name": "The Sea Breeze Cutout One-Piece - Blackthorn in Midnight",
+   "category": "swimsuit|jumpsuit",
+   "set": "hard",
+   "shop": "summersalt.com",
+   "shopType": "One Pieces - Other"
+  },
+  {
+   "name": "The Jack in Valley Plaid Waffle",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Wovens"
+  },
+  {
+   "name": "The Armor Quarter Zip in Heather Grey Cotton Hemp",
+   "category": "sweater|hoodie",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Knits"
+  },
+  {
+   "name": "The Tiller Half Zip in Rinsed Indigo Slub",
+   "category": "sweater|hoodie",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Knits"
+  },
+  {
+   "name": "The Organic Cotton Crew in Dark Forest Waffle",
+   "category": "tshirt|sweater",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Knits"
+  },
+  {
+   "name": "The Deck Tote in Navy Twill",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "The Clark Bomber in Smoked Olive Moleskin",
+   "category": "jacket",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Outerwear"
+  },
+  {
+   "name": "The Sunset Henley in Washed Goldfinch Terry",
+   "category": "tshirt|shirt",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Knits"
+  },
+  {
+   "name": "The Organic Cotton Short Sleeve Crew in Burgundy Waffle",
+   "category": "tshirt",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Knits"
+  },
+  {
+   "name": "The Short Sleeve California in Redwood Hacci",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Wovens"
+  },
+  {
+   "name": "The Grateful Dead Bolt Patch Set",
+   "category": "not_clothing|accessory",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "The Bandana in Faded Black Stamp",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "The Magoo’s Pin Set",
+   "category": "accessory|not_clothing",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "The Legend in Grey Smoke",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "The Short Sleeve Jack in Burgundy Linen",
+   "category": "shirt|tshirt",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Wovens"
+  },
+  {
+   "name": "The Canal Popover in Rinsed Indigo",
+   "category": "shirt|sweater|hoodie",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Knits"
+  },
+  {
+   "name": "The Stevens Sportcoat in Morel Micro Check",
+   "category": "jacket",
+   "set": "hard",
+   "shop": "taylorstitch.com",
+   "shopType": "Outerwear"
+  },
+  {
+   "name": "Weekend Getaway",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Climate+"
+  },
+  {
+   "name": "Family Tree - One Month",
+   "category": "unclear",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Climate+"
+  },
+  {
+   "name": "Order Protection & Plant 1 Tree",
+   "category": "not_clothing",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Climate+"
+  },
+  {
+   "name": "Floral Heritage Crew",
+   "category": "hoodie|sweater|tshirt",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Womens"
+  },
+  {
+   "name": "Palisade Full Zip",
+   "category": "hoodie|sweater|jacket",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Womens"
+  },
+  {
+   "name": "Sombrio Clip Bag",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "Stave 1/4 Snap",
+   "category": "sweater|hoodie",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Mens"
+  },
+  {
+   "name": "TreeBlend Baker Longsleeve",
+   "category": "tshirt|top",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Mens"
+  },
+  {
+   "name": "TreeBlend Baker Henley",
+   "category": "tshirt|shirt",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Mens"
+  },
+  {
+   "name": "Humphreys Mitten",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "Niagara 1/4 Zip",
+   "category": "sweater|hoodie",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Womens"
+  },
+  {
+   "name": "Whitney Mockneck",
+   "category": "top|tshirt|sweater",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Womens"
+  },
+  {
+   "name": "Reynard Crew",
+   "category": "hoodie|sweater|tshirt",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Mens"
+  },
+  {
+   "name": "Valdes Hip Pack",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "Ruxton Packable Backpack",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Accessories"
+  },
+  {
+   "name": "Creston Quilted Bag",
+   "category": "accessory",
+   "set": "hard",
+   "shop": "tentree.com",
+   "shopType": "Accessories"
+  }
+ ]
+}
