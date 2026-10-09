@@ -34,6 +34,7 @@
 import { BRAND_BIAS, DIRECTION } from "./scoringConstants";
 import { EN_TEXT, type EngineText } from "./engineText";
 import { alphaIndex, normalizeToAlpha } from "./sizing";
+import { sameEngineCategory } from "./garmentTaxonomy";
 
 export type OutcomeSignal = {
   productBrand: string | null;
@@ -136,10 +137,10 @@ export function biasForBrand(
     if (v === "big") big++;
     else if (v === "small") small++;
   }
-  const ex = excludeCategory?.toLowerCase() ?? null;
+  const ex = excludeCategory ?? null;
   for (const c of closet) {
     if (c.brand.toLowerCase() !== brand.toLowerCase()) continue;
-    if (ex && c.category.toLowerCase() === ex) continue;
+    if (ex && sameEngineCategory(c.category, ex)) continue;
     const v = closetVote(c);
     if (v === "big") big++;
     else if (v === "small") small++;

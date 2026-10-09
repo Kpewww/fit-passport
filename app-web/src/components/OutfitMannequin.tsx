@@ -16,6 +16,7 @@
 
 import type { VolumeBand, TorsoShape } from "@/lib/bodyType";
 import { colorHexOr } from "@/lib/colors";
+import { engineCategoryOf } from "@/lib/garmentTaxonomy";
 
 export type OutfitLayer = { category: string; color?: string | null };
 
@@ -31,12 +32,16 @@ const BAND: Record<VolumeBand | "unknown", { shoulder: number; waist: number }> 
 
 const hex = (c: string | null | undefined, fallback: string) => colorHexOr(c, fallback);
 
-// Which body zone a garment category paints.
-type Zone = "top" | "bottom" | "shoe" | "head" | "neck" | "none";
+// Which body zone a garment category paints. A Session 98 type paints where the
+// key it is sized as does: a trench as a jacket, a pleated skirt as a skirt.
+type Zone = "top" | "bottom" | "skirt" | "dress" | "onepiece" | "shoe" | "head" | "neck" | "none";
 function zoneFor(category: string): Zone {
-  const c = category.toLowerCase();
+  const c = engineCategoryOf(category);
   if (["tshirt", "top", "shirt", "polo", "sweater", "hoodie", "jacket"].includes(c)) return "top";
-  if (["pants", "jeans", "shorts", "skirt"].includes(c)) return "bottom";
+  if (["pants", "jeans", "shorts"].includes(c)) return "bottom";
+  if (c === "skirt") return "skirt";
+  if (c === "dress") return "dress";
+  if (c === "jumpsuit") return "onepiece";
   if (["shoes", "sneakers", "boots"].includes(c)) return "shoe";
   if (["hat"].includes(c)) return "head";
   if (["scarf"].includes(c)) return "neck";
@@ -73,8 +78,11 @@ export function OutfitMannequin({
     if (z === "none") continue;
     byZone[z] = hex(l.color, zoneDefault(z));
   }
-  const topColor = byZone.top ?? DEFAULTS.top;
-  const bottomColor = byZone.bottom ?? DEFAULTS.bottom;
+  // A dress or jumpsuit covers both halves unless a top or bottom is worn over it.
+  const whole = byZone.dress ?? byZone.onepiece;
+  const topColor = byZone.top ?? whole ?? DEFAULTS.top;
+  const bottomColor = byZone.bottom ?? byZone.skirt ?? whole ?? DEFAULTS.bottom;
+  const skirtShape = !byZone.bottom && (!!byZone.skirt || !!byZone.dress);
   const shoeColor = byZone.shoe ?? DEFAULTS.shoe;
   const hatColor = byZone.head;
   const scarfColor = byZone.neck;
@@ -106,12 +114,20 @@ export function OutfitMannequin({
       {/* legs base (skin) then bottom garment over them */}
       <rect x={cx - hip} y={hipY} width={hip - 1} height={hemY - hipY} rx={3} fill={DEFAULTS.skin} />
       <rect x={cx + 1} y={hipY} width={hip - 1} height={hemY - hipY} rx={3} fill={DEFAULTS.skin} />
-      {/* bottom garment (covers hips→hem, sleeves left bare) */}
-      <path
-        d={`M ${cx - waist} ${waistY} L ${cx + waist} ${waistY} L ${cx + hip} ${hemY - 6} L ${cx + 1.5} ${hemY - 4} L ${cx} ${waistY + 8} L ${cx - 1.5} ${hemY - 4} L ${cx - hip} ${hemY - 6} Z`}
-        fill={bottomColor}
-        stroke="#00000018"
-      />
+      {/* bottom garment (covers hips→hem, sleeves left bare); a skirt or a dress flares to the knee */}
+      {skirtShape ? (
+        <path
+          d={`M ${cx - waist} ${waistY} L ${cx + waist} ${waistY} L ${cx + hip + 7} ${hemY - 12} Q ${cx} ${hemY - 8} ${cx - hip - 7} ${hemY - 12} Z`}
+          fill={bottomColor}
+          stroke="#00000018"
+        />
+      ) : (
+        <path
+          d={`M ${cx - waist} ${waistY} L ${cx + waist} ${waistY} L ${cx + hip} ${hemY - 6} L ${cx + 1.5} ${hemY - 4} L ${cx} ${waistY + 8} L ${cx - 1.5} ${hemY - 4} L ${cx - hip} ${hemY - 6} Z`}
+          fill={bottomColor}
+          stroke="#00000018"
+        />
+      )}
       {/* shoes */}
       <rect x={cx - hip} y={hemY - 4} width={hip} height={6} rx={2} fill={shoeColor} />
       <rect x={cx} y={hemY - 4} width={hip} height={6} rx={2} fill={shoeColor} />
@@ -128,7 +144,7 @@ export function OutfitMannequin({
 
 function zoneDefault(z: Zone): string {
   if (z === "top") return DEFAULTS.top;
-  if (z === "bottom") return DEFAULTS.bottom;
+  if (z === "bottom" || z === "skirt" || z === "dress" || z === "onepiece") return DEFAULTS.bottom;
   if (z === "shoe") return DEFAULTS.shoe;
   return "#cccccc";
 }

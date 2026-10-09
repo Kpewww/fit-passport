@@ -1401,3 +1401,21 @@ and verdict word are printed beside every coloured part.
 `public/anny/body.bin|json|NOTICE` (1,543 verts incl. ellipsoid mannequin head, 90 KB gz); `lib/annyBody.ts`
 `fitAnny` (girths within 1 cm on 3 fixtures, residuals returned); `/lab/body` (noindex, robots `/lab/`, exempt
 from the untranslated guard). Legs coloured by the hip only.
+
+**SESSION 98a (2026-10-09).** 873 → **875 tests**. `fitDirection` is **Float** (1 decimal, `clampDirection` 0.1-grained;
+migration `20261009120000_fit_direction_decimal`). `Field as="div"` for any composite control — a `<label>` forwards
+a tap on a gap to its first button (the fit-scale "bounce"). `components/ColorPicker.tsx` (swatches, hex, wheel; no
+typed names), `ProductLinkCheck.tsx` (edit sheet reads a link via `/api/closet/extract`). Add flow: optional 5th step
+(`OPTIONAL_STEPS` in `lib/addFlow.ts`, outside the FIC budget).
+
+**SESSION 98b (2026-10-09).** 875 → **1,276 tests** (358 are one-per-name coverage). **Two-level garment types:**
+`lib/garmentTaxonomy.ts` (11 parents, 103 types, a type may sit under several parents), `garmentAliases.ts` (search
+words), `garmentSearch.ts` (search + `refineType`, lazy in the browser), `garmentCoverage.fixture.ts` (Google +
+Shopify downloaded; JD/Taobao from memory, UNVERIFIED). Picker = `CategoryPicker.tsx` (button/inline) +
+`CategoryBrowser.tsx` (lazy chunk). Engine untouched: comparisons via `sameEngineCategory`, domain/ease via
+`engineCategoryOf` (own ease key first). A missing type → add the name to the fixture first, then a type or alias.
+
+**NEW INVARIANT:**
+**(97)** **A garment type is sized as its engine key, and the 23 keys from before never change.** Every type names one
+of the 23 (+ `underwear`); "same kind of garment" means the same engine key; the extractor and the extension still
+speak only the 23. `garmentTaxonomy.test.ts` pins their domain, ease and folder.

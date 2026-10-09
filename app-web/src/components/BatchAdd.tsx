@@ -128,10 +128,10 @@ export function BatchAdd({ onClose, onAdded }: { onClose: () => void; onAdded: (
                 {t("brand")}
                 <BrandInput value={r.brand} onChange={(v) => set(r.key, { brand: v })} />
               </label>
-              <label className="min-w-0 text-xs text-ink-soft">
+              <div className="min-w-0 text-xs text-ink-soft">
                 {t("type")}
                 <CategoryPicker value={r.category} onChange={(v) => set(r.key, { category: v })} />
-              </label>
+              </div>
               <label className="min-w-0 text-xs text-ink-soft">
                 {t("size")}
                 <input className={inputClass} value={r.size} onChange={(e) => set(r.key, { size: e.target.value })} />

@@ -28,3 +28,5 @@ The fit map adds 1 kB, since three.js and the 3D code load lazily. Same remedy a
 split the 1,500-line page so the result's secondary cards load when shown.
 
 Session 98a: /closet **140 kB** (the shared colour picker, the product-link check, the optional add step).
+Session 98b: /closet **144 kB**, /outfits **132 kB**. The two-level type browser and its search words load on
+demand. The 103-type list itself is in the shared chunk, because sizeSystems, GarmentIcon and the names read it.

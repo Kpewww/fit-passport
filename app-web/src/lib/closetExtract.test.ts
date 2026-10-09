@@ -69,11 +69,18 @@ describe("closet add-by-link: what a pasted link may pre-fill", () => {
     expect(r.measuredFrom).toBe("brand-chart");
   });
 
-  it("asks the category when the extractor's category is not one of the closet's (coat; dress became one in Session 84)", () => {
-    const r = closetExtract(product({ url: "u", host: "x", fetch: "ok", sizesFrom: "page", categoryFrom: "page-structured" }, { category: "coat" }));
+  it("asks the category when the extractor's category is not one of the closet's (parka; dress became one in Session 84, coat in 98)", () => {
+    const r = closetExtract(product({ url: "u", host: "x", fetch: "ok", sizesFrom: "page", categoryFrom: "page-structured" }, { category: "parka" }));
     if (r.result !== "read") throw new Error("expected read");
     expect(r.category).toBeNull();
     expect(r.categoryFromPage).toBe(false);
+  });
+
+  it("keeps the finer type the product's name gives, sized the same (Session 98)", () => {
+    const r = closetExtract(product({ url: "u", host: "x", fetch: "ok", sizesFrom: "page", categoryFrom: "page-structured" }, { category: "sweater", productName: "Ribbed Wool Cardigan" }));
+    if (r.result !== "read") throw new Error("expected read");
+    expect(r.category).toBe("cardigan");
+    expect(r.categoryFromPage).toBe(true);
   });
 
   it("marks a demo link's sample as a demo, through the real extractor", () => {

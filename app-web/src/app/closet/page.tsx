@@ -1387,7 +1387,7 @@ function EditRow({
           <Field label={t("name")} hint={t("optional")}><input className={inputClass} value={f.displayName} placeholder={t("namePlaceholder")} onChange={(e) => setF({ ...f, displayName: e.target.value })} /></Field>
         </div>
         <div className="sm:col-span-2">
-          <Field label={t("typeLabel")}>
+          <Field as="div" label={t("typeLabel")}>
             <CategoryPicker value={f.category} onChange={(v) => setF({ ...f, category: v })} />
           </Field>
           <p className="mt-1 text-[11px] text-ink-faint">{t("typeHint")}</p>
@@ -2262,6 +2262,7 @@ function AddItemFlow({
           )}
           {step === "category" && (
             <CategoryPicker
+              inline
               value={form.category}
               onChange={(v) => setForm({ ...form, category: v, size: "" })}
             />

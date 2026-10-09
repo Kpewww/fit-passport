@@ -31,6 +31,78 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-09 · Session 98b — Garment types in two levels: 11 parents, 103 types, and proof that none is missing
+
+Phase 2 of the founder's review. They asked for types chosen as "parent, then child",
+as complete as people need, without a cluttered picker. The first plan was turned back
+for missing 开衫 (cardigan).
+
+**The list** (`lib/garmentTaxonomy.ts`):
+- 11 parents: tops, knitwear, outerwear, dresses and one-pieces (on their own, as asked),
+  skirts, pants and shorts, sets, underwear and loungewear, swimwear, shoes, accessories.
+- 103 types. A type can sit under several parents and still be one key: the cardigan is
+  under knitwear, outerwear and tops; leggings under pants and underwear.
+- Lengths, fabrics and cuts are search words, not types.
+- Search words in both languages are in `lib/garmentAliases.ts`. Search and the closet's
+  narrowing are in `lib/garmentSearch.ts`, loaded only when someone types.
+
+**The engine is untouched.**
+- Every type names the key the engine sizes it as: one of the 23 from before, plus
+  `underwear`. A cardigan is sized as a sweater, a trench as a jacket.
+- Comparisons of "the same kind of garment" go through `sameEngineCategory`: the fitEngine
+  anchors, `brandBias`, `listingJudgement` and /check's same-brand list.
+- `domainForCategory` and the ease (`easeAdjustForCategory`) go through
+  `engineCategoryOf`. The ease looks up a type's own key first, so a coat keeps its +8 cm
+  and a blazer its +3 cm (constants that already existed).
+- `garmentTaxonomy.test.ts` pins each of the 23 old keys to the domain, ease and folder it
+  had. One test shows a same-brand cardigan anchors a sweater exactly as a sweater does.
+- The one change to old keys: dresses, jumpsuits and swimsuits used to be filed in
+  "Other". New ones now go to "Dresses" and "Swimwear" folders, made on first use.
+- /check's extractor still outputs the 23 keys. A closet capture narrows the type from
+  the product's name ("Ribbed Cardigan" → cardigan), only to a type sized the same way
+  (`refineType`).
+- The extension's 12 choices are unchanged.
+
+**Proof nothing is missing** (`lib/garmentCoverage.fixture.ts`):
+- 358 category names (Google 119, Shopify 93, JD 108, Taobao 38). Google's product taxonomy (zh-CN and en-US) and Shopify's
+  (`dist/en/categories.txt`) were downloaded and copied as listed.
+- JD and Taobao render their categories in script and could not be read. Their names were
+  written from memory and are labelled UNVERIFIED in the file.
+- Each name must find its expected type first. Google and Shopify surfaced types the plan
+  had missed: kimono and yukata, saris and other traditional dress, ski and rain pants,
+  sports tops, petticoats, earmuffs.
+- Also tested: every Chinese name can be found from the English site, and every English
+  name from the Chinese site, since a page ships one language.
+
+**Picker** (`components/CategoryPicker.tsx` + `CategoryBrowser.tsx`):
+- Parent tiles with icons, then the chosen parent's types as chips, with each parent's
+  catch-all last.
+- The choice reads "外套 · 风衣". A search box covers every type in both languages.
+- Notes: a set is sized by its top for now; underwear, shoes and accessories are kept
+  but not sized.
+- Inline in the add wizard. In the edit sheet, outfit rows and batch add it is a button
+  that opens a panel (a bottom sheet with a backdrop on phones). Those wrappers are no
+  longer `<label>`s, the cause of the Session 98a bounce.
+- New drawn icons: a bra (underwear) and a bag (accessories). A type without its own
+  icon draws as its engine key's, then its parent's; only "Other" is the hanger.
+- The outfit mannequin now draws skirts as skirts and dresses as dresses.
+
+**Verified:**
+- 1,276 tests + 1 skip (875 before; the coverage list is one test per name), exit 0.
+- In Chromium:
+  - zh, 1280 wide, the add wizard: 开衫 sits under 外套 with 其他外套 last; picking it
+    reads 外套 · 开衫. Typing "cardigan" finds 开衫, and a search result picks
+    "风衣". The piece is stored as `trench`.
+  - en, 390 wide, /outfits: the sheet fits the screen and closes on a pick. The button
+    then reads "Dresses · Qipao", the mannequin wears a dress, and nothing scrolls
+    sideways.
+  - No console errors.
+- **Budget:** search and the browser load on demand. The 103-type list sits in the
+  shared chunk (sizeSystems, the icons and the names need it). Net: /closet 140 → 144 kB,
+  /outfits 129 → 132 kB, /check 128 kB (`todo/engineering/13`).
+
+---
+
 ## 2026-10-09 · Session 98a — The fit scale stops bouncing back; colours are picked; the edit sheet explains itself
 
 The founder's review of /outfits, the closet editor, the body lab and the extension

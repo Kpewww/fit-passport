@@ -19,6 +19,7 @@
 
 import type { ExtractedProduct } from "./extractor";
 import { garmentFor } from "./garments";
+import { refineType } from "./garmentSearch";
 import { isValidSize } from "./sizeSystems";
 
 export type ClosetSizeRow = {
@@ -61,7 +62,10 @@ export function closetExtract(ex: ExtractedProduct): ClosetExtract {
   const noGarment = s.categoryGuessed === true && s.sizesFrom === "estimated";
   if (!demo && (pageUnread || noGarment)) return { result: "unreadable", host };
 
-  const category = ex.category && garmentFor(ex.category) ? ex.category : null;
+  // The extractor names one of the engine's keys; the closet keeps the finer type
+  // the product's name gives ("Ribbed Cardigan" is a cardigan, not just a sweater).
+  // Sized the same either way (garmentSearch.refineType), so /check is untouched.
+  const category = ex.category && garmentFor(ex.category) ? refineType(ex.category, ex.productName) : null;
   // A model's category is not the page's word: the closet still asks (Session 84c).
   const categoryFromPage = category != null && (demo || (!s.categoryGuessed && s.categoryFrom !== "url" && s.categoryFrom !== "model" && s.categoryFrom != null));
 

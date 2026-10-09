@@ -1,6 +1,6 @@
 "use client";
 
-// Names of garment types, sections, the closet's default folders and product
+// Names of garment types, their parents, the closet's default folders and product
 // lines, in the reader's language. The stored values stay the stable English
 // keys the engine and the closet's auto-filing match on; only what is SHOWN
 // changes. A value we have no name for (a folder the user renamed, a category
@@ -8,13 +8,16 @@
 
 import { useMemo } from "react";
 import { useT } from "./client";
-import { GARMENTS } from "@/lib/garments";
+import { GARMENT_TYPES, PARENT_ORDER, type GarmentParent } from "@/lib/garmentTaxonomy";
 
-const CATEGORIES = new Set(GARMENTS.map((g) => g.category));
-const SECTIONS = new Set(["Tops", "Bottoms", "One-piece", "Footwear", "Accessories"]);
+const CATEGORIES = new Set(GARMENT_TYPES.map((g) => g.key));
+const PARENTS = new Set<string>(PARENT_ORDER);
 // lib/collections.ts DEFAULT_COLLECTIONS, plus the closet's own bucket name. Not
 // imported: that module reaches the database.
-const FOLDERS = new Set(["T-Shirts", "Shirts", "Sweaters", "Jackets", "Bottoms", "Footwear", "Accessories", "Other", "Uncategorized"]);
+const FOLDERS = new Set([
+  "T-Shirts", "Shirts", "Sweaters", "Jackets", "Bottoms", "Footwear", "Accessories", "Other", "Uncategorized",
+  "Dresses", "Sets", "Intimates", "Swimwear",
+]);
 const LINES = new Set(["mens", "womens", "unisex"]);
 // Item colour presets (lib/colors.ts) and folder colours (closet page).
 const COLORS = new Set([
@@ -24,7 +27,6 @@ const COLORS = new Set([
 ]);
 
 type Cat = keyof typeof import("./messages/en").en.garment.cat;
-type Section = keyof typeof import("./messages/en").en.garment.section;
 type Folder = keyof typeof import("./messages/en").en.garment.folder;
 type Line = "mens" | "womens" | "unisex";
 type Color = keyof typeof import("./messages/en").en.garment.color;
@@ -34,7 +36,7 @@ export function useGarmentText() {
   return useMemo(
     () => ({
       label: (category: string) => (CATEGORIES.has(category) ? t(`cat.${category as Cat}`) : category),
-      section: (s: string) => (SECTIONS.has(s) ? t(`section.${s as Section}`) : s),
+      parent: (p: string) => (PARENTS.has(p) ? t(`parent.${p as GarmentParent}`) : p),
       folder: (name: string) => (FOLDERS.has(name) ? t(`folder.${name as Folder}`) : name),
       line: (g: string | null | undefined) => (g && LINES.has(g) ? t(`line.${g as Line}`) : t("line.none")),
       lineShort: (g: string) => (LINES.has(g) ? t(`lineShort.${g as Line}`) : g),

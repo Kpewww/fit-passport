@@ -22,6 +22,7 @@
 import type { FitPreference } from "./sizing";
 import { alphaIndex, easeAdjustForCategory, normalizeToAlpha } from "./sizing";
 import { domainForCategory } from "./sizeSystems";
+import { sameEngineCategory } from "./garmentTaxonomy";
 import { directionToLadderShift, isDirectional, nearestOption } from "./fitDirection";
 import { verdictFromDelta, type FitVerdict } from "./fitEngine";
 import type { DirectionKey, EngineText } from "./engineText";
@@ -142,7 +143,7 @@ export function judgeListing(input: ListingInput, M: EngineText): Judgement {
       const refs = input.knownGood
         .filter((k) => k.garmentChestCm != null && MEASURED.has(k.garmentMeasuredFrom ?? "") && domainForCategory(k.category) === "top")
         .sort((a, b) =>
-          Number(b.category === input.category) - Number(a.category === input.category) ||
+          Number(sameEngineCategory(b.category, input.category)) - Number(sameEngineCategory(a.category, input.category)) ||
           Number(b.fitDirection != null) - Number(a.fitDirection != null) ||
           Math.abs(a.fitDirection ?? 0) - Math.abs(b.fitDirection ?? 0));
       const ref = refs[0];
@@ -176,7 +177,7 @@ export function judgeListing(input: ListingInput, M: EngineText): Judgement {
       .map((k) => ({ k, idx: alphaIndex(normalizeToAlpha(k.size, k.gender)) }))
       .filter((x) => x.idx != null && domainForCategory(x.k.category) === domain)
       .sort((a, b) =>
-        Number(b.k.category === input.category) - Number(a.k.category === input.category) ||
+        Number(sameEngineCategory(b.k.category, input.category)) - Number(sameEngineCategory(a.k.category, input.category)) ||
         Math.abs(a.k.fitDirection ?? 0) - Math.abs(b.k.fitDirection ?? 0));
     const ref = refs[0];
     if (ref) {

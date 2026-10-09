@@ -12,6 +12,8 @@
 // "onepiece" (dresses, jumpsuits, swimsuits) and "intimate" (bras, underwear) are
 // recognised so a page is told the truth about them (Session 84); whether the
 // engine can score them is SCOREABLE_DOMAINS's question, below.
+import { engineCategoryOf } from "./garmentTaxonomy";
+
 export type SizeDomain = "top" | "bottom" | "onepiece" | "intimate" | "shoe" | "sock" | "accessory";
 
 // Map each garment category (the engine's `category` field) to a size domain.
@@ -45,7 +47,8 @@ const CATEGORY_DOMAIN: Record<string, SizeDomain> = {
 };
 
 export function domainForCategory(category: string): SizeDomain {
-  return CATEGORY_DOMAIN[category.toLowerCase()] ?? "top";
+  // A Session 98 type ("cardigan") is sized as its engine category ("sweater").
+  return CATEGORY_DOMAIN[engineCategoryOf(category)] ?? "top";
 }
 
 /**

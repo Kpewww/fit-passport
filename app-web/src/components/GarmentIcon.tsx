@@ -7,11 +7,12 @@
 // stroke, which is what Phosphor's Light weight is. Drawn in the same line, they
 // sit beside the library's glyphs without looking borrowed.
 //
-// `garmentIcon.test.ts` fails if a category in GARMENTS has no icon.
+// `garmentIcon.test.ts` fails if a type in GARMENTS draws as the hanger.
 
 import type { ReactNode } from "react";
 import { Svg } from "@/components/icons/Svg";
 import * as D from "@/components/icons/garments";
+import { garmentType, type GarmentParent } from "@/lib/garmentTaxonomy";
 
 type Props = { category: string | null | undefined; size?: number; className?: string; label?: string };
 
@@ -90,6 +91,40 @@ const DRAWN: Record<string, ReactNode> = {
       <path d="M142,124 L156,210 L188,198 L166,116" />
     </>
   ),
+  // Bra (Session 98, the underwear parent): two cups on a band, two straps.
+  bra: (
+    <>
+      <path d="M84,84 L96,46" />
+      <path d="M172,84 L160,46" />
+      <path d="M24,152 L232,152" />
+      <path d="M40,152 Q42,98 84,84 Q122,94 128,152" />
+      <path d="M216,152 Q214,98 172,84 Q134,94 128,152" />
+      <path d="M40,152 L40,178 L216,178 L216,152" />
+    </>
+  ),
+  // Handbag (Session 98, the accessories parent): a handle over a tapered body.
+  bag: (
+    <>
+      <path d="M92,92 L92,74 Q92,40 128,40 Q164,40 164,74 L164,92" />
+      <path d="M58,92 L198,92 L214,214 L42,214 Z" />
+      <path d="M58,124 L198,124" />
+    </>
+  ),
+};
+
+// A parent's icon, for a type that has none of its own or through its engine key.
+export const PARENT_ICON: Record<GarmentParent, string> = {
+  tops: "tshirt",
+  knitwear: "sweater",
+  outerwear: "jacket",
+  onepiece: "dress",
+  skirts: "skirt",
+  bottoms: "pants",
+  sets: "jacket",
+  intimates: "bra",
+  swimwear: "swimsuit",
+  footwear: "shoes",
+  accessories: "bag",
 };
 
 const LIBRARY = {
@@ -113,8 +148,23 @@ const LIBRARY = {
 /** Categories with a dedicated icon; everything else falls back to a hanger. */
 export const GARMENT_ICON_CATEGORIES = [...Object.keys(LIBRARY), ...Object.keys(DRAWN)];
 
-export function GarmentIcon({ category, size = 20, className, label }: Props) {
+/**
+ * The icon a type is drawn with: its own; else the one of the key the engine sizes
+ * it as (a coat draws as a jacket); else its home parent's (a glove as a bag). Only
+ * "other" and a key nobody knows end as the hanger.
+ */
+export function iconKeyFor(category: string | null | undefined): string | null {
   const key = (category ?? "").toLowerCase();
+  const has = (k: string) => k in DRAWN || k in LIBRARY;
+  if (has(key)) return key;
+  const t = garmentType(key);
+  if (!t || key === "other") return null;
+  if (has(t.engine)) return t.engine;
+  return PARENT_ICON[t.parents[0]];
+}
+
+export function GarmentIcon({ category, size = 20, className, label }: Props) {
+  const key = iconKeyFor(category) ?? "";
   if (key in DRAWN) {
     return <Drawn size={size} className={className} label={label}>{DRAWN[key]}</Drawn>;
   }

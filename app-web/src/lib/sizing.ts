@@ -5,6 +5,7 @@
 
 import { womensLetter, womensUsNumber } from "./womensSizes";
 import { CATEGORY_EASE_CM, EASE_CM } from "./scoringConstants";
+import { engineCategoryOf } from "./garmentTaxonomy";
 
 export type Category =
   | "tshirt"
@@ -133,8 +134,11 @@ export function easeAdjustForCategory(category?: string | null): number {
   if (!category) return 0;
   // Mid-weight tops are the tuned baseline and return 0; see
   // scoringConstants.CATEGORY_EASE_CM for the rest and where each came from.
-  const key = category.toLowerCase() as keyof typeof CATEGORY_EASE_CM;
-  return CATEGORY_EASE_CM[key] ?? 0;
+  // A type's own key first (a coat is a "jacket" to the engine but has its own
+  // ease), then the engine category it is sized as.
+  const own = category.toLowerCase() as keyof typeof CATEGORY_EASE_CM;
+  const engine = engineCategoryOf(category) as keyof typeof CATEGORY_EASE_CM;
+  return CATEGORY_EASE_CM[own] ?? CATEGORY_EASE_CM[engine] ?? 0;
 }
 
 /**

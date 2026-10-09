@@ -1,19 +1,24 @@
-// Every garment type the picker offers has a real icon. Only the catch-alls
-// ("accessory", "other") fall back to the coat hanger — a new category added to
-// GARMENTS without an icon would otherwise quietly render as a hanger too.
+// Every garment type the picker offers has a real icon. Only the catch-all
+// "other" falls back to the coat hanger — a new type added without an icon of its
+// own takes its engine key's or its parent's (Session 98).
 
 import { describe, expect, it } from "vitest";
 import { GARMENTS } from "./garments";
-import { GARMENT_ICON_CATEGORIES } from "../components/GarmentIcon";
-
-const CATCH_ALL = new Set(["accessory", "other"]);
+import { PARENT_ORDER } from "./garmentTaxonomy";
+import { GARMENT_ICON_CATEGORIES, iconKeyFor } from "../components/GarmentIcon";
 
 describe("garment icons", () => {
-  it("cover every specific category in GARMENTS", () => {
-    const missing = GARMENTS.map((g) => g.category).filter(
-      (c) => !CATCH_ALL.has(c) && !GARMENT_ICON_CATEGORIES.includes(c),
-    );
+  it("draw every type in GARMENTS, by itself, its engine key or its parent; only Other is the hanger", () => {
+    const missing = GARMENTS.map((g) => g.category).filter((c) => c !== "other" && iconKeyFor(c) == null);
     expect(missing).toEqual([]);
+    expect(iconKeyFor("other")).toBeNull();
+  });
+
+  it("give every parent a real icon", () => {
+    for (const p of PARENT_ORDER) {
+      const first = GARMENTS.find((g) => g.parent === p)!;
+      expect(GARMENT_ICON_CATEGORIES, p).toContain(iconKeyFor(first.category));
+    }
   });
 
   it("never carries an emoji in the taxonomy itself", () => {

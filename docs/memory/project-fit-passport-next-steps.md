@@ -893,3 +893,10 @@ on /check (a body chart and a garment chart).
 filled in, and judge the head and the body; check the frame rate on the Windows laptop. Then the
 "人台 / 写实" toggle on /check. **Also asked:** update the /outfits composer later (e.g. preview on
 the 3D body instead of the SVG mannequin).
+
+## Session 98a–b (2026-10-09) — fit scale, colours, edit sheet, two-level types, DONE
+
+**Next — engineering:** phase 3 of the Session 98 plan: `/body` "我的 3D 身形" (dress form / realistic toggle, closed-
+eye sculpted face presets via `tools/anny/bake_heads.py`, switchable body colour, completeness checklist, a body from
+height + weight alone — drawing only, never scored), entry points from /passport and /check, `.bin.gz` assets.
+**Founder:** try the new type picker (add a piece; search 开衫); upload extension 0.9.1; review /lab/body.

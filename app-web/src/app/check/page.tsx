@@ -28,6 +28,7 @@ import { useGarmentText } from "@/i18n/garment";
 import { Headline } from "@/components/Headline";
 import { GarmentIcon } from "@/components/GarmentIcon";
 import { PICKABLE_CATEGORIES } from "@/lib/garments";
+import { sameEngineCategory } from "@/lib/garmentTaxonomy";
 
 // three.js only loads when the fit map scrolls into view. Boundaried because a
 // failed chunk silently blanks its subtree rather than throwing.
@@ -680,7 +681,7 @@ function ClosetBasis({ product, result }: { product: Product; result: CheckRespo
   }, [usedId, brand]);
 
   if (!items) return null;
-  const same = items.filter((it) => brand && it.brand.toLowerCase() === brand && it.category === product.category);
+  const same = items.filter((it) => brand && it.brand.toLowerCase() === brand && sameEngineCategory(it.category, product.category));
   const used = items.find((it) => it.id === usedId);
   // The piece the answer used first, then the rest of that brand and type.
   const shown = used ? [used, ...same.filter((it) => it.id !== used.id)] : same;

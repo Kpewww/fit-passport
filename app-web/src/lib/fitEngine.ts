@@ -31,6 +31,7 @@ import {
   type FitPreference,
 } from "./sizing";
 import { domainForCategory } from "./sizeSystems";
+import { sameEngineCategory } from "./garmentTaxonomy";
 import { roughGuess } from "./roughGuess";
 import { biasForBrand, type BrandBias } from "./brandBias";
 import { directionToLadderShift, isDirectional, nearestOption } from "./fitDirection";
@@ -306,7 +307,7 @@ function hasStrongAnchor(
       product.brand != null &&
       product.category != null &&
       kg.brand.toLowerCase() === product.brand.toLowerCase() &&
-      kg.category.toLowerCase() === product.category.toLowerCase() &&
+      sameEngineCategory(kg.category, product.category) &&
       kg.fitRating >= KNOWN_GOOD.strongRating,
   );
 }
@@ -545,7 +546,7 @@ function scoreKnownGood(
   const productStyles = styleKeys(product.name);
   const isStrong = (kg: KnownGoodInput) =>
     !!product.brand && !!product.category &&
-    kg.brand.toLowerCase() === product.brand.toLowerCase() && kg.category.toLowerCase() === product.category.toLowerCase();
+    kg.brand.toLowerCase() === product.brand.toLowerCase() && sameEngineCategory(kg.category, product.category);
   // When the closet holds a piece of the product's own style, every OTHER piece of
   // that brand and type — a different style, or one whose name says none — comes
   // after it. With no same-style piece, only a clearly different style is marked down.
@@ -559,7 +560,7 @@ function scoreKnownGood(
       product.brand && kg.brand.toLowerCase() === product.brand.toLowerCase();
     const sameCat =
       product.category &&
-      kg.category.toLowerCase() === product.category.toLowerCase();
+      sameEngineCategory(kg.category, product.category);
 
     // The anchor size is the user's TRUE FIT in this reference. Two corrections
     // apply, and they are independent:
@@ -655,7 +656,7 @@ function scoreOutcome(
       product.brand && o.productBrand?.toLowerCase() === product.brand.toLowerCase();
     const sameCat =
       product.category &&
-      o.productCategory?.toLowerCase() === product.category.toLowerCase();
+      sameEngineCategory(o.productCategory, product.category);
     const mult = sameBrand && sameCat ? OUTCOME.mult.sameBrandCategory : sameCat ? OUTCOME.mult.sameCategory : OUTCOME.mult.other;
     const where = o.productBrand ?? null;
     const d = o.fitDirection;
