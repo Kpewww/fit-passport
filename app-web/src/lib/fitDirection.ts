@@ -7,7 +7,8 @@
 // ({Small, Fit, Large}; or too tight … too loose), so the direction is the signal
 // the field actually uses, and the closet was discarding it at entry.
 //
-// The canonical stored value is a signed integer:
+// The canonical stored value is a signed number with one decimal place (integer
+// until Session 98, when the founder asked for finer numeric input):
 //
 //     -10 ............ -5 ............ 0 ............ +5 ............ +10
 //   too tight      a bit snug     just right     a bit roomy      too loose
@@ -63,10 +64,11 @@ export function parseScaleMode(raw: string | null | undefined): FitScaleMode {
   return raw === "numeric" ? "numeric" : "descriptive";
 }
 
-/** Clamp and round an arbitrary number onto the stored scale. */
+/** Clamp an arbitrary number onto the stored scale, at one decimal place. */
 export function clampDirection(n: number): number {
   if (!Number.isFinite(n)) return DIRECTION_DEFAULT;
-  return Math.max(DIRECTION_MIN, Math.min(DIRECTION_MAX, Math.round(n)));
+  const r = Math.round(Math.max(DIRECTION_MIN, Math.min(DIRECTION_MAX, n)) * 10) / 10;
+  return r === 0 ? 0 : r; // never -0
 }
 
 /** The descriptive option closest to a stored value. Ties round toward centre. */

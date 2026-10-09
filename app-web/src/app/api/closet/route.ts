@@ -8,7 +8,7 @@ import { engineText } from "@/lib/engineText";
 import { localeFromRequest } from "@/i18n/request";
 import { collectionForGarment } from "@/lib/collections";
 import { isValidSize } from "@/lib/sizeSystems";
-import { DIRECTION_MIN, DIRECTION_MAX } from "@/lib/fitDirection";
+import { DIRECTION_MIN, DIRECTION_MAX, clampDirection } from "@/lib/fitDirection";
 import { ItemSchema } from "@/lib/closetItemInput";
 
 export async function GET() {
@@ -80,13 +80,20 @@ const UpdateSchema = z
     size: z.string().min(1).max(20).optional(),
     region: z.string().max(10).optional().nullable(),
     fitRating: z.coerce.number().int().min(1).max(5).optional(),
-    fitDirection: z.coerce.number().int().min(DIRECTION_MIN).max(DIRECTION_MAX).optional().nullable(),
+    fitDirection: z.coerce.number().min(DIRECTION_MIN).max(DIRECTION_MAX).transform(clampDirection).optional().nullable(),
     areaNotesJson: z.string().max(2000).optional().nullable(),
     productUrl: z.string().url().optional().nullable(),
     imageDataUrl: z.string().max(400_000).regex(/^data:image\/(png|jpeg|webp);base64,/, "must be a small image").optional().nullable(),
     photoFrom: z.enum(["own", "shop"]).optional().nullable(),
     color: z.string().max(40).optional().nullable(),
     collectionId: z.string().optional().nullable(),
+    // Taken from the product page's chart on the edit sheet (Session 98), with the
+    // same bounds as when an item is added by URL (closetItemInput.ts).
+    garmentChestCm: z.coerce.number().min(10).max(400).optional().nullable(),
+    garmentShoulderCm: z.coerce.number().min(5).max(120).optional().nullable(),
+    garmentSleeveCm: z.coerce.number().min(1).max(150).optional().nullable(),
+    garmentLengthCm: z.coerce.number().min(5).max(250).optional().nullable(),
+    garmentMeasuredFrom: z.enum(["page", "brand-chart", "fixture", "seller", "estimated"]).optional().nullable(),
     sortIndex: z.coerce.number().int().min(0).optional(),
     groupId: z.string().optional().nullable(),
     groupName: z.string().max(80).optional().nullable(),

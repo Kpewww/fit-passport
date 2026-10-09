@@ -15,11 +15,28 @@
 // The point of pinning this in a test is that a field is cheap to add and its
 // cost is paid by every user, every time. If a fifth question is ever put on
 // this path, the test below should be what forces the argument for it.
+//
+// Session 98: the founder asked for colour and name as a step of their own. It is
+// an OPTIONAL step after the required four — "add to closet" is offered at the fit
+// step already, so the path to a first real answer costs exactly what it did, and
+// the extra step is a free choice rather than a toll. It is listed apart
+// (OPTIONAL_STEPS) with what it is for, which is the person, not the engine.
 
 import { isValidSize } from "./sizeSystems";
 
 export const ADD_STEPS = ["brand", "category", "size", "fit"] as const;
 export type AddStep = (typeof ADD_STEPS)[number];
+
+/** Steps after the required ones, each skippable, none read by the engine. */
+export const OPTIONAL_STEPS = ["details"] as const;
+export type OptionalStep = (typeof OPTIONAL_STEPS)[number];
+export const OPTIONAL_STEP_USE: Record<OptionalStep, string> = {
+  details: "colour and name, so the wearer can tell pieces apart; the fit engine reads neither",
+};
+
+/** The whole flow as shown: the required questions, then the optional ones. */
+export const FLOW_STEPS = [...ADD_STEPS, ...OPTIONAL_STEPS] as const;
+export type FlowStep = (typeof FLOW_STEPS)[number];
 
 /**
  * What each question buys the engine. Used by the test as the justification a

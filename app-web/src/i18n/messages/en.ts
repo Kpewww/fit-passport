@@ -224,14 +224,41 @@ export const en = {
     },
   },
 
+  colorPicker: {
+    swatches: "Colours",
+    hex: "Exact colour, as a hex code",
+    wheel: "Pick any colour",
+    clear: "Clear",
+    choose: "Choose a colour",
+  },
+
+  productLink: {
+    placeholder: "https://… the shop's page for this piece",
+    reading: "Reading the page…",
+    error: "Couldn't check that link just now. It is still saved.",
+    unreadable: "{host} didn't let us read this page. Open it in Chrome and use the extension's \"I own this, add to closet\" — it reads the page as you see it.",
+    read: "Read the page.",
+    rowFor: "Size {size} on its chart:",
+    chest: "chest",
+    shoulder: "shoulder",
+    length: "length",
+    take: "Use these measurements",
+    taken: "Will be saved",
+    noRow: "Its chart has no row for size {size}.",
+    noChart: "The page had no size chart to read.",
+  },
+
   fitScale: {
-    useNumber: "Use a number instead",
-    useWords: "Use words instead",
+    modeLabel: "How to answer",
+    modeWords: "In words",
+    modeNumber: "As a number",
+    numberLabel: "Fit, from -10 too tight to +10 too loose",
+    saveFailed: "Couldn't save this choice — it may switch back next time.",
     groupLabel: "How this garment fits",
     tooTight: "Too tight",
     tooLoose: "Too loose",
     sliderLabel: "How this garment fits, from -10 too tight to +10 too loose",
-    sliderHelp: "Tap the line, or use the arrow keys. <em>0 = just right.</em>",
+    sliderHelp: "Tap or drag the line, type a number, or use the arrow keys (Shift for whole steps). <em>0 = just right.</em>",
   },
 
   fitFigure: {
@@ -903,6 +930,13 @@ export const en = {
   },
 
   closet: {
+    addNow: "Add to closet now",
+    skipAndAdd: "Skip and add",
+    typeLabel: "Garment type",
+    typeHint: "Decides which kind of garment this is compared with when we recommend a size.",
+    productUrl: "Product link",
+    collectionLabel: "Folder",
+    collectionHint: "Only how you organise your closet — it never changes a recommendation.",
     exitSelect: "Done",
     confirmDelete: "Delete",
     confirmDeleteN: "Delete {n}",
@@ -1038,6 +1072,7 @@ export const en = {
       category: { q: "What kind of garment?", why: "A shirt and a coat are cut with different amounts of room." },
       size: { q: "What size is on the label?", why: "Whatever the label says. Region conversions are handled for you." },
       fit: { q: "How does it sit on you?", why: "This is what moves a recommendation up or down a size for this brand." },
+      details: { q: "Colour and name (optional)", why: "Only for you to tell this piece apart — the size engine never reads them. Skip if you like." },
     },
     extractFailed: "Couldn't read that URL — answer the questions instead.",
     extractRead: "Read {bits} from {host}.",
@@ -1355,15 +1390,17 @@ export const en = {
     whyBody:
       "Many large stores block our servers from reading their pages — pasting a link works on some stores and not others. The extension reads the page in your own browser instead, the page you’re already looking at, so it works where a link can’t.",
     privacyLink: "Everything it sends and what we keep: <link>privacy policy</link>.",
+    qMark: "Q",
+    aMark: "A",
     troubleTitle: "If something goes wrong",
     trouble: {
-      connectQ: "It says “connect Fit Passport first”.",
+      connectQ: "It says “connect Fit Passport first”",
       connectA:
         "Open Fit Passport once in this browser, then try again. If you block third-party cookies, the extension can't see that you're signed in — it asks you to connect rather than quietly checking against an empty profile.",
-      noChartQ: "It found no size chart.",
+      noChartQ: "It found no size chart",
       noChartA:
         "Open the store's size guide on the page, then press Re-scan. Some stores keep the chart on a separate page; for brands we've curated, Fit Passport falls back to the brand's published chart and says so.",
-      marketQ: "On Taobao or Tmall.",
+      marketQ: "Using it on Taobao or Tmall",
       marketA:
         "Tmall may ask you to log in before it shows the product — do that in the same browser first. The extension reads the brand and gender from the page's 参数信息 list and the chart from 尺码信息; if it finds no chart, scroll to 尺码信息 so it loads, then press Re-scan. The size profile Taobao shows you there (我的档案) is never sent.",
     },

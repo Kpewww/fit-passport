@@ -31,6 +31,78 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-09 · Session 98a — The fit scale stops bouncing back; colours are picked; the edit sheet explains itself
+
+The founder's review of /outfits, the closet editor, the body lab and the extension
+page; the plan has three phases. This is phase 1.
+
+**Fit scale** (`components/FitDirectionInput.tsx`):
+- **The bounce, found:** the edit sheet wrapped the control in `Field`, which renders a
+  `<label>`. A tap on the slider's track (a `<div>`) made the browser click the label's
+  first button, "use words instead". `Field` now has `as="div"` (a `role="group"` with
+  `aria-labelledby`), used for the slider, the colour grid and the photo row.
+- Two more causes fixed:
+  - the stored mode arriving from `/api/status` no longer overwrites a switch the
+    wearer already made;
+  - a failed save of the mode is shown.
+- **One decimal place.**
+  - `fitDirection` is now `Float` on KnownGoodItem, FitOutcome and ComfortCheck
+    (migration `20261009120000_fit_direction_decimal`, `DOUBLE PRECISION`).
+  - The four validators take decimals and clamp through `clampDirection`, now 0.1-grained
+    and never −0. Its test is updated.
+  - `directionToLadderShift`, `ratingFromDirection` and `isDirectional` already worked on
+    thresholds, so decimals pass straight through.
+- **Drag, type, keys.**
+  - The track can be dragged. The marker and readout move through refs and the value is
+    committed once, on release, so React state never changes per pointermove.
+  - A number box takes −10.0 … +10.0.
+  - Arrow keys move 0.1, or 1 with Shift or Page Up/Down.
+  - A "words | number" switch sits on top, replacing the small link that went unnoticed.
+  - The research note on tap-first input stands: tapping alone still suffices.
+
+**Colour** (`components/ColorPicker.tsx`, out of the closet page):
+- Twenty swatches, a `#RRGGBB` box and the system wheel. Typed names are no longer
+  accepted; old names still display.
+- /outfits uses it behind a swatch button (`ColorSwatchButton`) per piece.
+
+**Edit sheet:**
+- "Type" is now "Garment type" (衣服类型), with a line saying it decides which garments a
+  piece is compared with.
+- "Collection" moved to a dashed "Folder" box at the bottom (放在哪个分组), with a line
+  saying it never changes a recommendation.
+- New **product link** (`components/ProductLinkCheck.tsx`). On blur or Enter it reads
+  the page through `/api/closet/extract`.
+  - If the page's chart has a row for the piece's size, its garment measurements can be
+    taken in one tap. PATCH now accepts the garment fields, with the add flow's bounds.
+  - If the site refuses, it says so and points to the extension's "I own this, add to
+    closet".
+
+**Add flow:**
+- An optional fifth step, colour and name, with "skip and add". "Add to closet now"
+  appears at the fit step too, so the required path costs what it did.
+- `lib/addFlow.ts` lists the step apart (`OPTIONAL_STEPS`, with what it is for), and the
+  tests pin that it comes after the required four and never blocks.
+- A stale-state bug in "skip and add" was caught by reading the code before shipping: it
+  cleared the fields and then saved the old ones. The form is now passed explicitly.
+
+**Extension page:** "If something goes wrong" is now Q&A cards: a filled "Q"/"问" mark
+with the question in bold, an outlined "A"/"答" mark with the answer.
+
+**Verified:**
+- 875 tests + 1 skip, exit 0.
+- In Chromium (zh), the add flow end to end:
+  - a drag to 70% of the track reads +4;
+  - typing −2.3 stays −2.3, and number mode stays on;
+  - step 5 saves the name and navy;
+  - the stored `fitDirection` is −2.3.
+- In the edit sheet, a tap at 25% of the track gives −5 and keeps number mode (the
+  bounce is gone), and the COS demo link reads.
+- No console errors.
+- **Budget:** /closet First Load is 136 → 140 kB, already over its ~128 kB cap
+  (`todo/engineering/13`). The split recorded there is now more pressing.
+
+---
+
 ## 2026-10-09 · Session 97b — The realistic body (Anny), baked, fitted and on a lab page
 
 Track 2 of the Session 97 plan: the founder agreed to build Anny in parallel behind

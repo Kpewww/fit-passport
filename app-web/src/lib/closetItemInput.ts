@@ -4,7 +4,7 @@
 
 import { z } from "zod";
 import { isValidSize } from "./sizeSystems";
-import { DIRECTION_MIN, DIRECTION_MAX } from "./fitDirection";
+import { DIRECTION_MIN, DIRECTION_MAX, clampDirection } from "./fitDirection";
 
 export const ItemSchema = z
   .object({
@@ -17,7 +17,7 @@ export const ItemSchema = z
     fitRating: z.coerce.number().int().min(1).max(5).default(4),
     // Signed fit direction, -10 (too tight) .. 0 .. +10 (too loose). Optional so
     // an item added without a report stays null and the engine ignores it.
-    fitDirection: z.coerce.number().int().min(DIRECTION_MIN).max(DIRECTION_MAX).optional().nullable(),
+    fitDirection: z.coerce.number().min(DIRECTION_MIN).max(DIRECTION_MAX).transform(clampDirection).optional().nullable(),
     areaNotesJson: z.string().max(2000).optional().nullable(),
     productUrl: z.string().url().optional().nullable(),
     imageDataUrl: z.string().max(400_000).regex(/^data:image\/(png|jpeg|webp);base64,/, "must be a small image").optional().nullable(),

@@ -27,3 +27,4 @@ reading was 114 kB (Session 78b); the growth since came from later sessions, not
 The fit map adds 1 kB, since three.js and the 3D code load lazily. Same remedy as /closet:
 split the 1,500-line page so the result's secondary cards load when shown.
 
+Session 98a: /closet **140 kB** (the shared colour picker, the product-link check, the optional add step).

@@ -8,7 +8,7 @@
 // (components/Icon.tsx); the serif only for display and page titles.
 
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 import { ArrowRight, Plus, Star } from "@/components/Icon";
 import { Headline } from "@/components/Headline";
 
@@ -286,17 +286,37 @@ export function Field({
   label,
   hint,
   children,
+  as = "label",
 }: {
   label: string;
   hint?: string;
   children: ReactNode;
+  /**
+   * "div" for a control that is not one input — a slider, a swatch grid, a photo
+   * row. A <label> forwards a click on any non-interactive part of it to its first
+   * button, so a tap on the fit slider's track used to press "use words instead"
+   * and throw the wearer back to the words (Session 98).
+   */
+  as?: "label" | "div";
 }) {
+  const id = useId();
+  const head = (
+    <span className="mb-1.5 flex items-baseline justify-between">
+      <span id={id} className="font-medium text-ink">{label}</span>
+      {hint && <span className="text-xs text-ink-faint">{hint}</span>}
+    </span>
+  );
+  if (as === "div") {
+    return (
+      <div role="group" aria-labelledby={id} className="block text-sm">
+        {head}
+        {children}
+      </div>
+    );
+  }
   return (
     <label className="block text-sm">
-      <span className="mb-1.5 flex items-baseline justify-between">
-        <span className="font-medium text-ink">{label}</span>
-        {hint && <span className="text-xs text-ink-faint">{hint}</span>}
-      </span>
+      {head}
       {children}
     </label>
   );

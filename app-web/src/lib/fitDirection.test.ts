@@ -32,7 +32,10 @@ describe("fitDirection scale", () => {
   it("clamps out-of-range and non-finite input", () => {
     expect(clampDirection(99)).toBe(10);
     expect(clampDirection(-99)).toBe(-10);
-    expect(clampDirection(3.4)).toBe(3);
+    // One decimal place since Session 98.
+    expect(clampDirection(3.4)).toBe(3.4);
+    expect(clampDirection(3.46)).toBe(3.5);
+    expect(clampDirection(-0.04)).toBe(0);
     expect(clampDirection(NaN)).toBe(0);
     expect(clampDirection(Infinity)).toBe(0);
   });

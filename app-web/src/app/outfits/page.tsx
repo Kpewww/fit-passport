@@ -7,7 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ArrowRight, Close, Refresh, Sparkle } from "@/components/Icon";
 import Link from "next/link";
 import { Button, Card, EmptyState, PageHeader, inputClass } from "@/components/ui";
-import { colorHex } from "@/lib/colors";
+import { ColorSwatchButton } from "@/components/ColorPicker";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { OutfitMannequin, type OutfitLayer } from "@/components/OutfitMannequin";
 import { OutfitCard, type OutfitView } from "@/components/OutfitCard";
@@ -187,7 +187,6 @@ export default function OutfitsPage() {
                   <StepTitle n={1} title={t("pieces")} meta={t(pluralKey("pieceCount", items.length), { n: items.length })} />
                   <ul className="mt-4 divide-y divide-line rounded-2xl border border-line">
                     {items.map((it, i) => {
-                      const hex = colorHex(it.color);
                       return (
                         <li key={i} className="px-3 py-3 sm:px-4">
                           <div className="flex items-center gap-3">
@@ -196,12 +195,7 @@ export default function OutfitsPage() {
                             </span>
                             <div className="grid min-w-0 flex-1 gap-2 sm:grid-cols-2">
                               <CategoryPicker value={it.category} onChange={(v) => setItems(items.map((x, j) => j === i ? { ...x, category: v } : x))} />
-                              <div className="relative min-w-0">
-                                <span aria-hidden className="pointer-events-none absolute left-3.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 rounded-full border border-line"
-                                  style={{ background: hex ?? "transparent" }} />
-                                <input className={inputClass + " min-w-0 pl-9"} placeholder={t("colorPlaceholder")} value={it.color}
-                                  onChange={(e) => setItems(items.map((x, j) => j === i ? { ...x, color: e.target.value } : x))} />
-                              </div>
+                              <ColorSwatchButton value={it.color} onChange={(v) => setItems(items.map((x, j) => j === i ? { ...x, color: v } : x))} />
                             </div>
                             <button onClick={() => setItems(items.filter((_, j) => j !== i))}
                               className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full text-ink-faint transition-colors hover:bg-paper-soft hover:text-bad disabled:opacity-30"

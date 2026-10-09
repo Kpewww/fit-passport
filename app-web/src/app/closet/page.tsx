@@ -13,13 +13,15 @@ import { CategoryPicker } from "@/components/CategoryPicker";
 import { isValidSize } from "@/lib/sizeSystems";
 import { garmentLabel } from "@/lib/garments";
 import { GarmentIcon } from "@/components/GarmentIcon";
+import { ColorPicker } from "@/components/ColorPicker";
+import { ProductLinkCheck, type GarmentFields } from "@/components/ProductLinkCheck";
 import { PhotoSource } from "@/components/PhotoSource";
 import { BatchAdd } from "@/components/BatchAdd";
 import { GarmentCover } from "@/components/GarmentCover";
 import { resizeGarmentPhoto } from "@/lib/imageResize";
 import { FitDirectionInput, FitScaleProvider } from "@/components/FitDirectionInput";
 import { DIRECTION_DEFAULT, ratingFromDirection } from "@/lib/fitDirection";
-import { ADD_STEPS, type AddStep, canSubmit, stepReady } from "@/lib/addFlow";
+import { ADD_STEPS, FLOW_STEPS, type AddStep, canSubmit, stepReady } from "@/lib/addFlow";
 import { COLOR_PRESETS, colorHex, iconToneOn } from "@/lib/colors";
 import { useT } from "@/i18n/client";
 import { useGarmentText } from "@/i18n/garment";
@@ -50,6 +52,7 @@ type Item = {
   garmentSleeveCm?: number | null;
   garmentLengthCm?: number | null;
   garmentMeasuredFrom?: string | null;
+  productUrl?: string | null;
 };
 
 type Collection = { id: string; name: string; sortIndex: number; itemCount: number; color?: string | null };
@@ -1318,7 +1321,10 @@ function EditRow({
     collectionId: item.collectionId ?? "",
     areaNotes: safeNotes(item.areaNotesJson) ?? "",
     imageDataUrl: item.imageDataUrl ?? "",
+    productUrl: item.productUrl ?? "",
   });
+  // Garment measurements taken from the product page's chart (ProductLinkCheck).
+  const [garment, setGarment] = useState<GarmentFields | null>(null);
   const t = useT("closet");
   const g = useGarmentText();
   const [saving, setSaving] = useState(false);
@@ -1336,6 +1342,8 @@ function EditRow({
         collectionId: f.collectionId || null,
         imageDataUrl: f.imageDataUrl || null,
         areaNotesJson: f.areaNotes ? JSON.stringify({ notes: f.areaNotes }) : null,
+        productUrl: validUrl(f.productUrl),
+        ...(garment ?? {}),
       }),
     });
     setSaving(false);
@@ -1357,7 +1365,7 @@ function EditRow({
       </button>
       <div className="grid gap-3 sm:grid-cols-6">
         <div className="sm:col-span-6 pr-20">
-          <Field label={t("photo")} hint={t("optional")}>
+          <Field as="div" label={t("photo")} hint={t("optional")}>
             <div className="flex items-center gap-3">
               <span className="flex h-14 w-14 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-lg text-ink-faint">
                 {f.imageDataUrl ? (
@@ -1379,9 +1387,10 @@ function EditRow({
           <Field label={t("name")} hint={t("optional")}><input className={inputClass} value={f.displayName} placeholder={t("namePlaceholder")} onChange={(e) => setF({ ...f, displayName: e.target.value })} /></Field>
         </div>
         <div className="sm:col-span-2">
-          <Field label={t("type")}>
+          <Field label={t("typeLabel")}>
             <CategoryPicker value={f.category} onChange={(v) => setF({ ...f, category: v })} />
           </Field>
+          <p className="mt-1 text-[11px] text-ink-faint">{t("typeHint")}</p>
         </div>
         <div className="sm:col-span-1">
           <Field label={t("lineLabel")}>
@@ -1391,7 +1400,7 @@ function EditRow({
           </Field>
         </div>
         <div className="sm:col-span-6">
-          <Field label={t("howSits")}>
+          <Field as="div" label={t("howSits")}>
             <FitDirectionInput
               value={f.fitDirection}
               onChange={(n) => setF({ ...f, fitDirection: n, fitRating: ratingFromDirection(n) })}
@@ -1403,19 +1412,27 @@ function EditRow({
             <SizeInput category={f.category} value={f.size} onChange={(v) => setF({ ...f, size: v })} line={f.gender} />
           </Field>
         </div>
-        <div className="sm:col-span-3">
-          <Field label={t("color")}><ColorPicker value={f.color} onChange={(v) => setF({ ...f, color: v })} /></Field>
+        <div className="sm:col-span-6">
+          <Field as="div" label={t("color")}><ColorPicker value={f.color} onChange={(v) => setF({ ...f, color: v })} /></Field>
         </div>
-        <div className="sm:col-span-3">
-          <Field label={t("collection")}>
+        <div className="sm:col-span-6">
+          <Field as="div" label={t("productUrl")} hint={t("optional")}>
+            <ProductLinkCheck url={f.productUrl} onUrl={(u) => setF({ ...f, productUrl: u })} size={f.size} onGarment={setGarment} />
+          </Field>
+        </div>
+        <div className="sm:col-span-6">
+          <Field label={t("fitNotes")}><input className={inputClass} value={f.areaNotes} onChange={(e) => setF({ ...f, areaNotes: e.target.value })} /></Field>
+        </div>
+        {/* Where it is filed: the wearer's own folders, apart from the garment
+            type above — the two looked like one setting twice (Session 98). */}
+        <div className="rounded-xl border border-dashed border-line px-3 py-3 sm:col-span-6">
+          <Field label={t("collectionLabel")}>
             <select className={inputClass} value={f.collectionId} onChange={(e) => setF({ ...f, collectionId: e.target.value })}>
               <option value="">{g.folder("Uncategorized")}</option>
               {collections.map((c) => <option key={c.id} value={c.id}>{g.folder(c.name)}</option>)}
             </select>
           </Field>
-        </div>
-        <div className="sm:col-span-6">
-          <Field label={t("fitNotes")}><input className={inputClass} value={f.areaNotes} onChange={(e) => setF({ ...f, areaNotes: e.target.value })} /></Field>
+          <p className="mt-1 text-[11px] text-ink-faint">{t("collectionHint")}</p>
         </div>
         <div className="flex gap-2 sm:col-span-6">
           <Button onClick={save} disabled={saving || !f.brand || !f.size || !isValidSize(f.category, f.size)}>{saving ? t("saving") : t("saveChanges")}</Button>
@@ -1423,54 +1440,6 @@ function EditRow({
         </div>
       </div>
     </Card>
-  );
-}
-
-function ColorPicker({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  // Current swatch color to feed the native wheel (falls back to grey).
-  const t = useT("closet");
-  const g = useGarmentText();
-  const wheelValue = colorHex(value) ?? "#9ca3af";
-  return (
-    <div className="space-y-2">
-      {/* Two rows of preset swatches */}
-      <div className="grid grid-cols-10 gap-1.5">
-        {COLOR_PRESETS.map((c) => (
-          <button
-            key={c.name}
-            type="button"
-            title={g.color(c.name)}
-            onClick={() => onChange(value === c.name ? "" : c.name)}
-            className={`h-6 w-6 rounded-full border transition-transform hover:scale-110 ${
-              value === c.name ? "scale-110 border-brand ring-2 ring-brand/40" : "border-line"
-            }`}
-            style={{ backgroundColor: c.hex }}
-          />
-        ))}
-      </div>
-      {/* Free text + color wheel */}
-      <div className="flex items-center gap-2">
-        <input
-          className={inputClass + " flex-1"}
-          placeholder={t("colorPlaceholder")}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-        />
-        <label
-          className="relative flex h-9 w-9 flex-shrink-0 cursor-pointer items-center justify-center rounded-lg border border-line"
-          title={t("pickColor")}
-          style={{ backgroundColor: wheelValue }}
-        >
-          <input
-            type="color"
-            value={wheelValue}
-            onChange={(e) => onChange(e.target.value)}
-            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-          />
-          <PaletteIcon size={14} className="pointer-events-none mix-blend-difference text-white" />
-        </label>
-      </div>
-    </div>
   );
 }
 
@@ -2094,13 +2063,16 @@ function AddItemFlow({
   }, [fromSaved, t]);
   const [saveFailed, setSaveFailed] = useState(false);
 
-  const step = ADD_STEPS[stepIndex];
-  const isLast = stepIndex === ADD_STEPS.length - 1;
+  const step = FLOW_STEPS[stepIndex];
+  const isLast = stepIndex === FLOW_STEPS.length - 1;
+  // From the fit step on, the piece can be added: the colour-and-name step after it
+  // is optional (Session 98, lib/addFlow.ts OPTIONAL_STEPS).
+  const canAddHere = stepIndex >= ADD_STEPS.indexOf("fit");
 
   // Readiness and the blocking set live in lib/addFlow.ts so a test can hold
   // them to the FIC budget — a field is cheap to add and its cost is paid by
   // every user, every time.
-  const ready = stepReady(step, form);
+  const ready = step === "details" ? true : stepReady(step as AddStep, form);
   const canAdd = canSubmit(form);
 
   // What has been answered so far, so the flow never loses the user's place.
@@ -2184,6 +2156,10 @@ function AddItemFlow({
       if (ready) { setJustAdded(null); setStepIndex(stepIndex + 1); }
       return;
     }
+    await addNow();
+  }
+
+  async function addNow(src: typeof form = form) {
     if (!canAdd || saving) return;
     setSaving(true);
     setSaveFailed(false);
@@ -2191,21 +2167,21 @@ function AddItemFlow({
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
-        brand: form.brand, displayName: form.displayName || null,
-        category: form.category, gender: form.gender || null, size: form.size,
-        fitRating: form.fitRating, fitDirection: form.fitDirection, color: form.color || null,
-        onlineAvailable: form.onlineAvailable,
-        ...garmentMeasurementsFor(form.size),
+        brand: src.brand, displayName: src.displayName || null,
+        category: src.category, gender: src.gender || null, size: src.size,
+        fitRating: src.fitRating, fitDirection: src.fitDirection, color: src.color || null,
+        onlineAvailable: src.onlineAvailable,
+        ...garmentMeasurementsFor(src.size),
         productUrl: productUrl || undefined,
         fromSavedId: fromSaved || undefined,
-        imageDataUrl: form.imageDataUrl || null,
-        areaNotesJson: form.areaNotes ? JSON.stringify({ notes: form.areaNotes }) : null,
+        imageDataUrl: src.imageDataUrl || null,
+        areaNotesJson: src.areaNotes ? JSON.stringify({ notes: src.areaNotes }) : null,
       }),
     }).catch(() => null);
     // Say "added" only when it was. The form stays filled on a failure, so
     // nothing the user typed is lost.
     if (!res || !res.ok) { setSaving(false); setSaveFailed(true); return; }
-    setJustAdded(`${form.brand} ${g.label(form.category)} · ${form.size}`);
+    setJustAdded(`${src.brand} ${g.label(src.category)} · ${src.size}`);
     setForm({ ...BLANK });
     setStepIndex(0);
     setShowDetails(false);
@@ -2230,7 +2206,7 @@ function AddItemFlow({
       <div className="mb-4">
         <div className="mb-2 flex items-baseline justify-between gap-3">
           <p className="flex-shrink-0 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
-            {t("stepOf", { n: stepIndex + 1, total: ADD_STEPS.length })}
+            {t("stepOf", { n: stepIndex + 1, total: FLOW_STEPS.length })}
           </p>
           {trail && <p className="min-w-0 truncate text-[11px] text-ink-soft">{trail}</p>}
           {onClose && !trail && (
@@ -2242,7 +2218,7 @@ function AddItemFlow({
         <div className="h-1 w-full overflow-hidden rounded-full bg-line">
           <div
             className="h-full rounded-full bg-brand transition-[width] duration-300"
-            style={{ width: `${((stepIndex + 1) / ADD_STEPS.length) * 100}%` }}
+            style={{ width: `${((stepIndex + 1) / FLOW_STEPS.length) * 100}%` }}
           />
         </div>
       </div>
@@ -2311,6 +2287,17 @@ function AddItemFlow({
               onChange={(n) => setForm({ ...form, fitDirection: n, fitRating: ratingFromDirection(n) })}
             />
           )}
+          {step === "details" && (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field as="div" label={t("color")}>
+                <ColorPicker value={form.color} onChange={(v) => setForm({ ...form, color: v })} />
+              </Field>
+              <Field label={t("name")}>
+                <input className={inputClass} placeholder={t("namePlaceholder")}
+                  value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />
+              </Field>
+            </div>
+          )}
         </div>
 
         {saveFailed && <p role="alert" className="mt-4 text-sm text-bad">{t("addFailed")}</p>}
@@ -2321,6 +2308,17 @@ function AddItemFlow({
           <Button type="submit" disabled={!ready || (isLast && (saving || !canAdd))}>
             {isLast ? (saving ? t("adding") : t("addToCloset")) : t("continue")}
           </Button>
+          {/* The optional step is skippable from either side of it. */}
+          {canAddHere && !isLast && (
+            <Button type="button" variant="secondary" disabled={saving || !canAdd} onClick={() => { void addNow(); }}>
+              {saving ? t("adding") : t("addNow")}
+            </Button>
+          )}
+          {isLast && (
+            <Button type="button" variant="ghost" disabled={saving || !canAdd} onClick={() => { void addNow({ ...form, color: "", displayName: "" }); }}>
+              {t("skipAndAdd")}
+            </Button>
+          )}
         </div>
 
         {/* Everything the engine does not read. Reachable, not in the way. */}
@@ -2339,7 +2337,7 @@ function AddItemFlow({
             {showDetails && (
               <div className="mt-3 grid gap-3 sm:grid-cols-6">
                 <div className="sm:col-span-6">
-                  <Field label={t("photo")} hint={t("photoHint")}>
+                  <Field as="div" label={t("photo")} hint={t("photoHint")}>
                     <div className="flex items-center gap-3">
                       <span className="flex h-16 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg border border-line bg-white text-xl text-ink-faint">
                         {form.imageDataUrl ? (
@@ -2355,22 +2353,11 @@ function AddItemFlow({
                   </Field>
                 </div>
                 <div className="sm:col-span-3">
-                  <Field label={t("name")} hint={t("optional")}>
-                    <input className={inputClass} placeholder={t("namePlaceholder")}
-                      value={form.displayName} onChange={(e) => setForm({ ...form, displayName: e.target.value })} />
-                  </Field>
-                </div>
-                <div className="sm:col-span-3">
                   <Field label={t("lineLabel")} hint={t("optional")}>
                     <select className={inputClass} value={form.gender}
                       onChange={(e) => setForm({ ...form, gender: e.target.value })}>
                       {GENDERS.map((v) => <option key={v} value={v}>{g.line(v)}</option>)}
                     </select>
-                  </Field>
-                </div>
-                <div className="sm:col-span-3">
-                  <Field label={t("color")} hint={t("optional")}>
-                    <ColorPicker value={form.color} onChange={(v) => setForm({ ...form, color: v })} />
                   </Field>
                 </div>
                 <div className="sm:col-span-3">
@@ -2438,4 +2425,15 @@ function GarmentMeasurements({ item }: { item: Item }) {
       ))}
     </div>
   );
+}
+
+/** A link as PATCH takes it: a full URL, or nothing. */
+function validUrl(raw: string): string | null {
+  const v = raw.trim();
+  if (!v) return null;
+  try {
+    return new URL(/^https?:\/\//i.test(v) ? v : `https://${v}`).toString();
+  } catch {
+    return null;
+  }
 }

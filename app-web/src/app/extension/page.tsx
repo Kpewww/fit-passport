@@ -87,11 +87,19 @@ export default function ExtensionPage() {
 
       <section className="mt-12">
         <h2 className="text-h3 font-semibold text-ink">{t("troubleTitle")}</h2>
-        <dl className="mt-4 divide-y divide-line border-y border-line text-sm">
+        {/* Question and answer, each marked, so the page reads as a Q&A rather
+            than a wall of paragraphs (Session 98). */}
+        <dl className="mt-5 space-y-3 text-sm">
           {(["connect", "noChart", "market"] as const).map((k) => [t(`trouble.${k}Q`), t(`trouble.${k}A`)]).map(([q, a]) => (
-            <div key={q} className="py-4">
-              <dt className="font-medium text-ink">{q}</dt>
-              <dd className="mt-1 text-ink-soft">{a}</dd>
+            <div key={q} className="rounded-2xl border border-line bg-white px-5 py-4">
+              <dt className="flex items-start gap-3">
+                <span aria-hidden className="mt-px flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-ink text-[11px] font-semibold text-paper">{t("qMark")}</span>
+                <span className="pt-0.5 font-semibold leading-snug text-ink">{q}</span>
+              </dt>
+              <dd className="mt-2.5 flex items-start gap-3">
+                <span aria-hidden className="mt-px flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full border border-line text-[11px] font-semibold text-ink-soft">{t("aMark")}</span>
+                <span className="pt-0.5 leading-relaxed text-ink-soft">{a}</span>
+              </dd>
             </div>
           ))}
         </dl>

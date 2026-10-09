@@ -20,7 +20,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { DIRECTION_MIN, DIRECTION_MAX, ratingFromDirection } from "@/lib/fitDirection";
+import { DIRECTION_MIN, DIRECTION_MAX, ratingFromDirection, clampDirection } from "@/lib/fitDirection";
 
 export async function GET(req: Request) {
   const user = await getCurrentUser();
@@ -69,7 +69,7 @@ export async function GET(req: Request) {
 const PostBody = z.union([
   z.object({
     itemId: z.string().min(1),
-    direction: z.coerce.number().int().min(DIRECTION_MIN).max(DIRECTION_MAX),
+    direction: z.coerce.number().min(DIRECTION_MIN).max(DIRECTION_MAX).transform(clampDirection),
     note: z.string().max(500).optional().nullable(),
     reason: z.enum(["refresh", "measurement-change", "add"]).optional(),
   }),

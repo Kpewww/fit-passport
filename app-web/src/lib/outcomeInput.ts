@@ -3,7 +3,7 @@
 // tests (outcomeInput.test.ts).
 
 import { z } from "zod";
-import { DIRECTION_MAX, DIRECTION_MIN } from "./fitDirection";
+import { DIRECTION_MAX, DIRECTION_MIN, clampDirection } from "./fitDirection";
 
 // How it fit is recorded on the SIGNED scale (fitDirection.ts), the same one the
 // closet uses. The old 1–5 `overallFit` cannot say which way a return was wrong —
@@ -16,7 +16,7 @@ export const OutcomeSchema = z
     purchasedSize: z.string().min(1).max(20),
     decision: z.enum(["keep", "return", "exchange"]),
     exchangedForSize: z.string().max(20).optional().nullable(),
-    fitDirection: z.coerce.number().int().min(DIRECTION_MIN).max(DIRECTION_MAX).optional().nullable(),
+    fitDirection: z.coerce.number().min(DIRECTION_MIN).max(DIRECTION_MAX).transform(clampDirection).optional().nullable(),
     overallFit: z.coerce.number().int().min(1).max(5).optional().nullable(),
     areaIssuesJson: z.string().max(2000).optional().nullable(),
     notes: z.string().max(1000).optional().nullable(),

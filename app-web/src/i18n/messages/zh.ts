@@ -217,14 +217,41 @@ export const zh: Messages = {
     },
   },
 
+  colorPicker: {
+    swatches: "颜色",
+    hex: "精确颜色（十六进制色值）",
+    wheel: "选择任意颜色",
+    clear: "清除",
+    choose: "选择颜色",
+  },
+
+  productLink: {
+    placeholder: "https://… 这件衣服的商品页",
+    reading: "正在读取页面……",
+    error: "暂时无法检测这个链接，链接仍会保存。",
+    unreadable: "{host} 不允许我们读取这个页面。请在 Chrome 中打开它，使用插件的“我有这件，加入衣橱”——插件会按你看到的页面读取。",
+    read: "已读取页面。",
+    rowFor: "尺码表中 {size} 的尺寸：",
+    chest: "胸围",
+    shoulder: "肩宽",
+    length: "衣长",
+    take: "使用这些尺寸",
+    taken: "保存时一并写入",
+    noRow: "尺码表里没有 {size} 这一行。",
+    noChart: "这个页面没有可读取的尺码表。",
+  },
+
   fitScale: {
-    useNumber: "改用数值评价",
-    useWords: "改用文字评价",
+    modeLabel: "评价方式",
+    modeWords: "文字",
+    modeNumber: "数值",
+    numberLabel: "松紧数值，-10 为太紧，+10 为太松",
+    saveFailed: "这个选择没能保存，下次打开可能会恢复原样。",
     groupLabel: "这件衣物的松紧感",
     tooTight: "太紧",
     tooLoose: "太松",
     sliderLabel: "这件衣物的松紧感，−10 为太紧，＋10 为太松",
-    sliderHelp: "点击滑条或使用方向键调整。<em>0 表示刚好。</em>",
+    sliderHelp: "点击或拖动滑条、直接输入数值，或用方向键微调（按住 Shift 每次调 1）。<em>0 表示刚好。</em>",
   },
 
   fitFigure: {
@@ -894,6 +921,13 @@ export const zh: Messages = {
   },
 
   closet: {
+    addNow: "直接加入衣橱",
+    skipAndAdd: "跳过并加入",
+    typeLabel: "衣服类型",
+    typeHint: "推荐尺码时，按这个类型和同类衣服比较。",
+    productUrl: "商品链接",
+    collectionLabel: "放在哪个分组",
+    collectionHint: "只是你衣橱里的整理方式，不影响尺码推荐。",
     exitSelect: "退出选择",
     confirmDelete: "确认删除",
     confirmDeleteN: "确认删除 {n} 件",
@@ -1029,6 +1063,7 @@ export const zh: Messages = {
       category: { q: "是哪类衣物？", why: "衬衫与外套，剪裁预留的宽松量各不相同。" },
       size: { q: "标签上写的是什么尺码？", why: "按衣物标签填写即可，不同地区的尺码换算交给我们。" },
       fit: { q: "穿起来，松紧如何？", why: "你的穿着感受，会帮助我们调整这个品牌的推荐尺码，判断该选大一些还是小一些。" },
+      details: { q: "颜色与名称（选填）", why: "只是方便你认出这件衣服，尺码推荐不会用到。不想填可以直接跳过。" },
     },
     extractFailed: "无法读取这个链接，请直接回答下方问题。",
     extractRead: "已从 {host} 读取：{bits}。",
@@ -1342,6 +1377,8 @@ export const zh: Messages = {
     whyBody:
       "许多大型商店会阻止服务器读取商品页面，因此直接粘贴链接并非始终有效。浏览器插件会在你正在浏览的页面中读取信息，能够处理普通链接无法读取的页面。",
     privacyLink: "发送和保存的全部内容，见<link>隐私政策</link>。",
+    qMark: "问",
+    aMark: "答",
     troubleTitle: "如果遇到问题",
     trouble: {
       connectQ: "提示“请先连接 Fit Passport”",

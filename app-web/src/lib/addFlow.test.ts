@@ -1,6 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   ADD_STEPS,
+  FLOW_STEPS,
+  OPTIONAL_STEPS,
+  OPTIONAL_STEP_USE,
   BLOCKING_STEPS,
   FIRST_RUN_FIC_BUDGET,
   STEP_ENGINE_USE,
@@ -67,3 +70,18 @@ describe("closet add flow — readiness", () => {
     expect(canSubmit({ brand: "Uniqlo", category: "tshirt", size: "M" })).toBe(true);
   });
 });
+
+describe("closet add flow — the optional step (Session 98)", () => {
+  it("comes after every required question, so the path to an answer costs what it did", () => {
+    expect(FLOW_STEPS.slice(0, ADD_STEPS.length)).toEqual([...ADD_STEPS]);
+    expect(addFlowFicTotal()).toBeLessThanOrEqual(FIRST_RUN_FIC_BUDGET);
+  });
+
+  it("never blocks, and says what it is for", () => {
+    for (const s of OPTIONAL_STEPS) {
+      expect(BLOCKING_STEPS as readonly string[]).not.toContain(s);
+      expect(OPTIONAL_STEP_USE[s]).toBeTruthy();
+    }
+  });
+});
+
