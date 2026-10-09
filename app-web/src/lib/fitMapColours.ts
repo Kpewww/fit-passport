@@ -36,7 +36,8 @@ export const FORM_COLOUR = "#9aa0ad";
 /** How far, in cm, an outermost part's colour fades into the form above or below it. */
 export const FADE_CM = 8;
 
-/** Region of a vertex. Only the torso is coloured: a top's chest says nothing about an arm. */
+/** Region of a vertex. The torso is coloured, and the legs by the hip alone: a top's
+ *  chest says nothing about an arm. */
 export const REGION = { torso: 0, arm: 1, leg: 2, head: 3 } as const;
 
 /**
@@ -101,9 +102,15 @@ export function fitMapColours(body: BodyGeometryData, zones: Zone[] | null | und
   const stops = (zones ?? [])
     .filter((z) => body.landmarks[z.key] != null)
     .map((z) => ({ y: body.landmarks[z.key] as number, colour: linearRgb(VERDICT_COLOUR[z.verdict]) }));
+  // The hips are the top of the legs as much as the base of the torso: a leg vertex
+  // takes the hip's colour, and nothing else's.
+  const hipStops = (zones ?? [])
+    .filter((z) => z.key === "hip" && body.landmarks.hip != null)
+    .map((z) => ({ y: body.landmarks.hip as number, colour: linearRgb(VERDICT_COLOUR[z.verdict]) }));
   for (let v = 0; v < n; v++) {
-    const torso = !body.regions || body.regions[v] === REGION.torso;
-    const c = torso ? colourAtHeight(body.positions[v * 3 + 1], stops, form) : form;
+    const region = body.regions ? body.regions[v] : REGION.torso;
+    const y = body.positions[v * 3 + 1];
+    const c = region === REGION.torso ? colourAtHeight(y, stops, form) : region === REGION.leg ? colourAtHeight(y, hipStops, form) : form;
     out[v * 3] = c[0];
     out[v * 3 + 1] = c[1];
     out[v * 3 + 2] = c[2];

@@ -1,0 +1,154 @@
+{
+ "source": "Anny 0.6.1 (NAVER LABS Europe), topology notoes_collapse10pc; baked by tools/anny/bake.py",
+ "licence": "Anny code Apache-2.0 (Copyright 2025 NAVER Corp.); MakeHuman-derived assets CC0 1.0. See NOTICE.",
+ "vertexCount": 1543,
+ "faceCount": 2520,
+ "unitPerCm": 100,
+ "regions": {
+  "torso": 0,
+  "arm": 1,
+  "leg": 2,
+  "head": 3
+ },
+ "layout": {
+  "indices": [
+   0,
+   7560
+  ],
+  "regions": [
+   15120,
+   1543
+  ],
+  "corners": [
+   16664,
+   18
+  ],
+  "locals": [
+   183308,
+   11
+  ]
+ },
+ "age": 0.6666666666666666,
+ "anchors": {
+  "gender": [
+   0.0,
+   1.0
+  ],
+  "muscle": [
+   0.0,
+   0.5,
+   1.0
+  ],
+  "weight": [
+   0.0,
+   0.5,
+   1.0
+  ]
+ },
+ "corners": [
+  {
+   "gender": 0.0,
+   "muscle": 0.0,
+   "weight": 0.0
+  },
+  {
+   "gender": 0.0,
+   "muscle": 0.0,
+   "weight": 0.5
+  },
+  {
+   "gender": 0.0,
+   "muscle": 0.0,
+   "weight": 1.0
+  },
+  {
+   "gender": 0.0,
+   "muscle": 0.5,
+   "weight": 0.0
+  },
+  {
+   "gender": 0.0,
+   "muscle": 0.5,
+   "weight": 0.5
+  },
+  {
+   "gender": 0.0,
+   "muscle": 0.5,
+   "weight": 1.0
+  },
+  {
+   "gender": 0.0,
+   "muscle": 1.0,
+   "weight": 0.0
+  },
+  {
+   "gender": 0.0,
+   "muscle": 1.0,
+   "weight": 0.5
+  },
+  {
+   "gender": 0.0,
+   "muscle": 1.0,
+   "weight": 1.0
+  },
+  {
+   "gender": 1.0,
+   "muscle": 0.0,
+   "weight": 0.0
+  },
+  {
+   "gender": 1.0,
+   "muscle": 0.0,
+   "weight": 0.5
+  },
+  {
+   "gender": 1.0,
+   "muscle": 0.0,
+   "weight": 1.0
+  },
+  {
+   "gender": 1.0,
+   "muscle": 0.5,
+   "weight": 0.0
+  },
+  {
+   "gender": 1.0,
+   "muscle": 0.5,
+   "weight": 0.5
+  },
+  {
+   "gender": 1.0,
+   "muscle": 0.5,
+   "weight": 1.0
+  },
+  {
+   "gender": 1.0,
+   "muscle": 1.0,
+   "weight": 0.0
+  },
+  {
+   "gender": 1.0,
+   "muscle": 1.0,
+   "weight": 0.5
+  },
+  {
+   "gender": 1.0,
+   "muscle": 1.0,
+   "weight": 1.0
+  }
+ ],
+ "locals": [
+  "measure-bust-circ-incr",
+  "measure-underbust-circ-incr",
+  "measure-waist-circ-incr",
+  "measure-hips-circ-incr",
+  "measure-shoulder-dist-incr",
+  "measure-upperleg-height-incr",
+  "measure-lowerleg-height-incr",
+  "breast-volume-vert-up",
+  "stomach-pregnant-incr",
+  "hip-scale-horiz-incr",
+  "torso-vshape-incr"
+ ],
+ "head": "the skull's faces replaced by an ellipsoid fitted to its vertices (85th-percentile reach per axis)"
+}

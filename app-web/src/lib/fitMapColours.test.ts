@@ -41,6 +41,16 @@ describe("the fit map's colours", () => {
     at(c, 3).forEach((x, i) => expect(x).toBeCloseTo(form[i], 6));
   });
 
+  it("colours a leg by the hip alone", () => {
+    const regions = new Uint8Array([REGION.leg, REGION.leg, REGION.torso, REGION.torso, REGION.torso]);
+    const b = { ...body(regions), landmarks: { ...body().landmarks, hip: 80 } };
+    const c = fitMapColours(b, [{ key: "hip", deltaCm: -7, verdict: "too small" }, { key: "waist", deltaCm: 3, verdict: "relaxed" }]);
+    at(c, 0).forEach((x, i) => expect(x).toBeCloseTo(linearRgb(VERDICT_COLOUR["too small"])[i], 6));
+    const form = linearRgb(FORM_COLOUR);
+    // 20 cm above the hip, a leg vertex has faded to the form; the waist does not reach it.
+    at(c, 1).forEach((x, i) => expect(x).toBeCloseTo(form[i], 6));
+  });
+
   it("ignores a part the body has no landmark for", () => {
     const c = fitMapColours(body(), [{ key: "hip", deltaCm: 2, verdict: "relaxed" }]);
     const form = linearRgb(FORM_COLOUR);

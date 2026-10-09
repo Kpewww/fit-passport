@@ -886,3 +886,10 @@ second line or use natural spacing. **Engineering:** 3D fit map (path A) once ch
 **Next — engineering:** Track 2, Anny: bake (`tools/anny/bake.py`, coarse topology, mannequin head) → browser fit
 (`lib/annyBody.ts`) → `/lab/body` → the founder's ship gate. **Founder:** upload extension 0.9.1; review the fit map
 on /check (a body chart and a garment chart).
+
+## Session 97b (2026-10-09) — Anny baked, fitted, on /lab/body, DONE
+
+**Next — founder:** open https://www.fitpassport.fit/lab/body (and `?big=1`) with your own passport
+filled in, and judge the head and the body; check the frame rate on the Windows laptop. Then the
+"人台 / 写实" toggle on /check. **Also asked:** update the /outfits composer later (e.g. preview on
+the 3D body instead of the SVG mannequin).

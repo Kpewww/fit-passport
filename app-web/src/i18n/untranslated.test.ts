@@ -53,8 +53,10 @@ function englishIn(source: string): string[] {
 }
 
 describe("the interface has no English outside the messages", () => {
+  // app/lab/ is an internal review page (Session 97's body lab), unlinked and kept out
+  // of search: a tool for us, in English on purpose, like the API's own messages.
   const ui = [...files(join(SRC, "app")), ...files(join(SRC, "components"))].filter(
-    (f) => !/[\\/]api[\\/]/.test(f),
+    (f) => !/[\\/]api[\\/]/.test(f) && !/[\\/]lab[\\/]/.test(f),
   );
 
   it("scans the pages and components", () => {

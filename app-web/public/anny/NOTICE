@@ -1,0 +1,7 @@
+The body in body.bin is derived from Anny, Copyright (c) 2025 NAVER Corp.,
+licensed under the Apache License, Version 2.0 (https://www.apache.org/licenses/LICENSE-2.0).
+https://github.com/naver/anny
+
+Anny's MakeHuman-derived assets are released under CC0 1.0 Universal.
+Changes: coarse topology only; head replaced by a plain ellipsoid; phenotypes sampled at fixed anchors;
+coordinates rotated to Y-up and quantised to 0.01 cm.

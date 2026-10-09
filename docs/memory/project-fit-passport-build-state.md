@@ -1396,3 +1396,8 @@ Old `EaseIn3D` + `check.threeD.*` removed; `BodyMesh3D` still serves /passport. 
 **NEW INVARIANT:**
 **(96)** **A fit-map colour says only what `SizeScore.zones` says.** No zone → the form's grey; the centimetres
 and verdict word are printed beside every coloured part.
+
+**SESSION 97b (2026-10-09).** 863 → **873 tests**. Anny: `tools/anny/bake.py` (venv, anny 0.6.1) →
+`public/anny/body.bin|json|NOTICE` (1,543 verts incl. ellipsoid mannequin head, 90 KB gz); `lib/annyBody.ts`
+`fitAnny` (girths within 1 cm on 3 fixtures, residuals returned); `/lab/body` (noindex, robots `/lab/`, exempt
+from the untranslated guard). Legs coloured by the hip only.

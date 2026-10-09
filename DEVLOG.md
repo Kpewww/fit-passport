@@ -31,6 +31,67 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-09 · Session 97b — The realistic body (Anny), baked, fitted and on a lab page
+
+Track 2 of the Session 97 plan: the founder agreed to build Anny in parallel behind
+the fit map's interface, with a face that is not uncanny.
+
+**Bake** (`tools/anny/bake.py`, run offline in a local venv with `anny==0.6.1`):
+- Coarse topology `notoes_collapse10pc`: 1,229 vertices.
+- Phenotype corners: gender {0,1} × muscle {0,.5,1} × weight {0,.5,1}, with age fixed at
+  "young" (2/3). Read from Anny's own code, its shape is multilinear between these anchors,
+  so blending the corners is exact.
+- Linear deltas for 11 local changes: the bust, underbust, waist, hips, shoulder and leg
+  measures, plus four helpers (`breast-volume-vert-up`, `stomach-pregnant-incr`,
+  `hip-scale-horiz-incr`, `torso-vshape-incr`).
+- Each vertex's region (torso, arm, leg, head) comes from its dominant skinning bone.
+- Output: Int16 at 0.01 cm, **387 KB raw, 90 KB gzipped** (target ≤ 300 KB).
+- `NOTICE` carries Apache 2.0 attribution. The smpl and smplx topologies are never used.
+
+**The head took three tries:**
+1. Laplacian smoothing shrank it into a spike.
+2. Projecting the skull onto an ellipsoid folded the eye and mouth cavities inside out,
+   leaving dark creases.
+3. Now the skull's faces are dropped and replaced by an **ellipsoid fitted to the skull**
+   (85th-percentile reach per axis). The skull vertices the neck still uses are projected
+   onto it, so the neck closes onto a plain mannequin head with no eyes, nose or mouth.
+
+**Fit** (`lib/annyBody.ts`, pure):
+- Gender comes from the sex the wearer gave.
+- Weight comes from BMI through a stated mapping (17→0, 22→.5, 32→1, labelled as an
+  assumption).
+- The stature is scaled to the wearer's height.
+- Chest, waist and hip girth and shoulder breadth are fitted by Newton steps along a chain
+  of local changes. The next change takes over when one reaches Anny's ±1 limit.
+- Girths are measured as a tape would: the convex hull of a horizontal slice of the torso
+  (torso and thighs for the hip). This is our own slicing; MakeHuman's AGPL ruler lists are
+  not copied.
+- The residuals are returned and printed.
+- The first try left the shoulder short every time, because Anny skins the deltoid to the
+  arm. It now measures torso and arm together.
+- Tests run on the shipped file (`annyBody.test.ts`): a man, a woman and a larger man all
+  land within 1 cm on every girth and stand at their height. A girth out of reach
+  (chest 160) is reported, not hidden.
+
+**Fit map on any body:** in `fitMapColours.ts`, leg vertices now take the hip's colour and
+no other, so a tight hip shows across the top of the thighs.
+
+**Lab** `/lab/body`:
+- Unlinked, noindex, under robots `/lab/`, in English on purpose; the untranslated-UI guard
+  skips `app/lab/` like `api/`.
+- Shows the dress form and Anny on the wearer's own measurements, with sample fit colours,
+  the asset's size, fetch-plus-fit time (21 ms here), frame rate (51 fps with two views on
+  SwiftShader) and residuals.
+- `?big=1` shows Anny alone at 900 px.
+
+873 tests + 1 skip, exit 0; build clean. /lab/body First Load 89.5 kB, with three.js and the
+body loaded lazily.
+
+**Ship gate, still open:** the founder's look at the head and the body; 30 fps on the
+Windows integrated GPU. The residual and size gates are met.
+
+---
+
 ## 2026-10-08 · Session 97 — The 3D fit map on /check (Track 1); a realistic body planned behind it
 
 The founder chose path A of `todo/engineering/14-3d-try-on.md`: a fit map on the user's
