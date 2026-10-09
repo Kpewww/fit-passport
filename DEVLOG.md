@@ -31,6 +31,52 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-09 · Session 98h — MetaHuman faces: licence checked, converter built and self-tested, waiting for the faces
+
+The founder chose option C of `todo/engineering/15-realistic-heads.md`, MetaHuman.
+
+**Licence, from Epic** (metahuman.com/en-US/license, the FAQ in the page; the EULA page
+itself is behind a bot check):
+- usable "across all engines and creative software";
+- at runtime in other engines a "Non-Engine Product", with no royalties;
+- over US$1M annual gross revenue, rendering outside Unreal needs a seat licence;
+- no AI training.
+
+**What Unreal gives us:** the export tool makes the head a Skeletal Mesh asset, which
+Unreal exports as FBX or glTF. It is the neutral rig, so the eyes are open. Epic's DNA
+Calibration repository, the one offline route to the blink rig, says it does not support
+characters made in Unreal 5.6 (Maya is needed). So the default is a statue's blank eyes
+(the eyeballs kept). Closed eyes are an optional step in Unreal, written down as
+UNVERIFIED.
+
+**`tools/metahuman/bake_metahuman_heads.py`:**
+- Reads .glb or .gltf, or .fbx through Blender.
+- Prints every part, keeps the skin (plus the eyes with `--keep-eyes`) and drops teeth,
+  tongue, lashes, shells, cartilage and hair.
+- Detects units and which way the face looks: the head's long horizontal axis, signed
+  by where the dense face sits.
+- Finds the chin on the midline profile: the throat is the profile's deepest point
+  under the nose, and the chin is the bulge above it.
+- Anchors the head to the Anny face it replaces by chin, crown and neck axis
+  (`anchors.json`), so `placeFace` and `joinFaceAtNeck` work unchanged.
+- Cuts the neck 5 cm under the chin, reduces to about 8,600 triangles (pyfqmr) and
+  writes the same format, marked `source: metahuman` in `heads.json`.
+- The licence is noted in `heads.json`.
+
+**`tools/metahuman/selftest.py`:** builds a MetaHuman-like file from Anny's own head
+(metres, facing −X, long neck, teeth, eyes and lashes as named parts), bakes it, and
+checks it lands on the face it replaces. Measured: median 0.33 cm, 90th percentile 0.58 cm;
+the FBX route through Blender gave a byte-identical result. `tools/metahuman/README.md`
+has the founder's steps in Unreal and the brief: neutral, no real person's likeness,
+three distinct faces per sex, labels A/B/C only.
+
+**Also:** `heads.json`'s per-face `ancestry` field is now `variant` (public file).
+
+**Not yet:** no real MetaHuman file has been through the converter. The founder makes
+the six faces next.
+
+---
+
 ## 2026-10-09 · Session 98g — Real cup sizes, faces A/B/C, measured skin, a chinless headless body, a plan for realistic heads
 
 The founder:

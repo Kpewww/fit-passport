@@ -1451,3 +1451,8 @@ change moves; ISO 8559-1), not the narrowest girth below; an A is no longer flat
 2012): 6 lightness × 3 undertones (`skinHex`, `labToHex`); Monk removed. Headless cut at the neck's narrowest.
 Realistic heads: options in `todo/engineering/15-realistic-heads.md` (MetaHuman recommended; never a real likeness).
 
+**SESSION 98h (2026-10-09).** MetaHuman converter `tools/metahuman/bake_metahuman_heads.py` (+ `selftest.py`,
+`anchors.json`, README with the Unreal steps): anchors each head to the Anny face it replaces (chin, crown, neck
+axis), so the browser code is unchanged. Licence checked on Epic's MetaHuman page (runtime outside Unreal OK, no
+royalties; seat licence over US$1M; no AI training). heads.json field `variant` (was `ancestry`).
+

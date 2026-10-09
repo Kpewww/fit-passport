@@ -12,24 +12,24 @@ import type { AnnyData } from "./annyBody";
 // Three faces per sex, named A, B and C only (Session 98g), chosen by the wearer and
 // never inferred: mixes of Anny's statistical average faces (tools/anny/bake_heads.py),
 // no real person's likeness.
-export const ANCESTRIES = ["a", "b", "c"] as const;
-export type Ancestry = (typeof ANCESTRIES)[number];
-export type FaceId = `${"f" | "m"}-${Ancestry}`;
+export const VARIANTS = ["a", "b", "c"] as const;
+export type Variant = (typeof VARIANTS)[number];
+export type FaceId = `${"f" | "m"}-${Variant}`;
 export const FACE_IDS: FaceId[] = ["f-a", "f-b", "f-c", "m-a", "m-b", "m-c"];
 /** "none": the neck cut a little above its base, as a shop mannequin (lib/neckCut.ts).
  *  The default: no face is assumed for anyone. */
-export type HeadChoice = Ancestry | "none";
-export const HEAD_CHOICES: HeadChoice[] = ["none", ...ANCESTRIES];
+export type HeadChoice = Variant | "none";
+export const HEAD_CHOICES: HeadChoice[] = ["none", ...VARIANTS];
 
-/** The face for this ancestry on a body of this sex. */
-export function faceFor(sex: "female" | "male", ancestry: Ancestry): FaceId {
-  return `${sex === "female" ? "f" : "m"}-${ancestry}`;
+/** Face A, B or C on a body of this sex. */
+export function faceFor(sex: "female" | "male", variant: Variant): FaceId {
+  return `${sex === "female" ? "f" : "m"}-${variant}`;
 }
 
 export type FaceMeta = {
   id: FaceId;
   sex: "female" | "male";
-  ancestry: Ancestry;
+  variant: Variant;
   vertexCount: number;
   faceCount: number;
   ref: { centre: [number, number, number]; axes: [number, number, number] };

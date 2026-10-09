@@ -155,7 +155,7 @@ def main():
         with open(path, "wb") as fh:
             fh.write(gzip.compress(blob, compresslevel=9, mtime=0))
         out_meta.append({
-            "id": face["id"], "sex": face["sex"], "ancestry": face["ancestry"],
+            "id": face["id"], "sex": face["sex"], "variant": face["ancestry"],
             "vertexCount": int(len(used)), "faceCount": int(len(tri)),
             "ref": {"centre": [round(float(x), 3) for x in centre], "axes": [round(float(x), 3) for x in axes]},
             # The chin's height in the same space: a face is joined to the body below it.

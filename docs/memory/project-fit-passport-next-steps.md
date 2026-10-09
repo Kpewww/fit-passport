@@ -922,3 +922,9 @@ the 人台 / 写实 toggle on /check; /outfits preview on the 3D body; the creas
 **Next — founder:** choose a realistic-head route (`todo/engineering/15-realistic-heads.md`; MetaHuman needs someone
 to run Unreal 5.6 and Epic's EULA read). **Engineering:** that route; the 人台 / 写实 toggle on /check after approval.
 
+## Session 98h (2026-10-09) — MetaHuman route ready, waiting for faces
+
+**Next — founder:** make six MetaHumans in Unreal 5.6 (`tools/metahuman/README.md`: f-a…m-c, neutral, no real
+likeness), export the heads as .glb or .fbx, send them. **Engineering:** run `selftest.py`, then
+`bake_metahuman_heads.py <folder> --keep-eyes` (statue eyes unless the files have closed eyes), review, ship.
+

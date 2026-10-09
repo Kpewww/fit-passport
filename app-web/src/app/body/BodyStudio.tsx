@@ -34,7 +34,7 @@ type Profile = {
   waistCm?: number | null; hipCm?: number | null; shoulderCm?: number | null; inseamCm?: number | null;
 };
 // The body's sex is chosen here (null: the passport's); the head is none or a face of
-// a chosen ancestry; a cup size for a woman's body (Sessions 98d, 98f).
+// face A, B or C; a cup size for a woman's body (Sessions 98d, 98f, 98g).
 type Prefs = { kind: "form" | "real"; sex: "female" | "male" | null; head: HeadChoice; tone: ToneId; undertone: Undertone; cup: Cup | null };
 const PREFS_KEY = "fp-body3d";
 const DEFAULT_PREFS: Prefs = { kind: "real", sex: null, head: "none", tone: "form", undertone: "neutral", cup: null };
@@ -125,7 +125,7 @@ export function BodyStudio() {
   }, [measurements, estimate, ready.girthsMissing.join()]);
 
   // The head: none (a shop mannequin's neck, the default; no face is assumed for anyone)
-  // or a face of the ancestry the wearer picks, for the body's sex.
+  // or face A, B or C as the wearer picks, for the body's sex.
   const headChoice: HeadChoice = prefs.head;
   const faceId = headChoice === "none" ? null : faceFor(sex, headChoice);
   const [faceFailed, setFaceFailed] = useState(false);

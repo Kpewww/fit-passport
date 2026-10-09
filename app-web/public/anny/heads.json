@@ -10,7 +10,7 @@
   {
    "id": "f-a",
    "sex": "female",
-   "ancestry": "a",
+   "variant": "a",
    "vertexCount": 4336,
    "faceCount": 8622,
    "ref": {
@@ -31,7 +31,7 @@
   {
    "id": "f-b",
    "sex": "female",
-   "ancestry": "b",
+   "variant": "b",
    "vertexCount": 4357,
    "faceCount": 8668,
    "ref": {
@@ -52,7 +52,7 @@
   {
    "id": "f-c",
    "sex": "female",
-   "ancestry": "c",
+   "variant": "c",
    "vertexCount": 4346,
    "faceCount": 8642,
    "ref": {
@@ -73,7 +73,7 @@
   {
    "id": "m-a",
    "sex": "male",
-   "ancestry": "a",
+   "variant": "a",
    "vertexCount": 4315,
    "faceCount": 8578,
    "ref": {
@@ -94,7 +94,7 @@
   {
    "id": "m-b",
    "sex": "male",
-   "ancestry": "b",
+   "variant": "b",
    "vertexCount": 4326,
    "faceCount": 8604,
    "ref": {
@@ -115,7 +115,7 @@
   {
    "id": "m-c",
    "sex": "male",
-   "ancestry": "c",
+   "variant": "c",
    "vertexCount": 4322,
    "faceCount": 8596,
    "ref": {
