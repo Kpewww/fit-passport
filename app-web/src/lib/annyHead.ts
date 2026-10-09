@@ -1,34 +1,39 @@
 // The realistic body's face — Session 98, phase 3.
 //
-// The founder chose a sculpture's face, eyes closed, a few per sex
-// (tools/anny/bake_heads.py). A face is baked against an average body of its sex
+// The founder chose a sculpture's face, eyes closed (tools/anny/bake_heads.py). A face is baked against an average body of its sex
 // and carries that body's head ellipsoid; here it is moved and scaled from that
 // ellipsoid onto the fitted body's own, and the body's ellipsoid is left out of
-// the drawing so the face takes its place. "Form" keeps the ellipsoid.
+// the drawing so the face takes its place.
 //
 // Pure: no three.js, no DOM; tested in Node against the baked files.
 
 import type { AnnyData } from "./annyBody";
 
-// One face per sex: the founder kept female A and male A (Session 98d).
-export type FaceId = "f1" | "m1";
-/** "face": the sculpted face for the body's sex; "form": the mannequin's ellipsoid;
- *  "none": no head, the neck cut straight across (lib/neckCut.ts). */
-export type HeadChoice = "face" | "form" | "none";
-export const FACE_IDS: FaceId[] = ["f1", "m1"];
-export const HEAD_CHOICES: HeadChoice[] = ["face", "form", "none"];
+// Faces by ancestry and sex (Session 98f), chosen by the wearer and never inferred:
+// Anny's statistical average faces (tools/anny/bake_heads.py), no real person's likeness.
+export const ANCESTRIES = ["af", "ea", "eu"] as const;
+export type Ancestry = (typeof ANCESTRIES)[number];
+export type FaceId = `${"f" | "m"}-${Ancestry}`;
+export const FACE_IDS: FaceId[] = ["f-af", "f-ea", "f-eu", "m-af", "m-ea", "m-eu"];
+/** "none": the neck cut a little above its base, as a shop mannequin (lib/neckCut.ts).
+ *  The default: no face is assumed for anyone. */
+export type HeadChoice = Ancestry | "none";
+export const HEAD_CHOICES: HeadChoice[] = ["none", ...ANCESTRIES];
 
-/** The face for a body of this sex. */
-export function faceFor(sex: "female" | "male"): FaceId {
-  return sex === "female" ? "f1" : "m1";
+/** The face for this ancestry on a body of this sex. */
+export function faceFor(sex: "female" | "male", ancestry: Ancestry): FaceId {
+  return `${sex === "female" ? "f" : "m"}-${ancestry}`;
 }
 
 export type FaceMeta = {
   id: FaceId;
   sex: "female" | "male";
+  ancestry: Ancestry;
   vertexCount: number;
   faceCount: number;
   ref: { centre: [number, number, number]; axes: [number, number, number] };
+  /** The chin's height in the bake's space. */
+  chinY: number;
 };
 export type HeadsMeta = { unitPerCm: number; faces: FaceMeta[] };
 export type Face = { indices: Uint16Array; positions: Float32Array };
@@ -67,6 +72,14 @@ export function placeFace(face: Face, meta: FaceMeta, bodyPositions: Float32Arra
     }
   }
   return out;
+}
+
+/** The face's chin on this body: the same move and scale as placeFace. */
+export function placedChinY(meta: FaceMeta, bodyPositions: Float32Array, data: AnnyData): number {
+  const range = data.meta.headEllipsoid?.vertices;
+  if (!range) throw new Error("body.json has no headEllipsoid");
+  const { centre, axes } = ellipsoidOf(bodyPositions, range);
+  return centre[1] + (meta.chinY - meta.ref.centre[1]) * (axes[1] / meta.ref.axes[1]);
 }
 
 /** The body's triangles without its ellipsoid head (they are the last ones). */

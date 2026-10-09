@@ -283,8 +283,9 @@ def main():
             "Anny's MakeHuman-derived assets are released under CC0 1.0 Universal.\n"
             "Changes: coarse topology only; head replaced by a plain ellipsoid; phenotypes sampled at fixed anchors;\n"
             "coordinates rotated to Y-up and quantised to 0.01 cm.\n"
-            "head-*.bin.gz (tools/anny/bake_heads.py): Anny's detailed head with its eyeBlink facial actions applied\n"
-            "and a few face local changes; eyeballs, teeth and tongue removed; quantised the same way.\n"
+            "head-*.bin.gz (tools/anny/bake_heads.py): Anny's detailed head at one ancestry phenotype each, with\n"
+            "its eyeBlink facial actions applied; eyeballs, teeth and tongue removed; quantised the same way.\n"
+            "The cup-size change is Anny's cupsize phenotype, taken at default ancestry.\n"
         )
     print(f"wrote {OUT}: {len(blob)} bytes, {n + head_n} vertices, {faces.shape[0]} faces, "
           f"{len(corners)} corners, {len(local_labels)} local changes; regions "

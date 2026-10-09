@@ -103,8 +103,13 @@ export function readFitLink(params: URLSearchParams): FitView | null {
  * steps (AA 10-12 cm, A 12-14 … ; lower bound exclusive). Source: EN 13402 as tabled by
  * mobilefish.com's EN 13402 pictogram help (fetched 2026-10-09). A chosen cup is fitted
  * to the middle of its range, on a woman's body only, through Anny's own cupsize
- * phenotype (annyBody.ts CUP_LOCAL, baked by tools/anny/bake.py). Anny reaches about
- * 12-26 cm.
+ * phenotype (annyBody.ts CUP_LOCAL, baked by tools/anny/bake.py). Anny itself reaches
+ * about 12-26 cm.
  */
-export const CUPS = { A: [12, 14], B: [14, 16], C: [16, 18], D: [18, 20], E: [20, 22], F: [22, 24] } as const;
+export const CUPS = {
+  A: [12, 14], B: [14, 16], C: [16, 18], D: [18, 20], E: [20, 22], F: [22, 24],
+  // Beyond Anny's own range (about 26 cm), reached by extrapolating its cup change
+  // (annyBody CUP_MAX), as Anny's extrapolate_phenotypes allows (Session 98f).
+  G: [24, 26], H: [26, 28], I: [28, 30], J: [30, 32],
+} as const;
 export type Cup = keyof typeof CUPS;

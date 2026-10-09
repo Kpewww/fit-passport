@@ -33,11 +33,11 @@ type Profile = {
   sex?: string | null; heightCm?: number | null; weightKg?: number | null; chestCm?: number | null;
   waistCm?: number | null; hipCm?: number | null; shoulderCm?: number | null; inseamCm?: number | null;
 };
-// Session 98d: the body's sex is chosen here (null: the passport's); one face per sex;
-// a headless option; a cup size for a woman's body.
+// The body's sex is chosen here (null: the passport's); the head is none or a face of
+// a chosen ancestry; a cup size for a woman's body (Sessions 98d, 98f).
 type Prefs = { kind: "form" | "real"; sex: "female" | "male" | null; head: HeadChoice; tone: ToneId; cup: Cup | null };
 const PREFS_KEY = "fp-body3d";
-const DEFAULT_PREFS: Prefs = { kind: "real", sex: null, head: "face", tone: "form", cup: null };
+const DEFAULT_PREFS: Prefs = { kind: "real", sex: null, head: "none", tone: "form", cup: null };
 
 function readPrefs(): Prefs {
   try {
@@ -46,7 +46,7 @@ function readPrefs(): Prefs {
       return {
         kind: p.kind,
         sex: p.sex === "female" || p.sex === "male" ? p.sex : null,
-        head: HEAD_CHOICES.includes(p.head) ? p.head : "face",
+        head: HEAD_CHOICES.includes(p.head) ? p.head : "none",
         tone: BODY_TONES.some((t) => t.id === p.tone) ? p.tone : "form",
         cup: p.cup && p.cup in CUPS ? p.cup : null,
       };
@@ -69,7 +69,7 @@ export function BodyStudio() {
   const [showFit, setShowFit] = useState(true);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [anny, setAnny] = useState<{ data: AnnyData; lib: typeof import("@/lib/annyBody") } | null>(null);
-  const [head, setHead] = useState<{ id: string; key: string; attachment: Attachment } | null>(null);
+  const [head, setHead] = useState<{ id: string; key: string; attachment: Attachment; chinY: number } | null>(null);
   const [error, setError] = useState(false);
   const [zoom, setZoom] = useState(1);
 
@@ -123,36 +123,53 @@ export function BodyStudio() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [measurements, estimate, ready.girthsMissing.join()]);
 
+  // The head: none (a shop mannequin's neck, the default; no face is assumed for anyone)
+  // or a face of the ancestry the wearer picks, for the body's sex.
   const headChoice: HeadChoice = prefs.head;
-  const faceId = faceFor(sex);
+  const faceId = headChoice === "none" ? null : faceFor(sex, headChoice);
+  const [faceFailed, setFaceFailed] = useState(false);
   useEffect(() => {
-    if (prefs.kind !== "real" || headChoice !== "face" || !anny || !fit) { setHead(null); return; }
+    setFaceFailed(false);
+    if (prefs.kind !== "real" || !faceId || !anny || !fit) { setHead(null); return; }
     let live = true;
     (async () => {
       try {
         const lib = await import("@/lib/annyHead");
         const meta: HeadsMeta = await fetch("/anny/heads.json").then((r) => r.json());
         const fm = meta.faces.find((f) => f.id === faceId);
-        if (!fm) return;
+        if (!fm) throw new Error("no such face");
         const buf = await fetch(`/anny/head-${faceId}.bin.gz`).then((r) => r.arrayBuffer()).then(anny.lib.inflate);
         const face = lib.parseFace(buf, fm, meta.unitPerCm);
-        if (live) setHead({ id: faceId, key: `${faceId}:${fit.body.positions[1]}`, attachment: { positions: lib.placeFace(face, fm, fit.body.positions, anny.data), indices: face.indices } });
+        if (live) setHead({ id: faceId, key: faceId, attachment: { positions: lib.placeFace(face, fm, fit.body.positions, anny.data), indices: face.indices }, chinY: lib.placedChinY(fm, fit.body.positions, anny.data) });
       } catch {
-        if (live) setHead(null); // the ellipsoid stays: a plain head is better than none
+        if (live) { setHead(null); setFaceFailed(true); } // shown headless instead
       }
     })();
     return () => { live = false; };
-  }, [prefs.kind, headChoice, faceId, anny, fit]);
+  }, [prefs.kind, faceId, anny, fit]);
 
-  // No head: the body cut straight across the neck.
-  const [cutLib, setCutLib] = useState<typeof import("@/lib/neckCut") | null>(null);
+  // The shape tools: the neck cut and the rounding (lib/pnSubdivide.ts), loaded with the body.
+  const [shape, setShape] = useState<{ cut: typeof import("@/lib/neckCut"); pn: typeof import("@/lib/pnSubdivide"); head: typeof import("@/lib/annyHead") } | null>(null);
   useEffect(() => {
-    if (headChoice === "none" && !cutLib) import("@/lib/neckCut").then(setCutLib).catch(() => setError(true));
-  }, [headChoice, cutLib]);
-  const headless: BodyGeometryData | null = useMemo(
-    () => (headChoice === "none" && cutLib && fit && anny ? cutLib.cutAtNeck(fit.body, anny.data) : null),
-    [headChoice, cutLib, fit, anny],
-  );
+    if (prefs.kind !== "real" || shape) return;
+    Promise.all([import("@/lib/neckCut"), import("@/lib/pnSubdivide"), import("@/lib/annyHead")])
+      .then(([cut, pn, head]) => setShape({ cut, pn, head }))
+      .catch(() => setError(true));
+  }, [prefs.kind, shape]);
+  const faceReady = !!faceId && head?.id === faceId;
+  // What is drawn: the body rounded, and with a face, the two joined at the neck
+  // (neckCut.ts joinFaceAtNeck) so no seam shows.
+  const real: { body: BodyGeometryData; face: Attachment | null } | null = useMemo(() => {
+    if (prefs.kind !== "real" || !fit || !anny || !shape) return null;
+    if (faceReady && head) {
+      const at = shape.cut.joinLevel(fit.body, anny.data, head.chinY);
+      const joined = shape.cut.joinFaceAtNeck(shape.cut.cutAtNeck(fit.body, anny.data, { cap: false, at }), head.attachment);
+      return { body: shape.pn.roundBody(joined.body), face: joined.face };
+    }
+    if (!faceId || faceFailed) return { body: shape.pn.roundBody(shape.cut.cutAtNeck(fit.body, anny.data)), face: null };
+    return null; // the face is on its way
+  }, [prefs.kind, fit, anny, shape, faceReady, head, faceId, faceFailed]);
+  const realBody = real?.body ?? null;
 
   // The viewer fills its column, up to 560 px.
   const boxRef = useRef<HTMLDivElement>(null);
@@ -167,14 +184,6 @@ export function BodyStudio() {
 
   const tone = BODY_TONES.find((x) => x.id === prefs.tone)?.hex ?? BODY_TONES[0].hex;
   const zones = fitView && showFit ? fitView.zones : null;
-  const faceReady = headChoice === "face" && head && head.id === faceId && anny;
-  const realBody = prefs.kind === "real" && fit
-    ? headChoice === "none"
-      ? headless
-      : faceReady
-        ? { ...fit.body, indices: (anny.data.meta.headEllipsoid ? anny.data.indices.subarray(0, anny.data.meta.headEllipsoid.faces[0] * 3) : anny.data.indices) }
-        : fit.body
-    : null;
   const formReady = prefs.kind === "form" && (!ready.girthsMissing.length || estimate);
   const canDraw = realBody || formReady;
   const cm = (d: number) => `${d > 0 ? "+" : d < 0 ? "−" : ""}${Math.abs(d).toFixed(1)} cm`;
@@ -257,7 +266,7 @@ export function BodyStudio() {
                     body={realBody}
                     zones={zones}
                     tint={tone}
-                    head={realBody && faceReady ? head!.attachment : null}
+                    head={real?.face ?? null}
                     zoom={zoom}
                     skin={prefs.tone !== "form"}
                   />
@@ -325,7 +334,7 @@ export function BodyStudio() {
               </div>
               <p className="mt-1.5 text-[11px] text-ink-faint">{t("cupNote")}</p>
               {cup && fit?.residuals.cup != null && Math.abs(fit.residuals.cup) > 1 && (
-                <p className="mt-1 text-[11px] text-warn">{t("cupResidual", { cup, cm: cm(fit.residuals.cup) })}</p>
+                <p className="mt-1 text-[11px] text-warn">{t("cupResidual", { cup, cm: `${Math.abs(fit.residuals.cup).toFixed(1)} cm` })}</p>
               )}
             </section>
           )}
@@ -347,7 +356,7 @@ export function BodyStudio() {
                   </button>
                 ))}
               </div>
-              {headChoice !== "form" && <p className="mt-1.5 text-[11px] text-ink-faint">{t(headChoice === "none" ? "noneNote" : "faceNote")}</p>}
+              <p className="mt-1.5 text-[11px] text-ink-faint">{t(headChoice === "none" ? "noneNote" : "faceNote")}</p>
             </section>
           )}
 

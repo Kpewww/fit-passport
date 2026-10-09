@@ -8,15 +8,16 @@
  },
  "faces": [
   {
-   "id": "f1",
+   "id": "f-af",
    "sex": "female",
-   "vertexCount": 4177,
-   "faceCount": 8306,
+   "ancestry": "af",
+   "vertexCount": 4322,
+   "faceCount": 8594,
    "ref": {
     "centre": [
      0.0,
-     85.048,
-     9.17
+     92.768,
+     9.137
     ],
     "axes": [
      7.201,
@@ -24,18 +25,62 @@
      6.289
     ]
    },
-   "bytes": 51854
+   "chinY": 79.731,
+   "bytes": 53629
   },
   {
-   "id": "m1",
-   "sex": "male",
-   "vertexCount": 4177,
-   "faceCount": 8306,
+   "id": "f-ea",
+   "sex": "female",
+   "ancestry": "ea",
+   "vertexCount": 4374,
+   "faceCount": 8698,
    "ref": {
     "centre": [
      0.0,
-     97.887,
-     10.273
+     75.704,
+     9.096
+    ],
+    "axes": [
+     7.201,
+     9.89,
+     6.289
+    ]
+   },
+   "chinY": 63.302,
+   "bytes": 54074
+  },
+  {
+   "id": "f-eu",
+   "sex": "female",
+   "ancestry": "eu",
+   "vertexCount": 4346,
+   "faceCount": 8642,
+   "ref": {
+    "centre": [
+     0.0,
+     86.435,
+     9.277
+    ],
+    "axes": [
+     7.201,
+     9.89,
+     6.289
+    ]
+   },
+   "chinY": 73.352,
+   "bytes": 53913
+  },
+  {
+   "id": "m-af",
+   "sex": "male",
+   "ancestry": "af",
+   "vertexCount": 4305,
+   "faceCount": 8562,
+   "ref": {
+    "centre": [
+     0.0,
+     106.267,
+     10.704
     ],
     "axes": [
      7.65,
@@ -43,7 +88,50 @@
      6.746
     ]
    },
-   "bytes": 51937
+   "chinY": 91.956,
+   "bytes": 53542
+  },
+  {
+   "id": "m-ea",
+   "sex": "male",
+   "ancestry": "ea",
+   "vertexCount": 4336,
+   "faceCount": 8624,
+   "ref": {
+    "centre": [
+     0.0,
+     87.598,
+     9.418
+    ],
+    "axes": [
+     7.65,
+     10.861,
+     6.746
+    ]
+   },
+   "chinY": 73.526,
+   "bytes": 53821
+  },
+  {
+   "id": "m-eu",
+   "sex": "male",
+   "ancestry": "eu",
+   "vertexCount": 4324,
+   "faceCount": 8600,
+   "ref": {
+    "centre": [
+     0.0,
+     99.824,
+     10.696
+    ],
+    "axes": [
+     7.65,
+     10.861,
+     6.746
+    ]
+   },
+   "chinY": 85.546,
+   "bytes": 53731
   }
  ]
 }

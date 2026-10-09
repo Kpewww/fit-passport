@@ -97,12 +97,13 @@ describe("a body from height and weight alone (Session 98)", () => {
 
 describe("a chosen cup size (Session 98d, EN 13402: bust minus underbust)", () => {
   const woman = { sex: "female" as const, heightCm: 165, weightKg: 58 };
-  it("reaches every cup from A to F within 1 cm, and the bust grows with it", () => {
+  it("reaches every cup from A to J within 1 cm, and the bust grows with it", () => {
     let lastBust = 0;
     for (const cup of Object.keys(CUPS) as Cup[]) {
       const fit = fitAnny(data, { ...woman, cup });
       expect(Math.abs(fit.residuals.cup!), `${cup} ${fit.residuals.cup}`).toBeLessThanOrEqual(1);
-      const bust = girthAt(fit.body.positions, data.indices, data.regions, fit.body.landmarks.chest!, [0]);
+      const c = fit.body.landmarks.chest!;
+      const bust = Math.max(...Array.from({ length: 16 }, (_, i) => girthAt(fit.body.positions, data.indices, data.regions, c - 10 + i, [0])));
       expect(bust).toBeGreaterThan(lastBust);
       lastBust = bust;
     }
@@ -116,5 +117,40 @@ describe("a chosen cup size (Session 98d, EN 13402: bust minus underbust)", () =
     const fit = fitAnny(data, { sex: "male", heightCm: 178, weightKg: 74, cup: "C" });
     expect(fit.residuals.cup).toBeUndefined();
     expect(fit.localWeights["phenotype-cupsize"]).toBeUndefined();
+  });
+});
+
+describe("a cup with a measured bust looks its size (Session 98f: an F looked like a B)", () => {
+  // How far the breasts stand out: the front of the torso at the bust, minus at the underbust.
+  const projection = (pos: Float32Array, chestY: number) => {
+    let bust = -Infinity, under = -Infinity;
+    for (let v = 0; v < data.regions.length; v++) {
+      if (data.regions[v] !== 0 || Math.abs(pos[v * 3]) > 12) continue;
+      const y = pos[v * 3 + 1], z = pos[v * 3 + 2];
+      if (y > chestY - 9 && y < chestY + 3) bust = Math.max(bust, z);
+      if (y > chestY - 16 && y < chestY - 11) under = Math.max(under, z);
+    }
+    return bust - under;
+  };
+  // Pairs this body can wear: a 165 cm, 58 kg woman's underbust spans about 70-77 cm here.
+  for (const [chestCm, small, large] of [[86, "B", "F"], [92, "D", "H"]] as const) {
+    it(`keeps a ${chestCm} cm bust, and ${large} stands out well past ${small}`, () => {
+      const at = (cup: Cup) => fitAnny(data, { sex: "female", heightCm: 165, weightKg: 58, chestCm, cup });
+      const b = at(small), f = at(large);
+      for (const fit of [b, f]) {
+        expect(Math.abs(fit.residuals.chest!), `chest ${fit.residuals.chest}`).toBeLessThanOrEqual(1);
+        expect(Math.abs(fit.residuals.cup!), `cup ${fit.residuals.cup}`).toBeLessThanOrEqual(1);
+      }
+      const pb = projection(b.body.positions, b.body.landmarks.chest!), pf = projection(f.body.positions, f.body.landmarks.chest!);
+      expect(pf - pb, `B ${pb.toFixed(1)} F ${pf.toFixed(1)}`).toBeGreaterThan(2);
+    });
+  }
+});
+
+describe("a cup the body cannot carry at that bust", () => {
+  it("is reported as a residual, not hidden (bust 92 with a B: underbust 77 cm on a 58 kg body)", () => {
+    const fit = fitAnny(data, { sex: "female", heightCm: 165, weightKg: 58, chestCm: 92, cup: "B" });
+    expect(Math.abs(fit.residuals.chest!)).toBeLessThanOrEqual(1);
+    expect(fit.residuals.cup!).toBeGreaterThan(1);
   });
 });

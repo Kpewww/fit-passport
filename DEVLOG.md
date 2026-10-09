@@ -31,6 +31,86 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-09 · Session 98f — /body: faces by ancestry, a mannequin's neck, cups to J, a rounder body, and a seamless neck
+
+The founder's review of /body, and a bug report:
+- leave a little neck on the headless body, like a shop mannequin;
+- drop the form head;
+- add larger cups and make the bust round, because it looks angular;
+- find good-looking faces: Black, White and Asian, for each sex, and an Asian face
+  without stereotyped narrow eyes. They named film stars as the bar.
+- Then: "cup F looks the same as B".
+
+**Faces** (`tools/anny/bake_heads.py`): six, African / East Asian / European × female /
+male.
+- Each is Anny's ancestry phenotype set to 1 (MakeHuman's statistical average faces,
+  CC0), eyes closed.
+- Averageness and symmetry are what people rate attractive (Langlois & Roggman 1990).
+- No real person's likeness is used. Modelling a named film star's face is not something
+  a commercial product may do; the founder was told why.
+- Chosen by the wearer, never inferred. The page now opens **headless** so no face is
+  assumed for anyone.
+- Each face sits on its own body's head position (ancestry changes Anny's stature), at the
+  average head's size.
+
+**A mannequin's neck** (`lib/neckCut.ts`):
+- Measured on a 160 cm woman, the girth narrows over the trapezius from 71 to 30 cm in the
+  lower 58% of shoulder-to-jaw, so the neck proper is short. The first cut sat at its base
+  and showed no neck.
+- `neckCutY` now finds the neck's base (girth within 15% of its narrowest) and cuts three
+  quarters of the way up to the jaw.
+
+**Faces joined, not overlapped:**
+- A face's neck laid over the body's showed a ring. Then, once the nape was included, a
+  gap.
+- The nape had been missing because it is skinned to neck01 (which `bake.py` counts as
+  torso), and the radius check measured from the skull's mean, which sits about 10 cm
+  forward. The axis is now taken from a slice of the neck.
+- Then `joinFaceAtNeck`:
+  - face and body are cut at the same level, 1.5 cm under the face's chin (the stub's
+    level passed 1–1.5 cm above it and sliced the jaw: measured);
+  - the body's rim is moved, angle by angle, onto the face's, and eased in over 3 cm;
+  - a narrow skirt with its own vertices covers the hairline left between the two
+    edges.
+- Test: the two edges agree within 6 mm all round, measured to the face's nearest vertex.
+
+**Cups:**
+- **F looked like B**, because with a measured bust the cup was met by narrowing the
+  underbust alone. Now the bust and the underbust are solved together over three changes:
+  - cup size first;
+  - the underbust next;
+  - the bust's overall size last;
+  as a weighted minimum-norm Newton step, with any change at its limit sitting out.
+- Test: with a measured bust (86 cm), F stands out at least 2 cm further than B.
+- The bust is taken at its **fullest** girth near the chest line, not at a fixed height:
+  large cups sit lower, and a fixed tape under-read cup G by 2.7 cm.
+- Cups go to **J** (EN 13402, up to 32 cm). Past Anny's own range (about 26 cm) the cup
+  change is extended along the same direction (`CUP_MAX` 2, as Anny's
+  `extrapolate_phenotypes` allows). A to J are reached within 1 cm.
+- A cup a body cannot carry at that bust (bust 92 with a B means an underbust of 77 on a
+  58 kg body) is reported on the page in plain words, not hidden.
+
+**A rounder body** (`lib/pnSubdivide.ts`):
+- Curved PN triangles (Vlachos et al. 2001), two levels (16× the triangles). They
+  interpolate, so the girths the fit reached are kept.
+- Then Taubin smoothing of the torso (λ/μ, no shrinkage), because PN alone left flat
+  facets on a medium bust (cup C).
+- Test: chest, waist and hip girths within 1.5% of the fit's.
+
+**Verified:**
+- 1,311 tests + 1 skip.
+- In Chromium:
+  - headless by default, the form head gone;
+  - six faces at 3x zoom;
+  - the neck stub;
+  - cups C and J from a three-quarter view;
+  - cups B and F with an 88 cm bust (F visibly fuller);
+  - the joined neck at full resolution: from a jagged gap, to a dark crack, to clean.
+- The earlier /body and pop-over flows pass, with no console errors.
+- /body 108 kB.
+
+---
+
 ## 2026-10-09 · Session 98e — /body: one face per sex, a headless body, real skin tones, sex and cup size
 
 The founder's review of /body:

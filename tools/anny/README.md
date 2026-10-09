@@ -3,7 +3,7 @@
 `bake.py` turns NAVER's Anny body model (Apache 2.0; MakeHuman-derived assets CC0)
 into `app-web/public/anny/body.bin.gz` + `body.json` + `NOTICE`, which
 `app-web/src/lib/annyBody.ts` blends and fits in the browser. `bake_heads.py` then
-bakes the sculpted, closed-eye faces (`head-f1|f2|m1|m2.bin.gz` + `heads.json`),
+bakes the sculpted, closed-eye faces (`head-{f,m}-{af,ea,eu}.bin.gz` + `heads.json`; one per sex and Anny ancestry, chosen by the wearer),
 which `app-web/src/lib/annyHead.ts` places on the fitted body. Both run offline, by
 us, and never at build time or on Vercel. Run `bake.py` first: the faces are aligned
 to its ellipsoid head.

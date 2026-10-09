@@ -912,3 +912,8 @@ and the body from height and weight alone; upload extension 0.9.1. **Engineering
 **Next — founder:** review /body again (face / headless, skin 1–10, cup sizes). **Engineering after approval:**
 the 人台 / 写实 toggle on /check; /outfits preview on the 3D body; the crease under the form head's chin.
 
+## Session 98f (2026-10-09) — faces by ancestry, mannequin neck, cups to J, rounder body, DONE
+
+**Next — founder:** review /body (six faces, the neck stub, cups with and without a measured bust).
+**Engineering after approval:** the 人台 / 写实 toggle on /check; /outfits preview on the 3D body.
+

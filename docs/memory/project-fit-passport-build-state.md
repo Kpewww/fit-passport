@@ -1438,3 +1438,10 @@ levels + NeutralToneMapping + tinted sheen (FitMap3D `skin`); sex switch (view o
 (bust − underbust), Anny `phenotype-cupsize` baked from the "all" mode at default ancestry (never varied).
 FitMap3D rebuilds on a whole-mesh checksum (two sampled vertices missed a cup change).
 
+**SESSION 98f (2026-10-09).** → **1,311 tests**. /body heads = none (default; mannequin neck stub, `neckCutY` finds the
+neck base) or a face `{f,m}-{af,ea,eu}` (Anny ancestry phenotype = 1, eyes closed; chosen by the wearer, never
+inferred; no real person's likeness). Faces JOINED to the body (`joinFaceAtNeck`: same cut 1.5 cm under the chin,
+body rim snapped to the face's by angle, 3 cm ease, skirt). Cups A–J (CUP_MAX 2 extrapolates past Anny's ~26 cm);
+measured bust + cup → 3-lever weighted min-norm Newton (cup, underbust, bust-circ); a woman's bust is the fullest
+girth. Body drawn through `roundBody` (PN ×2 + torso Taubin), girths kept within 1.5%.
+

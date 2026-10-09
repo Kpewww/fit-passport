@@ -4,14 +4,17 @@ Run by us, offline, after bake.py (same venv):
 
     .venv/bin/python tools/anny/bake_heads.py      # writes app-web/public/anny/head-*.bin.gz
 
-The founder's choice: a sculpture's face, eyes closed, one per sex, not a person. So each face is Anny's own detailed head (its "anny" topology, 13,718
-vertices for the whole body) with:
+The founder's choice: a sculpture's face, eyes closed, not a person. Session 98f: one
+face per ancestry Anny models (african, asian, caucasian) for each sex, chosen by the
+wearer on /body and never inferred from anything. Each is Anny's own detailed head
+(its "anny" topology, 13,718 vertices for the whole body) with:
+  - the ancestry phenotype set to 1 for that face (MakeHuman's statistical average
+    faces, CC0), everything else at Anny's defaults;
   - the eyes closed by Anny's eyeBlink facial actions (ARKit names, CC0 assets);
   - the eyeballs, teeth and tongue left out (they are separate pieces of the mesh;
-    only the skin is kept), no hair, no lashes;
-  - the shape varied only through Anny's face local changes (head, chin, cheek bones,
-    nose, mouth, brows). Anny's ancestry phenotypes are not among the default
-    phenotypes and are never set: a face here says nothing about where anyone is from.
+    only the skin is kept), no hair, no lashes.
+No real person's likeness is used: the founder named film stars as the bar for
+"good-looking", and copying a real face is not something a commercial product may do.
 
 How it sits on the body. The body (bake.py) has an ellipsoid where the skull was. A
 face is stored in the same space as the body it was baked against (gender 0 or 1,
@@ -42,20 +45,33 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from bake import AGE_YOUNG, OUT, TOPOLOGY, UNIT_PER_CM, head_ellipsoid, regions_from_bones, to_three_cm  # noqa: E402
 
 FACIAL = {"eyeBlinkLeft": 1.0, "eyeBlinkRight": 1.0}
-# Anny: gender 0 = male, 1 = female. Local changes only; see the docstring.
+# Anny: gender 0 = male, 1 = female. Session 98f: the founder asked for faces of
+# different ancestries, chosen by the wearer, never inferred. Anny's ancestry
+# phenotypes (MakeHuman's african / asian / caucasian targets, CC0) are statistical
+# average faces; averageness and symmetry are what people rate attractive (Langlois &
+# Roggman 1990, Psychological Science 1:115). No real person's likeness is used.
+ANCESTRY = {
+    "af": {"african": 1.0, "asian": 0.0, "caucasian": 0.0},
+    "ea": {"african": 0.0, "asian": 1.0, "caucasian": 0.0},
+    "eu": {"african": 0.0, "asian": 0.0, "caucasian": 1.0},
+}
 FACES = [
-    # The founder kept one face per sex (Session 98d); the B variants were dropped.
-    {"id": "f1", "sex": "female", "gender": 1.0, "locals": {}},
-    {"id": "m1", "sex": "male", "gender": 0.0, "locals": {}},
+    {"id": f"{s}-{a}", "sex": sex, "gender": g, "ancestry": a, "locals": {}}
+    for s, sex, g in (("f", "female", 1.0), ("m", "male", 0.0))
+    for a in ANCESTRY
 ]
+NEUTRAL = {"cupsize": 0.5, "firmness": 0.5, "african": 0.5, "asian": 0.5, "caucasian": 0.5}
 # How far below the chin the face's neck reaches, cm: enough to overlap the body's.
 NECK_BELOW_CHIN_CM = 5.0
+# How far from the head's axis a torso vertex may be and still count as neck, cm.
+NECK_RADIUS_CM = 9.0
 
 
-def rest(model, gender, local_changes=None, facial=None):
+def rest(model, gender, local_changes=None, facial=None, ancestry=None):
     _, ph, lc, fa = model.get_tensor_inputs(
         None,
-        {"gender": gender, "age": AGE_YOUNG, "muscle": 0.5, "weight": 0.5, "height": 0.5, "proportions": 0.5},
+        {"gender": gender, "age": AGE_YOUNG, "muscle": 0.5, "weight": 0.5, "height": 0.5, "proportions": 0.5,
+         **NEUTRAL, **(ancestry or {})},
         local_changes or {},
         facial or {},
     )
@@ -84,9 +100,9 @@ def skin_component(faces, n):
 
 
 def main():
-    coarse = anny.Anny(topology=TOPOLOGY, local_changes="default")
+    coarse = anny.Anny(topology=TOPOLOGY, local_changes="default", phenotypes="all")
     _, coarse_skull = regions_from_bones(coarse)
-    detail = anny.Anny(local_changes="default", facial_actions=list(FACIAL))
+    detail = anny.Anny(local_changes="default", facial_actions=list(FACIAL), phenotypes="all")
     missing = [l for f in FACES for l in f["locals"] if l not in detail.local_change_labels]
     if missing:
         sys.exit(f"local changes not in this Anny: {missing}")
@@ -98,13 +114,27 @@ def main():
 
     out_meta = []
     for face in FACES:
-        # The reference: the coarse body's ellipsoid at this sex, as bake.py makes it.
-        ref = rest(coarse, face["gender"])
-        _, centre, axes = head_ellipsoid(ref, coarse_skull)
+        # The reference: where this face's own body carries its head (so it sits on the
+        # neck), at the size of the average body's head, which is the one the browser
+        # scales from (bake.py's body): a face's own skull size survives the scaling.
+        anc = ANCESTRY[face["ancestry"]]
+        _, centre, _ = head_ellipsoid(rest(coarse, face["gender"], ancestry=anc), coarse_skull)
+        _, _, axes = head_ellipsoid(rest(coarse, face["gender"]), coarse_skull)
 
-        v = rest(detail, face["gender"], face["locals"], FACIAL)
+        v = rest(detail, face["gender"], face["locals"], FACIAL, anc)
         chin = v[skull & skin, 1].min()
-        keep = skin & (regions == 3) & (v[:, 1] >= chin - NECK_BELOW_CHIN_CM)
+        # The whole neck ring down to a level line under the chin, whatever bone it is
+        # skinned to: the nape is on neck01, which bake.py counts as torso, and leaving
+        # it out opened a gap at the back of the neck (Session 98f). The ring's width
+        # keeps the shoulders out.
+        # The neck's own axis: the middle of a slice just under the chin. The skull's
+        # mean sits ~10 cm forward of it (the face is densely meshed), which left the
+        # nape outside the radius.
+        ring = skin & (v[:, 1] > chin - 3) & (v[:, 1] < chin - 1) & (np.abs(v[:, 0]) < 10)
+        centre_x = (v[ring, 0].min() + v[ring, 0].max()) / 2
+        centre_z = (v[ring, 2].min() + v[ring, 2].max()) / 2
+        near_axis = np.hypot(v[:, 0] - centre_x, v[:, 2] - centre_z) < NECK_RADIUS_CM
+        keep = skin & (v[:, 1] >= chin - NECK_BELOW_CHIN_CM) & ((regions == 3) | ((regions == 0) & near_axis))
         tri = np.array([t for t in faces_all if keep[t].all()])
         used = np.unique(tri)
         remap = -np.ones(n, dtype=np.int64)
@@ -120,9 +150,11 @@ def main():
         with open(path, "wb") as fh:
             fh.write(gzip.compress(blob, compresslevel=9, mtime=0))
         out_meta.append({
-            "id": face["id"], "sex": face["sex"],
+            "id": face["id"], "sex": face["sex"], "ancestry": face["ancestry"],
             "vertexCount": int(len(used)), "faceCount": int(len(tri)),
             "ref": {"centre": [round(float(x), 3) for x in centre], "axes": [round(float(x), 3) for x in axes]},
+            # The chin's height in the same space: a face is joined to the body below it.
+            "chinY": round(float(chin), 3),
             "bytes": os.path.getsize(path),
         })
         print(f"{face['id']}: {len(used)} vertices, {len(tri)} faces, {os.path.getsize(path)} bytes gz; "

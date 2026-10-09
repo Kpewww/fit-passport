@@ -5,8 +5,10 @@ import { join } from "node:path";
 import { gunzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import { fitAnny, parseAnny, type AnnyMeta } from "./annyBody";
-import { FACE_IDS, ellipsoidOf, faceFor, parseFace, placeFace, withoutEllipsoid, type HeadsMeta } from "./annyHead";
-import { cutAtNeck } from "./neckCut";
+import { FACE_IDS, ellipsoidOf, faceFor, parseFace, placeFace, placedChinY, withoutEllipsoid, type HeadsMeta } from "./annyHead";
+import { cutAtNeck, joinFaceAtNeck, joinLevel } from "./neckCut";
+import { pnSubdivide, roundBody } from "./pnSubdivide";
+import { girthAt } from "./annyBody";
 
 const DIR = join(__dirname, "..", "..", "public", "anny");
 const meta = JSON.parse(readFileSync(join(DIR, "body.json"), "utf8")) as AnnyMeta;
@@ -20,7 +22,7 @@ const load = (id: string) => {
 };
 
 describe("the baked faces", () => {
-  it("are the two kept, each whole and in range", () => {
+  it("are the six baked (three ancestries, two sexes), each whole and in range", () => {
     expect(heads.faces.map((f) => f.id).sort()).toEqual([...FACE_IDS].sort());
     for (const id of FACE_IDS) {
       const { m, face } = load(id);
@@ -29,16 +31,18 @@ describe("the baked faces", () => {
     }
   });
 
-  it("follow the body's sex", () => {
-    expect(faceFor("female")).toBe("f1");
-    expect(faceFor("male")).toBe("m1");
+  it("are chosen by ancestry, for the body's sex", () => {
+    expect(faceFor("female", "ea")).toBe("f-ea");
+    expect(faceFor("male", "af")).toBe("m-af");
   });
 });
 
 describe("a face on a fitted body", () => {
   for (const [id, person] of [
-    ["f1", { sex: "female" as const, heightCm: 158, weightKg: 50 }],
-    ["m1", { sex: "male" as const, heightCm: 192, weightKg: 95 }],
+    ["f-ea", { sex: "female" as const, heightCm: 158, weightKg: 50 }],
+    ["f-af", { sex: "female" as const, heightCm: 172, weightKg: 64 }],
+    ["m-eu", { sex: "male" as const, heightCm: 192, weightKg: 95 }],
+    ["m-ea", { sex: "male" as const, heightCm: 170, weightKg: 68 }],
   ] as const) {
     it(`sits where ${person.sex} ${person.heightCm} cm's head is, at its size (${id})`, () => {
       const fit = fitAnny(data, person);
@@ -77,7 +81,11 @@ describe("the headless body (Session 98d)", () => {
       // The cut is in the neck: above the shoulders, under the jaw.
       const head = ellipsoidOf(fit.body.positions, meta.headEllipsoid!.vertices);
       expect(cut.cutY).toBeGreaterThan(fit.body.landmarks.shoulder!);
-      expect(cut.cutY).toBeLessThan(head.centre[1] - head.axes[1]);
+      // A little neck left, as on a shop mannequin: well up the neck, under the jaw.
+      const jaw = head.centre[1] - head.axes[1];
+      const sh = fit.body.landmarks.shoulder!;
+      expect(cut.cutY).toBeGreaterThan(sh + 0.75 * (jaw - sh));
+      expect(cut.cutY).toBeLessThan(jaw);
       // The cap: triangles lying in the plane, facing up, covering a neck-sized disc.
       let capTris = 0, area = 0;
       for (let t = 0; t < cut.indices.length; t += 3) {
@@ -94,8 +102,71 @@ describe("the headless body (Session 98d)", () => {
       }
       expect(capTris).toBeGreaterThan(6);
       const girth = 2 * Math.sqrt(Math.PI * area); // the circle with that area
-      expect(girth).toBeGreaterThan(25);
-      expect(girth).toBeLessThan(50);
+      // A neck's girth, not the shoulders'.
+      expect(girth).toBeGreaterThan(22);
+      expect(girth).toBeLessThan(45);
+    });
+  }
+});
+
+describe("rounding the body (PN triangles, Session 98f)", () => {
+  const fit = fitAnny(data, { sex: "female", heightCm: 165, weightKg: 58, chestCm: 92, cup: "E" });
+  const round = pnSubdivide({ ...fit.body, indices: withoutEllipsoid(data) }, 2);
+  it("keeps every original vertex where it was, with 16 triangles for each", () => {
+    expect(round.indices.length).toBe(withoutEllipsoid(data).length * 16);
+    for (let i = 0; i < fit.body.positions.length; i++) expect(round.positions[i]).toBe(fit.body.positions[i]);
+  });
+  it("keeps the girths the fit reached, within 1.5%, after the torso is evened out too", () => {
+    const round = roundBody({ ...fit.body, indices: withoutEllipsoid(data) });
+    for (const key of ["chest", "waist", "hip"] as const) {
+      const keep = key === "hip" ? [0, 2] : [0];
+      const y = fit.body.landmarks[key]!;
+      const before = girthAt(fit.body.positions, withoutEllipsoid(data), data.regions, y, keep);
+      const after = girthAt(round.positions, round.indices as unknown as Uint16Array, round.regions!, y, keep);
+      expect(Math.abs(after - before) / before, key).toBeLessThan(0.015);
+    }
+  });
+});
+
+describe("under a face, the body is cut open at the neck", () => {
+  it("has no cap, and the face's neck reaches below the cut", () => {
+    const fit = fitAnny(data, { sex: "female", heightCm: 165, weightKg: 58 });
+    const open = cutAtNeck(fit.body, data, { cap: false });
+    const capped = cutAtNeck(fit.body, data);
+    expect(open.indices.length).toBeLessThan(capped.indices.length);
+    const { m, face } = load("f-eu");
+    const placed = placeFace(face, m, fit.body.positions, data);
+    let bottom = Infinity;
+    for (let i = 1; i < placed.length; i += 3) bottom = Math.min(bottom, placed[i]);
+    expect(bottom).toBeLessThan(open.cutY - 1);
+  });
+});
+
+describe("a face joined to the body at the neck (Session 98f)", () => {
+  for (const [id, person] of [["f-ea", { sex: "female" as const, heightCm: 160, weightKg: 52 }], ["m-af", { sex: "male" as const, heightCm: 186, weightKg: 88 }]] as const) {
+    it(`meets the body's edge all the way round the neck (${id})`, () => {
+      const fit = fitAnny(data, person);
+      const { m, face } = load(id);
+      const cut = cutAtNeck(fit.body, data, { cap: false, at: joinLevel(fit.body, data, placedChinY(m, fit.body.positions, data)) });
+      expect(cut.cutY).toBeLessThan(placedChinY(m, fit.body.positions, data));
+      const joined = joinFaceAtNeck(cut, { positions: placeFace(face, m, fit.body.positions, data), indices: face.indices });
+      const [cx, cz] = cut.axis;
+      const polar = (p: Float32Array, i: number) => [Math.atan2(p[i * 3 + 2] - cz, p[i * 3] - cx), Math.hypot(p[i * 3] - cx, p[i * 3 + 2] - cz)];
+      // The face's rim: its vertices on the cut level.
+      const faceRim: number[][] = [];
+      for (let i = 0; i < joined.face.positions.length / 3; i++) if (Math.abs(joined.face.positions[i * 3 + 1] - cut.cutY) < 1e-4) faceRim.push(polar(joined.face.positions, i));
+      expect(faceRim.length).toBeGreaterThan(20);
+      let worst = 0;
+      for (const v of cut.rim) {
+        const [a, r] = polar(joined.body.positions, v);
+        const near = faceRim.reduce((best, p) => (Math.abs(p[0] - a) < Math.abs(best[0] - a) ? p : best));
+        worst = Math.max(worst, Math.abs(near[1] - r));
+      }
+      // Within a few millimetres, by the face's nearest point (its edge is interpolated
+      // between them, so this overstates the gap a little).
+      expect(worst).toBeLessThan(0.6);
+      // Nothing of the face below the cut but its skirt, which stays within 1 cm.
+      for (const i of joined.face.indices) expect(joined.face.positions[i * 3 + 1]).toBeGreaterThanOrEqual(cut.cutY - 1);
     });
   }
 });

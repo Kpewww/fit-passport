@@ -5,5 +5,6 @@ https://github.com/naver/anny
 Anny's MakeHuman-derived assets are released under CC0 1.0 Universal.
 Changes: coarse topology only; head replaced by a plain ellipsoid; phenotypes sampled at fixed anchors;
 coordinates rotated to Y-up and quantised to 0.01 cm.
-head-*.bin.gz (tools/anny/bake_heads.py): Anny's detailed head with its eyeBlink facial actions applied
-and a few face local changes; eyeballs, teeth and tongue removed; quantised the same way.
+head-*.bin.gz (tools/anny/bake_heads.py): Anny's detailed head at one ancestry phenotype each, with
+its eyeBlink facial actions applied; eyeballs, teeth and tongue removed; quantised the same way.
+The cup-size change is Anny's cupsize phenotype, taken at default ancestry.
