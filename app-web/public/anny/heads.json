@@ -1,0 +1,87 @@
+{
+ "source": "Anny 0.6.1 (NAVER LABS Europe), topology anny; baked by tools/anny/bake_heads.py",
+ "licence": "Anny code Apache-2.0 (Copyright 2025 NAVER Corp.); MakeHuman-derived assets CC0 1.0. See NOTICE.",
+ "unitPerCm": 100,
+ "facialActions": {
+  "eyeBlinkLeft": 1.0,
+  "eyeBlinkRight": 1.0
+ },
+ "faces": [
+  {
+   "id": "f1",
+   "sex": "female",
+   "vertexCount": 4177,
+   "faceCount": 8306,
+   "ref": {
+    "centre": [
+     0.0,
+     85.048,
+     9.17
+    ],
+    "axes": [
+     7.201,
+     9.89,
+     6.289
+    ]
+   },
+   "bytes": 51854
+  },
+  {
+   "id": "f2",
+   "sex": "female",
+   "vertexCount": 4177,
+   "faceCount": 8306,
+   "ref": {
+    "centre": [
+     0.0,
+     85.048,
+     9.17
+    ],
+    "axes": [
+     7.201,
+     9.89,
+     6.289
+    ]
+   },
+   "bytes": 51781
+  },
+  {
+   "id": "m1",
+   "sex": "male",
+   "vertexCount": 4177,
+   "faceCount": 8306,
+   "ref": {
+    "centre": [
+     0.0,
+     97.887,
+     10.273
+    ],
+    "axes": [
+     7.65,
+     10.861,
+     6.746
+    ]
+   },
+   "bytes": 51937
+  },
+  {
+   "id": "m2",
+   "sex": "male",
+   "vertexCount": 4177,
+   "faceCount": 8306,
+   "ref": {
+    "centre": [
+     0.0,
+     97.887,
+     10.273
+    ],
+    "axes": [
+     7.65,
+     10.861,
+     6.746
+    ]
+   },
+   "bytes": 51957
+  }
+ ]
+}

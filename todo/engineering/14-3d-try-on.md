@@ -18,6 +18,15 @@ small link on /check that showed only for garment charts. The founder chose **pa
   - a lab page for the founder's review;
   - a ship gate. See the plan in DEVLOG Session 97.
 
+**Status (Session 98, phase 3).** `/body` ("my 3D body") is the 3D view's own page:
+- a dress form or the realistic body, a sculpted closed-eye face (four presets);
+- a body colour, the mannequin's or one of four skin tones named by colour;
+- a body from height and weight alone;
+- one size's fit colours, carried over from /check.
+It is reached from both passport views and from /check's fit map. Next, after the
+founder's review: the dress form / realistic toggle on /check, and the /outfits
+preview on the 3D body.
+
 ## What exists today
 
 - `/outfits` shows a **stylized SVG mannequin** wearing the chosen garment types and

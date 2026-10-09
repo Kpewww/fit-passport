@@ -2,13 +2,15 @@
 // baked file the browser fetches, so what is tested is what ships.
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { gunzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { blendCorners, fitAnny, girthAt, parseAnny, type AnnyMeta } from "./annyBody";
+import { blendCorners, estimateGirths, fitAnny, girthAt, parseAnny, type AnnyMeta } from "./annyBody";
+import { dressFormGeometry } from "./dressForm3d";
 import { REGION } from "./fitMapColours";
 
 const DIR = join(__dirname, "..", "..", "public", "anny");
 const meta = JSON.parse(readFileSync(join(DIR, "body.json"), "utf8")) as AnnyMeta;
-const buf = readFileSync(join(DIR, "body.bin"));
+const buf = gunzipSync(readFileSync(join(DIR, "body.bin.gz")));
 const data = parseAnny(buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength), meta);
 
 const PEOPLE = [
@@ -53,5 +55,38 @@ describe("fitting it to a person", () => {
     const fit = fitAnny(data, PEOPLE[0].m);
     const g = girthAt(fit.body.positions, data.indices, data.regions, fit.body.landmarks.waist!, [REGION.torso]);
     expect(g).toBeCloseTo(84, 0);
+  });
+});
+
+describe("a body from height and weight alone (Session 98)", () => {
+  const people = [
+    { sex: "male" as const, heightCm: 178, weightKg: 74 },
+    { sex: "female" as const, heightCm: 163, weightKg: 55 },
+    { sex: "male" as const, heightCm: 185, weightKg: 105 },
+  ];
+  for (const m of people) {
+    it(`gives the dress form girths to draw for ${m.sex}, ${m.heightCm} cm, ${m.weightKg} kg`, () => {
+      const fit = fitAnny(data, m);
+      const est = estimateGirths(data, fit);
+      // Human ranges, not targets: the point is a drawable, plausible form.
+      expect(est.chestCm).toBeGreaterThan(70); expect(est.chestCm).toBeLessThan(135);
+      expect(est.waistCm).toBeGreaterThan(55); expect(est.waistCm).toBeLessThan(125);
+      expect(est.hipCm).toBeGreaterThan(75); expect(est.hipCm).toBeLessThan(135);
+      expect(est.shoulderCm).toBeGreaterThan(30); expect(est.shoulderCm).toBeLessThan(60);
+      expect(dressFormGeometry({ ...m, ...est })).not.toBeNull();
+    });
+  }
+
+  it("grows with weight", () => {
+    const light = estimateGirths(data, fitAnny(data, { sex: "male", heightCm: 178, weightKg: 62 }));
+    const heavy = estimateGirths(data, fitAnny(data, { sex: "male", heightCm: 178, weightKg: 98 }));
+    expect(heavy.waistCm).toBeGreaterThan(light.waistCm + 5);
+  });
+
+  it("reads back the girths a full fit was given, so the estimate measures what the fit measured", () => {
+    const fit = fitAnny(data, PEOPLE[0].m);
+    const est = estimateGirths(data, fit);
+    expect(Math.abs(est.chestCm - PEOPLE[0].m.chestCm)).toBeLessThanOrEqual(1);
+    expect(Math.abs(est.waistCm - PEOPLE[0].m.waistCm)).toBeLessThanOrEqual(1);
   });
 });

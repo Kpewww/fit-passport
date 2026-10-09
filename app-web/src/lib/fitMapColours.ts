@@ -95,10 +95,12 @@ export function colourAtHeight(
  * of the parts measured; every other vertex, and the whole body when there are no
  * zones, keeps the form's grey.
  */
-export function fitMapColours(body: BodyGeometryData, zones: Zone[] | null | undefined): Float32Array {
+export function fitMapColours(body: BodyGeometryData, zones: Zone[] | null | undefined, formHex: string = FORM_COLOUR): Float32Array {
   const n = body.positions.length / 3;
   const out = new Float32Array(n * 3);
-  const form = linearRgb(FORM_COLOUR);
+  // The body's own colour where nothing is said: the form's grey, or (on /body) a
+  // colour the wearer picked.
+  const form = linearRgb(formHex);
   const stops = (zones ?? [])
     .filter((z) => body.landmarks[z.key] != null)
     .map((z) => ({ y: body.landmarks[z.key] as number, colour: linearRgb(VERDICT_COLOUR[z.verdict]) }));

@@ -44,3 +44,6 @@ app-web/brand-build/
 # Vercel CLI link metadata (project/org ids)
 app-web/.vercel
 .vercel
+
+# Python bytecode (tools/anny)
+__pycache__/

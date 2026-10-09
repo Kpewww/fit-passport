@@ -12,7 +12,7 @@
 // The body arrives as BodyGeometryData, so the realistic body (Anny, Track 2 of the
 // Session 97 plan) can take the dress form's place without touching this file.
 //
-// WEBGL DISCIPLINE, as BodyMesh3D.tsx: lazy and boundaried by the caller; ONE
+// WEBGL DISCIPLINE (as the passport's old BodyMesh3D had it): lazy and boundaried by the caller; ONE
 // renderer, created once per body and reused while sizes change (only the colours
 // and the shell are swapped); `forceContextLoss()` with a full dispose on unmount;
 // rotation through refs inside the frame loop, never React state; no idle spin
@@ -21,7 +21,7 @@
 import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { dressFormGeometry, shellGeometry } from "@/lib/dressForm3d";
-import { fitMapColours, type BodyGeometryData, type Zone } from "@/lib/fitMapColours";
+import { FORM_COLOUR, fitMapColours, type BodyGeometryData, type Zone } from "@/lib/fitMapColours";
 import type { BodyMeasurementsInput, GarmentMeasurements } from "@/lib/bodyMesh";
 
 type Scene = {
@@ -30,7 +30,13 @@ type Scene = {
   pivot: THREE.Group;
   centre: THREE.Vector3;
   shell: THREE.Mesh | null;
+  head: THREE.Mesh | null;
+  camera: THREE.PerspectiveCamera;
+  span: number;
 };
+
+/** A mesh drawn with the body in its plain colour: the realistic body's face. */
+export type Attachment = { positions: Float32Array; indices: Uint16Array | Uint32Array };
 
 export function FitMap3D({
   measurements,
@@ -39,6 +45,9 @@ export function FitMap3D({
   body: givenBody,
   size = 300,
   className = "",
+  tint = FORM_COLOUR,
+  head = null,
+  zoom = 1,
 }: {
   measurements: BodyMeasurementsInput;
   /** The size's per-part fit; absent means the plain form. */
@@ -49,6 +58,12 @@ export function FitMap3D({
   body?: BodyGeometryData | null;
   size?: number;
   className?: string;
+  /** The body's colour where no zone speaks (Session 98, /body): the form's grey by default. */
+  tint?: string;
+  /** A face for the realistic body, already placed in the body's space. */
+  head?: Attachment | null;
+  /** 1 frames the whole body; larger moves the camera in (towards the upper body). */
+  zoom?: number;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<Scene | null>(null);
@@ -58,7 +73,9 @@ export function FitMap3D({
   const idleRef = useRef(true);
 
   const body = givenBody ?? dressFormGeometry(measurements);
-  const bodyKey = body ? `${body.positions.length}:${body.positions[1]}:${body.positions[body.positions.length - 2]}:${JSON.stringify(measurements)}` : "";
+  const bodyKey = body
+    ? `${body.positions.length}:${body.indices.length}:${body.positions[1]}:${body.positions[body.positions.length - 2]}:${JSON.stringify(measurements)}:${head ? `${head.positions.length}:${head.positions[0]}:${head.positions[4]}` : "-"}`
+    : "";
 
   // ---- the scene: once per body ----
   useEffect(() => {
@@ -105,7 +122,19 @@ export function FitMap3D({
     camera.position.set(0, 0, span * 2.3);
     camera.lookAt(0, 0, 0);
 
-    sceneRef.current = { renderer, bodyGeometry: geometry, pivot, centre, shell: null };
+    let headMesh: THREE.Mesh | null = null;
+    if (head) {
+      const hg = new THREE.BufferGeometry();
+      hg.setAttribute("position", new THREE.BufferAttribute(head.positions, 3));
+      hg.setIndex(new THREE.BufferAttribute(head.indices, 1));
+      hg.computeVertexNormals();
+      // The same matte as the body: a sculpture's face, one colour, no texture.
+      headMesh = new THREE.Mesh(hg, new THREE.MeshStandardMaterial({ color: new THREE.Color(tint), roughness: 0.55, metalness: 0.02 }));
+      headMesh.position.sub(centre);
+      pivot.add(headMesh);
+    }
+
+    sceneRef.current = { renderer, bodyGeometry: geometry, pivot, centre, shell: null, head: headMesh, camera, span };
 
     const onDown = (e: PointerEvent) => {
       draggingRef.current = true;
@@ -151,6 +180,10 @@ export function FitMap3D({
         s.shell.geometry.dispose();
         (s.shell.material as THREE.Material).dispose();
       }
+      if (s?.head) {
+        s.head.geometry.dispose();
+        (s.head.material as THREE.Material).dispose();
+      }
       sceneRef.current = null;
       geometry.dispose();
       material.dispose();
@@ -162,11 +195,12 @@ export function FitMap3D({
   }, [bodyKey, size]);
 
   // ---- the size: recolour and swap the shell, keeping the renderer ----
-  const sizeKey = JSON.stringify([zones ?? null, garment ?? null, bodyKey]);
+  const sizeKey = JSON.stringify([zones ?? null, garment ?? null, bodyKey, tint]);
   useEffect(() => {
     const s = sceneRef.current;
     if (!s || !body) return;
-    s.bodyGeometry.setAttribute("color", new THREE.BufferAttribute(fitMapColours(body, zones), 3));
+    s.bodyGeometry.setAttribute("color", new THREE.BufferAttribute(fitMapColours(body, zones, tint), 3));
+    if (s.head) (s.head.material as THREE.MeshStandardMaterial).color.set(tint);
 
     if (s.shell) {
       s.pivot.remove(s.shell);
@@ -193,6 +227,17 @@ export function FitMap3D({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sizeKey]);
+
+  // ---- zoom: move the camera in, aiming higher as it closes in ----
+  useEffect(() => {
+    const s = sceneRef.current;
+    if (!s) return;
+    // At 3x the view is centred on the head; at 2x it still holds the head and chest.
+    const z = Math.max(1, Math.min(3, zoom));
+    const aim = s.span * 0.22 * (z - 1);
+    s.camera.position.set(0, aim, (s.span * 2.3) / z);
+    s.camera.lookAt(0, aim, 0);
+  }, [zoom, bodyKey, size]);
 
   return <div ref={hostRef} className={className} style={{ width: size, height: size }} />;
 }

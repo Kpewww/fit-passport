@@ -29,6 +29,7 @@ import { Headline } from "@/components/Headline";
 import { GarmentIcon } from "@/components/GarmentIcon";
 import { PICKABLE_CATEGORIES } from "@/lib/garments";
 import { sameEngineCategory } from "@/lib/garmentTaxonomy";
+import { fitLink } from "@/lib/bodyView";
 
 // three.js only loads when the fit map scrolls into view. Boundaried because a
 // failed chunk silently blanks its subtree rather than throwing.
@@ -1511,6 +1512,14 @@ function FitMapCard({
             {garment && <> {t("fitMap.captionShell", { size: current.label })}</>}
             {body.estimated && <> {t("fitMap.estimated")}</>}
           </p>
+
+          {/* Session 98: the same size on /body, where the realistic body and a face can be chosen. */}
+          <Link
+            href={fitLink({ size: current.label, item: [product.brand, product.productName].filter(Boolean).join(" ") || null, zones: current.zones ?? [] })}
+            className="mt-4 inline-flex h-10 items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-white px-4 text-xs font-medium text-ink hover:border-ink/30"
+          >
+            {t("fitMap.openBody")} <ArrowRight size={14} />
+          </Link>
         </div>
       </div>
     </Card>

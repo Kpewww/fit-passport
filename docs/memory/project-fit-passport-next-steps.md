@@ -900,3 +900,10 @@ the 3D body instead of the SVG mannequin).
 eye sculpted face presets via `tools/anny/bake_heads.py`, switchable body colour, completeness checklist, a body from
 height + weight alone — drawing only, never scored), entry points from /passport and /check, `.bin.gz` assets.
 **Founder:** try the new type picker (add a piece; search 开衫); upload extension 0.9.1; review /lab/body.
+
+## Session 98c (2026-10-09) — /body "我的 3D 身形", DONE
+
+**Next — founder:** open www.fitpassport.fit/body (from the passport card); judge the four faces, the colours
+and the body from height and weight alone; upload extension 0.9.1. **Engineering after approval:** the
+人台 / 写实 toggle on /check; the /outfits preview on the 3D body; the small crease under the form head's chin.
+

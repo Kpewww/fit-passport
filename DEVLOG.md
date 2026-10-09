@@ -31,6 +31,90 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-09 · Session 98c — My 3D body: its own page, sculpted faces, a body from height and weight
+
+Phase 3 of the founder's review. What they said about the 3D view:
+- the egg head was frightening;
+- they could not find the view;
+- with only height and weight the dress form was empty and could not be turned;
+- there was no Chinese;
+- nothing said what more data would unlock.
+
+**`/body` (`app/body/BodyStudio.tsx`), in both languages:**
+- A large view: drag to turn, zoom in or out.
+- **Body:** dress form or realistic (Anny).
+- **Face** (realistic): female A/B, male A/B, or the form's head. It defaults to the
+  sex in the passport.
+- **Colour:** the mannequin's, warm beige, light, medium, deep. Named by colour, never
+  by people.
+- **Fit colours:** one size's per-part fit, handed over from /check in the URL
+  (`lib/bodyView.ts` `fitLink`), so nothing about a check is stored.
+- **What it is built from:** a checklist where each missing item links to the passport
+  field it needs (`/passport?edit=1&focus=…` opens the editor on that section).
+- How close the realistic body comes (residual cm), and a privacy line: drawn on the
+  device, choices kept in this browser.
+- **Locked** without height and weight. The page says so and leads to them.
+
+**A body from height and weight alone:**
+- Anny is fitted from height, weight and sex.
+- The dress form's missing girths are measured on that body (`estimateGirths`) and
+  labelled as estimated, "for this drawing only".
+- They are never stored and never scored (new invariant 98).
+
+**Faces** (`tools/anny/bake_heads.py`, `lib/annyHead.ts`):
+- Anny's detailed head (topology `anny`), eyes closed by its `eyeBlink` facial actions.
+- Eyeballs, teeth and tongue left out: they are separate pieces of the mesh, and only
+  the skin is kept.
+- Faces differ only through Anny's face local changes. Anny's ancestry phenotypes are not
+  among the default phenotypes and are never set.
+- 4,177 vertices each, about 52 KB gzipped, each fetched only when chosen.
+- Placement: each face is placed from the ellipsoid of the body it was baked against onto
+  the fitted body's own ellipsoid, and that ellipsoid is hidden.
+
+**Found on the way: the egg head was the wrong shape.**
+- `bake.py` fitted the ellipsoid at the skull's 85th-percentile reach, so its top
+  stopped about 7 cm (in bake space) under the crown. That made the head wider than
+  tall.
+- The visible body also stood shorter than the stature the fit scales to. That
+  stature is taken to the real crown, through 26 unused skull vertices still in the
+  array.
+- The ellipsoid now runs from under the jaw to the crown: about 1.4:1, a human head's
+  proportion.
+
+**Smaller:**
+- Assets are gzipped (`body.bin.gz`, 387 → 90 KB on the wire). Vercel had served the
+  raw `.bin` uncompressed. `inflate` checks the gzip magic number, so a proxy that
+  already inflated the file still works.
+- `FitMap3D` gains `tint`, `head` and `zoom`. Zoom aims higher as it closes in, so at
+  3x the head is centred.
+- **Entry points:**
+  - a "My 3D body" card on both passport views (`Body3DEntry`), showing how many items
+    unlock it or would sharpen it;
+  - "See it on my 3D body" on /check's fit map.
+- The passport's inline 3D view and `BodyMesh3D.tsx` are removed; `/body` replaces them.
+- `/lab/body` stays internal and links to `/body`.
+- Glossary entries added to `docs/design/chinese-copy.md`: 3D 身形, 人台 / 写实,
+  合身热力图, 衣服类型 / 大类.
+
+**Verified:**
+- 1,295 tests + 1 skip.
+- In Chromium (software WebGL):
+  - zh, 1280 wide, empty passport: /body is locked and says what unlocks it. Its button
+    opens the passport editor scrolled to the measurements.
+  - Height 165, weight 58, female: a body is drawn, marked "rough", with face 女 · A.
+  - Face, colour and zoom changes; the dress form says its girths are estimated; the
+    body choice survives a reload.
+  - A /check link shows "来自尺码查询：COS Oxford · M".
+  - The passport shows the card.
+  - en, 390 wide, male: Male A by default, no sideways scroll.
+  - No console errors.
+- Front close-ups of all five heads were reviewed by eye. One flaw remains: a slight crease
+  under the chin where the form's neck meets the ellipsoid.
+- **Budget:** /body 107 kB first load (three.js, the body and the faces load on demand),
+  /passport 136 kB, /check 129 kB.
+
+---
+
 ## 2026-10-09 · Session 98b — Garment types in two levels: 11 parents, 103 types, and proof that none is missing
 
 Phase 2 of the founder's review. They asked for types chosen as "parent, then child",

@@ -1,7 +1,7 @@
 // A realistic body fitted to the wearer's measurements — Session 97, Track 2.
 //
 // The body is NAVER's Anny (Apache 2.0; MakeHuman-derived assets CC0), baked offline
-// by tools/anny/bake.py into public/anny/body.bin: corner meshes at the gender,
+// by tools/anny/bake.py into public/anny/body.bin.gz: corner meshes at the gender,
 // muscle and weight anchors (Anny's shape is multilinear between them, so blending
 // them is exact) and the linear deltas of its "measure" local changes. Here those are
 // blended for this wearer and the girths fitted to theirs:
@@ -30,6 +30,8 @@ export type AnnyMeta = {
   anchors: { gender: number[]; muscle: number[]; weight: number[] };
   corners: Array<{ gender: number; muscle: number; weight: number }>;
   locals: string[];
+  /** The ellipsoid head: [first, count] of its vertices and of its faces (the last of each). */
+  headEllipsoid?: { vertices: [number, number]; faces: [number, number] };
 };
 
 export type AnnyData = {
@@ -269,4 +271,40 @@ export function fitAnny(data: AnnyData, m: BodyMeasurementsInput & { weightKg?: 
     phenotype,
     localWeights,
   };
+}
+
+/**
+ * The girths of a fitted body, measured the way the fit measures them (Session 98):
+ * how the dress form is drawn when the passport has a height and a weight but no
+ * girths. ⚠ An estimate from Anny's average shape for that height, weight and sex,
+ * for DRAWING only. It is never stored and never reaches the engine (invariant 98).
+ */
+export function estimateGirths(data: AnnyData, fit: AnnyFit): { chestCm: number; waistCm: number; hipCm: number; shoulderCm: number } {
+  const pos = fit.body.positions;
+  const at = (key: "chest" | "waist" | "hip") =>
+    Math.round(girthAt(pos, data.indices, data.regions, fit.body.landmarks[key]!, key === "hip" ? [REGION.torso, REGION.leg] : [REGION.torso]) * 10) / 10;
+  return {
+    chestCm: at("chest"),
+    waistCm: at("waist"),
+    hipCm: at("hip"),
+    shoulderCm: Math.round(shoulderBreadth(pos, data.regions, fit.body.landmarks.shoulder!) * 10) / 10,
+  };
+}
+
+/** A baked file's bytes, gunzipped when they arrive gzipped. Vercel serves a .gz as
+ *  it is, but a proxy may already have inflated it; the magic number decides. */
+export async function inflate(buffer: ArrayBuffer): Promise<ArrayBuffer> {
+  const head = new Uint8Array(buffer, 0, Math.min(2, buffer.byteLength));
+  if (head[0] !== 0x1f || head[1] !== 0x8b) return buffer;
+  const stream = new Blob([buffer]).stream().pipeThrough(new DecompressionStream("gzip"));
+  return new Response(stream).arrayBuffer();
+}
+
+/** The body, fetched and parsed: what /body and /lab/body load. */
+export async function loadAnny(): Promise<AnnyData> {
+  const [meta, bin] = await Promise.all([
+    fetch("/anny/body.json").then((r) => r.json() as Promise<AnnyMeta>),
+    fetch("/anny/body.bin.gz").then((r) => r.arrayBuffer()).then(inflate),
+  ]);
+  return parseAnny(bin, meta);
 }

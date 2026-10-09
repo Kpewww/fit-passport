@@ -39,14 +39,11 @@ export function BodyLab() {
     (async () => {
       try {
         const t0 = performance.now();
-        const [{ parseAnny, fitAnny }, meta, bin] = await Promise.all([
-          import("@/lib/annyBody"),
-          fetch("/anny/body.json").then((r) => r.json()),
-          fetch("/anny/body.bin").then((r) => r.arrayBuffer()),
-        ]);
+        const { loadAnny, fitAnny } = await import("@/lib/annyBody");
+        const data = await loadAnny();
         const sex = profile.sex === "male" || profile.sex === "female" ? profile.sex : null;
-        const fit = fitAnny(parseAnny(bin, meta), { ...profile, sex });
-        setAnny({ fit, bytes: bin.byteLength, ms: Math.round(performance.now() - t0) });
+        const fit = fitAnny(data, { ...profile, sex });
+        setAnny({ fit, bytes: 89716, ms: Math.round(performance.now() - t0) });
       } catch (e) {
         setError(String(e));
       }
@@ -82,6 +79,7 @@ export function BodyLab() {
       <h1 className="font-serif text-h1 text-ink">Body lab</h1>
       <p className="mt-2 max-w-2xl text-sm text-ink-soft">
         The dress form and the realistic body, on your passport&apos;s measurements. The colours are sample zones, the same on both.
+        The page people see is <a href="/body" className="text-brand underline">/body</a>.
       </p>
       <label className="mt-4 flex w-fit items-center gap-2 text-sm">
         <input type="checkbox" checked={colours} onChange={(e) => setColours(e.target.checked)} /> Sample fit colours
@@ -103,7 +101,7 @@ export function BodyLab() {
       {anny && (
         <table className="mt-6 text-sm">
           <tbody>
-            <tr><td className="pr-6 text-ink-soft">Asset</td><td className="tabular-nums">{(anny.bytes / 1024).toFixed(0)} KB raw</td></tr>
+            <tr><td className="pr-6 text-ink-soft">Asset</td><td className="tabular-nums">{(anny.bytes / 1024).toFixed(0)} KB gzip (body.bin.gz)</td></tr>
             <tr><td className="pr-6 text-ink-soft">Fetch + fit</td><td className="tabular-nums">{anny.ms} ms</td></tr>
             <tr><td className="pr-6 text-ink-soft">Frame rate</td><td className="tabular-nums">{fps ?? "…"} fps</td></tr>
             {Object.entries(anny.fit.residuals).map(([k, v]) => (

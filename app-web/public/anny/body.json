@@ -150,5 +150,15 @@
   "hip-scale-horiz-incr",
   "torso-vshape-incr"
  ],
- "head": "the skull's faces replaced by an ellipsoid fitted to its vertices (85th-percentile reach per axis)"
+ "head": "the skull's faces replaced by an ellipsoid fitted to its vertices (85th-percentile reach across, from under the jaw to the crown in height)",
+ "headEllipsoid": {
+  "vertices": [
+   1229,
+   314
+  ],
+  "faces": [
+   1896,
+   624
+  ]
+ }
 }

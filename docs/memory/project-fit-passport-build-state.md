@@ -1419,3 +1419,15 @@ Shopify downloaded; JD/Taobao from memory, UNVERIFIED). Picker = `CategoryPicker
 **(97)** **A garment type is sized as its engine key, and the 23 keys from before never change.** Every type names one
 of the 23 (+ `underwear`); "same kind of garment" means the same engine key; the extractor and the extension still
 speak only the 23. `garmentTaxonomy.test.ts` pins their domain, ease and folder.
+
+**SESSION 98c (2026-10-09).** 1,276 → **1,295 tests**. **`/body` "my 3D body"** (`app/body/BodyStudio.tsx`):
+dress form / realistic, faces (`tools/anny/bake_heads.py` → `public/anny/head-*.bin.gz`, `lib/annyHead.ts`
+`placeFace`), body tones (`lib/bodyView.ts`), fit colours via URL from /check (`fitLink`), checklist linking to
+`/passport?edit=1&focus=measurements|reference`. Assets now **`.bin.gz`** (`inflate` in annyBody.ts); run
+`bake.py` before `bake_heads.py`. Egg head now reaches the crown (it was ~7 cm short). `BodyMesh3D.tsx` deleted;
+entry card `components/Body3DEntry.tsx` on both passport views.
+
+**NEW INVARIANT:**
+**(98)** **An estimated body is for drawing only.** Girths measured on Anny from height and weight
+(`estimateGirths`) fill the dress form on /body, say "estimated", and are never stored, sent or scored.
+

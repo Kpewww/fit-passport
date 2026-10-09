@@ -6,7 +6,9 @@ Run by us, offline, never at build time or on Vercel:
     .venv/bin/python tools/anny/bake.py            # writes app-web/public/anny/
 
 What it writes (app-web/public/anny/):
-  body.bin   little-endian, in this order:
+  body.bin.gz  gzip of body.bin (Session 98: Vercel served the raw .bin uncompressed,
+               387 KB; the browser inflates it with DecompressionStream). body.bin is
+               little-endian, in this order:
                Uint16 indices      (faces x 3)
                Uint8  regions      (per vertex: 0 torso, 1 arm, 2 leg, 3 head)
                Int16  corners      (CORNERS x vertices x 3), 1 unit = 0.01 cm
@@ -29,6 +31,7 @@ Licences. Anny's code is Apache 2.0; the MakeHuman-derived assets it ships are C
 The smpl/smplx topologies are non-commercial and are never used here.
 """
 
+import gzip
 import json
 import os
 import struct
@@ -115,6 +118,16 @@ def head_ellipsoid(verts, skull):
     h = verts[skull]
     centre = h.mean(axis=0)
     axes = np.maximum(np.percentile(np.abs(h - centre), 85, axis=0), 1e-6)
+    # Up to the crown (Session 98). The 85th percentile alone stopped ~7 cm under it,
+    # so the egg was wider than tall, and shorter than the stature the fit scales to
+    # (measured with bake_heads.py: crown 95.1 cm, egg top 88.3 cm in bake space).
+    # The bottom stays where it was, under the jaw; the top is the skull's highest point.
+    bottom = centre[1] - axes[1]
+    crown = h[:, 1].max()
+    centre = centre.copy()
+    centre[1] = (crown + bottom) / 2
+    axes = axes.copy()
+    axes[1] = (crown - bottom) / 2
     pts = [centre + np.array([0, axes[1], 0])]
     for i in range(1, HEAD_LAT):
         th = np.pi * i / HEAD_LAT
@@ -210,8 +223,11 @@ def main():
     blob += b"".join(q(c).tobytes() for c in corners)
     locals_offset = len(blob)
     blob += b"".join(q(d).tobytes() for d in deltas)
-    with open(os.path.join(OUT, "body.bin"), "wb") as f:
-        f.write(blob)
+    with open(os.path.join(OUT, "body.bin.gz"), "wb") as f:
+        f.write(gzip.compress(blob, compresslevel=9, mtime=0))
+    stale = os.path.join(OUT, "body.bin")
+    if os.path.exists(stale):
+        os.remove(stale)
 
     meta = {
         "source": f"Anny {anny.__version__} (NAVER LABS Europe), topology {TOPOLOGY}; baked by tools/anny/bake.py",
@@ -230,7 +246,10 @@ def main():
         "anchors": {"gender": GENDERS, "muscle": MUSCLES, "weight": WEIGHTS},
         "corners": meta_corners,
         "locals": local_labels,
-        "head": "the skull's faces replaced by an ellipsoid fitted to its vertices (85th-percentile reach per axis)",
+        "head": "the skull's faces replaced by an ellipsoid fitted to its vertices (85th-percentile reach across, from under the jaw to the crown in height)",
+        # The ellipsoid's vertices and faces are the last ones: a face (bake_heads.py)
+        # replaces exactly these.
+        "headEllipsoid": {"vertices": [int(n), int(head_n)], "faces": [int(faces.shape[0] - len(ellipsoid_faces(0))), int(len(ellipsoid_faces(0)))]},
     }
     with open(os.path.join(OUT, "body.json"), "w") as f:
         json.dump(meta, f, indent=1)
@@ -242,6 +261,8 @@ def main():
             "Anny's MakeHuman-derived assets are released under CC0 1.0 Universal.\n"
             "Changes: coarse topology only; head replaced by a plain ellipsoid; phenotypes sampled at fixed anchors;\n"
             "coordinates rotated to Y-up and quantised to 0.01 cm.\n"
+            "head-*.bin.gz (tools/anny/bake_heads.py): Anny's detailed head with its eyeBlink facial actions applied\n"
+            "and a few face local changes; eyeballs, teeth and tongue removed; quantised the same way.\n"
         )
     print(f"wrote {OUT}: {len(blob)} bytes, {n + head_n} vertices, {faces.shape[0]} faces, "
           f"{len(corners)} corners, {len(local_labels)} local changes; regions "

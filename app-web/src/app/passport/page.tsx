@@ -5,13 +5,12 @@
 // portrait avatar) while staying quiet enough to be actually usable. Editable
 // inline: click a field, change it, blur/Enter saves. All fields optional.
 
-import { Suspense, lazy, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Close, Download, Heart, Pencil, Refresh } from "@/components/Icon";
 import Link from "next/link";
 import { Button, Card, LinkButton } from "@/components/ui";
 import { BodyFigure } from "@/components/BodyFigure";
-import { SafeBoundary } from "@/components/SafeBoundary";
-import { bodyCrossSections, measuredFraction } from "@/lib/bodyMesh";
+import { Body3DEntry } from "@/components/Body3DEntry";
 import { deriveBodyType } from "@/lib/bodyType";
 import { Avatar, BadgeSeal, EarnedSealRow } from "@/components/Badges";
 import { badgeById, highestMetal } from "@/lib/badges";
@@ -25,12 +24,6 @@ import { useT } from "@/i18n/client";
 import { useGarmentText } from "@/i18n/garment";
 import type { Translator } from "@/i18n/translator";
 
-// three.js is ~150kB of runtime nobody needs unless they open the 3D view, and a
-// failed chunk silently blanks its subtree, so this is lazy AND boundaried —
-// the same treatment BadgeInspect gets.
-const BodyMesh3D = lazy(() =>
-  import("@/components/BodyMesh3D").then((m) => ({ default: m.BodyMesh3D })),
-);
 
 type Sex = "male" | "female" | "unspecified" | null;
 type Fit = "slim" | "regular" | "relaxed" | "oversized";
@@ -149,9 +142,27 @@ export default function PassportPage() {
       setMyOutfits(Array.isArray(o.outfits) ? o.outfits : []);
       // Default to the polished VIEW card once the passport has real content;
       // brand-new/empty passports open straight into edit so there's something to do.
-      setMode(p.profile && hasContent(prof) ? "view" : "edit");
+      // /passport?edit=1&focus=measurements (from /body's checklist, Session 98)
+      // opens the editor on that section.
+      const q = new URLSearchParams(window.location.search);
+      setMode(q.has("edit") || !(p.profile && hasContent(prof)) ? "edit" : "view");
+      const focus = q.get("focus");
+      if (focus && /^[a-z]+$/.test(focus)) setFocusSection(focus);
     });
   }, []);
+
+  const [focusSection, setFocusSection] = useState<string | null>(null);
+  useEffect(() => {
+    if (mode !== "edit" || !focusSection) return;
+    const el = document.getElementById(`pp-${focusSection}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "start" });
+    el.classList.add("rounded-xl", "ring-2", "ring-brand/40", "ring-offset-4");
+    // Not cleared on re-run: clearing focusSection re-runs this, and the highlight
+    // must still fade.
+    setTimeout(() => el.classList.remove("ring-2", "ring-brand/40", "ring-offset-4"), 2400);
+    setFocusSection(null);
+  }, [mode, focusSection]);
 
   // Keys whose change implies the body changed → clothes may fit differently.
   const MEASUREMENT_KEYS: Array<keyof Profile> = [
@@ -280,7 +291,7 @@ export default function PassportPage() {
 
           {/* MRZ-like details block — always editable */}
           <div className="space-y-4 px-6 py-6">
-            <Section title={t("sizingReference")}>
+            <Section id="pp-reference" title={t("sizingReference")}>
               <div className="grid gap-3 sm:grid-cols-2">
                 <FieldChips
                   label={t("sex")}
@@ -339,7 +350,7 @@ export default function PassportPage() {
               <p className="mt-1.5 text-[11px] text-ink-faint">{t("fitNote")}</p>
             </Section>
 
-            <Section title={t("measurements")} subtitle={t("allOptional")}>
+            <Section id="pp-measurements" title={t("measurements")} subtitle={t("allOptional")}>
               <div className="mb-3 flex items-center gap-4">
                 <UnitToggle
                   label={t("lengths")}
@@ -691,6 +702,9 @@ function ViewBook({
             <p className="mt-1 text-lg font-semibold text-ink">{showBodyType ? bodyLabel : t("hidden")}</p>
             <p className="mt-0.5 text-xs text-ink-faint">{showBodyType ? t("privateNote") : t("hiddenNote")}</p>
           </div>
+
+          {/* The way into /body (Session 98): the founder could not find the 3D view. */}
+          <Body3DEntry facts={profile} />
         </div>
 
         {/* actions */}
@@ -766,9 +780,9 @@ function CardMetalPicker({
 
 // ---------- pieces ----------
 
-function Section({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+function Section({ title, subtitle, id, children }: { title: string; subtitle?: string; id?: string; children: React.ReactNode }) {
   return (
-    <div>
+    <div id={id} className="scroll-mt-24">
       <div className="mb-2 flex items-baseline gap-2">
         <h3 className="text-[10px] font-bold uppercase tracking-[0.25em] text-ink-faint">{title}</h3>
         {subtitle && <span className="text-[10px] text-ink-faint">· {subtitle}</span>}
@@ -1112,22 +1126,6 @@ function BodyTypeSection({
   const scopeNote = bt.volume === "extended" ? t("scopeExtended") : bt.volume === "petite" ? t("scopePetite") : null;
   const anyData = bt.have.volume || bt.have.shape;
 
-  // The 3D view is driven by the RAW measurements, not by `deriveBodyType`'s six
-  // volume bands — that is the whole reason it earns its place. The flat figure
-  // draws every "average" build identically; this one distinguishes a 100/78
-  // chest-waist from a 100/96 because it is lofted from those numbers.
-  const sections = bodyCrossSections({
-    heightCm: profile.heightCm,
-    chestCm: profile.chestCm,
-    waistCm: profile.waistCm,
-    hipCm: profile.hipCm,
-    shoulderCm: profile.shoulderCm,
-    inseamCm: profile.inseamCm,
-  });
-  const can3d = sections.length >= 2;
-  const measuredPct = Math.round(measuredFraction(sections) * 100);
-  const [show3d, setShow3d] = useState(false);
-
   return (
     <Section title={t("bodyType")} subtitle={t("bodySubtitle")}>
       <div className="flex items-center gap-4 rounded-xl border border-line bg-paper-soft px-4 py-3">
@@ -1150,69 +1148,12 @@ function BodyTypeSection({
               onChange={(e) => onToggleShow(e.target.checked)} />
             {t("showBodyType")}
           </label>
-          {can3d && !show3d && (
-            <button type="button" onClick={() => setShow3d(true)}
-              className="mt-2 text-[11px] font-semibold text-brand underline decoration-brand/30 underline-offset-2 hover:decoration-brand">
-              {t("see3d")} <ArrowRight size={14} className="-mt-px inline" />
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Opt-in, exactly as the badges keep their dimensional build behind an
-          inspect stage. Default stays the flat figure. */}
-      {can3d && show3d && (
-        <div className="mt-3 rounded-xl border border-line bg-white px-4 py-4">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-            <SafeBoundary
-              fallback={
-                <p className="text-xs text-ink-faint">{t("cant3d")}</p>
-              }
-            >
-              <Suspense fallback={<div className="h-[240px] w-[240px] animate-pulse rounded-xl bg-paper-dim" />}>
-                <BodyMesh3D
-                  size={240}
-                  measurements={{
-                    heightCm: profile.heightCm,
-                    chestCm: profile.chestCm,
-                    waistCm: profile.waistCm,
-                    hipCm: profile.hipCm,
-                    shoulderCm: profile.shoulderCm,
-                    inseamCm: profile.inseamCm,
-                  }}
-                />
-              </Suspense>
-            </SafeBoundary>
-
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-ink">{t("built")}</p>
-              <p className="mt-1 text-xs leading-relaxed text-ink-soft">{t("builtBody")}</p>
-              <dl className="mt-3 space-y-1">
-                {sections
-                  .slice()
-                  .reverse()
-                  .map((sec) => (
-                    <div key={sec.key} className="flex items-baseline gap-2 text-xs">
-                      <dt className="w-20 flex-shrink-0 capitalize text-ink-soft">{t(`ring.${sec.key}`)}</dt>
-                      <dd className="min-w-0 tabular-nums text-ink">
-                        {sec.circumferenceCm != null ? (
-                          `${Math.round(sec.circumferenceCm)} cm`
-                        ) : (
-                          <span className="text-ink-faint">
-                            {sec.estimated ? t("inferred") : t("fromShoulder")}
-                          </span>
-                        )}
-                      </dd>
-                    </div>
-                  ))}
-              </dl>
-              <p className="mt-3 border-t border-line pt-2 text-[11px] leading-relaxed text-ink-faint">
-                {t.rich("measuredPct", { b: (c) => <span className="font-semibold text-ink-soft">{c}</span> }, { pct: measuredPct })}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Session 98: the 3D view has its own page; this card leads there (it replaced
+          a small inline link nobody noticed). */}
+      <Body3DEntry facts={profile} className="mt-3" />
     </Section>
   );
 }

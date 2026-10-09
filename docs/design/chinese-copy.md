@@ -53,6 +53,10 @@ it here in the same commit.
 | match score | 匹配分 | |
 | accuracy (profile tier) | 准确度 | 基础 / 较高 / 高准确度 |
 | badge library | 徽章馆 | the ladder page title: 徽章之路 |
+| my 3D body | 我的 3D 身形 | the /body page (Session 98); "3D 身形" in running text |
+| dress form / realistic body | 人台 / 写实 | the two bodies on /body; 写实人体 in full |
+| fit colours (fit map) | 合身热力图 | the per-part colours of one size on the body |
+| garment type / parent | 衣服类型 / 大类 | the two-level picker (Session 98); a type's place under a parent reads 外套 · 风衣 |
 
 ## Typography
 
