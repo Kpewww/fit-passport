@@ -31,6 +31,31 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-09 · Session 98d — Pop-overs stay on screen
+
+The founder's screenshot showed the type picker opened in the closet's edit sheet,
+next to the window's right edge. Its panel was positioned against its button, so it ran
+off the window and was cut off. In the same screenshot the sheet's type field showed
+only "上…", and the "series" select was a few pixels wide.
+
+- `components/useAnchoredPanel.ts`: a pop-over is placed against the window, not the
+  column it sits in. It stays inside both edges, opens below its button or above it when
+  there is more room there, and becomes a bottom sheet on a phone. The panel is rendered
+  in a portal, so no sheet, transform or `overflow` can clip it. Used by the type picker
+  and the outfit row's colour pop-over.
+- The edit sheet gives brand and name half a row each and the type a whole row. The
+  series select now takes half a row instead of one sixth.
+
+**Verified (Chromium, zh):**
+- The edit sheet at 752 × 1240 (the founder's window), 1440 × 900 and 390 × 844. The
+  type panel lies inside the window at each size (at 752: x 324 to 740), the button
+  reads "上衣 · 衬衫" in full, and picking 外套 · 风衣 closes it.
+- The /outfits colour pop-over fits inside the window at all three sizes and closes on
+  a swatch.
+- 1,295 tests + 1 skip; build passes; /closet 144 kB, /outfits 132 kB (unchanged).
+
+---
+
 ## 2026-10-09 · Session 98c — My 3D body: its own page, sculpted faces, a body from height and weight
 
 Phase 3 of the founder's review. What they said about the 3D view:

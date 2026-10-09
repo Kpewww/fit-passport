@@ -18,8 +18,10 @@
 // The browser (parents, types, search) is components/CategoryBrowser.tsx.
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import dynamic from "next/dynamic";
 import { GarmentIcon } from "@/components/GarmentIcon";
+import { useAnchoredPanel } from "@/components/useAnchoredPanel";
 import { CaretDown } from "@/components/Icon";
 import { garmentType, homeParentOf, type GarmentParent } from "@/lib/garmentTaxonomy";
 import { useT } from "@/i18n/client";
@@ -49,10 +51,16 @@ export function CategoryPicker({
   const parent = via && garmentType(value)?.parents.includes(via) ? via : homeParentOf(value);
   const [open, setOpen] = useState(false);
   const hostRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  // Placed against the window, not the sheet it sits in (useAnchoredPanel).
+  const place = useAnchoredPanel(open, hostRef, 416);
 
   useEffect(() => {
     if (!open) return;
-    const off = (e: PointerEvent) => { if (!hostRef.current?.contains(e.target as Node)) setOpen(false); };
+    const off = (e: PointerEvent) => {
+      const n = e.target as Node;
+      if (!hostRef.current?.contains(n) && !panelRef.current?.contains(n)) setOpen(false);
+    };
     const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
     window.addEventListener("pointerdown", off);
     window.addEventListener("keydown", esc);
@@ -83,18 +91,25 @@ export function CategoryPicker({
         </span>
         <CaretDown size={14} className={`flex-shrink-0 text-ink-faint transition-transform ${open ? "rotate-180" : ""}`} />
       </button>
-      {open && <div aria-hidden onClick={() => setOpen(false)} className="fixed inset-0 z-40 bg-ink/25 sm:hidden" />}
-      {open && (
-        <div
-          role="dialog"
-          aria-label={t("picker.choose")}
-          className="fixed inset-x-3 bottom-3 z-50 max-h-[78vh] overflow-y-auto rounded-2xl border border-line bg-white p-3 shadow-lift sm:absolute sm:inset-x-auto sm:bottom-auto sm:left-0 sm:top-full sm:mt-2 sm:max-h-[28rem] sm:w-[26rem]"
-        >
-          {browser}
-          <div className="mt-3 flex justify-end border-t border-line pt-2.5 sm:hidden">
-            <button type="button" onClick={() => setOpen(false)} className="h-9 rounded-full bg-ink px-4 text-xs font-medium text-paper">{t("picker.close")}</button>
+      {open && typeof document !== "undefined" && createPortal(
+        <>
+          {!place && <div aria-hidden onClick={() => setOpen(false)} className="fixed inset-0 z-[60] bg-ink/25" />}
+          <div
+            ref={panelRef}
+            role="dialog"
+            aria-label={t("picker.choose")}
+            style={place ?? undefined}
+            className={`fixed z-[61] overflow-y-auto rounded-2xl border border-line bg-white p-3 shadow-lift ${place ? "" : "inset-x-3 bottom-3 max-h-[78vh]"}`}
+          >
+            {browser}
+            {!place && (
+              <div className="mt-3 flex justify-end border-t border-line pt-2.5">
+                <button type="button" onClick={() => setOpen(false)} className="h-9 rounded-full bg-ink px-4 text-xs font-medium text-paper">{t("picker.close")}</button>
+              </div>
+            )}
           </div>
-        </div>
+        </>,
+        document.body,
       )}
     </div>
   );

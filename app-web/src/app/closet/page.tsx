@@ -1380,19 +1380,19 @@ function EditRow({
             </div>
           </Field>
         </div>
-        <div className="sm:col-span-2">
+        <div className="sm:col-span-3">
           <Field label={t("brand")}><BrandInput value={f.brand} onChange={(v) => setF({ ...f, brand: v })} /></Field>
         </div>
-        <div className="sm:col-span-2">
+        <div className="sm:col-span-3">
           <Field label={t("name")} hint={t("optional")}><input className={inputClass} value={f.displayName} placeholder={t("namePlaceholder")} onChange={(e) => setF({ ...f, displayName: e.target.value })} /></Field>
         </div>
-        <div className="sm:col-span-2">
+        <div className="sm:col-span-6">
           <Field as="div" label={t("typeLabel")}>
             <CategoryPicker value={f.category} onChange={(v) => setF({ ...f, category: v })} />
           </Field>
           <p className="mt-1 text-[11px] text-ink-faint">{t("typeHint")}</p>
         </div>
-        <div className="sm:col-span-1">
+        <div className="sm:col-span-3">
           <Field label={t("lineLabel")}>
             <select className={inputClass} value={f.gender} onChange={(e) => setF({ ...f, gender: e.target.value })}>
               {GENDERS.map((v) => <option key={v} value={v}>{g.line(v)}</option>)}

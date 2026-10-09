@@ -11,6 +11,8 @@
 // which picked black (see ui.tsx Field `as`).
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import { useAnchoredPanel } from "@/components/useAnchoredPanel";
 import { COLOR_PRESETS, colorHex } from "@/lib/colors";
 import { PaletteIcon } from "@/components/Icon";
 import { useT } from "@/i18n/client";
@@ -90,9 +92,14 @@ export function ColorSwatchButton({ value, onChange }: { value: string; onChange
   const g = useGarmentText();
   const [open, setOpen] = useState(false);
   const hostRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const place = useAnchoredPanel(open, hostRef, 304, 360);
   useEffect(() => {
     if (!open) return;
-    const off = (e: PointerEvent) => { if (!hostRef.current?.contains(e.target as Node)) setOpen(false); };
+    const off = (e: PointerEvent) => {
+      const n = e.target as Node;
+      if (!hostRef.current?.contains(n) && !panelRef.current?.contains(n)) setOpen(false);
+    };
     window.addEventListener("pointerdown", off);
     return () => window.removeEventListener("pointerdown", off);
   }, [open]);
@@ -111,10 +118,18 @@ export function ColorSwatchButton({ value, onChange }: { value: string; onChange
           {preset ? g.color(preset.name) : hex ? hex.toUpperCase() : t("choose")}
         </span>
       </button>
-      {open && (
-        <div className="absolute left-0 top-full z-30 mt-2 w-[19rem] rounded-2xl border border-line bg-white p-3 shadow-lift">
-          <ColorPicker value={value} onChange={(v) => { onChange(v); if (COLOR_PRESETS.some((c) => c.name === v)) setOpen(false); }} />
-        </div>
+      {open && typeof document !== "undefined" && createPortal(
+        <>
+          {!place && <div aria-hidden onClick={() => setOpen(false)} className="fixed inset-0 z-[60] bg-ink/25" />}
+          <div
+            ref={panelRef}
+            style={place ?? undefined}
+            className={`fixed z-[61] overflow-y-auto rounded-2xl border border-line bg-white p-3 shadow-lift ${place ? "" : "inset-x-3 bottom-3"}`}
+          >
+            <ColorPicker value={value} onChange={(v) => { onChange(v); if (COLOR_PRESETS.some((c) => c.name === v)) setOpen(false); }} />
+          </div>
+        </>,
+        document.body,
       )}
     </div>
   );
