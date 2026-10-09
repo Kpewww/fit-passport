@@ -10,9 +10,18 @@
 
 import type { AnnyData } from "./annyBody";
 
-export type FaceId = "f1" | "f2" | "m1" | "m2";
-export type HeadChoice = FaceId | "form";
-export const FACE_IDS: FaceId[] = ["f1", "f2", "m1", "m2"];
+// One face per sex: the founder kept female A and male A (Session 98d).
+export type FaceId = "f1" | "m1";
+/** "face": the sculpted face for the body's sex; "form": the mannequin's ellipsoid;
+ *  "none": no head, the neck cut straight across (lib/neckCut.ts). */
+export type HeadChoice = "face" | "form" | "none";
+export const FACE_IDS: FaceId[] = ["f1", "m1"];
+export const HEAD_CHOICES: HeadChoice[] = ["face", "form", "none"];
+
+/** The face for a body of this sex. */
+export function faceFor(sex: "female" | "male"): FaceId {
+  return sex === "female" ? "f1" : "m1";
+}
 
 export type FaceMeta = {
   id: FaceId;
@@ -33,10 +42,6 @@ export function parseFace(buffer: ArrayBuffer, meta: FaceMeta, unitPerCm: number
   return { indices: new Uint16Array(buffer, 0, ic), positions };
 }
 
-/** The default face for a sex the wearer gave; the form's head when none was given. */
-export function defaultHead(sex: string | null | undefined): HeadChoice {
-  return sex === "female" ? "f1" : sex === "male" ? "m1" : "form";
-}
 
 /** Centre and semi-axes of the body's ellipsoid head, from its own vertices. */
 export function ellipsoidOf(positions: Float32Array, range: [number, number]): { centre: number[]; axes: number[] } {

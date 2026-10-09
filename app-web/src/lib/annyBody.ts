@@ -21,6 +21,7 @@
 
 import { landmarkFraction, type BodyMeasurementsInput } from "./bodyMesh";
 import { REGION, type BodyGeometryData, type ZoneKey } from "./fitMapColours";
+import { CUPS, type Cup } from "./bodyView";
 
 export type AnnyMeta = {
   vertexCount: number;
@@ -193,15 +194,32 @@ export const FIT_CHAINS: Record<Target["key"], string[]> = {
   shoulder: ["measure-shoulder-dist-incr", "torso-vshape-incr"],
 };
 
+// The cup table (EN 13402) lives in bodyView.ts, so /body can list it without loading
+// this module; re-exported here for the fit and its tests.
+export { CUPS, type Cup } from "./bodyView";
+export const CUP_LOCAL = "phenotype-cupsize";
+const CUP_CHAIN = [CUP_LOCAL, "measure-underbust-circ-incr"];
+const ROUNDS = 8;
+
+/** Underbust: the narrowest torso girth in a band just under the bust, as a tape finds it. */
+function underbustAt(pos: Float32Array, data: AnnyData, bustY: number, height: number): number {
+  let best = Infinity;
+  for (let f = 0.02; f <= 0.075; f += 0.005) {
+    const g = girthAt(pos, data.indices, data.regions, bustY - f * height, [REGION.torso]);
+    if (g > 0) best = Math.min(best, g);
+  }
+  return best === Infinity ? 0 : best;
+}
+
 export type AnnyFit = {
   body: BodyGeometryData;
   /** Measured minus asked, cm, for every measurement given. */
-  residuals: Partial<Record<"chest" | "waist" | "hip" | "shoulder" | "height", number>>;
+  residuals: Partial<Record<"chest" | "waist" | "hip" | "shoulder" | "height" | "cup", number>>;
   phenotype: Phenotype;
   localWeights: Record<string, number>;
 };
 
-export function fitAnny(data: AnnyData, m: BodyMeasurementsInput & { weightKg?: number | null }): AnnyFit {
+export function fitAnny(data: AnnyData, m: BodyMeasurementsInput & { weightKg?: number | null; cup?: Cup | null }): AnnyFit {
   const sex = m.sex ?? null;
   const stature = m.heightCm ?? 170;
   const bmi = m.weightKg != null && m.heightCm != null ? m.weightKg / (m.heightCm / 100) ** 2 : null;
@@ -226,13 +244,44 @@ export function fitAnny(data: AnnyData, m: BodyMeasurementsInput & { weightKg?: 
     return girthAt(pos, data.indices, data.regions, y, keep) * scale;
   };
 
+  // The cup, for a woman's body: bust minus underbust, by its own change.
+  const cupK = data.meta.locals.indexOf(CUP_LOCAL);
+  const cupTarget = sex === "female" && m.cup && cupK >= 0 ? (CUPS[m.cup][0] + CUPS[m.cup][1]) / 2 : null;
+  const underbust = (pos: Float32Array) => underbustAt(pos, data, level("chest"), y1 - y0) * scale;
+  const cupDiff = (pos: Float32Array) =>
+    girthAt(pos, data.indices, data.regions, level("chest"), [REGION.torso]) * scale - underbust(pos);
+  const underbustTarget = cupTarget != null && m.chestCm != null ? m.chestCm - cupTarget : null;
+
   // One Newton step per measurement per round, on the first change in its chain that
   // still has room to move in the needed direction.
-  for (let round = 0; round < 6; round++) {
+  for (let round = 0; round < ROUNDS; round++) {
+    if (cupTarget != null) {
+      // With a measured bust, the cup says where the underbust is (bust - difference),
+      // and that is the target; without one, the difference itself, by the cup first.
+      const now = withLocals(base, data, weights);
+      const v0 = underbustTarget != null ? underbust(now) : cupDiff(now);
+      const want = underbustTarget ?? cupTarget;
+      if (Math.abs(v0 - want) >= 0.05) {
+        for (const local of underbustTarget != null ? ["measure-underbust-circ-incr", CUP_LOCAL] : CUP_CHAIN) {
+          const k = data.meta.locals.indexOf(local);
+          if (k < 0) continue;
+          const step = weights[k] > 0.9 ? -0.1 : 0.1;
+          const trial = weights.slice(); trial[k] += step;
+          const t1 = withLocals(base, data, trial);
+          const slope = ((underbustTarget != null ? underbust(t1) : cupDiff(t1)) - v0) / step;
+          if (Math.abs(slope) < 1e-6) continue;
+          const moved = Math.max(-1, Math.min(1, weights[k] + (want - v0) / slope));
+          if (moved === weights[k]) continue;
+          weights[k] = moved;
+          break;
+        }
+      }
+    }
     for (const t of targets) {
       const g0 = measure(withLocals(base, data, weights), t.key);
       if (Math.abs(g0 - t.cm) < 0.05) continue;
-      for (const local of FIT_CHAINS[t.key]) {
+      // When the cup sets the underbust, the bust may not borrow it.
+      for (const local of FIT_CHAINS[t.key].filter((l) => !(underbustTarget != null && l === "measure-underbust-circ-incr"))) {
         const k = data.meta.locals.indexOf(local);
         if (k < 0) continue;
         const step = weights[k] > 0.9 ? -0.1 : 0.1;
@@ -251,6 +300,7 @@ export function fitAnny(data: AnnyData, m: BodyMeasurementsInput & { weightKg?: 
   const fitted = withLocals(base, data, weights);
   const residuals: AnnyFit["residuals"] = {};
   for (const t of targets) residuals[t.key] = Math.round((measure(fitted, t.key) - t.cm) * 10) / 10;
+  if (cupTarget != null) residuals.cup = Math.round((cupDiff(fitted) - cupTarget) * 10) / 10;
 
   // Feet on the ground, in the wearer's centimetres.
   const out = new Float32Array(fitted.length);

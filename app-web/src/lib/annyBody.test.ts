@@ -4,7 +4,7 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { gunzipSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
-import { blendCorners, estimateGirths, fitAnny, girthAt, parseAnny, type AnnyMeta } from "./annyBody";
+import { CUPS, blendCorners, estimateGirths, fitAnny, girthAt, parseAnny, type AnnyMeta, type Cup } from "./annyBody";
 import { dressFormGeometry } from "./dressForm3d";
 import { REGION } from "./fitMapColours";
 
@@ -20,6 +20,10 @@ const PEOPLE = [
 ];
 
 describe("the baked Anny body", () => {
+  it("carries Anny's cup-size change as its last local change", () => {
+    expect(meta.locals.at(-1)).toBe("phenotype-cupsize");
+  });
+
   it("is the coarse mesh plus a mannequin head, every vertex in a region, every face in range", () => {
     // 1,229 from Anny's coarse topology, 314 for the ellipsoid head (2 poles + 13 rings of 24).
     expect(meta.vertexCount).toBe(1229 + 314);
@@ -88,5 +92,29 @@ describe("a body from height and weight alone (Session 98)", () => {
     const est = estimateGirths(data, fit);
     expect(Math.abs(est.chestCm - PEOPLE[0].m.chestCm)).toBeLessThanOrEqual(1);
     expect(Math.abs(est.waistCm - PEOPLE[0].m.waistCm)).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("a chosen cup size (Session 98d, EN 13402: bust minus underbust)", () => {
+  const woman = { sex: "female" as const, heightCm: 165, weightKg: 58 };
+  it("reaches every cup from A to F within 1 cm, and the bust grows with it", () => {
+    let lastBust = 0;
+    for (const cup of Object.keys(CUPS) as Cup[]) {
+      const fit = fitAnny(data, { ...woman, cup });
+      expect(Math.abs(fit.residuals.cup!), `${cup} ${fit.residuals.cup}`).toBeLessThanOrEqual(1);
+      const bust = girthAt(fit.body.positions, data.indices, data.regions, fit.body.landmarks.chest!, [0]);
+      expect(bust).toBeGreaterThan(lastBust);
+      lastBust = bust;
+    }
+  });
+  it("keeps a measured bust while it sets the cup", () => {
+    const fit = fitAnny(data, { ...woman, chestCm: 90, cup: "D" });
+    expect(Math.abs(fit.residuals.chest!)).toBeLessThanOrEqual(1);
+    expect(Math.abs(fit.residuals.cup!)).toBeLessThanOrEqual(1);
+  });
+  it("is not applied to a man's body", () => {
+    const fit = fitAnny(data, { sex: "male", heightCm: 178, weightKg: 74, cup: "C" });
+    expect(fit.residuals.cup).toBeUndefined();
+    expect(fit.localWeights["phenotype-cupsize"]).toBeUndefined();
   });
 });

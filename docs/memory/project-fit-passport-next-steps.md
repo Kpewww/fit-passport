@@ -907,3 +907,8 @@ height + weight alone — drawing only, never scored), entry points from /passpo
 and the body from height and weight alone; upload extension 0.9.1. **Engineering after approval:** the
 人台 / 写实 toggle on /check; the /outfits preview on the 3D body; the small crease under the form head's chin.
 
+## Session 98d–e (2026-10-09) — pop-overs on screen; /body faces, headless, Monk tones, sex, cup, DONE
+
+**Next — founder:** review /body again (face / headless, skin 1–10, cup sizes). **Engineering after approval:**
+the 人台 / 写实 toggle on /check; /outfits preview on the 3D body; the crease under the form head's chin.
+

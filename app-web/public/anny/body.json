@@ -25,7 +25,7 @@
   ],
   "locals": [
    183308,
-   11
+   12
   ]
  },
  "age": 0.6666666666666666,
@@ -148,7 +148,8 @@
   "breast-volume-vert-up",
   "stomach-pregnant-incr",
   "hip-scale-horiz-incr",
-  "torso-vshape-incr"
+  "torso-vshape-incr",
+  "phenotype-cupsize"
  ],
  "head": "the skull's faces replaced by an ellipsoid fitted to its vertices (85th-percentile reach across, from under the jaw to the crown in height)",
  "headEllipsoid": {

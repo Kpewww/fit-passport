@@ -20,11 +20,12 @@ import { Card, Page, PageHeader } from "@/components/ui";
 import { Check, Lock } from "@/components/Icon";
 import { SafeBoundary } from "@/components/SafeBoundary";
 import { useT } from "@/i18n/client";
-import { BODY_TONES, bodyReadiness, readFitLink, type FitView, type ReadinessItem, type ToneId } from "@/lib/bodyView";
+import { BODY_TONES, CUPS, bodyReadiness, readFitLink, type Cup, type FitView, type ReadinessItem, type ToneId } from "@/lib/bodyView";
 import { VERDICT_COLOUR } from "@/lib/fitMapColours";
 import type { AnnyData, AnnyFit } from "@/lib/annyBody";
 import type { Attachment } from "@/components/FitMap3D";
-import { FACE_IDS, defaultHead, type HeadChoice, type HeadsMeta } from "@/lib/annyHead";
+import { HEAD_CHOICES, faceFor, type HeadChoice, type HeadsMeta } from "@/lib/annyHead";
+import type { BodyGeometryData } from "@/lib/fitMapColours";
 
 const FitMap3D = lazy(() => import("@/components/FitMap3D").then((m) => ({ default: m.FitMap3D })));
 
@@ -32,9 +33,11 @@ type Profile = {
   sex?: string | null; heightCm?: number | null; weightKg?: number | null; chestCm?: number | null;
   waistCm?: number | null; hipCm?: number | null; shoulderCm?: number | null; inseamCm?: number | null;
 };
-type Prefs = { kind: "form" | "real"; head: HeadChoice | null; tone: ToneId };
+// Session 98d: the body's sex is chosen here (null: the passport's); one face per sex;
+// a headless option; a cup size for a woman's body.
+type Prefs = { kind: "form" | "real"; sex: "female" | "male" | null; head: HeadChoice; tone: ToneId; cup: Cup | null };
 const PREFS_KEY = "fp-body3d";
-const DEFAULT_PREFS: Prefs = { kind: "real", head: null, tone: "form" };
+const DEFAULT_PREFS: Prefs = { kind: "real", sex: null, head: "face", tone: "form", cup: null };
 
 function readPrefs(): Prefs {
   try {
@@ -42,8 +45,10 @@ function readPrefs(): Prefs {
     if (p && (p.kind === "form" || p.kind === "real")) {
       return {
         kind: p.kind,
-        head: p.head === "form" || FACE_IDS.includes(p.head) ? p.head : null,
+        sex: p.sex === "female" || p.sex === "male" ? p.sex : null,
+        head: HEAD_CHOICES.includes(p.head) ? p.head : "face",
         tone: BODY_TONES.some((t) => t.id === p.tone) ? p.tone : "form",
+        cup: p.cup && p.cup in CUPS ? p.cup : null,
       };
     }
   } catch { /* private window or blocked storage: the defaults */ }
@@ -64,7 +69,7 @@ export function BodyStudio() {
   const [showFit, setShowFit] = useState(true);
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [anny, setAnny] = useState<{ data: AnnyData; lib: typeof import("@/lib/annyBody") } | null>(null);
-  const [head, setHead] = useState<{ id: string; attachment: Attachment } | null>(null);
+  const [head, setHead] = useState<{ id: string; key: string; attachment: Attachment } | null>(null);
   const [error, setError] = useState(false);
   const [zoom, setZoom] = useState(1);
 
@@ -79,7 +84,10 @@ export function BodyStudio() {
     try { localStorage.setItem(PREFS_KEY, JSON.stringify(p)); } catch { /* not kept; still shown */ }
   };
 
-  const sex: "male" | "female" | null = profile?.sex === "male" || profile?.sex === "female" ? profile.sex : null;
+  const passportSex: "male" | "female" | null = profile?.sex === "male" || profile?.sex === "female" ? profile.sex : null;
+  // What the page draws: the choice made here, else the passport's, else a woman's body.
+  const sex: "male" | "female" = prefs.sex ?? passportSex ?? "female";
+  const cup = sex === "female" ? prefs.cup : null;
   const ready = bodyReadiness(profile ?? {});
   const unlocked = profile != null && ready.level !== "locked";
   const needAnny = unlocked && (prefs.kind === "real" || ready.girthsMissing.length > 0);
@@ -95,10 +103,11 @@ export function BodyStudio() {
     heightCm: profile?.heightCm, weightKg: profile?.weightKg, chestCm: profile?.chestCm, waistCm: profile?.waistCm,
     hipCm: profile?.hipCm, shoulderCm: profile?.shoulderCm, inseamCm: profile?.inseamCm, sex,
   }), [profile, sex]);
+  const fitInput = useMemo(() => ({ ...measurements, cup }), [measurements, cup]);
 
   const fit: AnnyFit | null = useMemo(
-    () => (anny && unlocked ? anny.lib.fitAnny(anny.data, measurements) : null),
-    [anny, unlocked, measurements],
+    () => (anny && unlocked ? anny.lib.fitAnny(anny.data, fitInput) : null),
+    [anny, unlocked, fitInput],
   );
   // The dress form's missing girths, measured on the realistic body: drawing only.
   const estimate = useMemo(
@@ -114,25 +123,36 @@ export function BodyStudio() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [measurements, estimate, ready.girthsMissing.join()]);
 
-  const headChoice: HeadChoice = prefs.head ?? defaultHead(sex);
+  const headChoice: HeadChoice = prefs.head;
+  const faceId = faceFor(sex);
   useEffect(() => {
-    if (prefs.kind !== "real" || headChoice === "form" || !anny || !fit) { setHead(null); return; }
+    if (prefs.kind !== "real" || headChoice !== "face" || !anny || !fit) { setHead(null); return; }
     let live = true;
     (async () => {
       try {
         const lib = await import("@/lib/annyHead");
         const meta: HeadsMeta = await fetch("/anny/heads.json").then((r) => r.json());
-        const fm = meta.faces.find((f) => f.id === headChoice);
+        const fm = meta.faces.find((f) => f.id === faceId);
         if (!fm) return;
-        const buf = await fetch(`/anny/head-${headChoice}.bin.gz`).then((r) => r.arrayBuffer()).then(anny.lib.inflate);
+        const buf = await fetch(`/anny/head-${faceId}.bin.gz`).then((r) => r.arrayBuffer()).then(anny.lib.inflate);
         const face = lib.parseFace(buf, fm, meta.unitPerCm);
-        if (live) setHead({ id: headChoice, attachment: { positions: lib.placeFace(face, fm, fit.body.positions, anny.data), indices: face.indices } });
+        if (live) setHead({ id: faceId, key: `${faceId}:${fit.body.positions[1]}`, attachment: { positions: lib.placeFace(face, fm, fit.body.positions, anny.data), indices: face.indices } });
       } catch {
         if (live) setHead(null); // the ellipsoid stays: a plain head is better than none
       }
     })();
     return () => { live = false; };
-  }, [prefs.kind, headChoice, anny, fit]);
+  }, [prefs.kind, headChoice, faceId, anny, fit]);
+
+  // No head: the body cut straight across the neck.
+  const [cutLib, setCutLib] = useState<typeof import("@/lib/neckCut") | null>(null);
+  useEffect(() => {
+    if (headChoice === "none" && !cutLib) import("@/lib/neckCut").then(setCutLib).catch(() => setError(true));
+  }, [headChoice, cutLib]);
+  const headless: BodyGeometryData | null = useMemo(
+    () => (headChoice === "none" && cutLib && fit && anny ? cutLib.cutAtNeck(fit.body, anny.data) : null),
+    [headChoice, cutLib, fit, anny],
+  );
 
   // The viewer fills its column, up to 560 px.
   const boxRef = useRef<HTMLDivElement>(null);
@@ -147,10 +167,13 @@ export function BodyStudio() {
 
   const tone = BODY_TONES.find((x) => x.id === prefs.tone)?.hex ?? BODY_TONES[0].hex;
   const zones = fitView && showFit ? fitView.zones : null;
+  const faceReady = headChoice === "face" && head && head.id === faceId && anny;
   const realBody = prefs.kind === "real" && fit
-    ? head && head.id === headChoice && anny
-      ? { ...fit.body, indices: (anny.data.meta.headEllipsoid ? anny.data.indices.subarray(0, anny.data.meta.headEllipsoid.faces[0] * 3) : anny.data.indices) }
-      : fit.body
+    ? headChoice === "none"
+      ? headless
+      : faceReady
+        ? { ...fit.body, indices: (anny.data.meta.headEllipsoid ? anny.data.indices.subarray(0, anny.data.meta.headEllipsoid.faces[0] * 3) : anny.data.indices) }
+        : fit.body
     : null;
   const formReady = prefs.kind === "form" && (!ready.girthsMissing.length || estimate);
   const canDraw = realBody || formReady;
@@ -234,8 +257,9 @@ export function BodyStudio() {
                     body={realBody}
                     zones={zones}
                     tint={tone}
-                    head={realBody && head?.id === headChoice ? head.attachment : null}
+                    head={realBody && faceReady ? head!.attachment : null}
                     zoom={zoom}
+                    skin={prefs.tone !== "form"}
                   />
                 </Suspense>
               </SafeBoundary>
@@ -270,11 +294,47 @@ export function BodyStudio() {
             <p className="mt-1.5 text-[11px] text-ink-faint">{t(prefs.kind === "real" ? "realHint" : "formHint")}</p>
           </section>
 
+          <section>
+            <h2 className="text-sm font-semibold text-ink">{t("sexLabel")}</h2>
+            <div role="radiogroup" aria-label={t("sexLabel")} className="mt-2 flex rounded-full bg-paper-soft p-1 ring-1 ring-line">
+              {(["female", "male"] as const).map((k) => (
+                <button key={k} type="button" role="radio" aria-checked={sex === k} onClick={() => choose({ sex: k })} className={segment(sex === k)}>
+                  {t(`sexes.${k}`)}
+                </button>
+              ))}
+            </div>
+            {passportSex !== sex && <p className="mt-1.5 text-[11px] text-ink-faint">{t("sexNote")}</p>}
+          </section>
+
+          {sex === "female" && prefs.kind === "real" && (
+            <section>
+              <h2 className="text-sm font-semibold text-ink">{t("cupLabel")}</h2>
+              <div role="radiogroup" aria-label={t("cupLabel")} className="mt-2 flex flex-wrap gap-1.5">
+                {([null, ...Object.keys(CUPS)] as Array<Cup | null>).map((c) => (
+                  <button
+                    key={c ?? "auto"}
+                    type="button"
+                    role="radio"
+                    aria-checked={cup === c}
+                    onClick={() => choose({ cup: c })}
+                    className={`h-9 min-w-[40px] whitespace-nowrap rounded-full border px-3 text-xs font-medium transition-colors ${cup === c ? "border-ink bg-ink text-paper" : "border-line bg-white text-ink-soft hover:border-ink/40 hover:text-ink"}`}
+                  >
+                    {c ?? t("cupAuto")}
+                  </button>
+                ))}
+              </div>
+              <p className="mt-1.5 text-[11px] text-ink-faint">{t("cupNote")}</p>
+              {cup && fit?.residuals.cup != null && Math.abs(fit.residuals.cup) > 1 && (
+                <p className="mt-1 text-[11px] text-warn">{t("cupResidual", { cup, cm: cm(fit.residuals.cup) })}</p>
+              )}
+            </section>
+          )}
+
           {prefs.kind === "real" && (
             <section>
               <h2 className="text-sm font-semibold text-ink">{t("faceLabel")}</h2>
               <div role="radiogroup" aria-label={t("faceLabel")} className="mt-2 flex flex-wrap gap-1.5">
-                {([...FACE_IDS, "form"] as const).map((id) => (
+                {HEAD_CHOICES.map((id) => (
                   <button
                     key={id}
                     type="button"
@@ -283,24 +343,29 @@ export function BodyStudio() {
                     onClick={() => choose({ head: id })}
                     className={`h-9 whitespace-nowrap rounded-full border px-3 text-xs font-medium transition-colors ${headChoice === id ? "border-ink bg-ink text-paper" : "border-line bg-white text-ink-soft hover:border-ink/40 hover:text-ink"}`}
                   >
-                    {t(`faces.${id}`)}
+                    {t(`heads.${id}`)}
                   </button>
                 ))}
               </div>
-              <p className="mt-1.5 text-[11px] text-ink-faint">{t("faceNote")}</p>
+              {headChoice !== "form" && <p className="mt-1.5 text-[11px] text-ink-faint">{t(headChoice === "none" ? "noneNote" : "faceNote")}</p>}
             </section>
           )}
 
           <section>
             <h2 className="text-sm font-semibold text-ink">{t("toneLabel")}</h2>
-            <div role="radiogroup" aria-label={t("toneLabel")} className="mt-2 flex flex-wrap gap-3">
-              {BODY_TONES.map((x) => (
-                <button key={x.id} type="button" role="radio" aria-checked={prefs.tone === x.id} onClick={() => choose({ tone: x.id })} className="flex flex-col items-center gap-1">
-                  <span className={`h-8 w-8 rounded-full ring-offset-2 transition ${prefs.tone === x.id ? "ring-2 ring-ink" : "ring-1 ring-line"}`} style={{ background: x.hex }} />
-                  <span className={`text-[11px] ${prefs.tone === x.id ? "font-medium text-ink" : "text-ink-soft"}`}>{t(`tones.${x.id}`)}</span>
-                </button>
-              ))}
+            {/* The mannequin's colour, then the Monk scale's ten tones in its order. */}
+            <div role="radiogroup" aria-label={t("toneLabel")} className="mt-2 grid grid-cols-6 gap-2">
+              {BODY_TONES.map((x, i) => {
+                const name = x.id === "form" ? t("tones.form") : t("toneN", { n: i });
+                return (
+                  <button key={x.id} type="button" role="radio" aria-checked={prefs.tone === x.id} aria-label={name} title={name} onClick={() => choose({ tone: x.id })} className="flex flex-col items-center gap-1">
+                    <span className={`h-8 w-8 rounded-full ring-offset-2 transition ${prefs.tone === x.id ? "ring-2 ring-ink" : "ring-1 ring-ink/15"}`} style={{ background: x.hex }} />
+                    <span className={`text-[10px] tabular-nums ${prefs.tone === x.id ? "font-medium text-ink" : "text-ink-faint"}`}>{x.id === "form" ? t("tones.form") : i}</span>
+                  </button>
+                );
+              })}
             </div>
+            <p className="mt-1.5 text-[11px] text-ink-faint">{t("toneNote")}</p>
           </section>
 
           <section>
@@ -337,7 +402,7 @@ export function BodyStudio() {
               <h2 className="text-sm font-semibold text-ink">{t("residualTitle")}</h2>
               <p className="mt-0.5 text-[11px] text-ink-faint">{t("residualBody")}</p>
               <ul className="mt-2 space-y-1 text-xs">
-                {(["chest", "waist", "hip", "shoulder"] as const).filter((k) => fit.residuals[k] != null).map((k) => (
+                {(["chest", "waist", "hip", "shoulder", "cup"] as const).filter((k) => fit.residuals[k] != null).map((k) => (
                   <li key={k} className="flex justify-between"><span className="text-ink-soft">{t(`residualPart.${k}`)}</span><span className="tabular-nums text-ink">{cm(fit.residuals[k]!)}</span></li>
                 ))}
               </ul>

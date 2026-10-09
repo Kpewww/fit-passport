@@ -1431,3 +1431,10 @@ entry card `components/Body3DEntry.tsx` on both passport views.
 **(98)** **An estimated body is for drawing only.** Girths measured on Anny from height and weight
 (`estimateGirths`) fill the dress form on /body, say "estimated", and are never stored, sent or scored.
 
+**SESSION 98d–e (2026-10-09).** → **1,301 tests**. Pop-overs placed against the window in a portal
+(`components/useAnchoredPanel.ts`; type picker + colour pop-over). /body: heads = face (f1/m1 only) / form / none
+(`lib/neckCut.ts`); tones = mannequin + Monk Skin Tone Scale 1–10 (CC BY 4.0, credited); skin lighting = physical
+levels + NeutralToneMapping + tinted sheen (FitMap3D `skin`); sex switch (view only); cup A–F by EN 13402
+(bust − underbust), Anny `phenotype-cupsize` baked from the "all" mode at default ancestry (never varied).
+FitMap3D rebuilds on a whole-mesh checksum (two sampled vertices missed a cup change).
+

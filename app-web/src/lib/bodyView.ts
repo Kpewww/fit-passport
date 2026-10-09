@@ -1,7 +1,8 @@
 // What /body ("my 3D body", Session 98 phase 3) shows, decided without a DOM.
 //
-//   - BODY_TONES: the body's colour. The mannequin's own first; then skin tones,
-//     named by colour, never by people (no ancestry is implied by any of them).
+//   - BODY_TONES: the body's colour. The mannequin's own first; then the ten tones of
+//     the Monk Skin Tone Scale, numbered as the scale numbers them, never named after
+//     people (no ancestry is implied by any of them).
 //   - bodyReadiness: what the passport holds, what it unlocks, what is still missing.
 //     Height and weight are enough for a first, rough body; each girth after that
 //     makes it the wearer's own.
@@ -12,10 +13,20 @@ import { FORM_COLOUR, type Verdict, type Zone, type ZoneKey } from "./fitMapColo
 
 export const BODY_TONES = [
   { id: "form", hex: FORM_COLOUR },
-  { id: "beige", hex: "#d8bea0" },
-  { id: "light", hex: "#efd6c1" },
-  { id: "medium", hex: "#c49673" },
-  { id: "deep", hex: "#7b5339" },
+  // The Monk Skin Tone Scale's ten swatches, 1 (lightest) to 10 (darkest): Dr. Ellis
+  // Monk with Google, released under CC BY 4.0 (skintone.google; the values as listed
+  // on Wikipedia's "Monk Skin Tone Scale", which cites Google's MST swatches page,
+  // fetched 2026-10-09). The founder asked for real human skin tones (Session 98d).
+  { id: "mst1", hex: "#f6ede4" },
+  { id: "mst2", hex: "#f3e7db" },
+  { id: "mst3", hex: "#f7ead0" },
+  { id: "mst4", hex: "#eadaba" },
+  { id: "mst5", hex: "#d7bd96" },
+  { id: "mst6", hex: "#a07e56" },
+  { id: "mst7", hex: "#825c43" },
+  { id: "mst8", hex: "#604134" },
+  { id: "mst9", hex: "#3a312a" },
+  { id: "mst10", hex: "#292420" },
 ] as const;
 export type ToneId = (typeof BODY_TONES)[number]["id"];
 
@@ -86,3 +97,14 @@ export function readFitLink(params: URLSearchParams): FitView | null {
   }
   return zones.length ? { size, item: params.get("item")?.slice(0, 80) ?? null, zones } : null;
 }
+
+/**
+ * Cup sizes by EN 13402: the cup is the bust girth minus the underbust girth, in 2 cm
+ * steps (AA 10-12 cm, A 12-14 … ; lower bound exclusive). Source: EN 13402 as tabled by
+ * mobilefish.com's EN 13402 pictogram help (fetched 2026-10-09). A chosen cup is fitted
+ * to the middle of its range, on a woman's body only, through Anny's own cupsize
+ * phenotype (annyBody.ts CUP_LOCAL, baked by tools/anny/bake.py). Anny reaches about
+ * 12-26 cm.
+ */
+export const CUPS = { A: [12, 14], B: [14, 16], C: [16, 18], D: [18, 20], E: [20, 22], F: [22, 24] } as const;
+export type Cup = keyof typeof CUPS;

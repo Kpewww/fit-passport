@@ -31,6 +31,71 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-09 · Session 98e — /body: one face per sex, a headless body, real skin tones, sex and cup size
+
+The founder's review of /body:
+- keep female A and male A;
+- add a version with no head, the neck cut straight across;
+- take skin colours from real human skin, because "these few are too uncanny";
+- let the viewer choose male or female, with a cup size for women.
+
+**Head:** the choices are now the face for the body's sex, the form's head, or **no
+head** (`lib/neckCut.ts`).
+- The headless body is cut at 60% of the way from the shoulder line to the jaw.
+  Triangles crossing the plane are clipped, and the opening is closed by a flat cap
+  with its own rim vertices, so the edge stays sharp.
+- Tests: nothing drawn above the cut, the cut lies between the shoulders and the jaw,
+  and the cap faces up and is neck-sized.
+- The B faces were removed: `bake_heads.py` bakes `f1` and `m1` only.
+
+**Skin:** the mannequin's colour plus the ten swatches of the **Monk Skin Tone Scale**
+(Ellis Monk with Google, CC BY 4.0), numbered as the scale numbers them.
+- The values are those Wikipedia lists, citing Google's MST swatches page (fetched
+  2026-10-09). The page credits the scale.
+- The first render showed every tone darker and greyer than its swatch. three.js lights
+  are physical, and the form's levels return about two-thirds of a surface's colour; the
+  white sheen greyed the dark tones further.
+- With a skin tone the scene now uses brighter lights, neutral tone mapping, a sheen in
+  the skin's own colour, and a faint glow in the same colour for warm shadows. The
+  mannequin and /check's fit map keep their look.
+
+**Sex:** a 女 / 男 switch on /body. It starts from the passport (a woman's body when
+none was given) and changes only the view; a test confirms the passport is untouched.
+
+**Cup size** (women): A to F by **EN 13402**, where the cup is bust minus underbust in
+2 cm steps (A = 12–14 cm), as tabled by mobilefish.com's EN 13402 help (fetched
+2026-10-09).
+- Anny's `cupsize` phenotype exists only in its "all phenotypes" mode, which also
+  carries ancestry sliders. `bake.py` takes only the cup change, on the average woman,
+  with everything else at Anny's defaults. At those defaults the "all" body equals the
+  default body exactly (measured: 0.0000 cm). Ancestry is never varied.
+- Measured: Anny spans about 12–26 cm, roughly A to G.
+- The fit's target is the middle of the chosen cup's range. With a measured bust, the
+  cup sets where the underbust must be (bust minus difference), and the fit moves the
+  underbust. That was found by a failing test: with bust 90 and cup D, the bust and the
+  cup fought over one lever and ended 3.3 cm out.
+- A cup the body cannot reach is reported as a residual on the page, not hidden.
+
+**Found by looking:** cup A and cup E drew the same body. `FitMap3D` rebuilt its scene on a
+key of two sampled vertices, which a cup change does not move. The key is now a checksum
+over the whole mesh.
+
+**Verified:**
+- 1,301 tests + 1 skip.
+- In Chromium (zh, reduced motion for front views):
+  - the face by default, sex taken from the passport, the B faces gone;
+  - Monk tones 2, 5, 7 and 9 on the face body;
+  - headless, at whole-body and close-up zoom;
+  - cups A and E visibly different;
+  - the note citing EN 13402;
+  - switching to a man's body removes the cup choice and leaves the passport's sex as
+    it was.
+- The earlier /body flows and the pop-over checks still pass, with no console errors.
+- /body 108 kB first load: the cup table moved to `bodyView.ts` so the fitting code
+  stays lazy.
+
+---
+
 ## 2026-10-09 · Session 98d — Pop-overs stay on screen
 
 The founder's screenshot showed the type picker opened in the closet's edit sheet,

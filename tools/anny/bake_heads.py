@@ -4,8 +4,7 @@ Run by us, offline, after bake.py (same venv):
 
     .venv/bin/python tools/anny/bake_heads.py      # writes app-web/public/anny/head-*.bin.gz
 
-The founder's choice: a sculpture's face, eyes closed, a few presets per sex, not a
-person. So each face is Anny's own detailed head (its "anny" topology, 13,718
+The founder's choice: a sculpture's face, eyes closed, one per sex, not a person. So each face is Anny's own detailed head (its "anny" topology, 13,718
 vertices for the whole body) with:
   - the eyes closed by Anny's eyeBlink facial actions (ARKit names, CC0 assets);
   - the eyeballs, teeth and tongue left out (they are separate pieces of the mesh;
@@ -45,17 +44,9 @@ from bake import AGE_YOUNG, OUT, TOPOLOGY, UNIT_PER_CM, head_ellipsoid, regions_
 FACIAL = {"eyeBlinkLeft": 1.0, "eyeBlinkRight": 1.0}
 # Anny: gender 0 = male, 1 = female. Local changes only; see the docstring.
 FACES = [
+    # The founder kept one face per sex (Session 98d); the B variants were dropped.
     {"id": "f1", "sex": "female", "gender": 1.0, "locals": {}},
-    {"id": "f2", "sex": "female", "gender": 1.0, "locals": {
-        "head-scale-horiz-incr": -0.25, "l-cheek-bones-incr": 0.4, "r-cheek-bones-incr": 0.4,
-        "chin-width-incr": -0.3, "nose-scale-horiz-incr": -0.25, "mouth-scale-horiz-incr": -0.15,
-        "forehead-scale-vert-incr": 0.2,
-    }},
     {"id": "m1", "sex": "male", "gender": 0.0, "locals": {}},
-    {"id": "m2", "sex": "male", "gender": 0.0, "locals": {
-        "chin-width-incr": 0.45, "chin-prominent-incr": 0.3, "nose-hump-incr": 0.35,
-        "eyebrows-trans-forward": 0.3, "head-scale-horiz-incr": 0.15, "mouth-scale-horiz-incr": 0.1,
-    }},
 ]
 # How far below the chin the face's neck reaches, cm: enough to overlap the body's.
 NECK_BELOW_CHIN_CM = 5.0

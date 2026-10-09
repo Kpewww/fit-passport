@@ -22,8 +22,8 @@ describe("what unlocks the 3D body", () => {
 });
 
 describe("body tones", () => {
-  it("start with the mannequin's colour and are named by colour", () => {
-    expect(BODY_TONES[0].id).toBe("form");
+  it("are the mannequin's colour, then the ten Monk Skin Tone Scale swatches in order", () => {
+    expect(BODY_TONES.map((t) => t.id)).toEqual(["form", ...Array.from({ length: 10 }, (_, i) => `mst${i + 1}`)]);
     for (const t of BODY_TONES) expect(t.hex).toMatch(/^#[0-9a-f]{6}$/);
   });
 });

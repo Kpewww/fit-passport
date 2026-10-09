@@ -27,25 +27,6 @@
    "bytes": 51854
   },
   {
-   "id": "f2",
-   "sex": "female",
-   "vertexCount": 4177,
-   "faceCount": 8306,
-   "ref": {
-    "centre": [
-     0.0,
-     85.048,
-     9.17
-    ],
-    "axes": [
-     7.201,
-     9.89,
-     6.289
-    ]
-   },
-   "bytes": 51781
-  },
-  {
    "id": "m1",
    "sex": "male",
    "vertexCount": 4177,
@@ -63,25 +44,6 @@
     ]
    },
    "bytes": 51937
-  },
-  {
-   "id": "m2",
-   "sex": "male",
-   "vertexCount": 4177,
-   "faceCount": 8306,
-   "ref": {
-    "centre": [
-     0.0,
-     97.887,
-     10.273
-    ],
-    "axes": [
-     7.65,
-     10.861,
-     6.746
-    ]
-   },
-   "bytes": 51957
   }
  ]
 }

@@ -33,10 +33,17 @@ type Scene = {
   head: THREE.Mesh | null;
   camera: THREE.PerspectiveCamera;
   span: number;
+  bodyMaterial: THREE.Material;
 };
 
 /** A mesh drawn with the body in its plain colour: the realistic body's face. */
 export type Attachment = { positions: Float32Array; indices: Uint16Array | Uint32Array };
+
+function meshSum(p: Float32Array): number {
+  let h = 0;
+  for (let i = 0; i < p.length; i++) h = (Math.imul(h, 31) + Math.round(p[i] * 100)) | 0;
+  return h;
+}
 
 export function FitMap3D({
   measurements,
@@ -48,6 +55,7 @@ export function FitMap3D({
   tint = FORM_COLOUR,
   head = null,
   zoom = 1,
+  skin = false,
 }: {
   measurements: BodyMeasurementsInput;
   /** The size's per-part fit; absent means the plain form. */
@@ -64,6 +72,9 @@ export function FitMap3D({
   head?: Attachment | null;
   /** 1 frames the whole body; larger moves the camera in (towards the upper body). */
   zoom?: number;
+  /** A skin tone, not the mannequin's (Session 98d): a soft sheen and a warm bounce
+   *  light from below, instead of the form's dry matte. */
+  skin?: boolean;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<Scene | null>(null);
@@ -73,8 +84,11 @@ export function FitMap3D({
   const idleRef = useRef(true);
 
   const body = givenBody ?? dressFormGeometry(measurements);
+  // The scene is rebuilt when the body's shape changes. Two sampled vertices were not
+  // enough: a cup size moves neither, so the body was not redrawn (Session 98d). A
+  // checksum over the whole mesh is.
   const bodyKey = body
-    ? `${body.positions.length}:${body.indices.length}:${body.positions[1]}:${body.positions[body.positions.length - 2]}:${JSON.stringify(measurements)}:${head ? `${head.positions.length}:${head.positions[0]}:${head.positions[4]}` : "-"}`
+    ? `${body.positions.length}:${body.indices.length}:${meshSum(body.positions)}:${JSON.stringify(measurements)}:${head ? `${head.positions.length}:${meshSum(head.positions)}` : "-"}:${skin ? "skin" : "form"}`
     : "";
 
   // ---- the scene: once per body ----
@@ -101,8 +115,22 @@ export function FitMap3D({
     const centre = new THREE.Vector3();
     bb.getCenter(centre);
 
-    // Matte, and not skin: a form study of someone's measurements, not a person.
-    const material = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.55, metalness: 0.02 });
+    // Matte for the mannequin: a form study of someone's measurements. With a skin tone,
+    // a soft sheen at grazing angles, which is what makes skin read as skin and not
+    // as painted plastic.
+    const surface = (extra: THREE.MeshPhysicalMaterialParameters) =>
+      skin
+        ? new THREE.MeshPhysicalMaterial({
+            roughness: 0.62, metalness: 0, sheen: 0.25, sheenRoughness: 0.75,
+            // In the skin's own colour: a white sheen greyed the darker tones.
+            sheenColor: new THREE.Color(tint),
+            // A faint glow in the same colour keeps the shadows warm, the way light
+            // scattered under skin does, instead of letting them go grey.
+            emissive: new THREE.Color(tint).multiplyScalar(0.07),
+            ...extra,
+          })
+        : new THREE.MeshStandardMaterial({ roughness: 0.55, metalness: 0.02, ...extra });
+    const material = surface({ vertexColors: true });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.sub(centre);
     const pivot = new THREE.Group();
@@ -110,11 +138,18 @@ export function FitMap3D({
 
     const scene = new THREE.Scene();
     scene.add(pivot);
-    const key = new THREE.DirectionalLight(0xffffff, 1.7);
+    // Skin is lit to show its own colour: three.js lights are physical (an intensity
+    // of pi returns a surface's colour), and the form's levels gave about two thirds of
+    // it, which made the Monk tones muddy. Neutral tone mapping keeps the highlights.
+    if (skin) {
+      renderer.toneMapping = THREE.NeutralToneMapping;
+      renderer.toneMappingExposure = 1;
+    }
+    const key = new THREE.DirectionalLight(0xffffff, skin ? 2.6 : 1.7);
     key.position.set(-0.6, 1, 0.9);
-    const fill = new THREE.DirectionalLight(0xffffff, 0.55);
+    const fill = new THREE.DirectionalLight(0xffffff, skin ? 0.9 : 0.55);
     fill.position.set(1, 0.2, -0.6);
-    scene.add(key, fill, new THREE.AmbientLight(0xffffff, 0.5));
+    scene.add(key, fill, skin ? new THREE.HemisphereLight(0xffffff, 0xc7a28c, 1.5) : new THREE.AmbientLight(0xffffff, 0.5));
 
     // Frame on the taller axis, with room for a shell wider than the body.
     const span = Math.max(bb.max.y - bb.min.y, (bb.max.x - bb.min.x) * 1.35);
@@ -129,12 +164,12 @@ export function FitMap3D({
       hg.setIndex(new THREE.BufferAttribute(head.indices, 1));
       hg.computeVertexNormals();
       // The same matte as the body: a sculpture's face, one colour, no texture.
-      headMesh = new THREE.Mesh(hg, new THREE.MeshStandardMaterial({ color: new THREE.Color(tint), roughness: 0.55, metalness: 0.02 }));
+      headMesh = new THREE.Mesh(hg, surface({ color: new THREE.Color(tint) }));
       headMesh.position.sub(centre);
       pivot.add(headMesh);
     }
 
-    sceneRef.current = { renderer, bodyGeometry: geometry, pivot, centre, shell: null, head: headMesh, camera, span };
+    sceneRef.current = { renderer, bodyGeometry: geometry, pivot, centre, shell: null, head: headMesh, camera, span, bodyMaterial: material };
 
     const onDown = (e: PointerEvent) => {
       draggingRef.current = true;
@@ -201,6 +236,13 @@ export function FitMap3D({
     if (!s || !body) return;
     s.bodyGeometry.setAttribute("color", new THREE.BufferAttribute(fitMapColours(body, zones, tint), 3));
     if (s.head) (s.head.material as THREE.MeshStandardMaterial).color.set(tint);
+    // A skin's sheen and glow follow its colour.
+    for (const m of [s.bodyMaterial, s.head?.material as THREE.Material | undefined]) {
+      if (m instanceof THREE.MeshPhysicalMaterial) {
+        m.sheenColor.set(tint);
+        m.emissive.set(tint).multiplyScalar(0.07);
+      }
+    }
 
     if (s.shell) {
       s.pivot.remove(s.shell);

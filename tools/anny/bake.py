@@ -209,6 +209,28 @@ def main():
         deltas.append(np.concatenate([rest(0.5, 0.5, 0.5, {l: 1.0}) - base, zero_head]))
         deltas.append(np.concatenate([rest(0.5, 0.5, 0.5, {l: -1.0}) - base, zero_head]))
 
+    # Cup size (Session 98), as one more change. Anny's cupsize phenotype exists only in
+    # its "all" mode, which also has ancestry sliders: those stay at Anny's defaults
+    # (0.5) and are never varied, and at cupsize 0.5 the "all" body equals the default
+    # one exactly (measured: 0.0000 cm). The change is taken on the average female body,
+    # +: cupsize 1, -: cupsize 0; the browser applies it to women only (annyBody CUP_LOCAL).
+    every = anny.Anny(topology=TOPOLOGY, local_changes="default", phenotypes="all")
+    neutral = {"cupsize": 0.5, "firmness": 0.5, "african": 0.5, "asian": 0.5, "caucasian": 0.5}
+
+    def rest_all(**ph):
+        _, p, lc, fa = every.get_tensor_inputs(
+            None,
+            {"gender": 1.0, "age": AGE_YOUNG, "muscle": 0.5, "weight": 0.5, "height": 0.5, "proportions": 0.5, **neutral, **ph},
+            {}, {},
+        )
+        c = every._get_phenotype_blendshape_coefficients(p, lc, fa)
+        return to_three_cm(every.get_rest_vertices(c)[0].detach().cpu().numpy())
+
+    female = rest_all()
+    deltas.append(np.concatenate([rest_all(cupsize=1.0) - female, zero_head]))
+    deltas.append(np.concatenate([rest_all(cupsize=0.0) - female, zero_head]))
+    local_labels = local_labels + ["phenotype-cupsize"]
+
     def q(a):
         a = np.round(np.asarray(a) * UNIT_PER_CM)
         if np.abs(a).max() > 32767:
