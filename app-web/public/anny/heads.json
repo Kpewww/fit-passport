@@ -8,16 +8,16 @@
  },
  "faces": [
   {
-   "id": "f-af",
+   "id": "f-a",
    "sex": "female",
-   "ancestry": "af",
-   "vertexCount": 4322,
-   "faceCount": 8594,
+   "ancestry": "a",
+   "vertexCount": 4336,
+   "faceCount": 8622,
    "ref": {
     "centre": [
      0.0,
-     92.768,
-     9.137
+     88.163,
+     9.157
     ],
     "axes": [
      7.201,
@@ -25,20 +25,20 @@
      6.289
     ]
    },
-   "chinY": 79.731,
-   "bytes": 53629
+   "chinY": 75.173,
+   "bytes": 53838
   },
   {
-   "id": "f-ea",
+   "id": "f-b",
    "sex": "female",
-   "ancestry": "ea",
-   "vertexCount": 4374,
-   "faceCount": 8698,
+   "ancestry": "b",
+   "vertexCount": 4357,
+   "faceCount": 8668,
    "ref": {
     "centre": [
      0.0,
-     75.704,
-     9.096
+     81.294,
+     9.14
     ],
     "axes": [
      7.201,
@@ -46,20 +46,20 @@
      6.289
     ]
    },
-   "chinY": 63.302,
-   "bytes": 54074
+   "chinY": 68.605,
+   "bytes": 53990
   },
   {
-   "id": "f-eu",
+   "id": "f-c",
    "sex": "female",
-   "ancestry": "eu",
+   "ancestry": "c",
    "vertexCount": 4346,
    "faceCount": 8642,
    "ref": {
     "centre": [
      0.0,
-     86.435,
-     9.277
+     85.618,
+     9.213
     ],
     "axes": [
      7.201,
@@ -67,20 +67,20 @@
      6.289
     ]
    },
-   "chinY": 73.352,
-   "bytes": 53913
+   "chinY": 72.625,
+   "bytes": 53923
   },
   {
-   "id": "m-af",
+   "id": "m-a",
    "sex": "male",
-   "ancestry": "af",
-   "vertexCount": 4305,
-   "faceCount": 8562,
+   "ancestry": "a",
+   "vertexCount": 4315,
+   "faceCount": 8578,
    "ref": {
     "centre": [
      0.0,
-     106.267,
-     10.704
+     101.239,
+     10.445
     ],
     "axes": [
      7.65,
@@ -88,20 +88,20 @@
      6.746
     ]
    },
-   "chinY": 91.956,
-   "bytes": 53542
+   "chinY": 86.988,
+   "bytes": 53610
   },
   {
-   "id": "m-ea",
+   "id": "m-b",
    "sex": "male",
-   "ancestry": "ea",
-   "vertexCount": 4336,
-   "faceCount": 8624,
+   "ancestry": "b",
+   "vertexCount": 4326,
+   "faceCount": 8604,
    "ref": {
     "centre": [
      0.0,
-     87.598,
-     9.418
+     93.761,
+     9.931
     ],
     "axes": [
      7.65,
@@ -109,20 +109,20 @@
      6.746
     ]
    },
-   "chinY": 73.526,
-   "bytes": 53821
+   "chinY": 79.616,
+   "bytes": 53780
   },
   {
-   "id": "m-eu",
+   "id": "m-c",
    "sex": "male",
-   "ancestry": "eu",
-   "vertexCount": 4324,
-   "faceCount": 8600,
+   "ancestry": "c",
+   "vertexCount": 4322,
+   "faceCount": 8596,
    "ref": {
     "centre": [
      0.0,
-     99.824,
-     10.696
+     98.662,
+     10.442
     ],
     "axes": [
      7.65,
@@ -130,8 +130,8 @@
      6.746
     ]
    },
-   "chinY": 85.546,
-   "bytes": 53731
+   "chinY": 84.424,
+   "bytes": 53727
   }
  ]
 }

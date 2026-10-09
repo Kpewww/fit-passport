@@ -31,6 +31,59 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-09 · Session 98g — Real cup sizes, faces A/B/C, measured skin, a chinless headless body, a plan for realistic heads
+
+The founder:
+- "Are A and B too small? Is this the real size?"
+- Name the faces A, B and C, not by any people.
+- The faces are stereotyped and not good-looking, and the East Asian skin is wrong.
+- The headless body has a piece of chin.
+- "Approach" film stars' faces. Declined: a face modelled after a named person is
+  that person's likeness.
+- Plan realistic heads.
+
+**Cups: a real measuring error.** The underbust was the narrowest girth anywhere in a
+band under the bust, which reached the ribcage's taper towards the waist.
+- A man's chest measured 13.5 cm bust minus underbust, an A cup, so "A" was drawn at
+  Anny's flattest.
+- It is now taken at the inframammary fold, as ISO 8559-1 defines underbust. The fold
+  is found as the lowest vertices Anny's own cup change moves.
+- An A now has breasts: cup weight −0.46, not −1. Anny's average woman measures a B.
+- Reachable combinations were re-measured: at bust 88 cm, cups A to F exactly; at 92,
+  A to H; a bust of 84 cannot carry an H, and the page says so.
+- The page prints the drawn bust and underbust and their difference, so a size can be
+  checked, and notes that UK and US letters run larger.
+
+**Faces A, B, C:**
+- Names and file names carry only the letter (`head-{f,m}-{a,b,c}.bin.gz`).
+- Each face is a mix of Anny's three ancestry averages (0.6 / 0.2 / 0.2), not the
+  extreme of one, which softens the features.
+- Still Anny's averages. Realistic heads are planned in
+  `todo/engineering/15-realistic-heads.md`.
+
+**Skin, measured** (`lib/bodyView.ts`):
+- The Monk swatches are design colours (MST 3 is L* 93), while spectrophotometer
+  readings of skin sit near L* 58–65. Used as a surface colour under physical light,
+  the swatches looked washed out.
+- The palette is now six lightness steps over the measured range (L* 70 to 33) in three
+  undertones (pinker, neutral, more yellow).
+- Data: Xiao et al. 2017, Table 2 (960 people), and Everett et al. 2012, Table 1 (237
+  women). Redness barely differs between people (a* about 9); yellowness does.
+- `labToHex` was checked against an independent conversion, and a hand-written
+  expectation of mine was wrong.
+
+**Headless:** cut at the neck's **narrowest** point. A cut higher up caught where the
+girth widens into the jaw.
+
+**Verified:**
+- 1,315 tests + 1 skip.
+- In Chromium: no ancestry names on the page; the headless neck has no chin; faces A, B
+  and C for both sexes; skin 2 in pinker and more yellow; cups A, B and D from three
+  quarters, with the drawn measurements printed.
+- The earlier /body and pop-over flows pass, with no console errors. /body 108 kB.
+
+---
+
 ## 2026-10-09 · Session 98f — /body: faces by ancestry, a mannequin's neck, cups to J, a rounder body, and a seamless neck
 
 The founder's review of /body, and a bug report:

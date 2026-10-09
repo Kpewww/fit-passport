@@ -9,12 +9,13 @@
 
 import type { AnnyData } from "./annyBody";
 
-// Faces by ancestry and sex (Session 98f), chosen by the wearer and never inferred:
-// Anny's statistical average faces (tools/anny/bake_heads.py), no real person's likeness.
-export const ANCESTRIES = ["af", "ea", "eu"] as const;
+// Three faces per sex, named A, B and C only (Session 98g), chosen by the wearer and
+// never inferred: mixes of Anny's statistical average faces (tools/anny/bake_heads.py),
+// no real person's likeness.
+export const ANCESTRIES = ["a", "b", "c"] as const;
 export type Ancestry = (typeof ANCESTRIES)[number];
 export type FaceId = `${"f" | "m"}-${Ancestry}`;
-export const FACE_IDS: FaceId[] = ["f-af", "f-ea", "f-eu", "m-af", "m-ea", "m-eu"];
+export const FACE_IDS: FaceId[] = ["f-a", "f-b", "f-c", "m-a", "m-b", "m-c"];
 /** "none": the neck cut a little above its base, as a shop mannequin (lib/neckCut.ts).
  *  The default: no face is assumed for anyone. */
 export type HeadChoice = Ancestry | "none";

@@ -132,8 +132,9 @@ describe("a cup with a measured bust looks its size (Session 98f: an F looked li
     }
     return bust - under;
   };
-  // Pairs this body can wear: a 165 cm, 58 kg woman's underbust spans about 70-77 cm here.
-  for (const [chestCm, small, large] of [[86, "B", "F"], [92, "D", "H"]] as const) {
+  // Pairs this body can wear (measured, Session 98g: at bust 88 cups A to F fit exactly,
+  // at 92 A to H).
+  for (const [chestCm, small, large] of [[88, "B", "F"], [92, "C", "H"]] as const) {
     it(`keeps a ${chestCm} cm bust, and ${large} stands out well past ${small}`, () => {
       const at = (cup: Cup) => fitAnny(data, { sex: "female", heightCm: 165, weightKg: 58, chestCm, cup });
       const b = at(small), f = at(large);
@@ -148,9 +149,21 @@ describe("a cup with a measured bust looks its size (Session 98f: an F looked li
 });
 
 describe("a cup the body cannot carry at that bust", () => {
-  it("is reported as a residual, not hidden (bust 92 with a B: underbust 77 cm on a 58 kg body)", () => {
-    const fit = fitAnny(data, { sex: "female", heightCm: 165, weightKg: 58, chestCm: 92, cup: "B" });
+  it("is reported as a residual, not hidden (bust 84 with an H: an underbust of 57 cm)", () => {
+    const fit = fitAnny(data, { sex: "female", heightCm: 165, weightKg: 58, chestCm: 84, cup: "H" });
     expect(Math.abs(fit.residuals.chest!)).toBeLessThanOrEqual(1);
-    expect(fit.residuals.cup!).toBeGreaterThan(1);
+    expect(fit.residuals.cup!).toBeLessThan(-1);
+  });
+});
+
+describe("the underbust is taken at the breast's fold (ISO 8559-1), Session 98g", () => {
+  it("draws an A cup with breasts: not at Anny's flattest", () => {
+    const fit = fitAnny(data, { sex: "female", heightCm: 165, weightKg: 58, cup: "A" });
+    expect(fit.localWeights["phenotype-cupsize"]!).toBeGreaterThan(-0.8);
+    expect(fit.cupMeasure!.bustCm - fit.cupMeasure!.underbustCm).toBeCloseTo(13, 0);
+  });
+  it("finds Anny's average woman a B by EN 13402", () => {
+    const fit = fitAnny(data, { sex: "female", heightCm: 165, weightKg: 58, cup: "B" });
+    expect(Math.abs(fit.localWeights["phenotype-cupsize"] ?? 0)).toBeLessThan(0.2);
   });
 });

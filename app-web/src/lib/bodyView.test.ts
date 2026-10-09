@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { BODY_TONES, bodyReadiness, fitLink, readFitLink } from "./bodyView";
+import { BODY_TONES, bodyReadiness, fitLink, labToHex, readFitLink, skinHex, toneHex } from "./bodyView";
 
 describe("what unlocks the 3D body", () => {
   it("stays locked without height and weight, and says which are missing", () => {
@@ -21,10 +21,22 @@ describe("what unlocks the 3D body", () => {
   });
 });
 
-describe("body tones", () => {
-  it("are the mannequin's colour, then the ten Monk Skin Tone Scale swatches in order", () => {
-    expect(BODY_TONES.map((t) => t.id)).toEqual(["form", ...Array.from({ length: 10 }, (_, i) => `mst${i + 1}`)]);
-    for (const t of BODY_TONES) expect(t.hex).toMatch(/^#[0-9a-f]{6}$/);
+describe("body tones (measured skin, Session 98g)", () => {
+  it("converts CIELAB correctly: white, mid grey, and a measured mean", () => {
+    expect(labToHex(100, 0, 0)).toBe("#ffffff");
+    expect(labToHex(53.585, 0, 0)).toBe("#808080");
+    // Xiao et al. 2017, Chinese, all sites: L* 58.5, a* 9.8, b* 15.4.
+    expect(labToHex(58.5, 9.8, 15.4)).toBe("#a78672"); // checked with an independent Python conversion
+  });
+  it("are the mannequin's colour, then six lightness steps, lightest first", () => {
+    expect(BODY_TONES.map((t) => t.id)).toEqual(["form", "skin1", "skin2", "skin3", "skin4", "skin5", "skin6"]);
+    const lum = (h: string) => parseInt(h.slice(1, 3), 16) + parseInt(h.slice(3, 5), 16) + parseInt(h.slice(5, 7), 16);
+    for (let i = 2; i < BODY_TONES.length; i++) expect(lum(BODY_TONES[i].hex)).toBeLessThan(lum(BODY_TONES[i - 1].hex));
+  });
+  it("makes a yellow undertone yellower than a pink one at the same lightness", () => {
+    const rb = (h: string) => parseInt(h.slice(1, 3), 16) - parseInt(h.slice(5, 7), 16); // red minus blue: warmth
+    expect(rb(skinHex(2, "yellow"))).toBeGreaterThan(rb(skinHex(2, "pink")));
+    expect(toneHex("form", "yellow")).toBe(BODY_TONES[0].hex);
   });
 });
 

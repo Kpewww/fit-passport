@@ -4,12 +4,12 @@ Run by us, offline, after bake.py (same venv):
 
     .venv/bin/python tools/anny/bake_heads.py      # writes app-web/public/anny/head-*.bin.gz
 
-The founder's choice: a sculpture's face, eyes closed, not a person. Session 98f: one
-face per ancestry Anny models (african, asian, caucasian) for each sex, chosen by the
-wearer on /body and never inferred from anything. Each is Anny's own detailed head
-(its "anny" topology, 13,718 vertices for the whole body) with:
-  - the ancestry phenotype set to 1 for that face (MakeHuman's statistical average
-    faces, CC0), everything else at Anny's defaults;
+The founder's choice: a sculpture's face, eyes closed, not a person. Session 98f/g:
+three faces, A, B and C, for each sex, chosen by the wearer on /body and never
+inferred from anything, named by letter only. Each is Anny's own detailed head (its
+"anny" topology, 13,718 vertices for the whole body) with:
+  - a mix of Anny's three ancestry phenotypes (MakeHuman's statistical average faces,
+    CC0) leaning one way (ANCESTRY below), everything else at Anny's defaults;
   - the eyes closed by Anny's eyeBlink facial actions (ARKit names, CC0 assets);
   - the eyeballs, teeth and tongue left out (they are separate pieces of the mesh;
     only the skin is kept), no hair, no lashes.
@@ -50,10 +50,15 @@ FACIAL = {"eyeBlinkLeft": 1.0, "eyeBlinkRight": 1.0}
 # phenotypes (MakeHuman's african / asian / caucasian targets, CC0) are statistical
 # average faces; averageness and symmetry are what people rate attractive (Langlois &
 # Roggman 1990, Psychological Science 1:115). No real person's likeness is used.
+# Session 98g: the founder found the pure ancestry faces stereotyped ("too
+# stereotyped") and asked for them to be named A, B, C, not by any people. A pure
+# ancestry phenotype is the extreme of MakeHuman's averages; each face here leans one
+# way and keeps the other two, which softens the features. Labels and file names carry
+# only the letter.
 ANCESTRY = {
-    "af": {"african": 1.0, "asian": 0.0, "caucasian": 0.0},
-    "ea": {"african": 0.0, "asian": 1.0, "caucasian": 0.0},
-    "eu": {"african": 0.0, "asian": 0.0, "caucasian": 1.0},
+    "a": {"african": 0.6, "asian": 0.2, "caucasian": 0.2},
+    "b": {"african": 0.2, "asian": 0.6, "caucasian": 0.2},
+    "c": {"african": 0.2, "asian": 0.2, "caucasian": 0.6},
 }
 FACES = [
     {"id": f"{s}-{a}", "sex": sex, "gender": g, "ancestry": a, "locals": {}}

@@ -20,7 +20,7 @@ import { Card, Page, PageHeader } from "@/components/ui";
 import { Check, Lock } from "@/components/Icon";
 import { SafeBoundary } from "@/components/SafeBoundary";
 import { useT } from "@/i18n/client";
-import { BODY_TONES, CUPS, bodyReadiness, readFitLink, type Cup, type FitView, type ReadinessItem, type ToneId } from "@/lib/bodyView";
+import { BODY_TONES, CUPS, UNDERTONES, bodyReadiness, readFitLink, toneHex, type Cup, type FitView, type ReadinessItem, type ToneId, type Undertone } from "@/lib/bodyView";
 import { VERDICT_COLOUR } from "@/lib/fitMapColours";
 import type { AnnyData, AnnyFit } from "@/lib/annyBody";
 import type { Attachment } from "@/components/FitMap3D";
@@ -35,9 +35,9 @@ type Profile = {
 };
 // The body's sex is chosen here (null: the passport's); the head is none or a face of
 // a chosen ancestry; a cup size for a woman's body (Sessions 98d, 98f).
-type Prefs = { kind: "form" | "real"; sex: "female" | "male" | null; head: HeadChoice; tone: ToneId; cup: Cup | null };
+type Prefs = { kind: "form" | "real"; sex: "female" | "male" | null; head: HeadChoice; tone: ToneId; undertone: Undertone; cup: Cup | null };
 const PREFS_KEY = "fp-body3d";
-const DEFAULT_PREFS: Prefs = { kind: "real", sex: null, head: "none", tone: "form", cup: null };
+const DEFAULT_PREFS: Prefs = { kind: "real", sex: null, head: "none", tone: "form", undertone: "neutral", cup: null };
 
 function readPrefs(): Prefs {
   try {
@@ -48,6 +48,7 @@ function readPrefs(): Prefs {
         sex: p.sex === "female" || p.sex === "male" ? p.sex : null,
         head: HEAD_CHOICES.includes(p.head) ? p.head : "none",
         tone: BODY_TONES.some((t) => t.id === p.tone) ? p.tone : "form",
+        undertone: p.undertone in UNDERTONES ? p.undertone : "neutral",
         cup: p.cup && p.cup in CUPS ? p.cup : null,
       };
     }
@@ -182,7 +183,7 @@ export function BodyStudio() {
     return () => ro.disconnect();
   }, [unlocked]);
 
-  const tone = BODY_TONES.find((x) => x.id === prefs.tone)?.hex ?? BODY_TONES[0].hex;
+  const tone = toneHex(prefs.tone, prefs.undertone);
   const zones = fitView && showFit ? fitView.zones : null;
   const formReady = prefs.kind === "form" && (!ready.girthsMissing.length || estimate);
   const canDraw = realBody || formReady;
@@ -333,6 +334,11 @@ export function BodyStudio() {
                 ))}
               </div>
               <p className="mt-1.5 text-[11px] text-ink-faint">{t("cupNote")}</p>
+              {cup && fit?.cupMeasure && (
+                <p className="mt-1 text-[11px] tabular-nums text-ink-soft">
+                  {t("cupDrawn", { bust: fit.cupMeasure.bustCm, under: fit.cupMeasure.underbustCm, diff: Math.round((fit.cupMeasure.bustCm - fit.cupMeasure.underbustCm) * 10) / 10 })}
+                </p>
+              )}
               {cup && fit?.residuals.cup != null && Math.abs(fit.residuals.cup) > 1 && (
                 <p className="mt-1 text-[11px] text-warn">{t("cupResidual", { cup, cm: `${Math.abs(fit.residuals.cup).toFixed(1)} cm` })}</p>
               )}
@@ -362,18 +368,28 @@ export function BodyStudio() {
 
           <section>
             <h2 className="text-sm font-semibold text-ink">{t("toneLabel")}</h2>
-            {/* The mannequin's colour, then the Monk scale's ten tones in its order. */}
-            <div role="radiogroup" aria-label={t("toneLabel")} className="mt-2 grid grid-cols-6 gap-2">
+            {/* The mannequin's colour, then measured skin lightness, drawn in the chosen undertone. */}
+            <div role="radiogroup" aria-label={t("toneLabel")} className="mt-2 grid grid-cols-7 gap-1.5">
               {BODY_TONES.map((x, i) => {
-                const name = x.id === "form" ? t("tones.form") : t("toneN", { n: i });
+                const id = x.id as ToneId;
+                const name = id === "form" ? t("tones.form") : t("toneN", { n: i });
                 return (
-                  <button key={x.id} type="button" role="radio" aria-checked={prefs.tone === x.id} aria-label={name} title={name} onClick={() => choose({ tone: x.id })} className="flex flex-col items-center gap-1">
-                    <span className={`h-8 w-8 rounded-full ring-offset-2 transition ${prefs.tone === x.id ? "ring-2 ring-ink" : "ring-1 ring-ink/15"}`} style={{ background: x.hex }} />
-                    <span className={`text-[10px] tabular-nums ${prefs.tone === x.id ? "font-medium text-ink" : "text-ink-faint"}`}>{x.id === "form" ? t("tones.form") : i}</span>
+                  <button key={id} type="button" role="radio" aria-checked={prefs.tone === id} aria-label={name} title={name} onClick={() => choose({ tone: id })} className="flex flex-col items-center gap-1">
+                    <span className={`h-8 w-8 rounded-full ring-offset-2 transition ${prefs.tone === id ? "ring-2 ring-ink" : "ring-1 ring-ink/15"}`} style={{ background: toneHex(id, prefs.undertone) }} />
+                    <span className={`text-[10px] tabular-nums ${prefs.tone === id ? "font-medium text-ink" : "text-ink-faint"}`}>{id === "form" ? t("tones.form") : i}</span>
                   </button>
                 );
               })}
             </div>
+            {prefs.tone !== "form" && (
+              <div role="radiogroup" aria-label={t("undertoneLabel")} className="mt-2.5 flex rounded-full bg-paper-soft p-1 ring-1 ring-line">
+                {(Object.keys(UNDERTONES) as Undertone[]).map((u) => (
+                  <button key={u} type="button" role="radio" aria-checked={prefs.undertone === u} onClick={() => choose({ undertone: u })} className={segment(prefs.undertone === u)}>
+                    {t(`undertones.${u}`)}
+                  </button>
+                ))}
+              </div>
+            )}
             <p className="mt-1.5 text-[11px] text-ink-faint">{t("toneNote")}</p>
           </section>
 

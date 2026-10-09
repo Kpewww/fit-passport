@@ -917,3 +917,8 @@ the 人台 / 写实 toggle on /check; /outfits preview on the 3D body; the creas
 **Next — founder:** review /body (six faces, the neck stub, cups with and without a measured bust).
 **Engineering after approval:** the 人台 / 写实 toggle on /check; /outfits preview on the 3D body.
 
+## Session 98g (2026-10-09) — real cups, faces A/B/C, measured skin, DONE
+
+**Next — founder:** choose a realistic-head route (`todo/engineering/15-realistic-heads.md`; MetaHuman needs someone
+to run Unreal 5.6 and Epic's EULA read). **Engineering:** that route; the 人台 / 写实 toggle on /check after approval.
+

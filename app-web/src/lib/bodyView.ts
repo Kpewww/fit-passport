@@ -1,8 +1,7 @@
 // What /body ("my 3D body", Session 98 phase 3) shows, decided without a DOM.
 //
-//   - BODY_TONES: the body's colour. The mannequin's own first; then the ten tones of
-//     the Monk Skin Tone Scale, numbered as the scale numbers them, never named after
-//     people (no ancestry is implied by any of them).
+//   - BODY_TONES: the body's colour. The mannequin's own first; then measured human
+//     skin (skinHex), by number and undertone, never named after people.
 //   - bodyReadiness: what the passport holds, what it unlocks, what is still missing.
 //     Height and weight are enough for a first, rough body; each girth after that
 //     makes it the wearer's own.
@@ -11,24 +10,55 @@
 
 import { FORM_COLOUR, type Verdict, type Zone, type ZoneKey } from "./fitMapColours";
 
+/**
+ * Skin as people actually measure (Session 98g). The Monk swatches used before are
+ * design colours: MST 3 is L* 93, where measured skin sits near L* 58-65, so as a
+ * surface colour under physical light they came out washed out, and the founder found
+ * them unreal ("the East Asian skin is not right either").
+ *
+ * Measured, by spectrophotometer, in CIELAB:
+ *   - Xiao et al. 2017, Skin Res Technol 23:21-29, Table 2 (960 people, 4 sites):
+ *     means L* 58.0-60.5, a* 9.0-9.8, b* 14.6-17.9;
+ *   - Everett, Budescu & Sommers 2012, Clin Nurs Res 21:495, Table 1 (237 women,
+ *     forearm): L* 65.0 / 59.5 / 47.3 (SD 7.7), a* 7.1-9.4, b* 17.4-20.1.
+ * Redness hardly differs between people (a* about 9); lightness and yellowness do. So:
+ * six lightness steps over the measured range (L* 70 to 33), and three undertones that
+ * move a* and b* within the measured spread. Named by number and undertone only.
+ */
+export const SKIN_LIGHTNESS = [70, 63, 56, 49, 41, 33] as const;
+export const UNDERTONES = { pink: { da: 1.2, db: -3 }, neutral: { da: 0, db: 0 }, yellow: { da: -0.8, db: 2.8 } } as const;
+export type Undertone = keyof typeof UNDERTONES;
+
+/** CIELAB (D65) to an sRGB hex. */
+export function labToHex(L: number, a: number, b: number): string {
+  const fy = (L + 16) / 116, fx = fy + a / 500, fz = fy - b / 200;
+  const inv = (t: number) => (t ** 3 > 0.008856 ? t ** 3 : (t - 16 / 116) / 7.787);
+  const X = 0.95047 * inv(fx), Y = inv(fy), Z = 1.08883 * inv(fz);
+  const lin = [3.2406 * X - 1.5372 * Y - 0.4986 * Z, -0.9689 * X + 1.8758 * Y + 0.0415 * Z, 0.0557 * X - 0.204 * Y + 1.057 * Z];
+  return "#" + lin.map((c) => {
+    const v = Math.max(0, Math.min(1, c));
+    return Math.round((v <= 0.0031308 ? 12.92 * v : 1.055 * v ** (1 / 2.4) - 0.055) * 255).toString(16).padStart(2, "0");
+  }).join("");
+}
+
+/** A skin colour: lightness step 1 (lightest) to 6, in an undertone. Yellowness rises a
+ *  little as skin darkens, as both studies found (b* 17 at L* 65 to about 20 at 47). */
+export function skinHex(step: number, undertone: Undertone): string {
+  const L = SKIN_LIGHTNESS[Math.max(1, Math.min(6, step)) - 1];
+  const u = UNDERTONES[undertone];
+  return labToHex(L, 9 + u.da, 17 + (65 - L) * 0.1 + u.db);
+}
+
 export const BODY_TONES = [
   { id: "form", hex: FORM_COLOUR },
-  // The Monk Skin Tone Scale's ten swatches, 1 (lightest) to 10 (darkest): Dr. Ellis
-  // Monk with Google, released under CC BY 4.0 (skintone.google; the values as listed
-  // on Wikipedia's "Monk Skin Tone Scale", which cites Google's MST swatches page,
-  // fetched 2026-10-09). The founder asked for real human skin tones (Session 98d).
-  { id: "mst1", hex: "#f6ede4" },
-  { id: "mst2", hex: "#f3e7db" },
-  { id: "mst3", hex: "#f7ead0" },
-  { id: "mst4", hex: "#eadaba" },
-  { id: "mst5", hex: "#d7bd96" },
-  { id: "mst6", hex: "#a07e56" },
-  { id: "mst7", hex: "#825c43" },
-  { id: "mst8", hex: "#604134" },
-  { id: "mst9", hex: "#3a312a" },
-  { id: "mst10", hex: "#292420" },
+  ...SKIN_LIGHTNESS.map((_, i) => ({ id: `skin${i + 1}` as const, hex: skinHex(i + 1, "neutral") })),
 ] as const;
-export type ToneId = (typeof BODY_TONES)[number]["id"];
+export type ToneId = "form" | `skin${1 | 2 | 3 | 4 | 5 | 6}`;
+
+/** The colour drawn for a tone choice and an undertone. */
+export function toneHex(tone: ToneId, undertone: Undertone): string {
+  return tone === "form" ? FORM_COLOUR : skinHex(Number(tone.slice(4)), undertone);
+}
 
 export type BodyFacts = {
   heightCm?: number | null;

@@ -219,14 +219,42 @@ function fullestBust(pos: Float32Array, data: AnnyData, chestY: number, height: 
   return best;
 }
 
-/** Underbust: the narrowest torso girth in a band just under the bust, as a tape finds it. */
-function underbustAt(pos: Float32Array, data: AnnyData, bustY: number, height: number): number {
-  let best = Infinity;
-  for (let f = 0.015; f <= 0.075; f += 0.005) {
-    const g = girthAt(pos, data.indices, data.regions, bustY - f * height, [REGION.torso]);
-    if (g > 0) best = Math.min(best, g);
+/**
+ * The breast's vertices: the ones Anny's own cup change moves (more than a fifth of its
+ * largest move). Where they end below is the inframammary fold.
+ */
+const breastCache = new WeakMap<AnnyData, number[]>();
+function breastVertices(data: AnnyData): number[] {
+  const had = breastCache.get(data);
+  if (had) return had;
+  const k = data.meta.locals.indexOf(CUP_LOCAL);
+  const out: number[] = [];
+  if (k >= 0) {
+    const d = data.locals[k][0];
+    const mag = (v: number) => Math.hypot(d[v * 3], d[v * 3 + 1], d[v * 3 + 2]);
+    let max = 0;
+    for (let v = 0; v < data.regions.length; v++) if (data.regions[v] === REGION.torso) max = Math.max(max, mag(v));
+    for (let v = 0; v < data.regions.length; v++) if (data.regions[v] === REGION.torso && mag(v) > 0.2 * max) out.push(v);
   }
-  return best === Infinity ? 0 : best;
+  breastCache.set(data, out);
+  return out;
+}
+
+/**
+ * Underbust, as ISO 8559-1 defines it: the girth immediately below the breasts, at the
+ * inframammary fold. The first version took the narrowest girth anywhere in a band
+ * under the bust, which reached the ribcage's taper towards the waist: a man's chest
+ * measured 13.5 cm bust minus underbust, an A cup, so an "A" was drawn flat (the
+ * founder: "A and B look too small", Session 98g).
+ */
+function underbustAt(pos: Float32Array, data: AnnyData, bustY: number, height: number): number {
+  const breast = breastVertices(data);
+  let fold = bustY - 0.04 * height;
+  if (breast.length) {
+    const ys = breast.map((v) => pos[v * 3 + 1]).sort((a, b) => a - b);
+    fold = ys[Math.floor(ys.length * 0.05)]; // the lowest, past a stray vertex or two
+  }
+  return girthAt(pos, data.indices, data.regions, Math.min(fold - 0.5, bustY - 1), [REGION.torso]);
 }
 
 export type AnnyFit = {
@@ -235,6 +263,8 @@ export type AnnyFit = {
   residuals: Partial<Record<"chest" | "waist" | "hip" | "shoulder" | "height" | "cup", number>>;
   phenotype: Phenotype;
   localWeights: Record<string, number>;
+  /** With a cup: the drawn body's bust and underbust, cm, so the page can show them. */
+  cupMeasure?: { bustCm: number; underbustCm: number };
 };
 
 export function fitAnny(data: AnnyData, m: BodyMeasurementsInput & { weightKg?: number | null; cup?: Cup | null }): AnnyFit {
@@ -357,7 +387,11 @@ export function fitAnny(data: AnnyData, m: BodyMeasurementsInput & { weightKg?: 
   const fitted = withLocals(base, data, weights);
   const residuals: AnnyFit["residuals"] = {};
   for (const t of targets) residuals[t.key] = Math.round((measure(fitted, t.key) - t.cm) * 10) / 10;
-  if (cupTarget != null) residuals.cup = Math.round((cupDiff(fitted) - cupTarget) * 10) / 10;
+  let cupMeasure: AnnyFit["cupMeasure"];
+  if (cupTarget != null) {
+    residuals.cup = Math.round((cupDiff(fitted) - cupTarget) * 10) / 10;
+    cupMeasure = { bustCm: Math.round(bustOf(fitted).g * scale * 10) / 10, underbustCm: Math.round(underbust(fitted) * 10) / 10 };
+  }
 
   // Feet on the ground, in the wearer's centimetres.
   const out = new Float32Array(fitted.length);
@@ -377,6 +411,7 @@ export function fitAnny(data: AnnyData, m: BodyMeasurementsInput & { weightKg?: 
     residuals,
     phenotype,
     localWeights,
+    cupMeasure,
   };
 }
 

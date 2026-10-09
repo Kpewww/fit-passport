@@ -1445,3 +1445,9 @@ body rim snapped to the face's by angle, 3 cm ease, skirt). Cups A–J (CUP_MAX 
 measured bust + cup → 3-lever weighted min-norm Newton (cup, underbust, bust-circ); a woman's bust is the fullest
 girth. Body drawn through `roundBody` (PN ×2 + torso Taubin), girths kept within 1.5%.
 
+**SESSION 98g (2026-10-09).** → **1,315 tests**. Underbust = girth at the inframammary fold (lowest vertices the cup
+change moves; ISO 8559-1), not the narrowest girth below; an A is no longer flat; `cupMeasure` printed. Faces are
+`{f,m}-{a,b,c}` (ancestry mixes 0.6/0.2/0.2), labelled 面孔 A/B/C only. Skin = measured CIELAB (Xiao 2017, Everett
+2012): 6 lightness × 3 undertones (`skinHex`, `labToHex`); Monk removed. Headless cut at the neck's narrowest.
+Realistic heads: options in `todo/engineering/15-realistic-heads.md` (MetaHuman recommended; never a real likeness).
+

@@ -10,22 +10,15 @@ import { girthAt, type AnnyData } from "./annyBody";
 import { ellipsoidOf, withoutEllipsoid } from "./annyHead";
 import { REGION, type BodyGeometryData } from "./fitMapColours";
 
-/**
- * How far up the neck the cut is, from where the neck starts to the jaw. Measured on a
- * 160 cm woman (Session 98f): the girth narrows over the trapezius from 71 to 30 cm in
- * the lower 58% of shoulder-to-jaw, so the neck proper is only the top part. The first
- * cut (at 60%) sat at its base and showed no neck; three quarters up leaves 3-4 cm.
- */
-export const NECK_STUB_FRACTION = 0.75;
 const RIM_TUCK_CM = 3;
 const RIM_TUCK = 0.12;
 
 /**
  * Height of the cut, in the body's space. The founder: leave a little neck, like a shop
- * mannequin (Session 98f). So the neck's own base is found first: going up from the
- * shoulder line, the torso's cross-section narrows from the shoulders to the neck, and
- * the base is the first height where it is within 15% of the neck's narrowest girth.
- * The cut is a short way above that, so the cap is the neck's and never the shoulders'.
+ * mannequin (Session 98f). Measured on a 160 cm woman: going up from the shoulder line
+ * the girth narrows over the trapezius from 71 to 30 cm in the lower 58% of
+ * shoulder-to-jaw; the first cut (at 60%) sat at the neck's base and showed no neck,
+ * the second (three quarters up the neck) caught the jaw. The cut is at the narrowest.
  */
 export function neckCutY(body: BodyGeometryData, data: AnnyData): number {
   const range = data.meta.headEllipsoid?.vertices;
@@ -41,9 +34,12 @@ export function neckCutY(body: BodyGeometryData, data: AnnyData): number {
     const y = shoulder + ((jaw - shoulder) * i) / steps;
     girths.push([y, girthAt(body.positions, tri, regions, y, [REGION.torso, REGION.head])]);
   }
-  const neck = Math.min(...girths.filter(([, g]) => g > 0).map(([, g]) => g));
-  const base = girths.find(([, g]) => g > 0 && g <= neck * 1.15)?.[0] ?? shoulder;
-  return base + NECK_STUB_FRACTION * (jaw - base);
+  // The neck's narrowest point: a shop mannequin is cut there. Above it the girth
+  // widens again into the jaw, and a cut higher up left a piece of chin on the
+  // headless body (the founder, Session 98g).
+  const valid = girths.filter(([, g]) => g > 0);
+  const narrowest = valid.reduce((best, p) => (p[1] < best[1] ? p : best));
+  return narrowest[0];
 }
 
 /** Clip triangles to one side of the plane y = level, keeping the winding; new vertices
