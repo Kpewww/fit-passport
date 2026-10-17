@@ -36,19 +36,31 @@ shows its one stat's source on screen.
 1. **24.5%**: Appriss Retail & Deloitte, *2024 Consumer Returns in the Retail Industry*.
    Return rate from online sales 24.52% ($362.16B), all categories, US. Read from the PDF.
 2. **#1, 53%**: Coresight Research, *The True Cost of Apparel Returns* (Apr 4, 2023).
-   Size/fit is the top reason online apparel is returned, cited by 53% of 100 US
-   apparel brand and retailer decision-makers. Sponsored by 3DLOOK.
+   Size/fit is the most-cited reason online apparel is returned: 53% of 100 US apparel
+   brand and retailer decision-makers cited it. This is an industry survey, not one of
+   ours, and it was sponsored by 3DLOOK.
 3. **34%**: Tinuiti, *2024 Apparel Marketing Study*. 34% of apparel shoppers ordered
    multiple sizes or variations in the past year. The sample size is not published.
 
 The product claims ("Built and live") were checked against the code and the live site:
 
-- US, EU and UK sizes, and Chinese size codes (not JP);
-- 103 garment types covering 358 platform category names;
-- the 3D body fitted to within 1 cm.
+- the site is live and the extension is on the Chrome Web Store;
+- it handles US, EU and UK sizes, and Chinese size codes (not JP);
+- it offers a 3D fit view based on your measurements.
 
-No customer interviews have been run yet. The poster says so, and lists the plan and its
-pass/fail criteria as hypotheses.
+**Kept off on purpose (founder's review, Oct 16):**
+- **The 3D body's 1 cm fit.** It is how closely the model matches the numbers typed in,
+  not how accurate a recommendation is, so it is left for questions on the night.
+- **103 types / 358 names, the pricing, and the retailer-engine pivot condition.** Too
+  much for a 10-second read; they belong in our own discussion material.
+- **Absolute coverage claims.** It is not "One click on any product page": the
+  extension asks before it sends, and some pages need the size chart opened or a
+  re-scan.
+- **The privacy line.** It reads "never shared with other users", not "never leave your
+  account". Measurements are stored on our server; they are never shown to other users.
+
+No customer interviews have been run yet. The poster says so, and lists the next tests as
+hypotheses: will shoppers build a fit profile, and will they come back to it?
 
 ## Logos
 

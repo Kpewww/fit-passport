@@ -1,7 +1,7 @@
 import { chromium } from "playwright";
 const b = await chromium.launch();
 const p = await b.newPage({ viewport: { width: 2304, height: 3456 } });
-await p.goto("file://" + new URL(".poster.built.html", import.meta.url).pathname, { waitUntil: "networkidle" });
+await p.goto("file://" + new URL("poster.html", import.meta.url).pathname, { waitUntil: "networkidle" });
 await p.evaluate(() => document.fonts.ready);
 console.log(JSON.stringify(await p.evaluate(() => {
   const r = (q) => { const e = document.querySelector(q); const b = e.getBoundingClientRect(); return [Math.round(b.top), Math.round(b.bottom)]; };

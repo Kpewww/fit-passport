@@ -201,7 +201,7 @@ await scene("body", "fitpassport.fit/body", async (p, { record, mark, caption })
   await record();
   await p.waitForTimeout(300);
   mark("start");
-  caption("A body fitted to your numbers. They never leave your account.");
+  caption("A 3D fit view based on your measurements.");
   await drag(p, b.x + b.width * 0.3, b.y + b.height * 0.5, b.width * 0.45, 1400);
   await p.waitForTimeout(500);
   await clickAt(p, p.getByRole("radio", { name: "Skin tone 3", exact: true }), 800);

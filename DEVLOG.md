@@ -128,6 +128,25 @@ stage page was blank, because it only draws when the renderer calls `render()`.
 - Opened in a normal browser (`navigator.webdriver` false), `stage.html` scales to the
   window and loops the drawn scenes. A note points to the MP4 for the recorded product.
 
+**Follow-up: the founder's review before submission.** The direction stays. Changes,
+on the poster and in the video:
+- **Absolute coverage softened.**
+  - "One click on any product page" became "Check your fit while you shop": the
+    extension asks before it sends, and some pages need the chart opened or a re-scan.
+  - The lede's "tells you what to buy at any store" became "helps you choose a size
+    across stores, with clear reasons".
+- **"1 cm" removed.** It is the model's fit to the typed numbers and could be read as
+  recommendation accuracy. It now says "a 3D fit view based on your measurements".
+- **Section 03 lighter.** Dropped 103 types / 358 names, the pricing and the
+  retailer-engine pivot. "Next" now asks whether shoppers will build a fit profile and
+  come back to it.
+- **Privacy corrected.** "Never leave your account" became "never shared with other
+  users", because measurements are stored server-side.
+- **The 53% stat.** It now says it is the most-cited reason in Coresight's survey of
+  brands and retailers, so it cannot be mistaken for our own research.
+- **Refit.** The longer copy overflowed (3555 px). Shortening the lede and dropping the
+  "Learns" line brought it back to 3456 exactly.
+
 **Next:**
 - **Founder:**
   - check the event date on Canvas;
