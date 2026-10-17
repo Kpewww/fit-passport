@@ -120,6 +120,14 @@ is piped into ffmpeg.
 - **A full-page screenshot at DPR 3 fails** ("Unable to capture screenshot"). Use clips
   at 3×, full pages at 1×.
 
+**Follow-up: the sources open on their own.** The founder opened `poster.html` and
+`stage.html` directly. The poster showed the literal `{{FP_MARK}}` placeholder, and the
+stage page was blank, because it only draws when the renderer calls `render()`.
+- The mark is now inlined in both files, so the build no longer writes `.built.html`
+  copies.
+- Opened in a normal browser (`navigator.webdriver` false), `stage.html` scales to the
+  window and loops the drawn scenes. A note points to the MP4 for the recorded product.
+
 **Next:**
 - **Founder:**
   - check the event date on Canvas;

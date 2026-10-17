@@ -6,17 +6,13 @@
 // page loads Fraunces and Inter from Google Fonts, so it needs a network connection.
 
 import { chromium } from "playwright";
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { mkdirSync } from "node:fs";
 
 const here = new URL(".", import.meta.url).pathname;
 const out = new URL("../out/", import.meta.url).pathname;
 mkdirSync(out, { recursive: true });
 
-// The mark inline, so it takes the header's colour (its path is fill="currentColor").
-const mark = readFileSync(here + "assets/fp-mark.svg", "utf8").replace(/<\?xml[^>]*>/, "").replace(/<title[^>]*>[^<]*<\/title>/, "");
-const html = readFileSync(here + "poster.html", "utf8").replace("{{FP_MARK}}", mark);
-const page_ = here + ".poster.built.html";
-writeFileSync(page_, html);
+const page_ = here + "poster.html";
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 2304, height: 3456 } });

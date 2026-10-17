@@ -20,8 +20,6 @@ const final = new URL("../out/", import.meta.url).pathname;
 const FFMPEG = process.env.FFMPEG ?? "ffmpeg";
 const FPS = 30;
 const ORDER = ["title", "problem", "extension", "app", "end"];
-const mark = readFileSync(here + "assets/fp-mark.svg", "utf8").replace(/<\?xml[^>]*>/, "").replace(/<title[^>]*>[^<]*<\/title>/, "");
-writeFileSync(here + ".stage.built.html", readFileSync(here + "stage.html", "utf8").replaceAll("{{FP_MARK}}", mark));
 
 // The recorded product: segments (check, closet, body) laid end to end.
 const ease = (x) => { x = Math.max(0, Math.min(1, x)); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
@@ -53,7 +51,7 @@ function appSpec(t) {
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-await page.goto("file://" + here + ".stage.built.html", { waitUntil: "networkidle" });
+await page.goto("file://" + here + "stage.html", { waitUntil: "networkidle" });
 await page.evaluate(() => document.fonts.ready);
 const durations = { ...(await page.evaluate(() => window.DURATIONS)), app: segs.reduce((a, s) => a + s.dur, 0) };
 const draw = async (scene, t) => {

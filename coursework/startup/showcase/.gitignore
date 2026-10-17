@@ -1,7 +1,5 @@
-# Playwright is linked in locally (README, "Rebuilding"); the pages are built copies.
+# Playwright is linked in locally (README, "Rebuilding").
 node_modules
-.poster.built.html
-.stage.built.html
 
 # Rebuilt from source: the MP4, the 150 dpi PNG, screenshots and recorded frames.
 out/*
