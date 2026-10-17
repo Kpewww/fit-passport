@@ -928,3 +928,13 @@ to run Unreal 5.6 and Epic's EULA read). **Engineering:** that route; the 人台
 likeness), export the heads as .glb or .fbx, send them. **Engineering:** run `selftest.py`, then
 `bake_metahuman_heads.py <folder> --keep-eyes` (statue eyes unless the files have closed eyes), review, ship.
 
+
+## Session 99 (2026-10-16) — showcase poster + demo video, DRAFTS DONE
+
+`coursework/startup/showcase/` (README: deadlines, sources, rebuild). Poster PDF 24 × 36 in; video 54 s.
+**Next — founder:** check the event date on Canvas (email says "Tuesday, Nov 4"; 2026-11-04 is a Wednesday);
+upload the PDF + MP4 by **Oct 18**; **do not print before Professor Root and the TA approve** (proof photo
+Oct 28); swap in course-provided logo files if any. **Engineering after the showcase:** /closet + /check bundle
+split (todo/eng/13); 人台 / 写实 toggle on /check; /outfits 3D preview; per-size height/weight ranges as a weak
+signal (todo 11; 03 and 10 stay blocked on real pages). Still open from before: extension 0.9.1 upload; six
+MetaHuman faces; /body review.

@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Fit Passport demo — stage scenes</title>
+<!-- The video's drawn scenes (Session 99): title, problem, the extension, the live
+     product (frames recorded by record-app.mjs, drawn inside the same window), end card.
+     render.mjs calls window.render(scene, t) for every frame at 30 fps and screenshots
+     it, so every frame is exact. Brand: ink, porcelain, one cobalt; Fraunces + Inter.
+     The product picture is the real page's own details column (no logo, no model);
+     the two popups are screenshots of the real extension on that page. -->
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700&display=block" rel="stylesheet" />
+<style>
+  :root { --ink: #17181c; --paper: #f3f3f1; --soft: #4c4e57; --faint: #6b6d77; --line: #e2e3e7; --brand: #2438d6; --brand-dark: #8f9cf6; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 1920px; height: 1080px; overflow: hidden; }
+  body { font-family: Inter, sans-serif; -webkit-font-smoothing: antialiased; }
+  .scene { position: absolute; inset: 0; display: none; }
+  .serif { font-family: Fraunces, serif; font-variation-settings: "opsz" 144; }
+  .caption { position: absolute; left: 50%; bottom: 72px; transform: translateX(-50%); background: rgba(23,24,28,0.88); color: #fff; font-size: 40px; font-weight: 500; letter-spacing: -0.005em; padding: 22px 40px; border-radius: 999px; white-space: nowrap; opacity: 0; }
+  .mark svg { width: 100%; height: auto; }
+
+  /* title */
+  #title { background: var(--ink); color: var(--paper); }
+  #title .brand { position: absolute; left: 140px; top: 110px; display: flex; gap: 20px; align-items: center; }
+  #title .brand .mark { width: 64px; color: var(--paper); }
+  #title .brand span { font-family: Fraunces, serif; font-style: italic; font-size: 46px; }
+  #title h1 { position: absolute; left: 140px; top: 330px; font-size: 220px; line-height: 0.95; font-weight: 400; letter-spacing: -0.035em; }
+  #title h1 em { color: var(--brand-dark); }
+
+  /* problem */
+  #problem { background: var(--paper); color: var(--ink); }
+  #problem .card { position: absolute; left: 120px; top: 170px; width: 960px; background: #fff; border-radius: 28px; box-shadow: 0 24px 60px rgba(23,24,28,0.10); padding: 30px 30px 96px; }
+  #problem .card img { width: 900px; display: block; }
+  #problem .ring { position: absolute; border: 6px solid var(--brand); border-radius: 10px; opacity: 0; }
+  #problem .q { position: absolute; font-family: Fraunces, serif; font-style: italic; font-size: 64px; color: var(--brand); opacity: 0; }
+  #problem .right { position: absolute; left: 1180px; top: 210px; width: 640px; }
+  #problem .right h2 { font-size: 96px; line-height: 1; font-weight: 400; letter-spacing: -0.03em; }
+  #problem .stat { margin-top: 70px; border-top: 2px solid var(--ink); padding-top: 30px; }
+  #problem .stat b { display: block; font-family: Fraunces, serif; font-weight: 400; font-size: 150px; line-height: 0.9; letter-spacing: -0.04em; }
+  #problem .stat p { font-size: 34px; color: var(--soft); margin-top: 16px; }
+  #problem .stat small { display: block; font-size: 20px; color: var(--faint); margin-top: 14px; }
+
+  /* the browser window: the extension scene and the app scene */
+  #extension, #app { background: #dfe1e6; }
+  .win { position: absolute; left: 90px; top: 50px; width: 1740px; height: 900px; background: #fff; border-radius: 22px; overflow: hidden; box-shadow: 0 30px 80px rgba(23,24,28,0.18); }
+  .bar { height: 76px; background: #f3f4f6; border-bottom: 1px solid var(--line); display: flex; align-items: center; padding: 0 26px; gap: 14px; }
+  .dot { width: 16px; height: 16px; border-radius: 50%; background: #d4d6db; }
+  .url { margin-left: 28px; flex: 1; height: 44px; border-radius: 22px; background: #fff; border: 1px solid var(--line); display: flex; align-items: center; padding: 0 22px; font-size: 22px; color: var(--soft); }
+  .ext { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: transparent; }
+  .ext .mark { width: 30px; color: var(--ink); }
+  #extension .page img { position: absolute; left: 150px; top: 200px; width: 1000px; }
+  #extension .pop { position: absolute; width: 400px; top: 136px; right: 112px; border-radius: 14px; overflow: hidden; box-shadow: 0 24px 60px rgba(23,24,28,0.25); opacity: 0; }
+  #extension .pop img { display: block; width: 400px; }
+  #extension .press { position: absolute; border-radius: 50%; background: rgba(36,56,214,0.25); width: 0; height: 0; opacity: 0; transform: translate(-50%, -50%); }
+  /* The recorded product: frames of 1740 x 824, exactly the window's content area. */
+  #app .view { position: absolute; left: 0; top: 76px; width: 1740px; height: 824px; background: var(--paper); }
+  #app .view img { position: absolute; inset: 0; width: 1740px; height: 824px; }
+  .cursor { position: absolute; width: 38px; height: 38px; z-index: 10; }
+
+  /* end */
+  #end { background: var(--ink); color: var(--paper); text-align: center; }
+  #end .mark { width: 120px; margin: 250px auto 0; color: var(--paper); }
+  #end .name { font-family: Fraunces, serif; font-style: italic; font-size: 64px; margin-top: 24px; }
+  #end h2 { font-size: 92px; font-weight: 400; letter-spacing: -0.03em; margin-top: 70px; }
+  #end h2 em { color: var(--brand-dark); }
+  #end p { font-size: 34px; color: #c4c6cc; margin-top: 46px; }
+  #end small { position: absolute; left: 0; right: 0; bottom: 70px; font-size: 22px; color: #8d8f97; letter-spacing: 0.04em; }
+</style>
+</head>
+<body>
+  <!-- title -->
+  <div class="scene" id="title">
+    <div class="brand"><div class="mark">{{FP_MARK}}</div><span>Fit Passport</span></div>
+    <h1 class="serif"><span class="l1">A medium is</span><br /><span class="l2">a <em>guess.</em></span></h1>
+  </div>
+
+  <!-- problem -->
+  <div class="scene" id="problem">
+    <div class="card"><img src="assets/product-column.png" alt="" /></div>
+    <div class="ring" id="ringM"></div><div class="ring" id="ringL"></div>
+    <div class="q" id="qM">?</div><div class="q" id="qL">?</div>
+    <div class="right">
+      <h2 class="serif">M or L?</h2>
+      <div class="stat"><b>24.5%</b><p>of US online sales were returned in 2024.</p><small>Appriss Retail &amp; Deloitte, 2024 Consumer Returns in the Retail Industry</small></div>
+    </div>
+    <div class="caption" id="capP">Every brand sizes differently. Many shoppers buy two and send one back.</div>
+  </div>
+
+  <!-- extension -->
+  <div class="scene" id="extension">
+    <div class="win">
+      <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><div class="url">uniqlo.com/us/en/products/airism-cotton-t-shirt</div><div class="ext" id="extIcon"><div class="mark">{{FP_MARK}}</div></div></div>
+      <div class="page"><img src="assets/product-column.png" alt="" /></div>
+      <div class="pop" id="pop1"><img src="assets/popup-found.png" alt="" /></div>
+      <div class="pop" id="pop2"><img src="assets/popup-result.png" alt="" /></div>
+    </div>
+    <div class="press" id="press"></div>
+    <svg class="cursor" id="cursor" viewBox="0 0 24 24"><path d="M4 2 L4 19 L8.6 14.8 L11.6 21.4 L14.4 20.2 L11.4 13.7 L17.6 13.7 Z" fill="#17181c" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg>
+    <div class="caption" id="capE1">One click on any product page.</div>
+    <div class="caption" id="capE2">It reads the size chart in your browser. Only the product is sent.</div>
+  </div>
+
+  <!-- the live product, recorded by record-app.mjs -->
+  <div class="scene" id="app">
+    <div class="win">
+      <div class="bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><div class="url" id="appUrl"></div><div class="ext"><div class="mark">{{FP_MARK}}</div></div></div>
+      <div class="view"><img id="appA" alt="" /><img id="appB" alt="" /></div>
+    </div>
+    <div class="caption" id="capA0"></div><div class="caption" id="capA1"></div>
+  </div>
+
+  <!-- end -->
+  <div class="scene" id="end">
+    <div class="mark">{{FP_MARK}}</div>
+    <div class="name">Fit Passport</div>
+    <h2 class="serif">One body. One fit identity. <em>Any store.</em></h2>
+    <p>fitpassport.fit &nbsp;·&nbsp; Free on the Chrome Web Store</p>
+    <small>Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang &nbsp;—&nbsp; Carnegie Mellon University Silicon Valley · Integrated Innovation Institute</small>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+  const clamp = (x) => Math.max(0, Math.min(1, x));
+  const ease = (x) => { x = clamp(x); return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2; };
+  // 0 before a, rising to 1 by b, falling back to 0 between c and d.
+  const window_ = (t, a, b, c = null, d = null) => {
+    const rise = ease((t - a) / (b - a));
+    return c == null ? rise : Math.min(rise, 1 - ease((t - c) / (d - c)));
+  };
+  const show = (el, o, y = 0) => { el.style.opacity = o; el.style.transform = (el.classList.contains("caption") ? "translateX(-50%) " : "") + `translateY(${(1 - o) * y}px)`; };
+  const lerp = (a, b, x) => a + (b - a) * x;
+
+  window.DURATIONS = { title: 4, problem: 5.5, extension: 11, end: 4.5 };
+
+  // spec = { url, a: frame path, b: the previous segment's last frame (crossfade) or null,
+  //         bo: its opacity, caps: [{ text, o }] }. Waits for the pictures to decode.
+  window.renderApp = async (spec) => {
+    for (const s of document.querySelectorAll(".scene")) s.style.display = s.id === "app" ? "block" : "none";
+    $("appUrl").textContent = spec.url;
+    const set = async (img, src) => { if (img.dataset.src !== src) { img.dataset.src = src; img.src = "file://" + src; await img.decode(); } };
+    await set($("appA"), spec.a);
+    if (spec.b) await set($("appB"), spec.b);
+    $("appB").style.opacity = spec.b ? spec.bo : 0;
+    for (let i = 0; i < 2; i++) {
+      const c = spec.caps[i], el = $("capA" + i);
+      if (c && c.o > 0) { el.textContent = c.text; show(el, c.o, 16); } else el.style.opacity = 0;
+    }
+  };
+
+  window.render = (scene, t) => {
+    for (const s of document.querySelectorAll(".scene")) s.style.display = s.id === scene ? "block" : "none";
+    if (scene === "title") {
+      show(document.querySelector("#title .brand"), window_(t, 0.1, 0.8), 14);
+      show(document.querySelector("#title .l1"), window_(t, 0.3, 1.1), 40);
+      show(document.querySelector("#title .l2"), window_(t, 0.7, 1.5), 40);
+      document.querySelector("#title .l1").style.display = "inline-block";
+      document.querySelector("#title .l2").style.display = "inline-block";
+    }
+    if (scene === "problem") {
+      // The picture is 1110 × 642 drawn at 900 wide, inside the card's 30 px padding.
+      const s = 900 / 1110, ox = 120 + 30, oy = 170 + 30;
+      const box = (el, x0, y0, x1, y1) => Object.assign(el.style, { left: ox + x0 * s - 10 + "px", top: oy + y0 * s - 10 + "px", width: (x1 - x0) * s + 20 + "px", height: (y1 - y0) * s + 20 + "px" });
+      box($("ringM"), 313, 495, 442, 627); box($("ringL"), 468, 507, 576, 614);
+      Object.assign($("qM").style, { left: ox + 360 * s + "px", top: oy + 640 * s + "px" });
+      Object.assign($("qL").style, { left: ox + 505 * s + "px", top: oy + 640 * s + "px" });
+      const m = window_(t, 0.5, 0.9, 2.2, 2.5), l = window_(t, 1.6, 2.0, 3.4, 3.7);
+      $("ringM").style.opacity = m; $("qM").style.opacity = m; $("ringL").style.opacity = l; $("qL").style.opacity = l;
+      $("ringM").style.opacity = Math.max(m, window_(t, 3.6, 4.0)); $("qM").style.opacity = Math.max(m, window_(t, 3.6, 4.0));
+      $("ringL").style.opacity = Math.max(l, window_(t, 3.6, 4.0)); $("qL").style.opacity = Math.max(l, window_(t, 3.6, 4.0));
+      show(document.querySelector("#problem .right h2"), window_(t, 0.2, 0.8), 30);
+      show(document.querySelector("#problem .stat"), window_(t, 1.2, 1.9), 30);
+      show($("capP"), window_(t, 0.6, 1.1, 5.0, 5.4), 16);
+    }
+    if (scene === "extension") {
+      // Cursor path: from the page to the toolbar icon, click; to "Check my size", click.
+      const icon = { x: 90 + 1740 - 26 - 24 - 6, y: 50 + 38 };
+      const btn = { x: 90 + 1740 - 112 - 400 + 82, y: 50 + 136 + 252 };
+      const start = { x: 900, y: 700 };
+      const rest = { x: 1262, y: 720 };
+      let p;
+      if (t < 0.6) p = start;
+      else if (t < 1.8) { const k = ease((t - 0.6) / 1.2); p = { x: lerp(start.x, icon.x, k), y: lerp(start.y, icon.y, k) }; }
+      else if (t < 4.6) p = icon;
+      else if (t < 5.8) { const k = ease((t - 4.6) / 1.2); p = { x: lerp(icon.x, btn.x, k), y: lerp(icon.y, btn.y, k) }; }
+      else if (t < 6.8) p = btn;
+      else if (t < 7.8) { const k = ease((t - 6.8) / 1.0); p = { x: lerp(btn.x, rest.x, k), y: lerp(btn.y, rest.y, k) }; }
+      else p = rest;
+      Object.assign($("cursor").style, { left: p.x - 6 + "px", top: p.y - 4 + "px" });
+      // Clicks: a ripple where the cursor presses.
+      const click = (at) => { const k = clamp((t - at) / 0.45); return k > 0 && k < 1 ? k : 0; };
+      const c1 = click(1.95), c2 = click(6.0);
+      const c = c1 || c2;
+      const at = c1 ? icon : btn;
+      Object.assign($("press").style, { left: at.x + "px", top: at.y + "px", width: 20 + c * 70 + "px", height: 20 + c * 70 + "px", opacity: c ? 1 - c : 0 });
+      $("extIcon").style.background = t > 1.9 ? "#e5e7f7" : "transparent";
+      show($("pop1"), window_(t, 2.2, 2.6, 6.4, 6.6), -14);
+      show($("pop2"), window_(t, 6.5, 7.0), -14);
+      show($("capE1"), window_(t, 0.3, 0.8, 5.2, 5.6), 16);
+      show($("capE2"), window_(t, 5.7, 6.2, 10.6, 10.95), 16);
+    }
+    if (scene === "end") {
+      show(document.querySelector("#end .mark"), window_(t, 0.1, 0.7), 20);
+      show(document.querySelector("#end .name"), window_(t, 0.3, 0.9), 20);
+      show(document.querySelector("#end h2"), window_(t, 0.7, 1.4), 30);
+      show(document.querySelector("#end p"), window_(t, 1.2, 1.8), 20);
+      show(document.querySelector("#end small"), window_(t, 1.5, 2.1), 10);
+    }
+  };
+</script>
+</body>
+</html>

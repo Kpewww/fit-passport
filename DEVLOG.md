@@ -31,6 +31,107 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-16 · Session 99 — The showcase poster and demo video
+
+CMU Silicon Valley's Evening of Entrepreneurship. The soft copies of a 24" × 36" poster
+and a 30–60 s demo video are due on Canvas on Oct 18. Printing waits for the professor's
+approval (proof photo due Oct 28). Everything is in `coursework/startup/showcase/`; its
+README has the deadlines, the sources and how to rebuild.
+
+**Founder's choices:**
+- No validation evidence yet, so the poster uses verified facts only and says plainly
+  that the interviews have not happened.
+- Video captions in English only.
+- Include the extension.
+- The CMU and Integrated Innovation Institute marks.
+
+**The poster** (`poster/poster.html` → `build.mjs`): HTML at 2304 × 3456 CSS px (24 × 36 in
+at 96 px/in), printed to a one-page vector PDF by Playwright, plus a 150 dpi PNG.
+- **Header**: the mark and wordmark, the CMU square; the headline "A medium is a
+  *guess.*", one lede and the team.
+- **01 Why it matters**: 24.5% / #1 / 34%, each with a footnoted source.
+- **02 How it works**: closet → one click → your size and why, with real product
+  pictures.
+- **03 Why it is different, and where it stands**:
+  - "Honest by construction";
+  - "Built and live" (the checked claims only: US/EU/UK sizes and Chinese size codes,
+    *not* JP; 103 types / 358 names; the 3D body within 1 cm);
+  - "Next", tagged *Hypotheses*: 20–25 interviews with pass/fail written in advance,
+    and the pricing.
+- **Footer**: QR codes for the site and the store listing (the listing was checked
+  live), the III mark and the contact address.
+
+It took three passes to fit: 3854 px, then 3555, then exactly 3456. The cuts were a
+merged section, the problem heading and a flowing team row. Chrome turns the variable
+fonts into Type 3 outlines: vector and sharp in print, but not selectable.
+
+**The three stats, each read from the primary source:**
+
+| Stat | Source | What it says |
+|---|---|---|
+| 24.52% | Appriss Retail & Deloitte 2024 | US online return rate, $362.16B |
+| 53% | Coresight Research 2023, sponsored by 3DLOOK | Size/fit is the top apparel return reason, n = 100 decision-makers |
+| 34% | Tinuiti 2024 | Apparel shoppers who ordered multiple sizes; sample size not published, and the footnote says so |
+
+The China return figures stayed off the poster: our research doc has no exact URLs for
+them.
+
+**The video** is 54 s, 1920 × 1080, H.264, silent, with English captions:
+- title card (4 s);
+- the problem: "M or L?" and the 24.5% with its source on screen (5.5 s);
+- the extension on the real Uniqlo page (11 s);
+- the live product inside the same browser window: the size check and its fit map
+  across S/L/M, the closet and its "How does it sit on you?", the 3D body with the fit
+  colours (29 s);
+- end card (4.5 s).
+
+The drawn scenes are rendered frame by frame (`window.render(scene, t)`), and every frame
+is piped into ffmpeg.
+
+**How it was recorded:**
+- **The extension popups are real.** They come from a throwaway copy of the extension
+  whose `host_permissions` include the product's origin, because the shipped one needs
+  an activeTab click that a script cannot give. The product tab is brought to the
+  front so the popup's active-tab query finds it.
+- **Starting the popup.** `chrome.tabs.query` cannot be stubbed from an init script on
+  an extension page, so the popup is re-run by clicking its own language buttons.
+- **The result.** Uniqlo AIRism Cotton T-Shirt: M, 90%, "Matches your Uniqlo M",
+  "Only the product is sent (4 KB of this 1264 KB page)".
+- **The live product.** A local production build (`next start`, so no dev overlay) and
+  a made-up shopper: the demo closet plus an invented body. The size check is the
+  extension's `capture.js` run on the live Uniqlo page and sent as the extension sends
+  it.
+
+**What didn't work, kept for next time:**
+- **Playwright's `recordVideo` is too soft for UI text.** The CDP screencast with JPEG
+  quality 92 is sharp, with timestamps per frame.
+- **The screencast ignores Playwright's emulated `deviceScaleFactor`.** A 1280 px page at
+  DPR 1.36 still came out at 1280 × 606. A real scale factor fixes it: launch with
+  `--force-device-scale-factor` and `--window-size`, and create the context with
+  `viewport: null`. That gives 1740 × 824 frames of a 1280-wide layout.
+- **Headless Chromium on macOS gets the real GPU** with `--use-angle=metal` (an "Apple
+  M1" renderer). The /body recording had 213 distinct frames in 15 s with SwiftShader,
+  and 454 in 7.6 s on the GPU (both counts include still stretches).
+- **Two bugs in the drawn scenes.**
+  - The stage's fade helper returned NaN for "no fade-out" (`Infinity − Infinity`), so
+    elements never appeared. Fixed with null defaults.
+  - A crop of the product page ended in a half-cut "Size Gui" link. Fixed by cropping
+    above it.
+- **A full-page screenshot at DPR 3 fails** ("Unable to capture screenshot"). Use clips
+  at 3×, full pages at 1×.
+
+**Next:**
+- **Founder:**
+  - check the event date on Canvas;
+  - upload the PDF and MP4 by Oct 18;
+  - wait for approval before printing;
+  - swap in course-provided logo files if there are any.
+- **Engineering, after the showcase:**
+  - split the /closet and /check bundles;
+  - the 人台 / 写实 toggle on /check;
+  - the /outfits 3D preview;
+  - per-size height/weight ranges as a weak signal (todo 11).
+
 ## 2026-10-09 · Session 98h — MetaHuman faces: licence checked, converter built and self-tested, waiting for the faces
 
 The founder chose option C of `todo/engineering/15-realistic-heads.md`, MetaHuman.

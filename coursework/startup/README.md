@@ -18,6 +18,7 @@ Focus:
 - [proposals/](proposals/) — proposal history and current startup proposal
 - [prospectus/](prospectus/) — founder/prospectus-level product and venture material
 - [product-design/](product-design/) — brand/product-facing design material, information architecture and community/retention concepts
+- [showcase/](showcase/) — the Evening of Entrepreneurship poster (24" × 36") and demo video, with the scripts that build them
 
 ## Shared implementation
 

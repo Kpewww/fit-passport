@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Fit Passport — Evening of Entrepreneurship poster</title>
+<!-- 24 × 36 in, portrait. 1 CSS px = 1/96 in, so the page is 2304 × 3456 px.
+     Brand: ink black, porcelain, one cobalt accent; Fraunces display, Inter text
+     (docs/memory/project-fit-passport-design-system.md). Every number carries a source
+     in the footer. build.mjs renders this to PDF and PNG. -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=Inter:wght@400;500;600;700&display=block" rel="stylesheet" />
+<style>
+  @page { size: 24in 36in; margin: 0; }
+  :root {
+    --ink: #17181c; --ink-soft: #4c4e57; --ink-faint: #6b6d77;
+    --paper: #f3f3f1; --paper-soft: #fbfbfa; --line: #e2e3e7;
+    --brand: #2438d6; --brand-on-dark: #8f9cf6;
+    --tight: #c2761b; --room: #8fa0ec;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { width: 2304px; height: 3456px; }
+  body { display: flex; flex-direction: column; background: var(--paper); color: var(--ink); font-family: Inter, system-ui, sans-serif; font-size: 40px; line-height: 1.35; -webkit-font-smoothing: antialiased; overflow: hidden; }
+  .serif { font-family: Fraunces, Georgia, serif; font-variation-settings: "opsz" 144; }
+  .eyebrow { font-size: 26px; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; }
+  .pad { padding-left: 128px; padding-right: 128px; }
+
+  /* ---- head ---- */
+  header { background: var(--ink); color: var(--paper); position: relative; padding-top: 76px; padding-bottom: 40px; flex-shrink: 0; }
+  .brandline { display: flex; align-items: center; gap: 26px; }
+  .brandline svg { width: 92px; height: auto; color: var(--paper); }
+  .wordmark { font-family: Fraunces, serif; font-style: italic; font-size: 64px; font-variation-settings: "opsz" 72; letter-spacing: -0.01em; }
+  .cmu { position: absolute; top: 96px; right: 128px; width: 200px; height: 200px; }
+  header .eyebrow { color: #a7a9b2; margin-top: 52px; }
+  h1 { font-size: 206px; line-height: 0.95; font-weight: 400; letter-spacing: -0.035em; margin-top: 30px; }
+  h1 em { font-style: italic; color: var(--brand-on-dark); }
+  .lede { font-size: 44px; line-height: 1.32; color: #d9dade; max-width: 2048px; margin-top: 34px; }
+  .team { margin-top: 44px; font-size: 32px; color: #a7a9b2; display: flex; justify-content: space-between; border-top: 1px solid #34363d; padding-top: 26px; }
+  .team b { color: var(--paper); font-weight: 500; }
+
+  /* ---- sections ---- */
+  section { padding-top: 54px; }
+  .label { display: flex; align-items: baseline; gap: 28px; }
+  .label .eyebrow { color: var(--ink-faint); }
+  .label .num { font-family: Fraunces, serif; font-size: 34px; color: var(--brand); }
+  h2 { font-size: 104px; line-height: 1.02; font-weight: 400; letter-spacing: -0.025em; margin-top: 18px; }
+  h2 em { font-style: italic; color: var(--brand); }
+
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 40px; border-top: 2px solid var(--ink); }
+  .stat { padding: 40px 48px 0 0; }
+  .stat + .stat { padding-left: 48px; border-left: 1px solid var(--line); }
+  .stat .big { font-family: Fraunces, serif; font-variation-settings: "opsz" 144; font-size: 190px; line-height: 0.9; letter-spacing: -0.04em; }
+  .stat .big sup { font-size: 34px; font-family: Inter; letter-spacing: 0; vertical-align: top; margin-left: 6px; color: var(--ink-faint); position: relative; top: 26px; }
+  .stat p { font-size: 38px; margin-top: 20px; color: var(--ink-soft); }
+  .stat p b { color: var(--ink); font-weight: 600; }
+
+  .steps { display: grid; grid-template-columns: 1fr 1.08fr 1fr; gap: 56px; margin-top: 40px; }
+  .step .shot { background: var(--paper-soft); border: 1px solid var(--line); border-radius: 28px; height: 500px; overflow: hidden; display: flex; align-items: center; justify-content: center; position: relative; }
+  .step h3 { font-size: 42px; font-weight: 600; letter-spacing: -0.01em; margin-top: 28px; white-space: nowrap; display: flex; gap: 18px; align-items: baseline; }
+  .step h3 span { font-family: Fraunces, serif; font-weight: 400; color: var(--brand); font-size: 44px; }
+  .step p { font-size: 34px; color: var(--ink-soft); margin-top: 10px; }
+  .shot.closet img { height: 92%; }
+  .shot.popup { gap: 22px; padding: 0 22px; background: #eceef5; }
+  .shot.popup img { width: 48%; border-radius: 16px; box-shadow: 0 18px 40px rgba(23,24,28,0.16); }
+  .shot.popup img:first-child { margin-top: -90px; }
+  .shot.popup img:last-child { margin-top: 90px; }
+  .shot.body img { height: 108%; margin-top: 4%; }
+  .legend { position: absolute; left: 30px; top: 30px; display: flex; flex-direction: column; gap: 10px; font-size: 26px; color: var(--ink-soft); background: rgba(251,251,250,0.9); padding: 18px 22px; border-radius: 16px; }
+  .legend i { display: inline-block; width: 22px; height: 22px; border-radius: 50%; margin-right: 12px; vertical-align: -3px; }
+
+  .why { display: grid; grid-template-columns: repeat(3, 1fr); gap: 56px; margin-top: 56px; }
+  .why div { border-top: 2px solid var(--ink); padding-top: 28px; }
+  .why h4 { font-size: 42px; font-weight: 600; }
+  .why p { font-size: 34px; color: var(--ink-soft); margin-top: 12px; }
+
+  .bottom { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 56px; margin-top: 36px; }
+  .bottom > div { border-top: 2px solid var(--ink); padding-top: 26px; }
+  .bottom h4 { font-size: 40px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
+  .bottom ul { list-style: none; margin-top: 18px; }
+  .bottom li { font-size: 31px; padding: 8px 0; border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+  .bottom li b { color: var(--ink); font-weight: 600; }
+  .tag { font-size: 22px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--brand); border: 1px solid var(--brand); border-radius: 999px; padding: 2px 14px; margin-left: 12px; vertical-align: 4px; }
+
+  footer { margin-top: 24px; height: 250px; flex-shrink: 0; background: var(--ink); color: var(--paper); display: flex; align-items: center; gap: 64px; }
+  .qr { display: flex; align-items: center; gap: 30px; }
+  .qr img { width: 172px; height: 172px; background: #fff; padding: 14px; border-radius: 14px; }
+  .qr b { display: block; font-size: 40px; font-weight: 600; }
+  .qr span { display: block; font-size: 28px; color: #a7a9b2; margin-top: 6px; }
+  .iii { margin-left: auto; display: flex; align-items: center; gap: 22px; font-size: 26px; color: #a7a9b2; line-height: 1.35; }
+  .iii img { width: 92px; height: 92px; background: #fff; border-radius: 12px; padding: 8px; }
+  .sources { margin-top: auto; padding-top: 18px; font-size: 20px; line-height: 1.45; color: var(--ink-faint); }
+</style>
+</head>
+<body>
+  <header class="pad">
+    <div class="brandline">{{FP_MARK}}<span class="wordmark">Fit Passport</span></div>
+    <img class="cmu" src="assets/cmu-logo.png" alt="Carnegie Mellon University" />
+    <p class="eyebrow">One body · One fit identity · Any store</p>
+    <h1 class="serif">A medium is<br />a <em>guess.</em></h1>
+    <p class="lede">Every brand sizes differently, so shoppers guess and pay for it in returns. Fit Passport learns your size from clothes that already fit you, and tells you what to buy at any store, with the reasons.</p>
+    <div class="team"><span><b>Xiangchen Kong</b> · <b>Alyssa Qi</b> · <b>Jenny Cao</b> · <b>Nicolas Wang</b></span><span>fitpassport.fit</span></div>
+  </header>
+
+  <section class="pad">
+    <div class="label"><span class="num">01</span><span class="eyebrow">Why it matters</span></div>
+    <div class="stats">
+      <div class="stat"><div class="big">24.5%<sup>1</sup></div><p>of <b>US online sales</b> were returned in 2024: $362 billion of merchandise.</p></div>
+      <div class="stat"><div class="big">#1<sup>2</sup></div><p><b>Size and fit</b> is the top reason online apparel comes back, named by 53% of US brands and retailers surveyed.</p></div>
+      <div class="stat"><div class="big">34%<sup>3</sup></div><p>of apparel shoppers <b>ordered several sizes</b> in the past year to keep one and send the rest back.</p></div>
+    </div>
+  </section>
+
+  <section class="pad">
+    <div class="label"><span class="num">02</span><span class="eyebrow">How it works</span></div>
+    <div class="steps">
+      <div class="step">
+        <div class="shot closet"><img src="assets/closet.png" alt="" /></div>
+        <h3><span>1</span>Your closet is the evidence</h3>
+        <p>Add clothes that already fit. Each one teaches the engine how a brand runs on your body.</p>
+      </div>
+      <div class="step">
+        <div class="shot popup"><img src="assets/popup-found.png" alt="" /><img src="assets/popup-result.png" alt="" /></div>
+        <h3><span>2</span>One click on any product page</h3>
+        <p>The Chrome extension reads the size chart in your browser. Only the product is sent, never the page.</p>
+      </div>
+      <div class="step">
+        <div class="shot body">
+          <img src="assets/body-fit.png" alt="" />
+          <div class="legend"><span><i style="background:var(--room)"></i>Room to spare</span><span><i style="background:var(--tight)"></i>Snug</span></div>
+        </div>
+        <h3><span>3</span>Your size, and why</h3>
+        <p>Every pick lists its evidence. A 3D body fitted to your numbers shows where it is tight or roomy.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pad">
+    <div class="label"><span class="num">03</span><span class="eyebrow">Why it is different, and where it stands</span></div>
+    <div class="bottom">
+      <div>
+        <h4>Honest by construction</h4>
+        <ul>
+          <li><b>Explained:</b> every size lists the signals behind it</li>
+          <li>A chart it could not read is marked <b>estimated</b></li>
+          <li><b>Private:</b> precise measurements never leave your account</li>
+          <li><b>Learns</b> from every keep, return and exchange you record</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Built and live</h4>
+        <ul>
+          <li>Live at <b>fitpassport.fit</b>; extension on the <b>Chrome Web Store</b></li>
+          <li>US, EU and UK sizes, and Chinese size codes</li>
+          <li><b>103</b> garment types; <b>358</b> shop category names recognised</li>
+          <li><b>3D body</b> fitted to your girths within 1 cm in tests</li>
+        </ul>
+      </div>
+      <div>
+        <h4>Next <span class="tag">Hypotheses</span></h4>
+        <ul>
+          <li><b>20–25 shopper interviews</b>, behaviour first</li>
+          <li>Pass or fail written in advance: if sizing is only a mild annoyance, we pivot to the <b>retailer-facing engine</b></li>
+          <li><b>Free</b> core, <b>Premium</b> about $4–7 a month, <b>affiliate</b> commission</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <p class="sources pad">
+    1. Appriss Retail &amp; Deloitte, <i>2024 Consumer Returns in the Retail Industry</i>: return rate from online sales 24.52% ($362.16B), all categories, US.
+    2. Coresight Research, <i>The True Cost of Apparel Returns</i> (Apr 2023): survey of 100 decision-makers at US apparel brands and retailers; size/fit cited by 53%; sponsored by 3DLOOK.
+    3. Tinuiti, <i>2024 Apparel Marketing Study</i>: 34% of apparel shoppers ordered multiple sizes or variations in the past year (sample size not published).
+    Product pictures are the live product with a made-up shopper. Store names are used for reference only; no affiliation is implied.
+  </p>
+
+  <footer class="pad">
+    <div class="qr"><img src="assets/qr-site.svg" alt="" /><div><b>Try it</b><span>www.fitpassport.fit</span></div></div>
+    <div class="qr"><img src="assets/qr-store.svg" alt="" /><div><b>Get the extension</b><span>Chrome Web Store: Fit Passport</span></div></div>
+    <div class="iii"><img src="assets/iii-mark.png" alt="Integrated Innovation Institute" /><span>Integrated Innovation Institute<br />Carnegie Mellon University Silicon Valley<br />fitpassporteam@gmail.com</span></div>
+  </footer>
+</body>
+</html>

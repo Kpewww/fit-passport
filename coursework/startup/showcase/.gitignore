@@ -1,0 +1,10 @@
+# Playwright is linked in locally (README, "Rebuilding"); the pages are built copies.
+node_modules
+.poster.built.html
+.stage.built.html
+
+# Rebuilt from source: the MP4, the 150 dpi PNG, screenshots and recorded frames.
+out/*
+!out/Fit-Passport-Poster-24x36.pdf
+!out/Fit-Passport-Poster-preview.png
+!out/Fit-Passport-Demo-cover.png
