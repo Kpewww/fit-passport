@@ -172,6 +172,7 @@ export default function AccountPage() {
 
           <ChangePassword />
           <DangerZone />
+          <DeleteZone claimed />
 
           <p className="mt-6 text-xs text-ink-faint">
             {t.rich("publicNote", {
@@ -250,6 +251,7 @@ export default function AccountPage() {
             link: (c) => <Link href="/login" className="text-brand hover:underline">{c} <ArrowRight size={14} className="-mt-px inline" /></Link>,
           })}
         </p>
+        <DeleteZone claimed={false} />
       </div>
     </main>
   );
@@ -349,6 +351,58 @@ function DangerZone() {
           {msg && <p className="text-sm text-bad">{msg}</p>}
           <Button onClick={deactivate} disabled={busy || !password} className="!bg-bad hover:!bg-bad">
             {busy ? "…" : t("deactivateSubmit")}
+          </Button>
+        </div>
+      )}
+    </Card>
+  );
+}
+
+// Erase everything, now (Session 100): deactivating keeps the data, this does not.
+// A claimed account asks for its password; an unclaimed one is this browser's own.
+// Typing the word guards against a slip, since nothing can bring it back.
+function DeleteZone({ claimed }: { claimed: boolean }) {
+  const t = useT("account");
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [word, setWord] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const confirmWord = t("deleteWord");
+
+  async function erase() {
+    setBusy(true); setMsg(null);
+    const r = await fetch("/api/auth/delete", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ confirm: "delete", password: claimed ? password : undefined }),
+    });
+    const j = await r.json().catch(() => ({}));
+    setBusy(false);
+    if (r.ok) { window.dispatchEvent(new Event(ACCOUNT_CHANGED)); router.push("/?deleted=1"); }
+    else setMsg(typeof j.error === "string" ? j.error : t("couldNotDelete"));
+  }
+
+  return (
+    <Card className="mt-4 ring-bad/30">
+      <button onClick={() => setOpen((v) => !v)} className="flex w-full items-center justify-between text-left">
+        <span className="text-sm font-semibold text-bad">{t("deleteTitle")}</span>
+        <CaretDown size={16} className={`text-ink-faint transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <div className="mt-3 space-y-3">
+          <p className="text-xs text-ink-soft">{claimed ? t("deleteBodyClaimed") : t("deleteBodyUnclaimed")}</p>
+          {claimed && (
+            <Field label={t("passwordLabel")}>
+              <input type="password" className={inputClass} value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+            </Field>
+          )}
+          <Field label={t("deleteType", { word: confirmWord })}>
+            <input className={inputClass} value={word} onChange={(e) => setWord(e.target.value)} autoComplete="off" />
+          </Field>
+          {msg && <p className="text-sm text-bad">{msg}</p>}
+          <Button onClick={erase} disabled={busy || word.trim() !== confirmWord || (claimed && !password)} className="!bg-bad hover:!bg-bad">
+            {busy ? "…" : t("deleteSubmit")}
           </Button>
         </div>
       )}

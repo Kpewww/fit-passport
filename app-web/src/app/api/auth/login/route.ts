@@ -7,8 +7,10 @@ import { NextResponse } from "next/server";
 import { say } from "@/lib/apiText";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { setSession } from "@/lib/session";
-import { normalizeAccountCode, verifySecret } from "@/lib/auth";
+import { COOKIE_OPTS, readSession, setSession } from "@/lib/session";
+import { encodeFoldOffer, FOLD_OFFER_TTL_MS, normalizeAccountCode, verifySecret } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { FOLD_COOKIE, holdings, holdsAnything, type Holdings } from "@/lib/loginFold";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 
 const Body = z.object({
@@ -51,10 +53,26 @@ export async function POST(req: Request) {
   const ok = await verifySecret(parsed.data.password, user.passwordHash);
   if (!ok) return fail();
 
+  // What this browser added before logging in, if it was an unclaimed account of its
+  // own: offered, not moved (Session 100). See lib/auth.ts encodeFoldOffer.
+  let offer: Holdings | null = null;
+  const before = readSession();
+  if (before && before.userId !== user.id) {
+    const prev = await prisma.user.findUnique({ where: { id: before.userId }, select: { id: true, claimed: true } });
+    if (prev && !prev.claimed) {
+      const h = await holdings(prev.id);
+      if (holdsAnything(h)) {
+        offer = h;
+        cookies().set(FOLD_COOKIE, encodeFoldOffer(prev.id, user.id), { ...COOKIE_OPTS, maxAge: FOLD_OFFER_TTL_MS / 1000 });
+      }
+    }
+  }
+
   setSession({ userId: user.id, canEdit: true });
   return NextResponse.json({
     ok: true,
     username: user.username,
     accountCode: user.accountCode,
+    ...(offer ? { offer } : {}),
   });
 }

@@ -23,7 +23,12 @@ const files = (d: string): string[] =>
 
 // The owner's closet route, the input schema it validates with, and the to-buy
 // list's own product photos (none today). Add a file here only for an owner-only path.
-const MAY_NAME_PHOTO = new Set(["app/api/closet/route.ts", "lib/closetItemInput.ts"]);
+// Session 100: the photo route (owner-checked; serves a photo kept in object storage)
+// and erasing an account (which deletes the stored files).
+const MAY_NAME_PHOTO = new Set([
+  "app/api/closet/route.ts", "lib/closetItemInput.ts",
+  "app/api/closet/photo/[id]/route.ts", "app/api/auth/delete/route.ts",
+]);
 
 const PUBLIC = ["app/api/view", "app/api/community", "app/api/leaderboard", "app/api/posts", "app/api/answers", "app/api/outfits", "lib/evidence.ts"];
 

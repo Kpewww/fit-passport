@@ -31,6 +31,7 @@ import { MAX_IMAGE_URL, MAX_UPLOAD_BYTES, readUploadedChart } from "@/lib/chartI
 import { withUserCategory, type ExtractedProduct } from "@/lib/extractor";
 import { chartGaps, productFromUpload } from "@/lib/chartUpload";
 import { siteOrigin } from "@/lib/site";
+import { track } from "@/lib/events";
 import { PICKABLE_CATEGORIES } from "@/lib/garments";
 import { computeRecommendation } from "@/lib/recommendService";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
@@ -185,8 +186,10 @@ export async function POST(req: Request) {
       model: VISION_MODEL,
       hasKey: !!process.env.ANTHROPIC_API_KEY,
     });
-    const refuse = (error: string, message: string, status = 422) =>
-      NextResponse.json({ error, message, features: features(), ...(read.detail ? { detail: read.detail } : {}) }, { status });
+    const refuse = async (error: string, message: string, status = 422) => {
+      await track("chart-upload", { userId: user.id, detail: read.detail ? `${error}:${read.detail}` : error, path: "/check" });
+      return NextResponse.json({ error, message, features: features(), ...(read.detail ? { detail: read.detail } : {}) }, { status });
+    };
     if (read.status === "bad-address") return refuse("upload-bad", M.refuseUploadBad, 400);
     if (read.status === "unavailable") return refuse("upload-off", M.refuseUploadOff);
     if (read.status === "failed") return refuse("upload-unreadable", M.refuseUploadUnreadable);
@@ -208,6 +211,7 @@ export async function POST(req: Request) {
   // write no Product row. See checkPolicy.ts for each rule and the case behind it.
   const refusal = refusalFor(extracted, M);
   if (refusal) {
+    await track("check-refused", { userId: user.id, detail: `${refusal.error}${chartUpload ? ":upload" : ""}`, path: isExtensionRequest(req.headers) ? "extension" : "/check" });
     return NextResponse.json({ ...refusal, source: extracted.source, features: features() }, { status: 422 });
   }
 
@@ -277,6 +281,12 @@ export async function POST(req: Request) {
       breakdownJson: JSON.stringify(result.ranked),
       explanation: result.explanation,
     },
+  });
+
+  await track(chartUpload ? "chart-upload" : isExtensionRequest(req.headers) ? "extension-check" : "check", {
+    userId: user.id,
+    detail: `${extracted.source.extractedBy ?? extracted.source.sizesFrom ?? "?"}:${Math.round(result.best.confidence * 10) * 10}%`,
+    path: "/check",
   });
 
   return NextResponse.json({

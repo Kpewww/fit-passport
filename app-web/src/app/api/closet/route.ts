@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { PHOTO_ROUTE, dropPhotos, photoForClient, storePhoto } from "@/lib/photoStore";
+import { track } from "@/lib/events";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
@@ -17,7 +19,7 @@ export async function GET() {
     where: { userId: user.id },
     orderBy: [{ sortIndex: "asc" }, { createdAt: "desc" }],
   });
-  return NextResponse.json({ items });
+  return NextResponse.json({ items: items.map(forClient) });
 }
 
 export async function POST(req: Request) {
@@ -42,6 +44,9 @@ export async function POST(req: Request) {
     if (!saved) return NextResponse.json({ error: "not found" }, { status: 404 });
   }
 
+  // A photo goes to object storage when it is set up (photoStore.ts).
+  if (data.imageDataUrl) data.imageDataUrl = await storePhoto(user.id, data.imageDataUrl);
+
   // Auto-file into a default collection by garment type unless one was given.
   const collectionId =
     data.collectionId ?? (await collectionForGarment(user.id, data.category));
@@ -62,10 +67,12 @@ export async function POST(req: Request) {
   });
   if (fromSavedId) {
     const [item] = await prisma.$transaction([create, prisma.savedItem.deleteMany({ where: { id: fromSavedId, userId: user.id } })]);
-    return NextResponse.json({ item });
+    await track("piece-added", { userId: user.id, detail: "from-saved" });
+    return NextResponse.json({ item: forClient(item) });
   }
   const item = await create;
-  return NextResponse.json({ item });
+  await track("piece-added", { userId: user.id, detail: data.productUrl ? "with-link" : null });
+  return NextResponse.json({ item: forClient(item) });
 }
 
 // PATCH accepts partial updates (edit fields, move collection, recolor, reorder,
@@ -83,7 +90,8 @@ const UpdateSchema = z
     fitDirection: z.coerce.number().min(DIRECTION_MIN).max(DIRECTION_MAX).transform(clampDirection).optional().nullable(),
     areaNotesJson: z.string().max(2000).optional().nullable(),
     productUrl: z.string().url().optional().nullable(),
-    imageDataUrl: z.string().max(400_000).regex(/^data:image\/(png|jpeg|webp);base64,/, "must be a small image").optional().nullable(),
+    // A new photo, or the address we gave for the stored one (sent back unchanged).
+    imageDataUrl: z.string().max(400_000).regex(/^(data:image\/(png|jpeg|webp);base64,|\/api\/closet\/photo\/)/, "must be a small image").optional().nullable(),
     photoFrom: z.enum(["own", "shop"]).optional().nullable(),
     color: z.string().max(40).optional().nullable(),
     collectionId: z.string().optional().nullable(),
@@ -146,6 +154,10 @@ export async function PATCH(req: Request) {
   if (!existing) {
     return NextResponse.json({ error: "item not found" }, { status: 404 });
   }
+  // The stored photo's own address, sent back by an edit that did not touch it.
+  if (data.imageDataUrl?.startsWith(PHOTO_ROUTE)) delete data.imageDataUrl;
+  else if (data.imageDataUrl) data.imageDataUrl = await storePhoto(user.id, data.imageDataUrl);
+  const replacedPhoto = data.imageDataUrl !== undefined && data.imageDataUrl !== existing.imageDataUrl ? existing.imageDataUrl : null;
 
   // Did any tracked content field actually change? If so, record/coalesce a
   // formal edit timestamp.
@@ -166,7 +178,8 @@ export async function PATCH(req: Request) {
   }
 
   const item = await prisma.knownGoodItem.update({ where: { id }, data: patch });
-  return NextResponse.json({ item });
+  if (replacedPhoto) await dropPhotos([replacedPhoto]);
+  return NextResponse.json({ item: forClient(item) });
 }
 
 export async function DELETE(req: Request) {
@@ -179,6 +192,13 @@ export async function DELETE(req: Request) {
     .filter(Boolean)
     .slice(0, 200);
   if (ids.length === 0) return NextResponse.json({ error: "id required" }, { status: 400 });
+  const photos = await prisma.knownGoodItem.findMany({ where: { id: { in: ids }, userId: user.id }, select: { imageDataUrl: true } });
   const res = await prisma.knownGoodItem.deleteMany({ where: { id: { in: ids }, userId: user.id } });
+  await dropPhotos(photos.map((p) => p.imageDataUrl));
   return NextResponse.json({ ok: true, deleted: res.count });
+}
+
+/** An item as its owner's browser sees it: a stored photo by our own address. */
+function forClient<T extends { id: string; imageDataUrl: string | null }>(item: T): T {
+  return { ...item, imageDataUrl: photoForClient(item.id, item.imageDataUrl) };
 }

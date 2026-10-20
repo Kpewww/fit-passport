@@ -63,7 +63,9 @@ describe("nothing that learns or counts reads the to-buy list", () => {
       const p = join(d, f);
       return statSync(p).isDirectory() ? files(p) : /\.(ts|tsx)$/.test(f) && !/\.test\./.test(f) ? [p] : [];
     });
-  const ALLOWED = new Set(["app/api/saved/route.ts", "app/api/closet/route.ts", "lib/accountMerge.ts"]);
+  // Session 100: login counts this browser's to-buy items to offer moving them
+  // (lib/loginFold.ts) — a count shown to their owner, read by nothing that learns.
+  const ALLOWED = new Set(["app/api/saved/route.ts", "app/api/closet/route.ts", "lib/accountMerge.ts", "lib/loginFold.ts"]);
   it("finds savedItem only where it is allowed", () => {
     const readers = files(SRC)
       .filter((f) => /prisma\.savedItem|savedItem\./.test(readFileSync(f, "utf8")))

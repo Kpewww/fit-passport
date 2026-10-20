@@ -14,6 +14,8 @@ export const API_ZH: Record<string, string> = {
   "Too many requests — slow down and try again shortly.": "请求较频繁，请稍后再试。",
   // auth
   "invalid request": "请求无效。",
+  // feedback (Session 100)
+  "Write a few words first.": "请先写几句话。",
   "invalid or expired reset link": "重置链接无效或已过期。",
   "not allowed": "当前操作未获授权。",
   "current password is incorrect": "当前密码不正确。",

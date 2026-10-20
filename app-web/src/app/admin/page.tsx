@@ -16,6 +16,7 @@ import { Card, EmptyState, LinkButton } from "@/components/ui";
 import { ArrowRight } from "@/components/Icon";
 import { useT } from "@/i18n/client";
 import { Headline } from "@/components/Headline";
+import { PilotPanel } from "./PilotPanel";
 
 type Item = {
   kind: "POST" | "ANSWER" | "OUTFIT";
@@ -106,6 +107,8 @@ export default function AdminPage() {
         <p className="mt-2 text-xs text-ink-faint">
           {t("restoreNote")}
         </p>
+
+        <PilotPanel />
 
         {data.items.length === 0 ? (
           <Card className="mt-6 bg-paper-soft text-center">

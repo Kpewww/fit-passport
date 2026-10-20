@@ -6,6 +6,7 @@
 // if the user provides an email, forgot-password uses it; otherwise they're
 // told plainly that a lost password means a lost account.
 
+import { track } from "@/lib/events";
 import { NextResponse } from "next/server";
 import { say } from "@/lib/apiText";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
@@ -94,6 +95,7 @@ export async function POST(req: Request) {
   });
 
   setSession({ userId: updated.id, canEdit: true });
+  await track("account-claimed", { userId: updated.id, detail: updated.email ? "with-email" : null });
 
   return NextResponse.json({
     accountCode: updated.accountCode,

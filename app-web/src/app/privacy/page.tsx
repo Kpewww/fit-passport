@@ -5,18 +5,19 @@
 // and true of the site already. Every sentence is checkable in the code: the
 // extension's capture (browser-extension/README.md, "What is sent"), the session
 // cookie (lib/session.ts), the services (rateLimit.ts, email.ts, extractorLLM.ts)
-// and deactivation, which keeps the data (api/auth/deactivate).
+// deactivation, which keeps the data (api/auth/deactivate), deletion, which does not
+// (api/auth/delete), and the pilot's events and feedback (lib/events.ts, api/feedback).
 
 import { PageHeader } from "@/components/ui";
 import { CONTACT_EMAIL } from "@/lib/siteContact";
 import { useT } from "@/i18n/client";
 
 const SECTIONS = [
-  { key: "keeps", items: ["profile", "closet", "products", "account", "community"] },
+  { key: "keeps", items: ["profile", "closet", "products", "account", "community", "events", "feedback"] },
   { key: "cookies", items: ["session", "lang", "move", "none"] },
-  { key: "extension", items: ["click", "reduced", "ebay", "session", "local"] },
+  { key: "extension", items: ["click", "reduced", "screenshot", "ebay", "session", "local"] },
   { key: "others", items: ["private", "never", "services"] },
-  { key: "choices", items: ["edit", "deactivate"] },
+  { key: "choices", items: ["edit", "delete", "deactivate"] },
 ] as const;
 
 export default function PrivacyPage() {

@@ -1,5 +1,6 @@
 "use client";
 
+import { ACCOUNT_CHANGED } from "@/components/Nav";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -15,6 +16,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // What this browser added before logging in, offered to the account (Session 100).
+  const [offer, setOffer] = useState<{ pieces: number; saved: number; checks: number; outfits: number } | null>(null);
+
+  async function answer(accept: boolean) {
+    setBusy(true);
+    await fetch("/api/auth/fold-browser", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ accept }),
+    }).catch(() => null);
+    setBusy(false);
+    window.dispatchEvent(new Event(ACCOUNT_CHANGED));
+    router.push(accept ? "/closet" : "/account");
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -28,6 +41,8 @@ export default function LoginPage() {
       });
       const j = await r.json();
       if (!r.ok) throw new Error(typeof j.error === "string" ? j.error : t("loginFailed"));
+      window.dispatchEvent(new Event(ACCOUNT_CHANGED));
+      if (j.offer) { setOffer(j.offer); return; }
       router.push("/account");
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : t("loginFailed"));
@@ -41,6 +56,19 @@ export default function LoginPage() {
       <div className="mx-auto max-w-md px-4 sm:px-6 py-14">
         <h1 className="font-serif text-h1 text-ink"><Headline>{t("loginTitle")}</Headline></h1>
         <p className="mt-2 text-ink-soft">{t("loginLede")}</p>
+        {offer ? (
+          <Card className="mt-6 space-y-4">
+            <h2 className="text-h3 text-ink">{t("foldTitle")}</h2>
+            <p className="text-sm text-ink-soft">
+              {t("foldBody", { pieces: offer.pieces, saved: offer.saved, checks: offer.checks, outfits: offer.outfits })}
+            </p>
+            <p className="text-xs text-ink-faint">{t("foldNote")}</p>
+            <div className="flex flex-wrap gap-2">
+              <Button disabled={busy} onClick={() => answer(true)}>{t("foldYes")}</Button>
+              <Button variant="secondary" disabled={busy} onClick={() => answer(false)}>{t("foldNo")}</Button>
+            </div>
+          </Card>
+        ) : (
         <Card className="mt-6">
           <form onSubmit={submit} className="space-y-4">
             <Field label={t("identifierLabel")}>
@@ -60,6 +88,7 @@ export default function LoginPage() {
             </Button>
           </form>
         </Card>
+        )}
         <p className="mt-4 text-xs text-ink-faint">
           {t.rich("forgot", { link: (c) => <Link href="/recover" className="text-brand hover:underline">{c} <ArrowRight size={14} className="-mt-px inline" /></Link> })}
         </p>

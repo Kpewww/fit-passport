@@ -63,6 +63,8 @@ export const en = {
       badges: "Badges",
       help: "Help & guide",
       privacy: "Privacy",
+      terms: "Terms",
+      feedback: "Feedback",
       account: "Your account",
       login: "Log in",
       recover: "Reset password",
@@ -516,6 +518,30 @@ export const en = {
 
   // Garment types (lib/garments.ts keys) and the closet's default folders
   // (lib/collections.ts). A folder the user renamed is shown as typed.
+  feedback: {
+    eyebrow: "Feedback",
+    title: "Tell us what happened.",
+    lede: "Something that didn't work, a size that was wrong, or what you wish it did. We read every one.",
+    message: "What happened?",
+    messagePlaceholder: "e.g. I pasted a link from … and it said …",
+    contact: "How can we reach you? (optional)",
+    contactPlaceholder: "Email or any handle",
+    fromPage: "We'll note that you came from {path}. Nothing else is attached.",
+    noPage: "Nothing else is attached.",
+    send: "Send",
+    sending: "Sending…",
+    thanks: "Thank you. It has reached us.",
+    failed: "Couldn't send it just now. Try again, or email fitpassporteam@gmail.com.",
+  },
+
+  errors: {
+    eyebrow: "Something went wrong",
+    title: "This page broke.",
+    body: "It has been reported to us. Try again, or start from the home page.",
+    retry: "Try again",
+    home: "Home",
+  },
+
   body3d: {
     metaTitle: "My 3D body",
     eyebrow: "Passport · 3D body",
@@ -1273,6 +1299,11 @@ export const en = {
     loginLede: "Sign in with your username, email, or account code to edit your closet.",
     loginBusy: "Logging in…",
     loginSubmit: "Log in",
+    foldTitle: "Bring what you added on this device?",
+    foldBody: "Before you logged in, this browser kept {pieces} closet pieces, {saved} to-buy items, {checks} checks and {outfits} outfits. Add them to this account?",
+    foldNote: "Nothing in your account is overwritten. If you say no, they stay where they were, unclaimed.",
+    foldYes: "Yes, add them",
+    foldNo: "No, leave them",
     loginFailed: "login failed",
     forgot: "Forgot your password? <link>Reset it with your recovery email</link>",
     peek: "Just want to peek at a closet? <link>View one by code</link>",
@@ -1365,6 +1396,13 @@ export const en = {
     couldNotUpdate: "couldn't update password",
     saving: "Saving…",
     updatePassword: "Update password",
+    deleteTitle: "Delete everything",
+    deleteBodyClaimed: "Erases this account now: your passport, closet and photos, to-buy list, checks, outfits and posts. It cannot be undone. Deactivating, above, keeps the data instead.",
+    deleteBodyUnclaimed: "Erases everything this browser has kept here: your passport, closet and photos, to-buy list, checks and outfits. It cannot be undone.",
+    deleteWord: "delete",
+    deleteType: "Type “{word}” to confirm",
+    deleteSubmit: "Delete it all",
+    couldNotDelete: "Couldn't delete it just now. Try again.",
     deactivateTitle: "Deactivate account",
     deactivateConfirm: "Deactivate your account? It will be hidden from everyone (public view, community, login). Your data is kept and support can restore it later.",
     deactivateBody: "Hides your account from everyone external — public view, community, and login all stop working. Your data isn't deleted; support can reactivate it. Confirm with your password.",
@@ -1406,7 +1444,7 @@ export const en = {
   privacy: {
     title: "Privacy",
     lede: "What Fit Passport keeps, why, and what it never does.",
-    updated: "Updated 30 September 2026",
+    updated: "Updated 20 October 2026",
     keeps: {
       title: "What the website keeps",
       profile: "Your passport: the body measurements you choose to enter (every one optional), your preferred fit, the size systems you shop in, and a portrait if you upload one.",
@@ -1414,6 +1452,8 @@ export const en = {
       products: "The products you check: what was read from the page — brand, name, category, size rows — and the recommendation we gave. The page itself is not stored.",
       account: "If you claim your account: a username, your password (kept only as a one-way hash), and an email address if you give one, used only to reset your password.",
       community: "What you post to the community: outfits, questions, answers, likes and follows.",
+      events: "What happened, so we can see where the site fails people: that a check gave a size or was refused (and why), that a size chart was uploaded, a piece added or an account claimed, and a page's own error message. Never your measurements, never words you typed, never a product's address.",
+      feedback: "What you write to us from the Feedback link, the page you came from, and a contact if you give one.",
     },
     cookies: {
       title: "Cookies",
@@ -1426,6 +1466,7 @@ export const en = {
       title: "The browser extension",
       click: "It reads a page only when you click it, and only the tab you are looking at.",
       reduced: "It sends a reduced copy of the product page — title, product data, size charts and size options — and nothing from forms, the cart, your account, reviews or the rest of the page. You can see exactly what will be sent before anything is. If you tell it which picture on the page is the size chart, it also sends that one picture's address — nothing else about the page's pictures. When you press \"I own this, add to closet\", it takes a screenshot of the tab you are on, crops it to the product picture, and saves it to your closet, where only you can see it.",
+      screenshot: "When you choose \"Use a screenshot of this tab\", it takes one screenshot of the tab, shows it to you, and sends it only when you press Send — with the page's address and nothing else from the page.",
       ebay: "With your permission, asked once on a click, it also reads measurement lines from an eBay seller's description.",
       session: "It sends your Fit Passport session with the request, so the answer can use your profile, and saves a product to your to-buy list only when you press Save.",
       local: "It keeps your language choice in the extension's own storage.",
@@ -1434,17 +1475,61 @@ export const en = {
       title: "Who else sees it",
       private: "Your passport is private. Others see your profile only if you list yourself in the community or share your account code — and then only what that page shows.",
       never: "We do not sell data, show ads, or share your profile with retailers.",
-      services: "Services that run the site: Vercel (hosting), Neon (database), Upstash (rate limiting, which counts requests by IP address for a few minutes) and Resend (password-reset email). When a page has no size chart we can read, its text — never your measurements — may be sent to Anthropic's API to read the chart, and so may a picture you picked as the size chart; what is read from a picture is kept, the picture is not. When a product's name does not tell us what kind of garment it is, that name — never anything about you — may be sent to TypeSafe to classify it.",
+      services: "Services that run the site: Vercel (hosting), Neon (database), Upstash (rate limiting, which counts requests by IP address for a few minutes) and Resend (password-reset email). When a page has no size chart we can read, its text — never your measurements — may be sent to Anthropic's API to read the chart, and so may a picture you picked or uploaded as the size chart, or a screenshot you chose to send; what is read from a picture is kept, the picture is not. When a product's name does not tell us what kind of garment it is, that name — never anything about you — may be sent to TypeSafe to classify it.",
     },
     choices: {
       title: "Your choices",
       edit: "Change or clear any measurement in your passport, and remove items from your closet or to-buy list, at any time.",
-      deactivate: "Deactivating your account (on the Account page) hides it from everyone and stops sign-in. The data is kept so it can be restored. To have it erased, write to the address below.",
+      delete: "Delete everything (on the Account page) erases your account and all of it at once: passport, closet and photos, to-buy list, checks, outfits and posts. Likes, votes and reports you gave stay, without your name.",
+      deactivate: "Deactivating your account (on the Account page) hides it from everyone and stops sign-in. The data is kept so it can be restored. To erase it instead, use Delete everything.",
     },
     contact: {
       title: "Contact",
       body: "Questions, and requests to erase your data: {email}",
       pending: "A contact address will be published here before the extension is listed in the Chrome Web Store.",
+    },
+  },
+
+  terms: {
+    title: "Terms of use",
+    lede: "The plain rules for using Fit Passport.",
+    updated: "Updated 20 October 2026",
+    what: {
+      title: "What Fit Passport is",
+      body: "A free prototype built by a student team at Carnegie Mellon University Silicon Valley. It may change, pause or stop, and features may be added or removed while we learn what works.",
+    },
+    estimate: {
+      title: "A size is an estimate",
+      body: "A recommendation is our best reading of the store's chart, your measurements and the clothes you own, with the reasons shown. It is not a promise that a garment will fit. Check the store's own size guide and return policy before you buy; we are not responsible for a purchase or a return.",
+    },
+    account: {
+      title: "Your account and what you add",
+      body: "You are responsible for what you add and for keeping your password. What you add stays yours; you let us store and show it as the site needs to work (your closet to you, and to others only where you choose to share it). You can change or delete it, or your whole account, at any time.",
+    },
+    community: {
+      title: "The community",
+      body: "Post only what you have the right to share, and be decent: no harassment, hate, sexual content, other people's private information, or advertising. We may hide or remove posts that break this, and close accounts that keep doing it.",
+    },
+    use: {
+      title: "Fair use",
+      body: "Don't try to break, overload or scrape the site, get around its limits, or use it to collect other people's data. Automated use needs our permission first.",
+    },
+    stores: {
+      title: "Stores and brands",
+      body: "Store and brand names are used to say whose product or chart it is. Fit Passport is not affiliated with, endorsed by or paid by any of them. Their pages, prices and stock are theirs.",
+    },
+    warranty: {
+      title: "No guarantee",
+      body: "The site is provided as it is, without any guarantee that it is accurate, available or free of errors. As far as the law allows, we are not liable for losses from using it.",
+    },
+    changes: {
+      title: "Changes",
+      body: "We may update these terms; the date above says when they last changed. If a change matters to how your data is used, we will say so on the site first.",
+    },
+    contact: {
+      title: "Contact",
+      body: "Questions about these terms:",
+      privacy: "How we handle your data",
     },
   },
 
@@ -1580,6 +1665,16 @@ export const en = {
 
   // /admin — the moderation queue. English is exactly what the page printed before.
   admin: {
+    pilot: {
+      title: "Pilot",
+      people: "{n} people did something this week.",
+      event: "Event",
+      week: "7 days",
+      month: "30 days",
+      refusals: "Commonest refusals and errors (30 days)",
+      feedback: "Feedback",
+      noFeedback: "Nothing yet.",
+    },
     deleteConfirm: "Delete this permanently? This can't be undone.",
     notFoundTitle: "No such page",
     notFoundBody: "Nothing to see here.",

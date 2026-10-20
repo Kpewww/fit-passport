@@ -27,6 +27,9 @@ const COLUMNS: Array<{ title: KeyIn<"footer">; links: Array<{ label: LinkKey; hr
       { label: "links.badges", href: "/badges" },
       { label: "links.help", href: "/help" },
       { label: "links.privacy", href: "/privacy" },
+      { label: "links.terms", href: "/terms" },
+      // On every page, for the pilot (Session 100).
+      { label: "links.feedback", href: "/feedback" },
     ],
   },
   {

@@ -709,3 +709,31 @@ model PetProfile {
 
   @@index([userId])
 }
+
+/// What happened, for a pilot (Session 100): a name, a short code, the page. No
+/// measurements, no text a person typed, no address of any product. `userId` is the
+/// internal account id (null without a session); deleting an account deletes its rows.
+model Event {
+  id        String   @id @default(cuid())
+  userId    String?
+  name      String
+  detail    String?
+  path      String?
+  createdAt DateTime @default(now())
+
+  @@index([name, createdAt])
+  @@index([userId])
+}
+
+/// What a person told us from the "Feedback" link (Session 100).
+model Feedback {
+  id        String   @id @default(cuid())
+  userId    String?
+  message   String
+  contact   String?
+  path      String?
+  locale    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}

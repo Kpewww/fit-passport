@@ -3,7 +3,7 @@
 import type { MetadataRoute } from "next";
 import { SITE_ORIGIN as SITE } from "@/lib/site";
 
-const PAGES: Array<[string, number]> = [["/", 1], ["/extension", 0.8], ["/check", 0.7], ["/help", 0.6], ["/community", 0.5], ["/privacy", 0.3]];
+const PAGES: Array<[string, number]> = [["/", 1], ["/extension", 0.8], ["/check", 0.7], ["/help", 0.6], ["/community", 0.5], ["/privacy", 0.3], ["/terms", 0.3]];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return PAGES.map(([path, priority]) => ({ url: `${SITE}${path}`, changeFrequency: "weekly", priority }));

@@ -158,3 +158,37 @@ export function decodeCarryPass(pass: string | null | undefined, state: string |
   if (p.exp < now || p.state !== state) return null;
   return { userId: p.userId, canEdit: p.canEdit };
 }
+
+// ---------- offering to bring this browser's things into the account (Session 100) ----------
+//
+// Logging in replaced the browser's unclaimed account with the claimed one, and what
+// had been added before logging in stayed behind. Now login offers to bring it over,
+// and the offer is a signed cookie naming both accounts: only this browser holds it,
+// the signature covers "fold." + body (never a session, never a carry pass), and it
+// dies after FOLD_OFFER_TTL_MS. Nothing moves until the person says yes.
+
+export const FOLD_OFFER_TTL_MS = 15 * 60_000;
+
+export type FoldOffer = { fold: string; keep: string; exp: number };
+
+export function encodeFoldOffer(fold: string, keep: string, now = Date.now()): string {
+  const body = Buffer.from(JSON.stringify({ fold, keep, exp: now + FOLD_OFFER_TTL_MS })).toString("base64url");
+  return `${body}.${sign(`fold.${body}`)}`;
+}
+
+export function decodeFoldOffer(raw: string | null | undefined, now = Date.now()): FoldOffer | null {
+  if (!raw) return null;
+  const dot = raw.lastIndexOf(".");
+  if (dot < 0) return null;
+  const body = raw.slice(0, dot);
+  const a = Buffer.from(raw.slice(dot + 1));
+  const b = Buffer.from(sign(`fold.${body}`));
+  if (a.length !== b.length || !timingSafeEqual(a, b)) return null;
+  try {
+    const p = JSON.parse(Buffer.from(body, "base64url").toString());
+    if (typeof p.fold !== "string" || typeof p.keep !== "string" || typeof p.exp !== "number" || p.exp < now) return null;
+    return { fold: p.fold, keep: p.keep, exp: p.exp };
+  } catch {
+    return null;
+  }
+}

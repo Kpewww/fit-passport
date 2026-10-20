@@ -55,8 +55,10 @@ function englishIn(source: string): string[] {
 describe("the interface has no English outside the messages", () => {
   // app/lab/ is an internal review page (Session 97's body lab), unlinked and kept out
   // of search: a tool for us, in English on purpose, like the API's own messages.
+  // app/global-error.tsx shows only when the layout itself failed, and with it the
+  // messages: it carries both languages in its own words (Session 100).
   const ui = [...files(join(SRC, "app")), ...files(join(SRC, "components"))].filter(
-    (f) => !/[\\/]api[\\/]/.test(f) && !/[\\/]lab[\\/]/.test(f),
+    (f) => !/[\\/]api[\\/]/.test(f) && !/[\\/]lab[\\/]/.test(f) && !/global-error\.tsx$/.test(f),
   );
 
   it("scans the pages and components", () => {
