@@ -1,5 +1,6 @@
 "use client";
 
+import { ACCOUNT_CHANGED } from "@/components/Nav";
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, CaretDown, Check, Warning } from "@/components/Icon";
 import { useRouter } from "next/navigation";
@@ -78,6 +79,7 @@ export default function AccountPage() {
       }
       setClaimResult({ accountCode: j.accountCode, hasEmail: j.hasEmail });
       load();
+      window.dispatchEvent(new Event(ACCOUNT_CHANGED));
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : "error");
     } finally {
@@ -89,6 +91,7 @@ export default function AccountPage() {
     await fetch("/api/auth/logout", { method: "POST" });
     setClaimResult(null);
     load();
+    window.dispatchEvent(new Event(ACCOUNT_CHANGED));
   }
 
   if (!me) {
@@ -327,7 +330,7 @@ function DangerZone() {
     });
     const j = await r.json().catch(() => ({}));
     setBusy(false);
-    if (r.ok) router.push("/");
+    if (r.ok) { window.dispatchEvent(new Event(ACCOUNT_CHANGED)); router.push("/"); }
     else setMsg(typeof j.error === "string" ? j.error : t("couldNotDeactivate"));
   }
 

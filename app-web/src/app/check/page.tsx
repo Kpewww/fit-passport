@@ -1,11 +1,11 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Alert, ArrowRight, CaretDown, Check, Scales, Warning } from "@/components/Icon";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { Card, ConfidenceRing, FitStars, LinkButton, Segmented, Skeleton } from "@/components/ui";
+import { Button, Card, ConfidenceRing, FitStars, LinkButton, Segmented, Skeleton } from "@/components/ui";
 import { useT } from "@/i18n/client";
 import { DEMO_PRODUCTS } from "@/lib/demoProducts";
 import { isResaleHost } from "@/lib/sellerMeasurements";
@@ -49,6 +49,11 @@ function CheckInner() {
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<CheckResponse | null>(null);
   const [err, setErr] = useState<string | null>(null);
+  // The refusal's code, for the next step offered under its message (Session 100).
+  const [errCode, setErrCode] = useState<string | null>(null);
+  // The chart-picture panel, opened by that next step too.
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const answerRef = useRef<HTMLDivElement>(null);
   // A refusal the user can answer by typing the seller's measurements (a listing
   // with none, or one our server cannot read — eBay refuses it).
   const [canMeasure, setCanMeasure] = useState(false);
@@ -69,8 +74,16 @@ function CheckInner() {
     fetch("/api/status").then((r) => r.json()).then(setStatus).catch(() => {});
   }, []);
 
+  // A refusal, or a question back, is shown right under the link box and brought into
+  // view (Session 100): below the converter and the guide it was a screen away on a
+  // phone, and pressing the button looked like nothing happened.
+  useEffect(() => {
+    if (err || pickFor) answerRef.current?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }, [err, pickFor]);
+
   const runCheck = useCallback(async (targetUrl: string, seller?: SellerInput, category?: string, chartUpload?: ChartUploadInput) => {
     setErr(null);
+    setErrCode(null);
     setUpload(chartUpload ?? null);
     setCanMeasure(false);
     setPickFor(null);
@@ -89,6 +102,7 @@ function CheckInner() {
         setCanMeasure(true);
       }
       if (!r.ok && code === "pick-category") setPickFor(chartUpload ? "upload" : targetUrl);
+      if (!r.ok) setErrCode(code || null);
       // Prefer the API's human sentence over its machine code. A refusal here is
       // the product working correctly — "we don't size footwear yet, and here is
       // why" — and showing the raw slug `unsupported-category` instead throws away
@@ -225,8 +239,31 @@ function CheckInner() {
             </button>
           </form>
 
+          {/* What came back when it is not an answer: a refusal with its next step, a
+              question about the garment, the seller's numbers. Right under the box. */}
+          <div ref={answerRef} className="mx-auto max-w-xl scroll-mt-24 text-left">
+            {err && (
+              <div role="alert" className="mt-6 rounded-2xl bg-bad-tint px-5 py-4 text-sm text-bad">
+                <div className="flex items-start gap-3">
+                  <Alert size={20} className="mt-px flex-shrink-0" />
+                  <p>{err}</p>
+                </div>
+                {/* A store that would not give us its chart: the chart itself still can
+                    be given — a screenshot of it — or read by the extension on a computer. */}
+                {(errCode === "unreadable" || errCode === "no-chart-on-page") && (
+                  <div className="mt-3 flex flex-wrap gap-2 pl-8">
+                    <Button size="sm" variant="secondary" onClick={() => setUploadOpen(true)}>{t("next.upload")}</Button>
+                    <LinkButton href="/extension" size="sm" variant="ghost" className="hidden sm:inline-flex">{t("next.extension")}</LinkButton>
+                  </div>
+                )}
+              </div>
+            )}
+            {canMeasure && !loading && <SellerMeasureForm onSubmit={(seller) => runCheck(url, seller)} />}
+            {pickFor && !loading && <CategoryPicker onPick={(category) => runCheck(pickFor, undefined, category, pickFor === "upload" ? upload ?? undefined : undefined)} />}
+          </div>
+
           {/* Only a size chart, no page (Session 100). */}
-          <ChartUpload busy={loading} onSubmit={(chart, category) => runCheck("", undefined, category, chart)} />
+          <ChartUpload key={uploadOpen ? "open" : "closed"} startOpen={uploadOpen} busy={loading} onSubmit={(chart, category) => runCheck("", undefined, category, chart)} />
 
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
             <span className="text-ink-faint">{t("try")}</span>
@@ -264,14 +301,6 @@ function CheckInner() {
           />
         )}
 
-        {err && (
-          <div role="alert" className="mt-6 flex items-start gap-3 rounded-2xl bg-bad-tint px-5 py-4 text-sm text-bad">
-            <Alert size={20} className="mt-px flex-shrink-0" />
-            <p>{err}</p>
-          </div>
-        )}
-        {canMeasure && !loading && <SellerMeasureForm onSubmit={(seller) => runCheck(url, seller)} />}
-        {pickFor && !loading && <CategoryPicker onPick={(category) => runCheck(pickFor, undefined, category, pickFor === "upload" ? upload ?? undefined : undefined)} />}
 
         {loading && <LoadingResult />}
         {data && !loading && data.result.judgement ? (

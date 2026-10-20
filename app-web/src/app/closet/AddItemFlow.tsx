@@ -249,29 +249,6 @@ export function AddItemFlow({
         <p className="mb-4 text-[11px] text-ink-soft">{extractNote}</p>
       )}
 
-      {/* The shortcut sits on the first step only — it answers the first
-          questions, so offering it later would be offering to redo them. */}
-      {step === "brand" && (
-        <div className="mb-4 rounded-xl border border-dashed border-line bg-paper-soft p-3">
-          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
-            {t("haveLink")}
-          </p>
-          <div className="flex flex-col gap-2 sm:flex-row">
-            <input
-              className={inputClass + " min-w-0 flex-1"}
-              placeholder={t("pastePlaceholder")}
-              aria-label={t("pastePlaceholder")}
-              value={pasteUrl}
-              onChange={(e) => setPasteUrl(e.target.value)}
-            />
-            <Button type="button" variant="secondary" size="md" onClick={extractFromUrl} disabled={extracting || !pasteUrl.trim()}>
-              {extracting ? t("reading") : t("autofill")}
-            </Button>
-          </div>
-          {extractNote && <p className="mt-1.5 text-[11px] text-ink-soft">{extractNote}</p>}
-        </div>
-      )}
-
       <form onSubmit={onSubmit}>
         <h3 className="text-base font-semibold text-ink">{t(`step.${step}.q`)}</h3>
         <p className="mt-0.5 text-xs text-ink-soft">{t(`step.${step}.why`)}</p>
@@ -399,6 +376,31 @@ export function AddItemFlow({
           </div>
         )}
       </form>
+      {/* The shortcut sits on the first step only — it answers the first
+          questions, so offering it later would be offering to redo them. Below the
+          question, not above it (Session 100): first on the page, it read as the
+          question itself. */}
+      {step === "brand" && (
+        <div className="mt-4 rounded-xl border border-dashed border-line bg-paper-soft p-3">
+          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-ink-faint">
+            {t("haveLink")}
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <input
+              className={inputClass + " min-w-0 flex-1"}
+              placeholder={t("pastePlaceholder")}
+              aria-label={t("pastePlaceholder")}
+              value={pasteUrl}
+              onChange={(e) => setPasteUrl(e.target.value)}
+            />
+            <Button type="button" variant="secondary" size="md" onClick={extractFromUrl} disabled={extracting || !pasteUrl.trim()}>
+              {extracting ? t("reading") : t("autofill")}
+            </Button>
+          </div>
+          {extractNote && <p className="mt-1.5 text-[11px] text-ink-soft">{extractNote}</p>}
+        </div>
+      )}
+
     </Card>
   );
 }

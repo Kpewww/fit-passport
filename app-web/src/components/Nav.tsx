@@ -40,6 +40,9 @@ const LINKS: NavLink[] = [
 
 type Me = { claimed: boolean; username: string | null; role?: string };
 
+/** Fired by the account pages after a claim, login, logout or deactivation. */
+export const ACCOUNT_CHANGED = "fp:account-changed";
+
 export function Nav() {
   const pathname = usePathname();
   const t = useT("nav");
@@ -49,10 +52,17 @@ export function Nav() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then((r) => r.json())
-      .then((d) => setMe({ claimed: d.claimed, username: d.username, role: d.role }))
-      .catch(() => {});
+    const load = () =>
+      fetch("/api/auth/me")
+        .then((r) => r.json())
+        .then((d) => setMe({ claimed: d.claimed, username: d.username, role: d.role }))
+        .catch(() => {});
+    load();
+    // Claiming happens without leaving /account, so a page change alone left the bar
+    // saying "Claim account" after it (Session 100, the live walk): the account pages
+    // announce a change, and the bar asks again.
+    window.addEventListener(ACCOUNT_CHANGED, load);
+    return () => window.removeEventListener(ACCOUNT_CHANGED, load);
   }, [pathname]); // re-check on navigation (e.g. after claim/login)
 
   // Close on navigation, and on Escape. Without the first, tapping a link leaves

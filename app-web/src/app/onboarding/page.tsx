@@ -17,6 +17,7 @@
 // first size check behind ten questions throws away an honest answer to collect
 // data the person may not have to hand.
 
+import { cmFrom, cmTo, kgFrom, kgTo, preferredUnits, rangeIssues, saveUnits, type LengthUnit, type RangeIssue, type RangedField, type Units, type WeightUnit } from "@/lib/units";
 import { useEffect, useState } from "react";
 import { Button, Card, Field, LinkButton, inputClass } from "@/components/ui";
 import { ArrowRight } from "@/components/Icon";
@@ -25,7 +26,7 @@ import {
   SCORED_MEASUREMENTS,
   type OnboardingStep,
 } from "@/lib/onboardingFlow";
-import { useT } from "@/i18n/client";
+import { useLocale, useT } from "@/i18n/client";
 import { useGarmentText } from "@/i18n/garment";
 import { Headline } from "@/components/Headline";
 import { AnimatedFitPassportLogoLazy } from "@/components/AnimatedFitPassportLogoLazy";
@@ -57,13 +58,41 @@ const EMPTY: Profile = {
 const SEX_OPTIONS = ["male", "female", "unspecified"] as const;
 const SHOPS_OPTIONS = ["mens", "womens", "unisex"] as const;
 const FIT_OPTIONS: Array<Profile["preferredFit"]> = ["slim", "regular", "relaxed", "oversized"];
-const UNSCORED_NUMBERS: Array<{ k: "heightCm" | "weightKg" | "hipCm" | "inseamCm" | "sleeveCm"; unit: string }> = [
-  { k: "heightCm", unit: "cm" },
-  { k: "weightKg", unit: "kg" },
-  { k: "hipCm", unit: "cm" },
-  { k: "inseamCm", unit: "cm" },
-  { k: "sleeveCm", unit: "cm" },
+const UNSCORED_NUMBERS: Array<{ k: "heightCm" | "weightKg" | "hipCm" | "inseamCm" | "sleeveCm"; kind: "len" | "wt" }> = [
+  { k: "heightCm", kind: "len" },
+  { k: "weightKg", kind: "wt" },
+  { k: "hipCm", kind: "len" },
+  { k: "inseamCm", kind: "len" },
+  { k: "sleeveCm", kind: "len" },
 ];
+
+/**
+ * A number typed in the chosen unit, stored in cm or kg (Session 100). Keeps what was
+ * typed while typing, and shows the stored value again when the unit changes.
+ */
+function UnitInput({ stored, unit, kind, onChange, invalid }: {
+  stored: number | null; unit: string; kind: "len" | "wt"; onChange: (v: number | null) => void; invalid?: boolean;
+}) {
+  const show = (v: number | null) => (v == null ? "" : String(kind === "len" ? cmTo(v, unit as LengthUnit) : kgTo(v, unit as WeightUnit)));
+  const [text, setText] = useState(show(stored));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => setText(show(stored)), [unit]);
+  return (
+    <input
+      type="text"
+      inputMode="decimal"
+      value={text}
+      aria-invalid={invalid || undefined}
+      onChange={(e) => {
+        setText(e.target.value);
+        const n = Number(e.target.value.replace(",", "."));
+        onChange(e.target.value.trim() === "" || !Number.isFinite(n) ? null : kind === "len" ? cmFrom(n, unit as LengthUnit) : kgFrom(n, unit as WeightUnit));
+      }}
+      className={inputClass + (invalid ? " border-bad" : "")}
+      placeholder="—"
+    />
+  );
+}
 
 export default function OnboardingPage() {
   const t = useT("onboarding");
@@ -73,13 +102,22 @@ export default function OnboardingPage() {
   const [stepIndex, setStepIndex] = useState(0);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [showMore, setShowMore] = useState(false);
+  const locale = useLocale();
+  // The units the numbers are typed in, and what is out of range (Session 100).
+  const [units, setUnitsState] = useState<Units>({ length: "cm", weight: "kg" });
+  const [issues, setIssues] = useState<RangeIssue[]>([]);
+  const setUnits = (u: Units) => { setUnitsState(u); saveUnits(u); };
 
   useEffect(() => {
     fetch("/api/profile")
       .then((r) => r.json())
-      .then((d) => { if (d.profile) setProfile({ ...EMPTY, ...d.profile }); })
+      .then((d) => {
+        if (d.profile) setProfile({ ...EMPTY, ...d.profile });
+        // Inches and pounds for a US shopper reading English; centimetres otherwise.
+        setUnitsState(preferredUnits(locale === "zh" ? "CN" : d.profile?.region ?? null));
+      })
       .catch(() => { /* an empty profile is a valid starting point — never block on this */ });
-  }, []);
+  }, [locale]);
 
   function update<K extends keyof Profile>(k: K, v: Profile[K]) {
     setProfile((p) => ({ ...p, [k]: v }));
@@ -89,6 +127,10 @@ export default function OnboardingPage() {
   const isLast = stepIndex === ONBOARDING_STEPS.length - 1;
 
   async function save() {
+    // Checked here first, so the person hears which number, and what it may mean.
+    const found = rangeIssues(profile);
+    setIssues(found);
+    if (found.length) { setStatus("idle"); return; }
     setStatus("saving");
     try {
       const res = await fetch("/api/profile", {
@@ -103,6 +145,36 @@ export default function OnboardingPage() {
   }
 
   const measurementsGiven = SCORED_MEASUREMENTS.filter((m) => profile[m] != null).length;
+
+  // What is wrong with one number, in its own unit, and the likely fix.
+  function IssueNote({ field }: { field: RangedField }) {
+    const i = issues.find((x) => x.field === field);
+    if (!i) return null;
+    const len = field !== "weightKg";
+    const unit = len ? units.length : units.weight;
+    const shown = (v: number) => (len ? cmTo(v, units.length) : kgTo(v, units.weight));
+    const typed = shown(i.value);
+    const fixUnit = len && units.length === "cm" && i.looksLikeInches ? "in" : !len && units.weight === "kg" && i.looksLikePounds ? "lb" : null;
+    return (
+      <p className="mt-1 text-xs text-bad">
+        {t("outOfRange", { value: typed, unit, min: shown(i.min), max: shown(i.max) })}
+        {fixUnit && (
+          <button
+            type="button"
+            className="ml-2 font-medium underline underline-offset-2"
+            onClick={() => {
+              // They typed in the other unit: take the number as typed, in that unit.
+              update(field, (len ? cmFrom(typed, "in") : kgFrom(typed, "lb")) as Profile[RangedField]);
+              setUnits(len ? { ...units, length: "in" } : { ...units, weight: "lb" });
+              setIssues((xs) => xs.filter((x) => x.field !== field));
+            }}
+          >
+            {t(fixUnit === "in" ? "meantInches" : "meantPounds", { value: typed })}
+          </button>
+        )}
+      </p>
+    );
+  }
 
   return (
     <main className="flex-1">
@@ -210,19 +282,26 @@ export default function OnboardingPage() {
                 <>
                   <p className="text-sm text-ink-soft">{t("measurementsIntro")}</p>
                   <div className="mt-4 space-y-4">
+                    <div className="flex flex-wrap items-center gap-2" role="radiogroup" aria-label={t("unitsLabel")}>
+                      <span className="text-xs text-ink-soft">{t("unitsLabel")}</span>
+                      {([{ length: "cm", weight: "kg" }, { length: "in", weight: "lb" }] as Units[]).map((u) => (
+                        <button
+                          key={u.length}
+                          type="button"
+                          role="radio"
+                          aria-checked={units.length === u.length}
+                          onClick={() => setUnits(u)}
+                          className={`min-h-9 rounded-full border px-3 text-xs font-medium ${units.length === u.length ? "border-ink bg-ink text-paper" : "border-line text-ink-soft hover:border-ink/30"}`}
+                        >
+                          {u.length} · {u.weight}
+                        </button>
+                      ))}
+                    </div>
                     {SCORED_MEASUREMENTS.map((m) => (
-                      <Field key={m} label={t("withUnit", { label: t(`m.${m}.label`), unit: "cm" })} hint={t("optional")}>
-                        <input
-                          type="number"
-                          step="0.1"
-                          inputMode="decimal"
-                          value={(profile[m] as number | null) ?? ""}
-                          onChange={(e) =>
-                            update(m, (e.target.value === "" ? null : Number(e.target.value)) as Profile[typeof m])
-                          }
-                          className={inputClass}
-                          placeholder="—"
-                        />
+                      <Field key={m} label={t("withUnit", { label: t(`m.${m}.label`), unit: units.length })} hint={t("optional")}>
+                        <UnitInput stored={profile[m] as number | null} unit={units.length} kind="len" invalid={issues.some((i) => i.field === m)}
+                          onChange={(v) => update(m, v as Profile[typeof m])} />
+                        <IssueNote field={m} />
                         <p className="mt-1 text-[11px] text-ink-faint">{t(`m.${m}.why`)}</p>
                       </Field>
                     ))}
@@ -243,18 +322,10 @@ export default function OnboardingPage() {
                       <p className="text-xs text-ink-faint">{t("extraIntro")}</p>
                       <div className="grid gap-4 sm:grid-cols-2">
                         {UNSCORED_NUMBERS.map((f) => (
-                          <Field key={f.k} label={t("withUnit", { label: t(`extra.${f.k}`), unit: f.unit })} hint={t("optional")}>
-                            <input
-                              type="number"
-                              step="0.1"
-                              inputMode="decimal"
-                              value={(profile[f.k] as number | null) ?? ""}
-                              onChange={(e) =>
-                                update(f.k, (e.target.value === "" ? null : Number(e.target.value)) as Profile[typeof f.k])
-                              }
-                              className={inputClass}
-                              placeholder="—"
-                            />
+                          <Field key={f.k} label={t("withUnit", { label: t(`extra.${f.k}`), unit: f.kind === "len" ? units.length : units.weight })} hint={t("optional")}>
+                            <UnitInput stored={profile[f.k] as number | null} unit={f.kind === "len" ? units.length : units.weight} kind={f.kind}
+                              invalid={issues.some((i) => i.field === f.k)} onChange={(v) => update(f.k, v as Profile[typeof f.k])} />
+                            <IssueNote field={f.k} />
                           </Field>
                         ))}
                       </div>
@@ -316,6 +387,9 @@ export default function OnboardingPage() {
               )}
               {status === "error" && (
                 <span className="text-sm text-bad">{t("wentWrong")}</span>
+              )}
+              {issues.length > 0 && (
+                <span role="alert" className="text-sm text-bad">{t("checkMarked")}</span>
               )}
             </div>
 

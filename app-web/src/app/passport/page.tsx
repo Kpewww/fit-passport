@@ -5,6 +5,13 @@
 // portrait avatar) while staying quiet enough to be actually usable. Editable
 // inline: click a field, change it, blur/Enter saves. All fields optional.
 
+import { PROFILE_RANGES, cmFrom, cmTo, kgFrom, kgTo, preferredUnits, rangeIssues, saveUnits, type RangeIssue, type RangedField } from "@/lib/units";
+
+/** Which measurement label names a ranged field. */
+const RANGE_LABEL = {
+  heightCm: "m.height", weightKg: "m.weight", chestCm: "m.chest", waistCm: "m.waist", hipCm: "m.hip",
+  shoulderCm: "m.shoulder", sleeveCm: "m.sleeve", inseamCm: "m.inseam",
+} as const satisfies Record<RangedField, string>;
 import { useEffect, useState } from "react";
 import { ArrowLeft, ArrowRight, Close, Download, Heart, Pencil, Refresh } from "@/components/Icon";
 import Link from "next/link";
@@ -20,7 +27,7 @@ import { MetalCard, CardField, resolveTheme, CARD_THEMES } from "@/components/Me
 import { downloadCardPng } from "@/lib/cardExport";
 import { garmentLabel } from "@/lib/garments";
 import type { OutfitView } from "@/components/OutfitCard";
-import { useT } from "@/i18n/client";
+import { useLocale, useT } from "@/i18n/client";
 import { useGarmentText } from "@/i18n/garment";
 import type { Translator } from "@/i18n/translator";
 
@@ -94,6 +101,9 @@ export default function PassportPage() {
   const [bodyChanged, setBodyChanged] = useState(false); // measurement edited this visit
   const [lengthUnit, setLengthUnit] = useState<"cm" | "in">("cm"); // display unit for lengths
   const [weightUnit, setWeightUnit] = useState<"kg" | "lb">("kg"); // display unit for weight
+  // A number outside what a body measures, not saved, with its likely fix (Session 100).
+  const [rangeNote, setRangeNote] = useState<RangeIssue | null>(null);
+  const locale = useLocale();
   const [mode, setMode] = useState<"view" | "edit">("view");
   const [pinnedBadges, setPinnedBadges] = useState<string[]>([]);
   const [earnedBadges, setEarnedBadges] = useState<string[]>([]);
@@ -131,6 +141,10 @@ export default function PassportPage() {
     ]).then(([p, m, s, o]) => {
       const prof = { ...EMPTY, ...(p.profile ?? {}) };
       setProfile(prof);
+      // Remembered once chosen; before that, inches and pounds for a US shopper.
+      const u = preferredUnits(locale === "zh" ? "CN" : prof.region);
+      setLengthUnit(u.length);
+      setWeightUnit(u.weight);
       setMe({ claimed: m.claimed, username: m.username, accountCode: m.accountCode, memberNo: m.memberNo ?? null, role: m.role });
       setShowBodyType(m.showBodyType ?? true);
       setClosetCount(s.closetCount ?? 0);
@@ -149,6 +163,8 @@ export default function PassportPage() {
       const focus = q.get("focus");
       if (focus && /^[a-z]+$/.test(focus)) setFocusSection(focus);
     });
+    // Loaded once; the units read the language at that moment, which is enough.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const [focusSection, setFocusSection] = useState<string | null>(null);
@@ -184,6 +200,11 @@ export default function PassportPage() {
     if (!profile) return;
     const next = { ...profile, [k]: v };
     setProfile(next);
+    // One number out of range used to fail the whole save with "save failed": now
+    // that number alone is held back, named, and its likely unit offered.
+    const issue = typeof v === "number" && k in PROFILE_RANGES ? rangeIssues({ [k]: v } as Partial<Record<RangedField, number>>)[0] : undefined;
+    if (issue) { setRangeNote(issue); return; }
+    if (rangeNote?.field === k) setRangeNote(null);
     persist(next);
     // If a body measurement changed and there are clothes to re-rate, surface
     // the refresh prompt — fit drifts as the body changes.
@@ -356,13 +377,13 @@ export default function PassportPage() {
                   label={t("lengths")}
                   options={["cm", "in"]}
                   value={lengthUnit}
-                  onChange={(u) => setLengthUnit(u as "cm" | "in")}
+                  onChange={(u) => { setLengthUnit(u as "cm" | "in"); saveUnits({ length: u as "cm" | "in", weight: weightUnit }); }}
                 />
                 <UnitToggle
                   label={t("weight")}
                   options={["kg", "lb"]}
                   value={weightUnit}
-                  onChange={(u) => setWeightUnit(u as "kg" | "lb")}
+                  onChange={(u) => { setWeightUnit(u as "kg" | "lb"); saveUnits({ length: lengthUnit, weight: u as "kg" | "lb" }); }}
                 />
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -457,6 +478,27 @@ export default function PassportPage() {
               <p className="font-medium text-ink">
                 {status === "saving" ? t("saving") : status === "error" ? t("saveFailed") : t("autosave")}
               </p>
+              {rangeNote && (() => {
+                const len = rangeNote.field !== "weightKg";
+                const unit = len ? lengthUnit : weightUnit;
+                const shown = (v: number) => (len ? cmTo(v, lengthUnit) : kgTo(v, weightUnit));
+                const typed = shown(rangeNote.value);
+                const fix = len && lengthUnit === "cm" && rangeNote.looksLikeInches ? "in" : !len && weightUnit === "kg" && rangeNote.looksLikePounds ? "lb" : null;
+                return (
+                  <p role="alert" className="text-[11px] text-bad">
+                    {t("outOfRange", { field: t(RANGE_LABEL[rangeNote.field]), value: typed, unit, min: shown(rangeNote.min), max: shown(rangeNote.max) })}
+                    {fix && (
+                      <button type="button" className="ml-1.5 font-medium underline underline-offset-2" onClick={() => {
+                        if (fix === "in") { setLengthUnit("in"); saveUnits({ length: "in", weight: weightUnit }); }
+                        else { setWeightUnit("lb"); saveUnits({ length: lengthUnit, weight: "lb" }); }
+                        update(rangeNote.field as keyof Profile, (fix === "in" ? cmFrom(typed, "in") : kgFrom(typed, "lb")) as never);
+                      }}>
+                        {t(fix === "in" ? "meantInches" : "meantPounds", { value: typed })}
+                      </button>
+                    )}
+                  </p>
+                );
+              })()}
               <p className="text-[11px] text-ink-faint">
                 {me.claimed ? t("savedAccount") : t("savedDevice")}
               </p>

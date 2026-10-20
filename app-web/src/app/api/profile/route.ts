@@ -2,19 +2,23 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
+import { PROFILE_RANGES, type RangedField } from "@/lib/units";
+
+// The ranges live in lib/units.ts, so the forms check exactly what this accepts.
+const ranged = (f: RangedField) => z.coerce.number().min(PROFILE_RANGES[f][0]).max(PROFILE_RANGES[f][1]).nullable().optional();
 
 // Onboarding form. Every measurement is optional — cold start is fine.
 const ProfileSchema = z.object({
   sex: z.enum(["male", "female", "unspecified"]).nullable().optional(),
   shopsFor: z.string().max(40).nullable().optional(), // csv of mens/womens/unisex
-  heightCm: z.coerce.number().min(80).max(260).nullable().optional(),
-  weightKg: z.coerce.number().min(20).max(300).nullable().optional(),
-  chestCm: z.coerce.number().min(50).max(200).nullable().optional(),
-  waistCm: z.coerce.number().min(40).max(200).nullable().optional(),
-  hipCm: z.coerce.number().min(40).max(200).nullable().optional(),
-  shoulderCm: z.coerce.number().min(20).max(80).nullable().optional(),
-  sleeveCm: z.coerce.number().min(20).max(100).nullable().optional(),
-  inseamCm: z.coerce.number().min(40).max(120).nullable().optional(),
+  heightCm: ranged("heightCm"),
+  weightKg: ranged("weightKg"),
+  chestCm: ranged("chestCm"),
+  waistCm: ranged("waistCm"),
+  hipCm: ranged("hipCm"),
+  shoulderCm: ranged("shoulderCm"),
+  sleeveCm: ranged("sleeveCm"),
+  inseamCm: ranged("inseamCm"),
   // CSV of up to 3 fit preferences; first = primary. Validate each token.
   preferredFit: z
     .string()

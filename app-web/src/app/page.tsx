@@ -247,7 +247,21 @@ function Hero({
             browser. So the link box is still here, folded, and labelled for what
             it is — see docs/design/browser-extension.md. Since Session 85 the
             button goes straight to the Chrome Web Store listing. */}
-        <div className="mt-10 flex flex-col items-center gap-3 animate-rise" style={{ animationDelay: "180ms" }}>
+        {/* A phone cannot add a Chrome extension (Session 100, the live walk: the
+            phone's one button said "Add to Chrome"). Below `sm` the way in is the
+            check itself — a link, or a screenshot of the size chart. CSS decides,
+            so the server and the browser render the same thing. */}
+        <div className="mt-10 flex flex-col items-center gap-3 animate-rise sm:hidden" style={{ animationDelay: "180ms" }}>
+          <Link
+            href="/check"
+            className="inline-flex min-h-[48px] items-center gap-2.5 rounded-full bg-paper px-7 text-sm font-medium text-ink transition-colors hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-paper"
+          >
+            {t("hero.ctaPhone")} <ArrowRight size={16} />
+          </Link>
+          <p className="max-w-xs text-xs text-paper/60">{t("hero.notePhone")}</p>
+        </div>
+
+        <div className="mt-10 hidden flex-col items-center gap-3 animate-rise sm:flex" style={{ animationDelay: "180ms" }}>
           <a
             href={EXTENSION_DISTRIBUTION.href}
             target="_blank"
@@ -259,7 +273,7 @@ function Hero({
           <p className="text-xs text-paper/60">{t("hero.noteStore")}</p>
         </div>
 
-        <details className="group mx-auto mt-8 max-w-xl text-left animate-rise" style={{ animationDelay: "220ms" }}>
+        <details className="group mx-auto mt-8 hidden max-w-xl text-left animate-rise sm:block" style={{ animationDelay: "220ms" }}>
           <summary className="mx-auto flex min-h-[44px] w-fit cursor-pointer list-none items-center gap-1.5 rounded-full px-3 text-sm text-paper/70 transition-colors hover:text-paper [&::-webkit-details-marker]:hidden">
             <CaretRight size={14} className="transition-transform group-open:rotate-90" />
             {t("hero.pasteLink")}

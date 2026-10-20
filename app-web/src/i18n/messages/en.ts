@@ -51,7 +51,7 @@ export const en = {
   footer: {
     tagline:
       "One body. One fit identity. Any store. A consumer-owned fit layer — you keep the profile, it works wherever you shop.",
-    privacy: "Precise measurements never leave your account.",
+    privacy: "Your precise measurements are never shared with other users.",
     columns: { product: "Product", community: "Community", account: "Account" },
     links: {
       check: "Check a size",
@@ -83,7 +83,9 @@ export const en = {
       title: "Know what fits,<br/><accent>anywhere.</accent>",
       lede: "Check your size on any product page. We weigh it against the clothes you already own — and show our working.",
       cta: "Add Fit Passport to Chrome",
-      noteStore: "Free · from the Chrome Web Store · reads only the page you click it on",
+      ctaPhone: "Check a size",
+    notePhone: "Paste a product link, or a screenshot of the size chart. The extension is for Chrome on a computer.",
+    noteStore: "Free · from the Chrome Web Store · reads only the page you click it on",
       pasteLink: "Or paste a product link",
       placeholder: "Paste a product URL…",
       linkLabel: "Product link",
@@ -451,6 +453,10 @@ export const en = {
       matchScore: "match score <b>{n}</b>/100",
       confidence: "confidence <b>{pct}%</b>",
     },
+    next: {
+      upload: "Upload a screenshot of the size chart",
+      extension: "Use the browser extension",
+    },
     upload: {
       open: "Only have a size chart? Upload a picture of it",
       title: "Size from a chart picture",
@@ -658,6 +664,9 @@ export const en = {
     refresh: "Refresh",
     dismiss: "Dismiss",
     saving: "Saving…",
+    outOfRange: "{field}: {value} {unit} wasn't saved, it is outside {min}–{max} {unit}.",
+    meantInches: "I meant {value} inches",
+    meantPounds: "I meant {value} pounds",
     saveFailed: "Save failed — check connection",
     autosave: "Changes save automatically",
     savedAccount: "Edits are saved to your account as you type.",
@@ -757,6 +766,11 @@ export const en = {
     saving: "Saving…",
     savePassport: "Save passport",
     continue: "Continue",
+    unitsLabel: "Units",
+    outOfRange: "{value} {unit} is outside what we accept ({min}–{max} {unit}).",
+    meantInches: "I meant {value} inches",
+    meantPounds: "I meant {value} pounds",
+    checkMarked: "Check the number marked in red.",
     wentWrong: "Something went wrong.",
     skip: "Skip this — check a size now",
     skipNote: "You'll get a real answer at lower confidence, and we'll say what would sharpen it.",
@@ -1462,7 +1476,7 @@ export const en = {
     privacy: "Privacy & sharing",
     whoQ: "Who can see my stuff?",
     whoA:
-      "Anyone with your account code can view your closet (read-only) and — only if you opt in — a coarse body type. Precise cm/kg measurements never leave your account.",
+      "Anyone with your account code can view your closet (read-only) and — only if you opt in — a coarse body type. Precise cm/kg measurements are never shown to anyone else.",
     editQ: "How do I edit vs view?",
     editA:
       "Editing needs your password. Your account code alone can only view. That's the 'capability to read, credential to write' model.",

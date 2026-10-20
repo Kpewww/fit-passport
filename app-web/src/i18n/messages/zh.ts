@@ -48,7 +48,7 @@ export const zh: Messages = {
 
   footer: {
     tagline: "一身一证，通行每一家店。你的合身身份由你掌握，去往哪里，都能被读懂。",
-    privacy: "精确身形数据，只留在你的账户中。",
+    privacy: "你的精确身形数据，从不分享给其他用户。",
     columns: { product: "产品", community: "社区", account: "账户" },
     links: {
       check: "查找尺码",
@@ -80,7 +80,9 @@ export const zh: Messages = {
       title: "「穿」越时空，<br/><accent>合身随行。</accent>",
       lede: "无论在哪个品牌，Fit Passport 都会记住你的尺寸、偏好，以及真正适合你的衣服。",
       cta: "添加到 Chrome",
-      noteStore: "免费 · 来自 Chrome 应用商店 · 仅在你点击时读取当前页面",
+      ctaPhone: "查尺码",
+    notePhone: "粘贴商品链接，或上传尺码表截图。浏览器插件需在电脑上的 Chrome 使用。",
+    noteStore: "免费 · 来自 Chrome 应用商店 · 仅在你点击时读取当前页面",
       pasteLink: "也可粘贴商品链接",
       placeholder: "粘贴商品链接……",
       linkLabel: "商品链接",
@@ -444,6 +446,10 @@ export const zh: Messages = {
       matchScore: "匹配分 <b>{n}</b>/100",
       confidence: "可信度 <b>{pct}%</b>",
     },
+    next: {
+      upload: "上传尺码表截图",
+      extension: "使用浏览器插件",
+    },
     upload: {
       open: "只有尺码表？上传一张图片",
       title: "用尺码表图片推荐尺码",
@@ -643,6 +649,9 @@ export const zh: Messages = {
     refresh: "更新评价",
     dismiss: "暂时关闭",
     saving: "保存中……",
+    outOfRange: "{field}：{value} {unit} 没有保存，超出了 {min}–{max} {unit} 的范围。",
+    meantInches: "我填的是 {value} 英寸",
+    meantPounds: "我填的是 {value} 磅",
     saveFailed: "保存失败，请检查网络连接",
     autosave: "修改自动保存",
     savedAccount: "编辑内容会实时保存到你的账户。",
@@ -742,6 +751,11 @@ export const zh: Messages = {
     saving: "保存中……",
     savePassport: "保存护照",
     continue: "下一步",
+    unitsLabel: "单位",
+    outOfRange: "{value} {unit} 超出了可接受的范围（{min}–{max} {unit}）。",
+    meantInches: "我填的是 {value} 英寸",
+    meantPounds: "我填的是 {value} 磅",
+    checkMarked: "请检查标红的数字。",
     wentWrong: "出了点问题，请重试。",
     skip: "先跳过，查看推荐",
     skipNote: "仍会给出推荐，可信度会较低；我们也会说明补充哪些信息能让判断更可靠。",
@@ -1447,7 +1461,7 @@ export const zh: Messages = {
     privacy: "隐私与分享",
     whoQ: "谁能看到我的信息？",
     whoA:
-      "持有账户代码的人可以浏览你的衣橱，仅供查看；你主动选择后，也会展示概括体型。精确的 cm／kg 身形数据只留在你的账户中。",
+      "持有账户代码的人可以浏览你的衣橱，仅供查看；你主动选择后，也会展示概括体型。精确的 cm／kg 身形数据不会展示给任何其他人。",
     editQ: "浏览与编辑有什么区别？",
     editA: "账户代码用于浏览，密码用于编辑。仅凭账户代码无法修改你的内容。",
     directoryQ: "如何加入社区名录？",
