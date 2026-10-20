@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
-import { BODY_TONES, bodyReadiness, fitLink, labToHex, readFitLink, skinHex, toneHex } from "./bodyView";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { BODY_TONES, bodyReadiness, fitLink, labToHex, readFitLink, skinHex, toneHex, BODY_PREFS_KEY, readBodyLook, saveBodyKind } from "./bodyView";
 
 describe("what unlocks the 3D body", () => {
   it("stays locked without height and weight, and says which are missing", () => {
@@ -69,5 +69,36 @@ describe("the link from /check", () => {
       { key: "shoulder", verdict: "relaxed", deltaCm: 1.5 },
     ]);
     expect(readFitLink(new URLSearchParams("z=chest.s.1"))).toBeNull();
+  });
+});
+
+describe("the body look shared by /body and /check (Session 100)", () => {
+  const store = new Map<string, string>();
+  const ls = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) };
+  beforeEach(() => { store.clear(); vi.stubGlobal("localStorage", ls); });
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("uses the page's own default until the wearer has chosen", () => {
+    expect(readBodyLook("form").kind).toBe("form");
+    expect(readBodyLook("real").kind).toBe("real");
+  });
+
+  it("reads what /body stored, and drops values it does not know", () => {
+    store.set(BODY_PREFS_KEY, JSON.stringify({ kind: "real", tone: "skin3", undertone: "yellow", cup: "C", sex: "female", head: "f-a" }));
+    expect(readBodyLook("form")).toEqual({ kind: "real", tone: "skin3", undertone: "yellow", cup: "C", sex: "female" });
+    store.set(BODY_PREFS_KEY, JSON.stringify({ kind: "form", tone: "purple", undertone: "x", cup: "Z", sex: "other" }));
+    expect(readBodyLook("real")).toEqual({ kind: "form", tone: "form", undertone: "neutral", cup: null, sex: null });
+  });
+
+  it("saving the kind keeps every other choice /body made", () => {
+    store.set(BODY_PREFS_KEY, JSON.stringify({ kind: "real", head: "m-b", tone: "skin2" }));
+    saveBodyKind("form");
+    expect(JSON.parse(store.get(BODY_PREFS_KEY)!)).toEqual({ kind: "form", head: "m-b", tone: "skin2" });
+  });
+
+  it("survives storage that throws", () => {
+    vi.stubGlobal("localStorage", { getItem: () => { throw new Error("blocked"); }, setItem: () => { throw new Error("blocked"); } });
+    expect(readBodyLook("form").kind).toBe("form");
+    expect(() => saveBodyKind("real")).not.toThrow();
   });
 });

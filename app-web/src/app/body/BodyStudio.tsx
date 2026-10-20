@@ -20,7 +20,7 @@ import { Card, Page, PageHeader } from "@/components/ui";
 import { Check, Lock } from "@/components/Icon";
 import { SafeBoundary } from "@/components/SafeBoundary";
 import { useT } from "@/i18n/client";
-import { BODY_TONES, CUPS, UNDERTONES, bodyReadiness, readFitLink, toneHex, type Cup, type FitView, type ReadinessItem, type ToneId, type Undertone } from "@/lib/bodyView";
+import { BODY_PREFS_KEY, BODY_TONES, CUPS, UNDERTONES, bodyReadiness, readFitLink, toneHex, type Cup, type FitView, type ReadinessItem, type ToneId, type Undertone } from "@/lib/bodyView";
 import { VERDICT_COLOUR } from "@/lib/fitMapColours";
 import type { AnnyData, AnnyFit } from "@/lib/annyBody";
 import type { Attachment } from "@/components/FitMap3D";
@@ -36,7 +36,7 @@ type Profile = {
 // The body's sex is chosen here (null: the passport's); the head is none or a face of
 // face A, B or C; a cup size for a woman's body (Sessions 98d, 98f, 98g).
 type Prefs = { kind: "form" | "real"; sex: "female" | "male" | null; head: HeadChoice; tone: ToneId; undertone: Undertone; cup: Cup | null };
-const PREFS_KEY = "fp-body3d";
+const PREFS_KEY = BODY_PREFS_KEY;
 const DEFAULT_PREFS: Prefs = { kind: "real", sex: null, head: "none", tone: "form", undertone: "neutral", cup: null };
 
 function readPrefs(): Prefs {

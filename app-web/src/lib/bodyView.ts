@@ -95,6 +95,38 @@ export function bodyReadiness(f: BodyFacts): Readiness {
   return { level, done, missing, toUnlock, girthsMissing };
 }
 
+// ---- the look, shared by /body and /check's fit map ----
+
+/** Where /body keeps its choices in this browser; /check's fit map reads the same. */
+export const BODY_PREFS_KEY = "fp-body3d";
+
+export type BodyLook = { kind: "form" | "real"; tone: ToneId; undertone: Undertone; cup: Cup | null; sex: "female" | "male" | null };
+
+/** The body kind and colour chosen on /body (or on /check). Until the wearer chooses, the
+ *  page's own default kind: /body opens on the realistic body, /check on the dress form. */
+export function readBodyLook(defaultKind: "form" | "real"): BodyLook {
+  const look: BodyLook = { kind: defaultKind, tone: "form", undertone: "neutral", cup: null, sex: null };
+  try {
+    const p = JSON.parse(localStorage.getItem(BODY_PREFS_KEY) ?? "null");
+    if (p && (p.kind === "form" || p.kind === "real")) {
+      look.kind = p.kind;
+      if (BODY_TONES.some((t) => t.id === p.tone)) look.tone = p.tone;
+      if (p.undertone in UNDERTONES) look.undertone = p.undertone;
+      if (p.cup && p.cup in CUPS) look.cup = p.cup;
+      if (p.sex === "female" || p.sex === "male") look.sex = p.sex;
+    }
+  } catch { /* private window or blocked storage: the defaults */ }
+  return look;
+}
+
+/** Remember the body kind, keeping every other choice /body stored. */
+export function saveBodyKind(kind: "form" | "real"): void {
+  try {
+    const p = JSON.parse(localStorage.getItem(BODY_PREFS_KEY) ?? "null") ?? {};
+    localStorage.setItem(BODY_PREFS_KEY, JSON.stringify({ ...p, kind }));
+  } catch { /* not kept; still shown */ }
+}
+
 // ---- the link from /check ----
 
 const CODE: Record<Verdict, string> = { "too small": "xs", snug: "s", "true to size": "t", relaxed: "r", "too big": "xb" };

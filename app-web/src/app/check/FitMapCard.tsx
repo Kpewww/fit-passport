@@ -6,7 +6,8 @@ import { ArrowRight } from "@/components/Icon";
 import { Card } from "@/components/ui";
 import { SafeBoundary } from "@/components/SafeBoundary";
 import { VERDICT_COLOUR, FORM_COLOUR, type Zone } from "@/lib/fitMapColours";
-import { fitLink } from "@/lib/bodyView";
+import { fitLink, readBodyLook, saveBodyKind, toneHex, type BodyLook } from "@/lib/bodyView";
+import { useRealisticBody } from "@/components/useRealisticBody";
 import { useT } from "@/i18n/client";
 import type { Body, Product, SizeScore } from "./types";
 
@@ -46,6 +47,12 @@ export function FitMapCard({
     .map((o) => ranked.find((r) => r.label === o.label))
     .filter((r): r is SizeScore => !!r?.zones?.length);
   const [label, setLabel] = useState(sizes.some((s) => s.label === bestLabel) ? bestLabel : sizes[0]?.label);
+  // Dress form or the realistic body (Session 100), the same choice /body remembers.
+  // Read after mount: the server cannot see this browser's storage.
+  const [look, setLook] = useState<BodyLook | null>(null);
+  useEffect(() => setLook(readBodyLook("form")), []);
+  const kind = look?.kind ?? "form";
+  const chooseKind = (k: "form" | "real") => { saveBodyKind(k); setLook((l) => (l ? { ...l, kind: k } : l)); };
   // three.js loads only once the card is on screen.
   const hostRef = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -59,6 +66,8 @@ export function FitMapCard({
     io.observe(el);
     return () => io.disconnect();
   }, [visible]);
+
+  const real = useRealisticBody(visible && kind === "real", { sex: look?.sex ?? null, cup: look?.cup ?? null });
 
   const current = sizes.find((s) => s.label === label) ?? sizes[0];
   if (!current) return null;
@@ -74,24 +83,64 @@ export function FitMapCard({
   return (
     <Card>
       <div ref={hostRef} className="flex flex-col gap-6 md:flex-row md:items-start">
-        <div className="flex flex-shrink-0 justify-center rounded-2xl bg-paper-soft md:w-[300px]">
+        <div className="flex flex-shrink-0 flex-col items-center rounded-2xl bg-paper-soft md:w-[300px]">
           <SafeBoundary fallback={<p className="flex h-[300px] items-center px-6 text-center text-xs text-ink-faint">{t("fitMap.cantStart")}</p>}>
-            {visible ? (
-              <Suspense fallback={<div className="h-[300px] w-[300px] animate-pulse rounded-2xl bg-paper-dim" />}>
-                <FitMap3D
-                  size={300}
-                  measurements={{
-                    heightCm: body.heightCm, chestCm: body.chestCm, waistCm: body.waistCm, hipCm: body.hipCm,
-                    shoulderCm: body.shoulderCm, inseamCm: body.inseamCm, sex: body.sex,
-                  }}
-                  zones={current.zones}
-                  garment={garment}
-                />
-              </Suspense>
-            ) : (
+            {!visible ? (
               <div className="h-[300px] w-[300px]" />
+            ) : kind === "real" && real.state !== "ready" ? (
+              real.state === "locked" ? (
+                <div className="flex h-[300px] w-[300px] flex-col items-center justify-center gap-3 px-6 text-center">
+                  <p className="text-xs text-ink-soft">{t("fitMap.realLocked")}</p>
+                  <Link href="/passport?edit=1&focus=measurements" className="text-xs font-medium text-brand hover:underline">{t("fitMap.realLockedCta")}</Link>
+                </div>
+              ) : real.state === "error" ? (
+                <p className="flex h-[300px] w-[300px] items-center px-6 text-center text-xs text-ink-faint">{t("fitMap.cantStart")}</p>
+              ) : (
+                <div className="flex h-[300px] w-[300px] animate-pulse items-center justify-center rounded-2xl bg-paper-dim text-xs text-ink-faint">{t("fitMap.realLoading")}</div>
+              )
+            ) : (
+              <Suspense fallback={<div className="h-[300px] w-[300px] animate-pulse rounded-2xl bg-paper-dim" />}>
+                {kind === "real" && real.state === "ready" ? (
+                  <FitMap3D
+                    size={300}
+                    measurements={real.measurements}
+                    body={real.body}
+                    zones={current.zones}
+                    garment={null}
+                    zoom={1.5}
+                    tint={toneHex(look!.tone, look!.undertone)}
+                    skin={look!.tone !== "form"}
+                  />
+                ) : (
+                  <FitMap3D
+                    size={300}
+                    measurements={{
+                      heightCm: body.heightCm, chestCm: body.chestCm, waistCm: body.waistCm, hipCm: body.hipCm,
+                      shoulderCm: body.shoulderCm, inseamCm: body.inseamCm, sex: body.sex,
+                    }}
+                    zones={current.zones}
+                    garment={garment}
+                  />
+                )}
+              </Suspense>
             )}
           </SafeBoundary>
+          <div className="mt-3 flex justify-center pb-3" role="radiogroup" aria-label={t("fitMap.kindLabel")}>
+            <div className="inline-flex rounded-full border border-line bg-white p-0.5 text-xs font-medium">
+              {(["form", "real"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  role="radio"
+                  aria-checked={kind === k}
+                  onClick={() => chooseKind(k)}
+                  className={`min-h-[32px] rounded-full px-3.5 transition-colors ${kind === k ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"}`}
+                >
+                  {t(k === "form" ? "fitMap.kindForm" : "fitMap.kindReal")}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="min-w-0 flex-1">
@@ -144,8 +193,9 @@ export function FitMapCard({
           </div>
 
           <p className="mt-4 text-[11px] leading-relaxed text-ink-faint">
-            {t("fitMap.caption")}
-            {garment && <> {t("fitMap.captionShell", { size: current.label })}</>}
+            {kind === "real" ? t("fitMap.captionReal") : t("fitMap.caption")}
+            {garment && kind === "form" && <> {t("fitMap.captionShell", { size: current.label })}</>}
+            {garment && kind === "real" && <> {t("fitMap.shellFormOnly")}</>}
             {body.estimated && <> {t("fitMap.estimated")}</>}
           </p>
 
