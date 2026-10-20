@@ -27,6 +27,9 @@ export const PROVENANCE: Record<string, ConstantSource> = {
   "ANCHOR_WEIGHTS.outcomePenalty": A("same as the default"),
   "ANCHOR_WEIGHTS.minDataFloor": A("same as the default"),
   "BRAND_BIAS_WEIGHT": A("hand-set; per-user bias is capped at ±1 step regardless"),
+  "SELLER_RANGE.weight": A("below a measured chest (0.45), near brand bias (0.15): the seller's own rule, used only when the wearer gave no chest"),
+  "SELLER_RANGE.outsideSigmaCm": A("height outside the seller's range fades over a few cm; hand-set"),
+  "SELLER_RANGE.outsideSigmaKg": A("weight outside the seller's range fades over a few kg; hand-set"),
 
   "DIMENSIONS.chest.weight": A("chest-dominant by design; the literature models fit as multi-measurement but gives no weights"),
   "DIMENSIONS.chest.sigmaCm": A("roughly one size step on a 4 cm ladder; real charts step 5–10 cm (Session 78)"),

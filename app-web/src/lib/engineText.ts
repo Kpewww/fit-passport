@@ -20,7 +20,7 @@ import type { Locale } from "@/i18n/config";
 
 export type Verdict = "too small" | "snug" | "true to size" | "relaxed" | "too big";
 export type DirectionKey = "too-tight" | "snug" | "just-right" | "roomy" | "too-loose";
-export type SignalName = "measurement-fit" | "known-good" | "preference" | "outcome" | "completeness" | "brand-bias";
+export type SignalName = "measurement-fit" | "known-good" | "preference" | "outcome" | "completeness" | "brand-bias" | "seller-range";
 export type Dim = "chest" | "waist" | "shoulder" | "hip";
 
 export interface EngineText {
@@ -41,6 +41,9 @@ export interface EngineText {
   roughSameLabel(label: string): string;
   roughFromPiece(label: string): string;
   roughUnreadable(label: string): string;
+  // ---- the seller's height and weight per size (Session 100) ----
+  /** h/w: the wearer's and the size's range, each present only when both sides gave it. */
+  sellerRange(p: { size: string; h?: { you: number; lo: number; hi: number }; w?: { you: number; lo: number; hi: number }; inside: boolean }): string;
   // ---- purchase outcomes ----
   exchanged(from: string, to: string, brand: string | null): string;
   returned(size: string, brand: string | null, how: "tight" | "loose" | "unknown"): string;
@@ -102,6 +105,7 @@ const EN_SIGNAL: Record<SignalName, string> = {
   "known-good": "a garment you already own",
   outcome: "what you kept or returned before",
   "brand-bias": "how this brand has run for you",
+  "seller-range": "the seller's height and weight guide",
   preference: "preference",
   completeness: "completeness",
 };
@@ -152,6 +156,11 @@ export const EN_TEXT: EngineText = {
   roughFromPiece: (label) =>
     `A rough guess from your ${label}: sizes carry over only roughly between brands and garment types. Add your chest, or a piece of this type that fits, for a real answer.`,
   roughUnreadable: (label) => `Your ${label} can't be placed on this page's sizes yet, so there is nothing to guess from.`,
+  sellerRange: ({ size, h, w, inside }) => {
+    const parts = [h && `${h.lo}–${h.hi} cm`, w && `${w.lo}–${w.hi} kg`].filter(Boolean).join(" and ");
+    const you = [h && `${h.you} cm`, w && `${w.you} kg`].filter(Boolean).join(", ");
+    return `The seller says ${size} is for ${parts}; you are ${you}${inside ? "" : ", outside that"}. The seller's own guide, a weak signal until you add your chest.`;
+  },
   exchanged: (from, to, brand) => `You exchanged a ${from} for a ${to} in ${brand ?? "similar"}`,
   returned: (size, brand, how) =>
     `You returned a ${size} in ${brand ?? "similar"} (${how === "tight" ? "too tight" : how === "loose" ? "too loose" : "fit issue"})`,
@@ -263,6 +272,7 @@ const ZH_SIGNAL: Record<SignalName, string> = {
   "known-good": "你已有的衣物",
   outcome: "你曾留下或退回的衣物",
   "brand-bias": "这个品牌在你身上的版型表现",
+  "seller-range": "卖家的身高体重建议",
   preference: "版型偏好",
   completeness: "信息完整度",
 };
@@ -306,6 +316,11 @@ export const ZH_TEXT: EngineText = {
   roughSameLabel: (label) => `粗略估计：你已有同品牌的 ${label}，这个页面上有相同的尺码标签。补充胸围，或添加一件同类型且合身的衣物，即可得到真正的推荐。`,
   roughFromPiece: (label) => `根据你的 ${label} 粗略估计：不同品牌、不同类型的尺码只能大致对应。补充胸围，或添加一件同类型且合身的衣物，即可得到真正的推荐。`,
   roughUnreadable: (label) => `你的 ${label} 的尺码还无法对应到这个页面的尺码上，所以暂时没有可以估计的依据。`,
+  sellerRange: ({ size, h, w, inside }) => {
+    const parts = [h && `身高 ${h.lo}–${h.hi} cm`, w && `体重 ${w.lo}–${w.hi} 公斤`].filter(Boolean).join("、");
+    const you = [h && `${h.you} cm`, w && `${w.you} 公斤`].filter(Boolean).join("、");
+    return `卖家标注 ${size} 适合${parts}；你是 ${you}${inside ? "" : "，不在这个范围内"}。这是卖家自己的建议，只作弱参考；补充胸围后会以你的尺寸为准。`;
+  },
   exchanged: (from, to, brand) => `你曾将${brandText(brand)}的 ${from} 换成 ${to}。`,
   returned: (size, brand, how) =>
     `你曾退回${brandText(brand)}的 ${size}，原因是${how === "tight" ? "太紧" : how === "loose" ? "太松" : "合身度不合适"}。`,

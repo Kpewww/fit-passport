@@ -214,6 +214,7 @@ export const zh: Messages = {
       outcome: "穿着结果",
       completeness: "信息完整度",
       "brand-bias": "品牌尺码差异",
+      "seller-range": "卖家建议",
     },
   },
 

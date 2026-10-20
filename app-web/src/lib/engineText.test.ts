@@ -31,6 +31,7 @@ const ARGS: Args = {
   roughSameLabel: ["Uniqlo M"],
   roughFromPiece: ["Uniqlo M"],
   roughUnreadable: ["Uniqlo M"],
+  sellerRange: [{ size: "M", h: { you: 178, lo: 160, hi: 180 }, w: { you: 74, lo: 50, hi: 65 }, inside: false }],
   exchanged: ["M", "L", "Uniqlo"],
   returned: ["M", null, "tight"],
   kept: ["L", "COS"],

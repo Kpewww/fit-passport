@@ -30,3 +30,14 @@ split the 1,500-line page so the result's secondary cards load when shown.
 Session 98a: /closet **140 kB** (the shared colour picker, the product-link check, the optional add step).
 Session 98b: /closet **144 kB**, /outfits **132 kB**. The two-level type browser and its search words load on
 demand. The 103-type list itself is in the shared chunk, because sizeSystems, GarmentIcon and the names read it.
+
+## Done (Session 100)
+
+/check **130 → 116 kB**, /closet **144 → 126 kB** (`next build`, First Load JS).
+- `confidenceWeights.ts` is a leaf again. Its values had been re-exported from
+  scoringConstants, which dragged the PROVENANCE registry onto every page that showed
+  the promise. The registry itself moved to `scoringProvenance.ts`.
+- /check: the converter, the listing forms, the ease diagram, the evidence guide, the
+  fit map card, the source row and the judgement card are separate files loaded with
+  `next/dynamic`.
+- /closet: the add flow, the edit row, the detail sheet and batch add load when opened.

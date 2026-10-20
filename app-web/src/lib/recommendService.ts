@@ -85,6 +85,9 @@ export async function computeRecommendation(
       hipCm: profile?.hipCm ?? null,
       preferredFit: effectiveFit,
       chestIsEstimated: !hasOwnChest && prior != null,
+      // Read only by the seller's height-and-weight guide, when there is no own chest.
+      heightCm: profile?.heightCm ?? null,
+      weightKg: profile?.weightKg ?? null,
     },
     // The line decides how numeric sizes are read (womensSizes.ts): the page's own
     // word first, else the one department the wearer says they shop.

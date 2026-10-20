@@ -21,13 +21,13 @@ Session 100, so the sentences are not sent to the browser with the values):
 |---|---|---|
 | **measured** | Computed from data we hold, with the n stated | **2** |
 | **cited** | A published source states this value — not just the idea | **2** |
-| **assumed** | A judgement, usually hand-tuned against a handful of cases | **110** |
+| **assumed** | A judgement, usually hand-tuned against a handful of cases | **113** |
 
 `scoringConstants.test.ts` fails if a value has no provenance, if a provenance
 names no value, if a measured entry does not state its n, or if an assumed value
 is missing from the calibration table below.
 
-**Read the counts plainly.** 110 of 114 numbers are judgements. The
+**Read the counts plainly.** 113 of 117 numbers are judgements. The
 literature the engine cites supports the SHAPE of the model — fit as a bipolar
 ordinal (too small … too big), fit as a multi-measurement signal — and not a
 single one of its values. That is normal for a scorer before it has outcome data,
@@ -372,6 +372,9 @@ number we have not yet earned; the test fails if one is missing here.
 | `ANCHOR_WEIGHTS.outcomePenalty` | 0.15 | assumed | same as the default |
 | `ANCHOR_WEIGHTS.minDataFloor` | 0.2 | assumed | same as the default |
 | `BRAND_BIAS_WEIGHT` | 0.15 | assumed | hand-set; per-user bias is capped at ±1 step regardless |
+| `SELLER_RANGE.weight` | 0.2 | assumed | below a measured chest (0.45), near brand bias (0.15): the seller's own rule, used only when the wearer gave no chest |
+| `SELLER_RANGE.outsideSigmaCm` | 4 | assumed | height outside the seller's range fades over a few cm; hand-set |
+| `SELLER_RANGE.outsideSigmaKg` | 4 | assumed | weight outside the seller's range fades over a few kg; hand-set |
 | `DIMENSIONS.chest.weight` | 0.6 | assumed | chest-dominant by design; the literature models fit as multi-measurement but gives no weights |
 | `DIMENSIONS.chest.sigmaCm` | 4 | assumed | roughly one size step on a 4 cm ladder; real charts step 5–10 cm (Session 78) |
 | `DIMENSIONS.waist.weight` | 0.22 | assumed | secondary to chest |

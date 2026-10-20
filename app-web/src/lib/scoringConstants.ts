@@ -53,6 +53,10 @@ export const ANCHOR_WEIGHTS = {
 
 export const BRAND_BIAS_WEIGHT = 0.15;
 
+/** A seller's per-size height and weight (Session 100, todo 11): a weak signal, read
+ *  only for a wearer with no chest of their own and no closet anchor. */
+export const SELLER_RANGE = { weight: 0.2, outsideSigmaCm: 4, outsideSigmaKg: 4 } as const;
+
 /** Per-dimension weight inside the measurement score, and each one's tolerance. */
 export const DIMENSIONS = {
   chest: { weight: 0.6, sigmaCm: 4 },

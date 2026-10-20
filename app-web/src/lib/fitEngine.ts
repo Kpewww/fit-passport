@@ -59,6 +59,7 @@ import {
   STABILITY,
   TIE,
   VERDICT_CM,
+  SELLER_RANGE,
 } from "./scoringConstants";
 
 // ------------ Input contracts ------------
@@ -79,6 +80,12 @@ export type SizeOptionInput = {
   hipCm?: number | null;
   bodyHipMinCm?: number | null;
   bodyHipMaxCm?: number | null;
+  /** The height and weight the seller says this size is for (Session 100): a weak
+   *  signal, read only when the wearer has no chest of their own (scoreSellerRange). */
+  bodyHeightMinCm?: number | null;
+  bodyHeightMaxCm?: number | null;
+  bodyWeightMinKg?: number | null;
+  bodyWeightMaxKg?: number | null;
 };
 
 /**
@@ -162,6 +169,10 @@ export type EngineInput = {
     // user's own (populationPrior.ts). The engine then softens its language and
     // caps confidence, because a guess about your body isn't a fact about it.
     chestIsEstimated?: boolean;
+    /** The wearer's own height and weight, as typed (Session 100). Read only by the
+     *  seller-range signal, and only when there is no chest of their own. */
+    heightCm?: number | null;
+    weightKg?: number | null;
   };
   product: {
     brand?: string | null;
@@ -179,7 +190,7 @@ export type EngineInput = {
 // ------------ Output contracts ------------
 
 export type Reason = {
-  signal: "measurement-fit" | "known-good" | "preference" | "outcome" | "completeness" | "brand-bias";
+  signal: "measurement-fit" | "known-good" | "preference" | "outcome" | "completeness" | "brand-bias" | "seller-range";
   weight: number; // contribution to this size's score, positive = supports
   message: string;
   /** On a known-good reason: the closet piece it came from (Session 88b). */
@@ -720,6 +731,39 @@ function scoreOutcome(
 }
 
 /** Weighted-average combine with a floor so all-missing-data doesn't produce NaN. */
+/**
+ * The seller's height and weight per size (Session 100, todo 11) — "身高 160-180 /
+ * 体重 50-65" on a Tmall chart. The SELLER's rule, not a measurement: it speaks only
+ * when the wearer gave no chest of their own and has no closet anchor here, so it can
+ * never outrank either; and it is weighted below a measured chest. Inside a range
+ * scores 1 (a range does not say its middle fits better); outside fades with the
+ * distance. Each dimension both sides gave is scored and averaged.
+ */
+function scoreSellerRange(size: SizeOptionInput, profile: EngineInput["profile"], M: EngineText): Reason | null {
+  const dims: Array<{ key: "h" | "w"; you: number; lo: number; hi: number; sigma: number }> = [];
+  if (profile.heightCm != null && size.bodyHeightMinCm != null && size.bodyHeightMaxCm != null) {
+    dims.push({ key: "h", you: profile.heightCm, lo: size.bodyHeightMinCm, hi: size.bodyHeightMaxCm, sigma: SELLER_RANGE.outsideSigmaCm });
+  }
+  if (profile.weightKg != null && size.bodyWeightMinKg != null && size.bodyWeightMaxKg != null) {
+    dims.push({ key: "w", you: profile.weightKg, lo: size.bodyWeightMinKg, hi: size.bodyWeightMaxKg, sigma: SELLER_RANGE.outsideSigmaKg });
+  }
+  if (!dims.length) return null;
+  const sub = dims.reduce((a, d) => {
+    const out = d.you < d.lo ? d.lo - d.you : d.you > d.hi ? d.you - d.hi : 0;
+    return a + gauss(out, d.sigma);
+  }, 0) / dims.length;
+  const inside = dims.every((d) => d.you >= d.lo && d.you <= d.hi);
+  const pick = (k: "h" | "w") => {
+    const d = dims.find((x) => x.key === k);
+    return d ? { you: Math.round(d.you), lo: d.lo, hi: d.hi } : undefined;
+  };
+  return {
+    signal: "seller-range",
+    weight: SELLER_RANGE.weight * sub,
+    message: M.sellerRange({ size: size.label, h: pick("h"), w: pick("w"), inside }),
+  };
+}
+
 function combine(reasons: Reason[], floor: number): number {
   const totalW = reasons.reduce((a, r) => a + Math.abs(r.weight), 0);
   const totalS = reasons.reduce((a, r) => a + r.weight, 0);
@@ -994,6 +1038,17 @@ export function recommend(
   );
 
 
+  // The seller's height-and-weight guide (scoreSellerRange): only for a wearer with
+  // no chest of their own and no closet anchor in this domain, who gave both height
+  // and weight, on a chart that states it for at least two sizes.
+  const hasSellerRange = (s: SizeOptionInput) =>
+    (s.bodyHeightMinCm != null && s.bodyHeightMaxCm != null) || (s.bodyWeightMinKg != null && s.bodyWeightMaxKg != null);
+  const useSellerRange =
+    (profile.chestCm == null || !!profile.chestIsEstimated) &&
+    usableKnownGood.length === 0 &&
+    profile.heightCm != null && profile.weightKg != null &&
+    sizes.filter(hasSellerRange).length >= 2;
+
   const ranked: SizeScore[] = sizes.map((size) => {
     const reasons: Reason[] = [];
     const fit = scoreMeasurementFit(size, profile, profile.preferredFit, product.category, W, easeUsed, M);
@@ -1004,6 +1059,8 @@ export function recommend(
     if (outc.reason) reasons.push(outc.reason);
     const bias = scoreBrandBiasForSize(size, brandBias, refIdx, product.gender);
     if (bias) reasons.push(bias);
+    const seller = useSellerRange ? scoreSellerRange(size, profile, M) : null;
+    if (seller) reasons.push(seller);
     // Weight 0: this did not push this size up or down against its siblings — it
     // moved the target every size was measured against. It is here so the user
     // can SEE that their closet changed the question, which is the whole

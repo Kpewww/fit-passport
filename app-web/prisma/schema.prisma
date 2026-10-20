@@ -624,6 +624,13 @@ model SizeOption {
   /// The body hip a size is cut for (Session 84) — dresses and jumpsuits.
   bodyHipMinCm   Float?
   bodyHipMaxCm   Float?
+  /// The height and weight a seller says a size is for (Session 100; Tmall prints
+  /// "身高 160-180 / 体重 50-65"). The seller's own rule: a weak signal, used only
+  /// for a wearer with no chest of their own and no closet anchor (fitEngine.ts).
+  bodyHeightMinCm Float?
+  bodyHeightMaxCm Float?
+  bodyWeightMinKg Float?
+  bodyWeightMaxKg Float?
 
   @@index([productId])
 }

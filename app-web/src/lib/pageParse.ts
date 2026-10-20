@@ -540,6 +540,74 @@ function sizesFromGrid(grid: string[][]): { sizes: GridSize[]; ranged: boolean }
 }
 
 /**
+ * The height and weight a SELLER says each size is for (Session 100, todo 11): Tmall
+ * and Taobao print them beside the measurements ("身高 160-180 | 体重 50-65"). Read
+ * apart from the measurements on purpose: these ranges must not count towards
+ * `ranged` (which would turn a garment chart into a body chart) or move with the
+ * inch conversion, so they are taken from the same grid afterwards, by size label.
+ *
+ * Only a stated RANGE counts — a single height is more often a model's. Units come
+ * from the header or the cell (cm or in; kg, lb or 斤). A Chinese 体重 column with
+ * no unit is read as 斤 when its median is over 95: a kilogram range rarely starts
+ * there for a size ladder, while 斤 (half a kilogram) commonly does — a stated
+ * heuristic, tested. Anything outside an adult's plausible range is dropped.
+ */
+type SellerRange = { heightCm?: [number, number]; weightKg?: [number, number] };
+const HEIGHT_HEAD = /身高|\bheight\b/i;
+const WEIGHT_HEAD = /体重|\bweight\b/i;
+
+export function sellerBodyRanges(grid: string[][]): Map<string, SellerRange> {
+  const out = new Map<string, SellerRange>();
+  if (grid.length < 2) return out;
+  const header = grid[0];
+  // Each column (sizes as rows) or row (sizes as columns): [label, cell] pairs.
+  const series = (head: RegExp): { name: string; cells: Array<[string, string]> } | null => {
+    const col = header.findIndex((c, i) => i > 0 && head.test(c) && !(head === HEIGHT_HEAD ? WEIGHT_HEAD : HEIGHT_HEAD).test(c));
+    if (col > 0) {
+      return { name: header[col], cells: grid.slice(1).filter((r) => looksLikeSizeLabel(r[0] ?? "")).map((r) => [r[0].trim().toUpperCase(), r[col] ?? ""]) };
+    }
+    const row = grid.slice(1).find((r) => head.test(r[0] ?? "") && !(head === HEIGHT_HEAD ? WEIGHT_HEAD : HEIGHT_HEAD).test(r[0] ?? ""));
+    if (row) {
+      return { name: row[0], cells: header.map((h, i) => [h.trim().toUpperCase(), row[i] ?? ""] as [string, string]).filter(([h], i) => i > 0 && looksLikeSizeLabel(h)) };
+    }
+    return null;
+  };
+  const ranges = (cells: Array<[string, string]>) =>
+    cells.flatMap(([label, cell]) => {
+      const { values, range } = cellNumbers(cell);
+      return range && values.length >= 2 ? [{ label, cell, lo: Math.min(values[0], values[1]), hi: Math.max(values[0], values[1]) }] : [];
+    });
+
+  const h = series(HEIGHT_HEAD);
+  if (h) {
+    for (const r of ranges(h.cells)) {
+      const inches = /\bin\b|inch|"/i.test(h.name + " " + r.cell);
+      const k = inches ? 2.54 : 1;
+      const lo = Math.round(r.lo * k), hi = Math.round(r.hi * k);
+      if (lo >= 120 && hi <= 215 && lo < hi) out.set(r.label, { ...out.get(r.label), heightCm: [lo, hi] });
+    }
+  }
+  const w = series(WEIGHT_HEAD);
+  // A fabric's weight ("Weight (gsm)", "180-200 g", "oz") is not a wearer's.
+  if (w && !/gsm|g\/m|\bg\b|\boz\b|(?<!千)克/i.test(w.name)) {
+    const rs = ranges(w.cells);
+    const all = rs.flatMap((r) => [r.lo, r.hi]).sort((a, b) => a - b);
+    const median = all.length ? all[Math.floor(all.length / 2)] : 0;
+    for (const r of rs) {
+      const text = w.name + " " + r.cell;
+      const k = /斤/.test(text) ? 0.5
+        : /lbs?\b|pounds?/i.test(text) ? 0.4536
+        : /kg|公斤|千克/i.test(text) ? 1
+        : /[一-鿿]/.test(w.name) && median > 95 ? 0.5 // a unitless Chinese column, read as 斤
+        : 1;
+      const lo = Math.round(r.lo * k * 10) / 10, hi = Math.round(r.hi * k * 10) / 10;
+      if (lo >= 30 && hi <= 200 && lo < hi) out.set(r.label, { ...out.get(r.label), weightKg: [lo, hi] });
+    }
+  }
+  return out;
+}
+
+/**
  * A bigger size is never smaller. If the chest (or, lacking one, the waist) falls
  * as the sizes rise, the chart was misread — the Uniqlo misread produced XS 40.6 ·
  * S 47 · M 50.8 · L 108 · XL 115.6 · XXL 61 · 3XL 64.8 and nothing noticed — so
@@ -806,11 +874,12 @@ export function parseSizeChart(
     : (html.match(/<table[\s\S]*?<\/table>/gi) ?? []).map((table) => ({ table, visible: false }));
   const anyVisible = marked.some((c) => c.visible);
 
-  let best: { sizes: GridSize[]; ranged: boolean; visible: boolean } | null = null;
+  let best: { sizes: GridSize[]; ranged: boolean; visible: boolean; grid: string[][] } | null = null;
   for (const c of candidates) {
-    const chart = sizesFromGrid(tableGrid(c.table));
+    const grid = tableGrid(c.table);
+    const chart = sizesFromGrid(grid);
     if (!chart || !risesWithSize(chart.sizes)) continue;
-    const entry = { ...chart, visible: c.visible };
+    const entry = { ...chart, visible: c.visible, grid };
     const better =
       !best ||
       // A visible chart beats any hidden one; only then do rows decide.
@@ -820,7 +889,17 @@ export function parseSizeChart(
   }
   if (!best) return null;
   const { kind, from } = resolveMeasurementKind(detectMeasurementKind(html), kindFallback, best.ranged);
-  return { sizes: foldByLabel(best.sizes, kind), kind, kindFrom: from };
+  const seller = sellerBodyRanges(best.grid);
+  const sizes = foldByLabel(best.sizes, kind).map((s) => {
+    const r = seller.get(s.label);
+    if (!r) return s;
+    return {
+      ...s,
+      ...(r.heightCm ? { bodyHeightMinCm: r.heightCm[0], bodyHeightMaxCm: r.heightCm[1] } : {}),
+      ...(r.weightKg ? { bodyWeightMinKg: r.weightKg[0], bodyWeightMaxKg: r.weightKg[1] } : {}),
+    };
+  });
+  return { sizes, kind, kindFrom: from };
 }
 
 /** The sizes of the best chart on the page, or null. See `parseSizeChart`. */

@@ -47,6 +47,12 @@ export type ExtractedSize = {
   hipCm?: number;
   bodyHipMinCm?: number;
   bodyHipMaxCm?: number;
+  /** The height and weight the SELLER says this size is for (Session 100): the
+   *  seller's rule, read as a weak signal only (fitEngine.ts scoreSellerRange). */
+  bodyHeightMinCm?: number;
+  bodyHeightMaxCm?: number;
+  bodyWeightMinKg?: number;
+  bodyWeightMaxKg?: number;
 };
 
 export type Gender = "mens" | "womens" | "unisex";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectMeasurementKind, parsePage, parseSizeTables, parseSizeLabels, parseChineseSizeCode, findSizeChartImages, looksBlocked, inferGender, siteNameAsBrand } from "./pageParse";
+import { detectMeasurementKind, parsePage, parseSizeChart, parseSizeTables, parseSizeLabels, parseChineseSizeCode, findSizeChartImages, looksBlocked, inferGender, siteNameAsBrand } from "./pageParse";
 
 describe("pageParse — JSON-LD", () => {
   it("reads brand/name/material from a schema.org Product block", () => {
@@ -562,5 +562,60 @@ describe("the chart the shopper can see beats a bigger hidden one", () => {
   it("still uses most-rows when nothing is marked (a server-fetched page)", () => {
     const plain = html.replace(/<section[^>]*>|<\/section>/g, "");
     expect(parseSizeTables(plain)!.length).toBe(6);
+  });
+});
+
+describe("a seller's per-size height and weight (Session 100, todo 11)", () => {
+  // The Tmall chart from marketplaceCapture.test.ts: garment measurements, plus the
+  // height and weight the seller cuts each size for.
+  const TMALL = `<table>
+    <tr><th>尺码</th><th>身高</th><th>体重</th><th>肩宽</th><th>胸围</th><th>袖长</th><th>衣长</th></tr>
+    <tr><td>M</td><td>160-180</td><td>50-65</td><td>46</td><td>109</td><td>19.5</td><td>69.5</td></tr>
+    <tr><td>L</td><td>160-185</td><td>65-80</td><td>48</td><td>114</td><td>20</td><td>71</td></tr>
+    <tr><td>XL</td><td>165-185</td><td>75-90</td><td>50</td><td>119</td><td>20.5</td><td>72.5</td></tr>
+  </table>`;
+
+  it("keeps each size's stated height and weight", () => {
+    const sizes = parseSizeTables(TMALL)!;
+    expect(sizes.map((s) => [s.label, s.bodyHeightMinCm, s.bodyHeightMaxCm, s.bodyWeightMinKg, s.bodyWeightMaxKg])).toEqual([
+      ["M", 160, 180, 50, 65], ["L", 160, 185, 65, 80], ["XL", 165, 185, 75, 90],
+    ]);
+  });
+
+  it("does not turn a garment chart into a body chart (the ranges are not measurements)", () => {
+    const chart = parseSizeChart(TMALL)!;
+    const m = chart.sizes.find((s) => s.label === "M")!;
+    expect(m.chestCm).toBe(109);
+    expect(m.bodyChestMinCm).toBeUndefined();
+    expect(chart.kind).not.toBe("body");
+  });
+
+  it("reads 斤, whether stated or (for a Chinese column over 95) not", () => {
+    const jin = TMALL.replace("<th>体重</th>", "<th>体重(斤)</th>").replace("50-65", "100-130").replace("65-80", "130-160").replace("75-90", "150-180");
+    expect(parseSizeTables(jin)!.map((s) => [s.bodyWeightMinKg, s.bodyWeightMaxKg])).toEqual([[50, 65], [65, 80], [75, 90]]);
+    const bare = jin.replace("<th>体重(斤)</th>", "<th>体重</th>");
+    expect(parseSizeTables(bare)!.map((s) => [s.bodyWeightMinKg, s.bodyWeightMaxKg])).toEqual([[50, 65], [65, 80], [75, 90]]);
+  });
+
+  it("reads pounds and inches, and sizes laid out as columns", () => {
+    const us = `<table>
+      <tr><th>Size</th><th>S</th><th>M</th><th>L</th></tr>
+      <tr><td>Chest</td><td>38</td><td>41</td><td>44</td></tr>
+      <tr><td>Height (in)</td><td>64-67</td><td>67-70</td><td>70-73</td></tr>
+      <tr><td>Weight (lbs)</td><td>120-150</td><td>150-180</td><td>180-210</td></tr>
+    </table>`;
+    const sizes = parseSizeTables(us)!;
+    expect(sizes.map((s) => [s.label, s.bodyHeightMinCm, s.bodyHeightMaxCm])).toEqual([["S", 163, 170], ["M", 170, 178], ["L", 178, 185]]);
+    expect(sizes.map((s) => s.bodyWeightMinKg)).toEqual([54.4, 68, 81.6]);
+  });
+
+  it("ignores a single height (often the model's), a fabric's weight and anything implausible", () => {
+    const single = TMALL.replace("160-180", "175");
+    expect(parseSizeTables(single)!.find((s) => s.label === "M")!.bodyHeightMinCm).toBeUndefined();
+    const fabric = `<table><tr><th>Size</th><th>Chest</th><th>Weight (g)</th></tr>
+      <tr><td>S</td><td>96</td><td>180-200</td></tr><tr><td>M</td><td>102</td><td>190-210</td></tr><tr><td>L</td><td>108</td><td>200-220</td></tr></table>`;
+    expect(parseSizeTables(fabric)!.every((s) => s.bodyWeightMinKg == null)).toBe(true);
+    const odd = TMALL.replace("160-180", "60-80");
+    expect(parseSizeTables(odd)!.find((s) => s.label === "M")!.bodyHeightMinCm).toBeUndefined();
   });
 });

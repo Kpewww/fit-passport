@@ -221,6 +221,7 @@ export const en = {
       outcome: "outcome",
       completeness: "completeness",
       "brand-bias": "brand-bias",
+      "seller-range": "seller's guide",
     },
   },
 

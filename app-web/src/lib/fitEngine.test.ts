@@ -1230,3 +1230,52 @@ describe("outcomes read in the direction they were wrong", () => {
     expect(score(right, "M")).toBeGreaterThan(score(tight, "M"));
   });
 });
+
+describe("the seller's height-and-weight guide (Session 100, todo 11)", () => {
+  // The Tmall chart: garment chests, plus the height and weight each size is cut for.
+  const TMALL = [
+    { label: "M", chestCm: 109, bodyHeightMinCm: 160, bodyHeightMaxCm: 180, bodyWeightMinKg: 50, bodyWeightMaxKg: 65 },
+    { label: "L", chestCm: 114, bodyHeightMinCm: 160, bodyHeightMaxCm: 185, bodyWeightMinKg: 65, bodyWeightMaxKg: 80 },
+    { label: "XL", chestCm: 119, bodyHeightMinCm: 165, bodyHeightMaxCm: 185, bodyWeightMinKg: 75, bodyWeightMaxKg: 90 },
+  ];
+  const estimated = { chestCm: 96, preferredFit: "regular" as const, chestIsEstimated: true, heightCm: 178, weightKg: 74 };
+  const seller = (out: ReturnType<typeof recommend>, label: string) =>
+    out.ranked.find((r) => r.label === label)!.reasons.find((x) => x.signal === "seller-range");
+
+  it("speaks for a wearer with no chest of their own, and favours the size whose range holds them", () => {
+    const out = recommend(baseInput({ profile: estimated, sizes: TMALL }));
+    const m = seller(out, "M")!, l = seller(out, "L")!, xl = seller(out, "XL")!;
+    expect(l.weight).toBeGreaterThan(m.weight); // 74 kg is inside L, 9 kg over M
+    expect(l.weight).toBeGreaterThan(xl.weight); // and 1 kg under XL
+    expect(l.message).toContain("160–185 cm");
+    expect(m.message).toContain("outside");
+  });
+
+  it("is silent once the wearer gives a chest of their own", () => {
+    const out = recommend(baseInput({ profile: { ...estimated, chestCm: 100, chestIsEstimated: false }, sizes: TMALL }));
+    expect(out.ranked.every((r) => r.reasons.every((x) => x.signal !== "seller-range"))).toBe(true);
+  });
+
+  it("is silent when the closet anchors this kind of garment", () => {
+    const out = recommend(baseInput({
+      profile: estimated, sizes: TMALL,
+      knownGood: [{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5 }],
+    }));
+    expect(out.ranked.every((r) => r.reasons.every((x) => x.signal !== "seller-range"))).toBe(true);
+  });
+
+  it("needs both height and weight, and a guide on at least two sizes", () => {
+    const noWeight = recommend(baseInput({ profile: { ...estimated, weightKg: null }, sizes: TMALL }));
+    expect(noWeight.ranked.every((r) => r.reasons.every((x) => x.signal !== "seller-range"))).toBe(true);
+    const oneSize = TMALL.map((s, i) => (i === 0 ? s : { label: s.label, chestCm: s.chestCm }));
+    const lone = recommend(baseInput({ profile: estimated, sizes: oneSize }));
+    expect(lone.ranked.every((r) => r.reasons.every((x) => x.signal !== "seller-range"))).toBe(true);
+  });
+
+  it("weighs less than a measured chest would, and lends no confidence", () => {
+    const out = recommend(baseInput({ profile: estimated, sizes: TMALL }));
+    const without = recommend(baseInput({ profile: { ...estimated, heightCm: null }, sizes: TMALL }));
+    for (const r of out.ranked) expect(seller(out, r.label)!.weight).toBeLessThanOrEqual(0.2);
+    expect(out.best.confidence).toBeLessThanOrEqual(without.best.confidence + 1e-9);
+  });
+});
