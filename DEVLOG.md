@@ -31,6 +31,37 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-20 · Session 100e — Whose account a code is, and the pilot's P2
+
+**Asked by the founder:** show, once an account code is typed, whose account it is, so
+the code FP-SJSK-DJDV-8N527 says whose it is. They asked for it to fade in and stay
+faint, not solid or sharp.
+- **The API.** `GET /api/account-name?code=` (rate limited) returns the username of a
+  claimed, active account, and nothing for any other. That is no more than
+  `/api/view/[code]`, the public closet page, already says for the same code.
+- **The component.** `components/CodeOwner.tsx` appears under the code field on login,
+  recovery and "view a closet by code" (on /community, under the whole row, so it does
+  not push the button down).
+  - It shows only for a whole code, after a 350 ms pause.
+  - It reads "This is {name}'s account" / "这是 {name} 的账户".
+  - It fades in over 700 ms, from opacity 0 and a 3 px blur to opacity 0.5 and a
+    0.4 px blur, rising 3 px. With reduced motion it does not move.
+  - Checked in a browser: opacity 0.5 and blur 0.4px when settled; nothing for a
+    partial or unknown code.
+
+**P2 of todo 16:**
+- The "Save your passport" nudge now says what is true: the account opens on another
+  device, and survives this browser's data being cleared. It used to say the data
+  went "when you close the browser"; the cookie lasts a year.
+- Help has a "When a check doesn't answer" section: a store that blocks us, no chart, a
+  tie, the extension not connected, a wrong size. The welcome page links to it.
+- `/api/demo` no longer wipes a closet (409 when it holds anything), and fills blank
+  measurements only.
+- The extension's welcome page no longer says "You're connected". The site cannot see
+  whether the extension's requests will carry the session; the popup finds out on the
+  first check. It now says that the browser has the session, and what to do if the
+  extension says otherwise, in a neutral box rather than a green one.
+
 ## 2026-10-20 · Session 100d — Every P0 and P1 from the live walk, fixed
 
 The founder replaced the production key and asked for P0 and P1 together, and for one

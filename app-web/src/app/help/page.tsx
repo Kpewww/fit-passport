@@ -37,6 +37,18 @@ export default function HelpPage() {
           <HelpRow q={t("showsQ")} a={t("showsA")} />
         </Section>
 
+        {/* When a check does not answer (Session 100e, P2 of the pilot walk): the
+            refusals people actually meet, and what to do about each. */}
+        <div id="check-failed" className="scroll-mt-24">
+          <Section title={t("failedTitle")}>
+            <HelpRow q={t("blockedQ")} a={t("blockedA")} />
+            <HelpRow q={t("noChartQ")} a={t("noChartA")} />
+            <HelpRow q={t("tieQ")} a={t("tieA")} />
+            <HelpRow q={t("notConnectedQ")} a={t("notConnectedA")} />
+            <HelpRow q={t("wrongQ")} a={t("wrongA")} />
+          </Section>
+        </div>
+
         {/* Privacy */}
         <Section title={t("privacy")}>
           <HelpRow q={t("whoQ")} a={t("whoA")} />

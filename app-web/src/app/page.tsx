@@ -571,8 +571,8 @@ function ParallaxStatement({ reduce }: { reduce: boolean }) {
 // ---------------- Closing CTA ----------------
 function ClosingCTA({ newUser }: { newUser: boolean }) {
   // The demo closet moved here from the "Get started" section it shared a
-  // message with (cut 2026-09-28). /api/demo replaces the closet and the body
-  // profile, so it is offered only to someone who has neither.
+  // message with (cut 2026-09-28). /api/demo only seeds an empty closet and fills
+  // blank measurements (Session 100e); it is offered only to someone with neither.
   const t = useT("home");
   const [loadingDemo, setLoadingDemo] = useState(false);
   async function loadDemo() {

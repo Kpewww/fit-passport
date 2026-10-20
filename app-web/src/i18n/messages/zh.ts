@@ -72,7 +72,7 @@ export const zh: Messages = {
 
   claimNudge: {
     title: "保存你的合身护照",
-    body: "设置用户名与密码，关闭浏览器后，衣橱与身形数据仍可保留。",
+    body: "设置用户名与密码，就能在其他设备上打开你的衣橱和身形数据；即使清除了这个浏览器的数据，它们也不会丢失。",
     cta: "认领账户",
   },
 
@@ -1381,6 +1381,7 @@ export const zh: Messages = {
     couldNotUpdate: "密码更新失败，请重试",
     saving: "保存中……",
     updatePassword: "更新密码",
+    codeOwner: "这是 {name} 的账户",
     deleteTitle: "彻底删除",
     deleteBodyClaimed: "立即删除这个账户：合身护照、衣橱和照片、待购清单、查询记录、搭配与帖子。删除后无法恢复。上方的“停用账户”则会保留数据。",
     deleteBodyUnclaimed: "删除这个浏览器在这里保存的一切：合身护照、衣橱和照片、待购清单、查询记录与搭配。删除后无法恢复。",
@@ -1533,6 +1534,17 @@ export const zh: Messages = {
     manualSwitch:
       "以前用这种方式安装过？请在 chrome://extensions 中移除那一份，改从商店添加 Fit Passport：商店版会自动更新，同时保留两份会出现两个插件。",
     manualDevMode: "Chrome 可能会提示“开发者模式扩展程序”，手动安装的插件出现这一提示属于正常现象。",
+    failedTitle: "查询没有给出结果时",
+    blockedQ: "提示说商店不让我们读取页面。",
+    blockedA: "很多大型商店会拒绝服务器访问。在电脑上，用 Chrome 打开商品页，点击 Fit Passport 插件，它会在你自己的浏览器里读取页面。在手机上，截一张尺码表的图，在“查找尺码”页面上传。",
+    noChartQ: "找到了商品，但没有尺码表。",
+    noChartA: "大多数商店要在你打开尺码指南后才加载尺码表。打开它，再在插件里点“重新扫描”；或者截下尺码表上传。",
+    tieQ: "提示说无法区分各个尺码。",
+    tieA: "页面列出了尺码，但没有尺寸数据。上传一张尺码表截图，或者补充胸围，并在衣橱里添加一件同类型的衣服。",
+    notConnectedQ: "插件提示没有连接。",
+    notConnectedA: "在同一个浏览器里打开一次 www.fitpassport.fit。如果仍然提示未连接，可能是浏览器阻止了该网站的第三方 Cookie：允许 fitpassport.fit 使用 Cookie 后再试。",
+    wrongQ: "推荐的尺码不合身。",
+    wrongA: "请通过“意见反馈”告诉我们，并在“穿过之后”里记下结果（留下、退回或换货）：这正是让下一次推荐更准的信息。",
     basics: "从这里开始",
     whatQ: "Fit Passport 是什么？",
     whatA:
@@ -1632,7 +1644,8 @@ export const zh: Messages = {
       metaTitle: "欢迎 · Fit Passport",
       eyebrow: "已安装",
       title: "Fit Passport 已加入你的浏览器",
-      connected: "已连接：打开这一页时，插件已经和你在这个浏览器中的合身护照连在一起。",
+      connected: "这个浏览器里已经有你的 Fit Passport，查询尺码时插件会用到它。如果插件提示未连接，可能是浏览器阻止了 fitpassport.fit 的 Cookie：请看帮助页的“查询没有给出结果时”。",
+      helpLink: "查看帮助",
       pinTitle: "固定图标",
       pinBody: "点击 Chrome 工具栏中的拼图图标，再点击 Fit Passport 旁边的图钉。",
       tryTitle: "试一试",

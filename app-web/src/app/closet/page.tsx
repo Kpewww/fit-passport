@@ -557,8 +557,8 @@ function SetupAside({ count }: { count: number }) {
         ))}
       </div>
       <p className="mt-4 text-sm leading-relaxed text-ink-soft">{t("whyThree")}</p>
-      {/* The demo replaces the closet AND the body profile (api/demo), so it is
-          offered only to someone with neither — never over real data. */}
+      {/* The demo seeds an empty closet and fills blank measurements only (api/demo,
+          Session 100e); it is offered only to someone with neither. */}
       {count === 0 && hasBody === false && (
         <div className="mt-5 border-t border-line pt-4">
           <p className="text-xs text-ink-faint">{t("justLooking")}</p>

@@ -1,7 +1,7 @@
 // POST /api/demo
 // Seeds the current account with a realistic profile + closet for demos
-// (e.g. a live showcase). Idempotent-ish: it clears the current
-// user's closet/collections first so repeated clicks don't pile up.
+// (e.g. a live showcase). Only for an empty closet (409 otherwise), and the profile's
+// demo numbers fill blanks only (Session 100e).
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
@@ -19,15 +19,24 @@ const DEMO_ITEMS = [
 export async function POST() {
   const user = await getCurrentUser();
 
-  // Reset this user's closet + collections for a clean demo.
-  await prisma.knownGoodItem.deleteMany({ where: { userId: user.id } });
+  // Never over a person's own closet (Session 100e, P2 of the pilot walk): the demo is
+  // for an empty account, and it used to wipe whatever was there.
+  if (await prisma.knownGoodItem.count({ where: { userId: user.id } })) {
+    return NextResponse.json({ error: "closet-not-empty" }, { status: 409 });
+  }
   await prisma.collection.deleteMany({ where: { userId: user.id } });
 
-  // Profile: a slim chest-95 shopper.
+  // Profile: a slim chest-95 shopper — only where the person left a measurement
+  // blank. Their own numbers are never overwritten.
+  const mine = await prisma.fitProfile.findUnique({ where: { userId: user.id } });
   await prisma.fitProfile.upsert({
     where: { userId: user.id },
     create: { userId: user.id, chestCm: 95, waistCm: 80, shoulderCm: 44, preferredFit: "regular", region: "US" },
-    update: { chestCm: 95, waistCm: 80, shoulderCm: 44, preferredFit: "regular", region: "US" },
+    update: {
+      chestCm: mine?.chestCm ?? 95,
+      waistCm: mine?.waistCm ?? 80,
+      shoulderCm: mine?.shoulderCm ?? 44,
+    },
   });
 
   // Default collections.

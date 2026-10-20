@@ -4,6 +4,7 @@
 // file; the actual new-password step happens on /reset?token=…. Account code is
 // never changed — only the password.
 
+import { CodeOwner } from "@/components/CodeOwner";
 import { useState } from "react";
 import Link from "next/link";
 import { Button, Card, Field, inputClass } from "@/components/ui";
@@ -73,6 +74,7 @@ export default function RecoverPage() {
               <input className={inputClass} value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="alex_fits · you@example.com · FP-XXXX-XXXX-XXXXX" />
+              <CodeOwner value={identifier} />
             </Field>
             {err && <p className="text-sm text-bad">{err}</p>}
             <Button type="submit" size="lg" disabled={busy || identifier.trim().length < 2}>

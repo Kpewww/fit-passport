@@ -10,7 +10,8 @@
 
 import type { Metadata } from "next";
 import { Card, LinkButton, Page, PageHeader } from "@/components/ui";
-import { CheckCircle, Pin, Ruler } from "@/components/Icon";
+import { Info, Pin, Ruler } from "@/components/Icon";
+import Link from "next/link";
 import { getT } from "@/i18n/server";
 import { AnimatedFitPassportLogoLazy } from "@/components/AnimatedFitPassportLogoLazy";
 
@@ -27,9 +28,12 @@ export default function ExtensionWelcomePage() {
       <AnimatedFitPassportLogoLazy variant="quick" size={56} className="mb-6 text-ink" />
       <PageHeader eyebrow={t("welcome.eyebrow")} title={t("welcome.title")} />
 
-      <div className="mt-8 flex items-start gap-3 rounded-2xl bg-ok-tint px-5 py-4 text-sm text-ok">
-        <CheckCircle size={20} className="mt-px flex-shrink-0" />
-        <p>{t("welcome.connected")}</p>
+      {/* Not "you're connected": the site cannot see whether the extension's requests
+          will carry the session (blocked third-party cookies stop them) — the popup
+          finds out on the first check. Said plainly, with where to look (Session 100e). */}
+      <div className="mt-8 flex items-start gap-3 rounded-2xl bg-paper-soft px-5 py-4 text-sm text-ink-soft ring-1 ring-line">
+        <Info size={20} className="mt-px flex-shrink-0 text-ink-faint" />
+        <p>{t("welcome.connected")} <Link href="/help#check-failed" className="font-medium text-brand hover:underline">{t("welcome.helpLink")}</Link></p>
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2">

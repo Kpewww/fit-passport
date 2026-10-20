@@ -1,7 +1,7 @@
 # Before real users: what a first-time walk through the live site found
 
-**Status, Session 100d (2026-10-20): every P0 and P1 below is fixed**, except item 6.
-Item 6 is built and waits for the founder to create a Vercel Blob store. P2 is open.
+**Status, Session 100d (2026-10-20): every item below is fixed** (P2 in 100e), except item 6.
+Item 6 is built and waits for the founder to create a Vercel Blob store.
 
 **Session 100, 2026-10-19.**
 - **How it was walked.** A made-up person went through www.fitpassport.fit twice:

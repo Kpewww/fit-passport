@@ -1,5 +1,6 @@
 "use client";
 
+import { CodeOwner } from "@/components/CodeOwner";
 import { ACCOUNT_CHANGED } from "@/components/Nav";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -76,6 +77,7 @@ export default function LoginPage() {
                 onChange={(e) => setIdentifier(e.target.value)}
                 placeholder="alex_fits  ·  you@example.com  ·  FP-XXXX-XXXX-XXXXX"
                 autoComplete="username" />
+              <CodeOwner value={identifier} />
             </Field>
             <Field label={t("passwordLabel")}>
               <input type="password" className={inputClass} value={password}

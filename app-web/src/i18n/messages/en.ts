@@ -75,7 +75,7 @@ export const en = {
 
   claimNudge: {
     title: "Save your passport",
-    body: "Set a username and password, so your closet and measurements stay when you close the browser.",
+    body: "Set a username and password, so you can open your closet and measurements on another device, and keep them if this browser\u2019s data is cleared.",
     cta: "Claim account",
   },
 
@@ -1396,6 +1396,7 @@ export const en = {
     couldNotUpdate: "couldn't update password",
     saving: "Saving…",
     updatePassword: "Update password",
+    codeOwner: "This is {name}\u2019s account",
     deleteTitle: "Delete everything",
     deleteBodyClaimed: "Erases this account now: your passport, closet and photos, to-buy list, checks, outfits and posts. It cannot be undone. Deactivating, above, keeps the data instead.",
     deleteBodyUnclaimed: "Erases everything this browser has kept here: your passport, closet and photos, to-buy list, checks and outfits. It cannot be undone.",
@@ -1548,6 +1549,17 @@ export const en = {
     manualSwitch:
       "Installed it this way before? Remove that copy in chrome://extensions and add Fit Passport from the store instead: the store version updates itself, and two copies would both show up.",
     manualDevMode: "Chrome may mention a developer-mode extension — expected for an extension added this way.",
+    failedTitle: "When a check doesn't answer",
+    blockedQ: "It says the store didn't let us read the page.",
+    blockedA: "Many large stores refuse servers. On a computer, open the product in Chrome and click the Fit Passport extension: it reads the page in your own browser. On a phone, take a screenshot of the size chart and upload it on Check a size.",
+    noChartQ: "It found the garment but no size chart.",
+    noChartA: "Most stores load the chart only once you open their size guide. Open it, then press Re-scan in the extension; or screenshot the chart and upload it.",
+    tieQ: "It says it can't tell the sizes apart.",
+    tieA: "The page listed sizes but no measurements. Upload a screenshot of the size chart, or add your chest and a piece from your closet in the same kind of garment.",
+    notConnectedQ: "The extension says it isn't connected.",
+    notConnectedA: "Open www.fitpassport.fit once in the same browser. If it still says so, your browser may block third-party cookies for the site: allow cookies for fitpassport.fit and try again.",
+    wrongQ: "The size was wrong for me.",
+    wrongA: "Tell us on Feedback, and record what happened on Fit history (kept, returned, exchanged): it is exactly what makes the next answer better.",
     basics: "The basics",
     whatQ: "What is Fit Passport?",
     whatA:
@@ -1651,7 +1663,8 @@ export const en = {
       metaTitle: "Welcome · Fit Passport",
       eyebrow: "Installed",
       title: "Fit Passport is in your browser",
-      connected: "You’re connected: opening this page linked the extension to your Fit Passport in this browser.",
+      connected: "This browser now has your Fit Passport, which the extension uses when you check a size. If the extension ever says it isn’t connected, your browser may be blocking cookies for fitpassport.fit: see Help, “When a check doesn’t answer”.",
+      helpLink: "Help",
       pinTitle: "Pin it",
       pinBody: "Click the puzzle-piece icon in Chrome’s toolbar, then the pin beside Fit Passport.",
       tryTitle: "Try it",

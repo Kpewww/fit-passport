@@ -1,5 +1,6 @@
 "use client";
 
+import { CodeOwner } from "@/components/CodeOwner";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -213,6 +214,7 @@ export default function CommunityPage() {
             </div>
             <Button type="submit" disabled={!code.trim()}>{t("view")}</Button>
           </form>
+          <CodeOwner value={code} />
         </Card>
 
         {/* Public directory */}

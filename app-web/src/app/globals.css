@@ -220,3 +220,14 @@ summary:focus-visible,
 html[data-fp-intro="play"] .fp-intro { display: flex; }
 html[data-fp-intro="play"] { overflow: hidden; }
 html[data-fp-intro="play"] [data-fp-hero-mark] { visibility: hidden; }
+
+/* A typed code's account name (components/CodeOwner.tsx, Session 100e): it fades in
+   and stays faint and slightly soft, a reassurance rather than a label. */
+@keyframes fp-code-owner-in {
+  from { opacity: 0; filter: blur(3px); transform: translateY(3px); }
+  to { opacity: 0.5; filter: blur(0.4px); transform: none; }
+}
+.code-owner { opacity: 0.5; filter: blur(0.4px); animation: fp-code-owner-in 700ms ease-out both; }
+@media (prefers-reduced-motion: reduce) {
+  .code-owner { animation: none; }
+}
