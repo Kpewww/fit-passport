@@ -10,7 +10,7 @@ import { PHOTO_ROUTE, dropPhotos, photoForClient, storePhoto } from "./photoStor
 const PHOTO = "data:image/jpeg;base64," + Buffer.from("not really a jpeg").toString("base64");
 
 describe("closet photos in object storage (Session 100)", () => {
-  beforeEach(() => vi.clearAllMocks());
+  beforeEach(() => { vi.clearAllMocks(); });
   afterEach(() => { delete process.env.BLOB_READ_WRITE_TOKEN; });
 
   it("changes nothing until the store is set up", async () => {

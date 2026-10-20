@@ -306,7 +306,7 @@ function CheckInner() {
         {data && !loading && data.result.judgement ? (
           <JudgementCard data={data} onMeasure={(seller) => runCheck(data.product.url, seller)} />
         ) : data && !loading && (
-          <Result data={data} fit={fit} onFit={rerank} reranking={reranking} />
+          <Result data={data} fit={fit} onFit={rerank} reranking={reranking} onUpload={() => { setUploadOpen(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} />
         )}
       </div>
     </main>
@@ -411,11 +411,14 @@ function Result({
   fit,
   onFit,
   reranking,
+  onUpload,
 }: {
   data: CheckResponse;
   fit: FitPref;
   onFit: (f: FitPref) => void;
   reranking: boolean;
+  /** Open the chart-picture panel: the next step when the page gave sizes but no numbers. */
+  onUpload: () => void;
 }) {
   const t = useT("check");
   const tf = useT("fit");
@@ -480,6 +483,11 @@ function Result({
               <p className="eyebrow text-ink-faint">{t("result.noRecommendation")}</p>
               <p className="mt-2 font-serif text-h2 text-ink">{t("result.allSame", { n: result.ranked.length })}</p>
               <p className="mt-2 text-sm text-ink-soft">{t("result.breakTie")}</p>
+              {/* The page listed its sizes but no measurement (Session 100, a Uniqlo link
+                  read on production): the chart itself, as a screenshot, settles it. */}
+              {product.sizeOptions.every((o) => o.chestCm == null && o.bodyChestMinCm == null && o.waistCm == null && o.bodyWaistMinCm == null) && (
+                <Button size="sm" variant="secondary" className="mt-3" onClick={onUpload}>{t("next.upload")}</Button>
+              )}
             </div>
           ) : (
             <div className="mt-6 flex items-end justify-between gap-6">
