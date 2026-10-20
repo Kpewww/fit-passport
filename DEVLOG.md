@@ -31,6 +31,69 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-19 · Session 100a — Lighter /check and /closet, the realistic body on /check and /outfits, a seller's height-and-weight guide
+
+The founder confirmed that the showcase materials were handed in and extension 0.9.1
+was uploaded, and that /body looks fine. The three items they first listed (two-level
+garment types, /body, pop-overs) had already shipped in Session 98, so this session
+took the four engineering items queued for after the showcase.
+
+**1. Page weight** (`todo/engineering/13`): /check 130 → **116 kB**, /closet 144 →
+**126 kB** First Load JS (caps ~119 / ~128).
+- **Most of /check's excess was not the page.** `confidenceWeights.ts` was meant to be
+  a leaf module (invariant ㉟), but since Session 81 it re-exported from
+  `scoringConstants.ts`. That shipped the whole PROVENANCE registry, sentences
+  included, to every page showing "up to +35 points" (3.7 kB). The values now live in
+  the leaf, and the registry moved to `scoringProvenance.ts`, so importing any
+  constant no longer drags it along. That also took 6 kB off /closet, through
+  `fitDirection.ts`.
+- **/check**: the converter, the listing forms, the ease diagram, the evidence guide,
+  the fit map card, the source row and the judgement card are now their own files
+  under `app/check/`, loaded with `next/dynamic`. The shared shapes are in `types.ts`.
+- **/closet**: the add flow, the edit row, the detail sheet and batch add load when
+  opened; what they share is in `closet/shared.tsx`.
+- **Verification**: a browser smoke test exercised every split part.
+- **Gotcha**: a `next start` left over from Session 99 still held port 3100 and served
+  the OLD build's HTML against new chunks, which made the split look broken. Kill the
+  port before restarting after a rebuild.
+
+**2. Dress form / realistic toggle on /check** (`app/check/FitMapCard.tsx`).
+- `components/useRealisticBody.ts` fits Anny to the passport the way /body does with
+  no face: cut at the neck, rounded, in the colour chosen on /body. The fit colours are
+  the same as on the dress form.
+- The garment shell stays on the dress form, and the card says so.
+- /check opens on the dress form until the wearer picks. The choice is the same
+  `fp-body3d` key /body uses (`readBodyLook` / `saveBodyKind` keep /body's other
+  choices).
+- Without height and weight, it says what is missing and links to the passport.
+
+**3. /outfits on the 3D body.**
+- **Painting**: `lib/outfitColours.ts` paints each piece's colour where it covers, by
+  region and height from the body's own landmarks. The knee, ankle and short's hem are
+  fixed fractions of hip height, a drawing convention said as such.
+- **FitMap3D** takes an `outfit` in place of zones.
+- **Defaults**: missing pieces get the flat mannequin's neutral defaults (`layerHex`),
+  so the two views agree.
+- **No height and weight**: it draws the mean US adult and says so. The figures were
+  first written from memory and marked UNVERIFIED, then read from NCHS Vital Health
+  Stat 3(46), 2015–2018: men 175.3 cm (Table 11) and 90.6 kg (Table 5), women 161.3 cm
+  (Table 9) and 77.5 kg (Table 3). Drawing only (invariant 98).
+
+**4. The seller's height-and-weight guide** (`todo/engineering/11`, done).
+- **Reading**: `sellerBodyRanges` reads 身高 / 体重 (height / weight) ranges by size
+  label after the measurements.
+  - Had they gone through the normal cell reader, their ranges would have tipped a
+    garment chart over the "half the cells are ranges ⇒ body chart" rule, and a 109 cm
+    garment chest would have become a body range. A test pins this.
+  - Units: cm or in; kg, lb or 斤. A unitless Chinese column over 95 is read as 斤.
+    Fabric weights are ignored, including the 克 in a column that is not 千克.
+- **Storage**: four nullable columns, in an additive migration.
+- **Scoring**: `scoreSellerRange` speaks only for a wearer with no chest of their own
+  and no closet anchor here, weighs 0.2, adds no confidence, and says it is the
+  seller's own guide.
+
+**Tests**: 1,325 → **1,347**.
+
 ## 2026-10-16 · Session 99 — The showcase poster and demo video
 
 CMU Silicon Valley's Evening of Entrepreneurship. The soft copies of a 24" × 36" poster
