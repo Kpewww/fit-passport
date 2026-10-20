@@ -22,6 +22,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { dressFormGeometry, shellGeometry } from "@/lib/dressForm3d";
 import { FORM_COLOUR, fitMapColours, type BodyGeometryData, type Zone } from "@/lib/fitMapColours";
+import { outfitColours, type OutfitLayer } from "@/lib/outfitColours";
 import type { BodyMeasurementsInput, GarmentMeasurements } from "@/lib/bodyMesh";
 
 type Scene = {
@@ -56,6 +57,7 @@ export function FitMap3D({
   head = null,
   zoom = 1,
   skin = false,
+  outfit = null,
 }: {
   measurements: BodyMeasurementsInput;
   /** The size's per-part fit; absent means the plain form. */
@@ -75,6 +77,9 @@ export function FitMap3D({
   /** A skin tone, not the mannequin's (Session 98d): a soft sheen and a warm bounce
    *  light from below, instead of the form's dry matte. */
   skin?: boolean;
+  /** An outfit to paint on the body instead of fit colours (Session 100, /outfits):
+   *  each garment's colour where it covers (lib/outfitColours.ts); zones are ignored. */
+  outfit?: OutfitLayer[] | null;
 }) {
   const hostRef = useRef<HTMLDivElement>(null);
   const sceneRef = useRef<Scene | null>(null);
@@ -230,11 +235,11 @@ export function FitMap3D({
   }, [bodyKey, size]);
 
   // ---- the size: recolour and swap the shell, keeping the renderer ----
-  const sizeKey = JSON.stringify([zones ?? null, garment ?? null, bodyKey, tint]);
+  const sizeKey = JSON.stringify([zones ?? null, garment ?? null, bodyKey, tint, outfit ?? null]);
   useEffect(() => {
     const s = sceneRef.current;
     if (!s || !body) return;
-    s.bodyGeometry.setAttribute("color", new THREE.BufferAttribute(fitMapColours(body, zones, tint), 3));
+    s.bodyGeometry.setAttribute("color", new THREE.BufferAttribute(outfit ? outfitColours(body, outfit, tint) : fitMapColours(body, zones, tint), 3));
     if (s.head) (s.head.material as THREE.MeshStandardMaterial).color.set(tint);
     // A skin's sheen and glow follow its colour.
     for (const m of [s.bodyMaterial, s.head?.material as THREE.Material | undefined]) {

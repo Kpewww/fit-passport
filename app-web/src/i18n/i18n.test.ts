@@ -19,6 +19,7 @@ const ZH = new Map(leaves(zh));
 // language names as their own speakers write them, and codes.
 const SAME_IN_BOTH = new Set([
   "sizeInput.hint.intimate", // "S–XL" in both: a size range, not words
+  "outfits.view3d", // "3D" in both: the abbreviation, not words
   "meta.title",
   "common.zhShort",
   "common.enShort",

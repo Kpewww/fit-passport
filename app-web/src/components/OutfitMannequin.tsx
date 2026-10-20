@@ -142,6 +142,12 @@ export function OutfitMannequin({
   );
 }
 
+/** A layer's colour as the mannequin paints it: its own, else its zone's default. Shared
+ *  with the 3D preview (Session 100) so the two views agree. */
+export function layerHex(category: string, color: string | null | undefined): string {
+  return hex(color, zoneDefault(zoneFor(category)));
+}
+
 function zoneDefault(z: Zone): string {
   if (z === "top") return DEFAULTS.top;
   if (z === "bottom" || z === "skirt" || z === "dress" || z === "onepiece") return DEFAULTS.bottom;

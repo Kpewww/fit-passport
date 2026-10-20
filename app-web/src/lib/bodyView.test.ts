@@ -76,7 +76,7 @@ describe("the body look shared by /body and /check (Session 100)", () => {
   const store = new Map<string, string>();
   const ls = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) };
   beforeEach(() => { store.clear(); vi.stubGlobal("localStorage", ls); });
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => { vi.unstubAllGlobals(); });
 
   it("uses the page's own default until the wearer has chosen", () => {
     expect(readBodyLook("form").kind).toBe("form");

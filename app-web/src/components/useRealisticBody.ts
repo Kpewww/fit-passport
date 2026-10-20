@@ -21,7 +21,23 @@ type Profile = {
 
 export type RealisticBody =
   | { state: "off" | "loading" | "locked" | "error" }
-  | { state: "ready"; body: BodyGeometryData; measurements: Record<string, number | string | null | undefined> };
+  | {
+      state: "ready";
+      body: BodyGeometryData;
+      measurements: Record<string, number | string | null | undefined>;
+      /** True when the passport lacked height or weight and an average body was drawn. */
+      average: boolean;
+    };
+
+/**
+ * A body to draw when the passport has no height or weight, if the caller asks for one
+ * (/outfits): the mean US adult, aged 20 and over. NCHS, Anthropometric Reference Data
+ * for Children and Adults: United States, 2015-2018 (Vital Health Stat 3(46), 2021),
+ * read from the PDF in Session 100: men 175.3 cm (Table 11) and 90.6 kg (Table 5),
+ * women 161.3 cm (Table 9) and 77.5 kg (Table 3). Drawing only: never stored, sent or
+ * scored (invariant 98).
+ */
+const AVERAGE_BODY = { male: { heightCm: 175.3, weightKg: 90.6 }, female: { heightCm: 161.3, weightKg: 77.5 } } as const;
 
 type Libs = {
   anny: typeof import("@/lib/annyBody");
@@ -30,7 +46,11 @@ type Libs = {
   data: AnnyData;
 };
 
-export function useRealisticBody(enabled: boolean, look: { sex: "female" | "male" | null; cup: Cup | null }): RealisticBody {
+export function useRealisticBody(
+  enabled: boolean,
+  look: { sex: "female" | "male" | null; cup: Cup | null },
+  opts: { average?: boolean } = {},
+): RealisticBody {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [libs, setLibs] = useState<Libs | null>(null);
   const [failed, setFailed] = useState(false);
@@ -40,7 +60,9 @@ export function useRealisticBody(enabled: boolean, look: { sex: "female" | "male
     fetch("/api/profile").then((r) => r.json()).then((d) => setProfile(d.profile ?? {})).catch(() => setProfile({}));
   }, [enabled, profile]);
 
-  const unlocked = profile != null && bodyReadiness(profile).level !== "locked";
+  const own = profile != null && bodyReadiness(profile).level !== "locked";
+  const average = profile != null && !own && !!opts.average;
+  const unlocked = own || average;
   useEffect(() => {
     if (!enabled || !unlocked || libs) return;
     Promise.all([import("@/lib/annyBody"), import("@/lib/neckCut"), import("@/lib/pnSubdivide")])
@@ -50,10 +72,12 @@ export function useRealisticBody(enabled: boolean, look: { sex: "female" | "male
 
   const passportSex = profile?.sex === "male" || profile?.sex === "female" ? profile.sex : null;
   const sex: "female" | "male" = look.sex ?? passportSex ?? "female";
-  const measurements = useMemo(() => ({
-    heightCm: profile?.heightCm, weightKg: profile?.weightKg, chestCm: profile?.chestCm, waistCm: profile?.waistCm,
-    hipCm: profile?.hipCm, shoulderCm: profile?.shoulderCm, inseamCm: profile?.inseamCm, sex,
-  }), [profile, sex]);
+  const measurements = useMemo(() => (average
+    ? { ...AVERAGE_BODY[sex], sex }
+    : {
+      heightCm: profile?.heightCm, weightKg: profile?.weightKg, chestCm: profile?.chestCm, waistCm: profile?.waistCm,
+      hipCm: profile?.hipCm, shoulderCm: profile?.shoulderCm, inseamCm: profile?.inseamCm, sex,
+    }), [profile, sex, average]);
   const cup = sex === "female" ? look.cup : null;
 
   const body = useMemo(() => {
@@ -71,5 +95,5 @@ export function useRealisticBody(enabled: boolean, look: { sex: "female" | "male
   if (profile == null) return { state: "loading" };
   if (!unlocked) return { state: "locked" };
   if (!body) return libs ? { state: "error" } : { state: "loading" };
-  return { state: "ready", body, measurements };
+  return { state: "ready", body, measurements, average };
 }

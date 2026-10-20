@@ -10,6 +10,10 @@ import { Button, Card, EmptyState, PageHeader, inputClass } from "@/components/u
 import { ColorSwatchButton } from "@/components/ColorPicker";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { OutfitMannequin, type OutfitLayer } from "@/components/OutfitMannequin";
+import dynamic from "next/dynamic";
+
+// The 3D body loads only when its tab is chosen (Session 100).
+const OutfitBody3D = dynamic(() => import("@/components/OutfitBody3D").then((m) => m.OutfitBody3D));
 import { OutfitCard, type OutfitView } from "@/components/OutfitCard";
 import { deriveBodyType } from "@/lib/bodyType";
 import { garmentLabel } from "@/lib/garments";
@@ -48,6 +52,7 @@ export default function OutfitsPage() {
   const [photo, setPhoto] = useState<string | null>(null);
   const [genning, setGenning] = useState(false);
   const [photoNote, setPhotoNote] = useState<string | null>(null);
+  const [view3d, setView3d] = useState(false);
 
   const load = useCallback(() => {
     fetch("/api/outfits?mine=1").then((r) => r.json()).then((d) => setMine(d.outfits ?? []));
@@ -153,11 +158,19 @@ export default function OutfitsPage() {
               <div role="tablist" aria-label={t("previewOnBody")} className="inline-flex rounded-full border border-line bg-white p-1 text-xs font-medium">
                 <button
                   role="tab"
-                  aria-selected={!photo}
-                  onClick={() => { setPhoto(null); setPhotoNote(null); }}
-                  className={`rounded-full px-3.5 py-1.5 transition-colors ${!photo ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"}`}
+                  aria-selected={!photo && !view3d}
+                  onClick={() => { setPhoto(null); setPhotoNote(null); setView3d(false); }}
+                  className={`rounded-full px-3.5 py-1.5 transition-colors ${!photo && !view3d ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"}`}
                 >
                   {t("stylized")}
+                </button>
+                <button
+                  role="tab"
+                  aria-selected={!photo && view3d}
+                  onClick={() => { setPhoto(null); setPhotoNote(null); setView3d(true); }}
+                  className={`rounded-full px-3.5 py-1.5 transition-colors ${!photo && view3d ? "bg-ink text-paper" : "text-ink-soft hover:text-ink"}`}
+                >
+                  {t("view3d")}
                 </button>
                 <button
                   role="tab"
@@ -173,6 +186,8 @@ export default function OutfitsPage() {
                 {photo ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={photo} alt={t("photoAlt")} className="w-[220px] rounded-xl" />
+                ) : view3d ? (
+                  <OutfitBody3D layers={layers} />
                 ) : (
                   <OutfitMannequin layers={layers} volume={figure.volume as never} shape={figure.shape as never} size={220} />
                 )}
