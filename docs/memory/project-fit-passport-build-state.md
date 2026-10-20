@@ -1473,3 +1473,16 @@ a chart; the type retry keeps the picture) — store zip built, founder to uploa
 The vision reader returns the chart cell by cell (`grid`); that is what is cached, and `parseSizeGrid` reads it
 — units, a flat chest doubled, ranges, the seller's height and weight, garment or body. Never ask a model to
 convert, double or complete numbers the parser already knows how to read.
+
+**SESSION 100d (2026-10-20).** 1,363 → **1,379 tests**. Pilot P0/P1: `lib/units.ts` (cm/in, kg/lb, `PROFILE_RANGES`
+shared with /api/profile, "I meant 40 inches"); /check answers under the box + "upload a screenshot" next step;
+phone hero = "Check a size" (CSS `sm:`); nav refresh on `fp:account-changed`; `Event`/`Feedback` tables (migration
+`20261020120000`), `lib/events.ts`, `/feedback`, /admin pilot panel, `error.tsx`/`global-error.tsx`; `/api/auth/delete`
+(hard delete) + `/terms`; login fold offer (`fp_fold`, `lib/loginFold.ts`, `/api/auth/fold-browser`); closet photos to
+Vercel Blob behind `BLOB_READ_WRITE_TOKEN` (`lib/photoStore.ts`, `/api/closet/photo/[id]`, `scripts/photos-to-blob.mjs`).
+`@vercel/blob` added — lockfile `libc` entries restored by hand (after `cpu`), diff additions only.
+
+**NEW INVARIANT:**
+**(100)** **An event says what happened, never who measures what.** `track()` takes a name from `EVENT_NAMES`, a short
+code and a page: never a measurement, never words a person typed, never a product's address. A browser may send only
+`CLIENT_EVENTS`; deleting an account deletes its events and feedback.

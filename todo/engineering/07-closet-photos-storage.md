@@ -20,3 +20,20 @@ scheduled.
 ## Trigger
 
 Before the first real cohort is invited — not after.
+
+## Built — Session 100d (2026-10-20)
+
+`lib/photoStore.ts`:
+- With `BLOB_READ_WRITE_TOKEN` set, a new photo goes to Vercel Blob, and the row keeps
+  `blob:<url>`.
+- The browser gets `/api/closet/photo/<id>`, which checks the owner. Blob files are
+  public by address, so the address never leaves the server.
+- Replaced and deleted photos are removed from the store.
+
+Old photos move with `scripts/photos-to-blob.mjs`: a dry run first, then `--apply`.
+
+**Waiting for the founder (`todo/people/08-blob-store.md`):**
+1. Create the store in Vercel; that sets the token.
+2. Redeploy.
+3. Run the script.
+

@@ -1,5 +1,8 @@
 # Before real users: what a first-time walk through the live site found
 
+**Status, Session 100d (2026-10-20): every P0 and P1 below is fixed**, except item 6.
+Item 6 is built and waits for the founder to create a Vercel Blob store. P2 is open.
+
 **Session 100, 2026-10-19.**
 - **How it was walked.** A made-up person went through www.fitpassport.fit twice:
   - on a desktop in English (1440 px);
@@ -62,7 +65,7 @@ inches/pounds all matter.
    - **Fix**: on a phone, lead with "paste a link or upload a size chart".
 9. **The header still says "Claim account" after claiming.** SEEN on desktop, on the
    success page. It looks as if it did not work.
-10. **Adding a piece: the first box on the page is the link box, and it has the focus.**
+10. **Adding a piece: the first box on the page is the link box.** (Correction: the "focus" was the walk script's own typing; the page never focused it.)
     SEEN. The brand question sits below it, so a person who starts typing puts the
     brand into the link box. **Fix**: focus the brand box, and put the link shortcut
     under it as "or paste a link".

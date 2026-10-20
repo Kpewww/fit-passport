@@ -949,3 +949,9 @@ limit; upload extension 0.9.2 (`app-web/store-build/fit-passport-extension-0.9.2
 under the button, error logging + events, a feedback link, closet photos out of Postgres); remove the test
 account FP-SJSK-DJDV-8N527. **Engineering after the key:** read the two CMU swag charts on production.
 
+## Session 100d (2026-10-20) — pilot P0 + P1 fixed
+
+All P0/P1 of `todo/engineering/16` shipped; the production key works (both CMU swag charts read on production).
+**Next — founder:** create the Vercel Blob store (`todo/people/08-blob-store.md`), then move old photos; upload
+extension 0.9.2; delete FP-SJSK-DJDV-8N527 in the database. A kept test account for production testing is in the
+local (not repo) memory. **Engineering:** P2 of todo 16 when asked; read pilot events/feedback on /admin.

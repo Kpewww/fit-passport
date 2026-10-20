@@ -31,6 +31,77 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-20 · Session 100d — Every P0 and P1 from the live walk, fixed
+
+The founder replaced the production key and asked for P0 and P1 together, and for one
+test account to be kept for later testing.
+
+**The key works.** Both CMU swag PNGs were read on production:
+- **IND4000Z**: XS–6XL, the flat chest doubled (M 116.8 cm), M recommended, in 8 s.
+- **Comfort Colors 1566**: S–3XL, S recommended, in 6 s.
+
+Both match the local reading of their transcriptions.
+
+**P0**
+- **Units.**
+  - Onboarding takes cm/in and kg/lb. Inches and pounds are the default for a US
+    shopper reading English; the choice is remembered once made.
+  - A number out of range is named under its field, with the range in its own unit,
+    and "I meant 40 inches" when it fits as inches.
+  - /passport remembers its switches, and holds back the one bad number instead of
+    failing the save.
+  - The forms and the API share one set of ranges (`lib/units.ts`).
+- **Answers under the box.** A refusal, the garment question and the seller form sit
+  under the link box, scrolled to. An unreadable store, or a page with no chart, offers
+  "upload a screenshot of the size chart", and on a computer the extension too.
+- **Events and errors** (`Event`, `lib/events.ts`):
+  - eight names: check, check-refused, chart-upload, extension-check, piece-added,
+    account-claimed, feedback, client-error;
+  - only a code and the page;
+  - client errors come from `error.tsx` and `global-error.tsx`.
+- **Feedback** (`Feedback`, `/feedback` from every footer). It is emailed when Resend
+  is set up. /admin has a pilot panel.
+- **Photos out of Postgres** (`lib/photoStore.ts`).
+  - With `BLOB_READ_WRITE_TOKEN`, a photo goes to Vercel Blob. Blob is public by
+    address, so the address stays on the server and the browser gets
+    `/api/closet/photo/<id>`, owner-checked (invariant 92).
+  - `scripts/photos-to-blob.mjs` moves the old ones.
+  - Waiting for the founder to create the store.
+  - `npm install` on this Mac strips the lockfile's Linux `libc` entries again. They
+    were put back from the old file, after `cpu` where npm keeps them, so the diff is
+    additions only.
+
+**P1**
+- On a phone, the home page leads with "Check a size". The Chrome button and the
+  folded link box are `sm:` and up, decided by CSS, so the server and the browser
+  render the same thing.
+- After claiming, the nav refreshes (`fp:account-changed`).
+- The closet's link shortcut sits under the brand question.
+  - *Correction to 100c*: the "focus" on the link box was the walk script's own
+    `fill`. The page never focused it; only its place first on the page was the
+    problem.
+- **Login offers to bring what this browser added before** (`lib/loginFold.ts`).
+  - The offer is a signed, 15-minute `fp_fold` cookie. Its signature covers
+    "fold." + body, so it is never a session and never a carry pass.
+  - On yes, `foldAccount`; nothing is overwritten.
+- **Delete everything** (`/api/auth/delete`).
+  - It takes the account, its cascades, events, feedback, stored photos, and accounts
+    once folded into it.
+  - Reports, likes and votes stay, without the name.
+- **A terms page.** Plain language, written by us, not reviewed by a lawyer.
+- **The privacy page** adds events, feedback, screenshots, uploaded charts and
+  deletion. The footer and help now say "never shared with other users".
+
+**The guards caught three things:**
+- the photo-privacy test: the new photo route and deletion are now listed as
+  owner-only paths;
+- the headline test: the error page's serif title uses `Headline`;
+- the to-buy test: login counts the list to offer it, and nothing learns from that.
+
+**Tests**: 1,363 → **1,379**. A browser run on a production build passed every check.
+The two timing misses were the local login's password hash, longer than the wait;
+the offer then appeared and the fold moved the piece.
+
 ## 2026-10-19 · Session 100c — A first-time walk through the live site, and what to fix before a pilot
 
 **Asked by the founder:** use the product as a real user would, check that it flows,
