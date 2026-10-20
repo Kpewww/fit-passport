@@ -31,6 +31,87 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-19 · Session 100b — A size from a chart picture alone, and extension 0.9.2
+
+**Asked by the founder.** When a page has only a size chart, and the chart is complete
+enough, recommend a size rather than refuse, and let the shopper name the item
+afterwards. The case was the iii holiday swag form: two charts as PNGs on Google Drive.
+- **Comfort Colors 1566.** The header is "Width (in) | Length (in) | Sleeve center
+  back | Packaging (dz)".
+- **Independent Trading IND4000Z.** Sizes XS–6XL, with "CHEST WIDTH 1" BELOW ARMHOLE".
+
+Both give the garment's chest laid flat, in inches.
+
+**What was wrong before.** Read by the earlier rules, these charts would have failed in
+three ways:
+- a half chest was taken as the whole chest, so every size read about half too small;
+- "Width" and "Body Width" were not read at all;
+- 5XL and 6XL were not size labels.
+
+The web page had no picture input, and Drive's picture addresses need a login, so our
+server could not fetch them anyway. Picking a picture in the extension and then the
+garment type dropped the picture (`popup.js`), and the retry answered "no chart".
+
+**The flat chest is doubled in one place.**
+- `FLAT_CHEST_RE` sits before the chest pattern in `MEASURE_MAP`, as plain alternatives
+  for the drift test.
+- A header that *starts* with "Width" counts as a flat chest too, so "Shoulder width"
+  stays a shoulder.
+- Units are settled first: a flat chest under 35 is inches. It is kept at full precision
+  through the conversion, then doubled and rounded once (106.68, not 106.6).
+- A flat chart is a garment chart (invariant 85).
+- The replay of the 11 real captures is unchanged: only the timings differ.
+
+**The model transcribes; our parser reads.** The picture reader now also returns the
+chart cell by cell. That grid is what gets cached, and `parseSizeGrid` reads it by the
+page-table rules: units, flat chests, ranges, the seller's height and weight, and the
+garment-or-body decision. One set of rules covers tables and pictures, and a better
+parser improves every cached read. Older cached reads, which are sizes only, still work.
+
+**`/check` upload, "Only have a size chart?"**
+- **Input.** Choose, drop or paste a picture. The browser scales it to 1600 px JPEG.
+  The garment type and the link it came from are optional.
+- **`chartUpload` on `/api/check`.**
+  - At most 3 MB.
+  - JPEG, PNG or WebP, judged by the file's first bytes.
+  - Cached per picture by SHA-256.
+  - Shares the 20-an-hour picture budget.
+- **Refusals that say what is missing** (`chartUpload.ts` `chartGaps`):
+  - not a picture;
+  - picture reading not switched on (a new message, distinct from a failed read: the
+    local `.env` key is empty, which is how this was found);
+  - not a chart;
+  - fewer than three sizes;
+  - no chest, waist or hip.
+
+  The plan said "a chest". Waist or hip also counts, or trouser charts would be refused.
+- **The product.** No brand or name, and `pick-category` until a type is chosen. Its
+  address is the check itself, reopened, so a to-buy item saved from it has a real
+  link.
+- **After the answer: "Save to buy"** on every result, with brand, name and type
+  editable, then "bought it? add it to your closet" (the existing `fromSaved` flow). It
+  opens at once for an uploaded chart. The website had no save button until now; only
+  the extension did.
+
+**Extension 0.9.2.**
+- **Screenshot.** "Use a screenshot of this tab" appears when the page has no chart,
+  and on the no-chart refusal and the picture picker. It uses `captureVisibleTab` under
+  `activeTab`, the same as closet photos, so there is no new permission. The screenshot
+  is shown with its size and sent only on a click, as `chartUpload` with the page's
+  address and nothing else.
+- **Fix.** The garment type retry now resends the picked picture.
+- **Packages.** Zips are built for the site and the store.
+
+**Tested.**
+- Unit tests: 1,347 → **1,363**. The two swag charts are transcribed exactly as their
+  PNGs print them; the upload path, cache and refusals are covered.
+- Browser: the website upload, through the "choose the garment" step.
+- Extension: on the real Drive preview, the screenshot is taken and previewed, and only
+  `{chartUpload: {data, link}}` is sent.
+
+**Not tested yet.** A real model read of the swag PNGs: the local key is empty, so it
+runs on production next, and it is also the first real read `todo/people/06` asked for.
+
 ## 2026-10-19 · Session 100a — Lighter /check and /closet, the realistic body on /check and /outfits, a seller's height-and-weight guide
 
 The founder confirmed that the showcase materials were handed in and extension 0.9.1
