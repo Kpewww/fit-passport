@@ -18,7 +18,15 @@
 // Anything added here changes what the engine computes AND what the UI promises,
 // in one edit. That is the point.
 
-// The values, and where each came from, now live in `scoringConstants.ts` — the one
-// registry every scoring number declares its provenance in. This file stays so
-// existing imports keep working; it adds nothing of its own.
-export { CONFIDENCE_WEIGHTS } from "./scoringConstants";
+// The values are defined HERE and re-exported by `scoringConstants.ts`; where each
+// came from is recorded in `scoringProvenance.ts`. The other way round (this
+// file re-exporting from scoringConstants, Session 81) sent that whole registry, its
+// sentences included, to every page that shows the promise: 3.7 kB on /check,
+// measured in Session 100.
+export const CONFIDENCE_WEIGHTS = {
+  floor: 0.3,
+  measurements: 0.35,
+  closetAnchor: 0.25,
+  chartShoulder: 0.05,
+  chartSleeve: 0.05,
+} as const;

@@ -14,9 +14,9 @@ const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
 const probe = join(root, "src/lib/__scoring_table.test.ts");
 const out = join(root, ".scoring-table.json");
-writeFileSync(probe, `import { it } from "vitest"; import { writeFileSync } from "node:fs"; import * as R from "./scoringConstants";
+writeFileSync(probe, `import { it } from "vitest"; import { writeFileSync } from "node:fs"; import * as R from "./scoringConstants"; import { PROVENANCE } from "./scoringProvenance";
 it("t", () => { const val = (p: string) => p.split(".").reduce((o: any, k) => o?.[k], R as any);
-  writeFileSync(${JSON.stringify(out)}, JSON.stringify(Object.entries(R.PROVENANCE).map(([k, v]) => ({ k, v: val(k), p: v.provenance, s: v.source })))); });`);
+  writeFileSync(${JSON.stringify(out)}, JSON.stringify(Object.entries(PROVENANCE).map(([k, v]) => ({ k, v: val(k), p: v.provenance, s: v.source })))); });`);
 try { execSync(`npx vitest run ${probe}`, { cwd: root, stdio: "ignore" }); } finally { rmSync(probe, { force: true }); }
 const rows = JSON.parse(readFileSync(out, "utf8")); rmSync(out, { force: true });
 const count = (p) => rows.filter((r) => r.p === p).length;

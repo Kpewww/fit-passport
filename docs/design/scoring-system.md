@@ -14,7 +14,8 @@ invention can hide: the engine's own CONSTANTS. A sigma of 4 cm, a confidence fl
 of 30%, a cap of 0.6 — each looks like a fact on screen and each is a choice.
 
 So every scoring number has one home, `scoringConstants.ts`, and one of three
-provenances:
+provenances, recorded beside it in `scoringProvenance.ts` (a separate file since
+Session 100, so the sentences are not sent to the browser with the values):
 
 | | Meaning | Count |
 |---|---|---|

@@ -6,10 +6,11 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import * as R from "./scoringConstants";
+import { PROVENANCE } from "./scoringProvenance";
 import { BRAND_CHARTS, chartToSizes } from "./brandCharts";
 
 const VALUE_EXPORTS = Object.entries(R).filter(
-  ([k, v]) => k !== "PROVENANCE" && (typeof v === "number" || (typeof v === "object" && v !== null)),
+  ([k, v]) => (typeof v === "number" || (typeof v === "object" && v !== null)),
 );
 
 /** Every numeric leaf as a dotted path: "DIMENSIONS.chest.sigmaCm". */
@@ -25,24 +26,24 @@ function leaves(): string[] {
 
 describe("scoringConstants — every number declares where it came from", () => {
   it("has a provenance for every value", () => {
-    const missing = leaves().filter((p) => !(p in R.PROVENANCE));
+    const missing = leaves().filter((p) => !(p in PROVENANCE));
     expect(missing, `values with no provenance: ${missing.join(", ")}`).toEqual([]);
   });
 
   it("has no provenance for a value that does not exist", () => {
     const all = new Set(leaves());
-    const orphans = Object.keys(R.PROVENANCE).filter((k) => !all.has(k));
+    const orphans = Object.keys(PROVENANCE).filter((k) => !all.has(k));
     expect(orphans, `provenance entries naming nothing: ${orphans.join(", ")}`).toEqual([]);
   });
 
   it("states how much data every 'measured' value rests on", () => {
-    for (const [k, v] of Object.entries(R.PROVENANCE)) {
+    for (const [k, v] of Object.entries(PROVENANCE)) {
       if (v.provenance === "measured") expect(v.source, `${k} must state its n`).toMatch(/\bn\s*=\s*\d+/);
     }
   });
 
   it("names a source for every 'cited' value", () => {
-    for (const [k, v] of Object.entries(R.PROVENANCE)) {
+    for (const [k, v] of Object.entries(PROVENANCE)) {
       if (v.provenance === "cited") expect(v.source.length, `${k} cites nothing`).toBeGreaterThan(20);
     }
   });
@@ -51,7 +52,7 @@ describe("scoringConstants — every number declares where it came from", () => 
     // The public list of numbers we have not yet earned. A new assumed constant
     // that is not in the table fails here, so it cannot slip in unannounced.
     const doc = readFileSync(join(process.cwd(), "..", "docs", "design", "scoring-system.md"), "utf8");
-    const unlisted = Object.entries(R.PROVENANCE)
+    const unlisted = Object.entries(PROVENANCE)
       .filter(([, v]) => v.provenance === "assumed")
       .map(([k]) => k)
       .filter((k) => !doc.includes(`\`${k}\``));
@@ -64,7 +65,7 @@ describe("scoringConstants — every number declares where it came from", () => 
     // in a table whose purpose is not publishing stale numbers.
     const doc = readFileSync(join(process.cwd(), "..", "docs", "design", "scoring-system.md"), "utf8");
     const val = (path: string) => path.split(".").reduce((o: any, k) => o?.[k], R as any);
-    const stale = Object.keys(R.PROVENANCE).filter((k) => !doc.includes(`| \`${k}\` | ${JSON.stringify(val(k))} |`));
+    const stale = Object.keys(PROVENANCE).filter((k) => !doc.includes(`| \`${k}\` | ${JSON.stringify(val(k))} |`));
     expect(stale, `scoring-system.md shows an out-of-date value for: ${stale.join(", ")}`).toEqual([]);
   });
 
