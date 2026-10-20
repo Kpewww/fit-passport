@@ -28,3 +28,15 @@ already runs the text reader for pages without a table (up to ~$0.02 per page,
 
 Add the feature to the store listing (`docs/store/chrome-web-store.md`) once a real
 read has been seen to work.
+
+## Update — Session 100 (2026-10-19): the production key is rejected
+
+The first real read, a chart uploaded on /check, failed: Anthropic answered **401
+authentication_error** (the refusal's `detail`, added for this). So the key in Vercel is
+wrong or revoked, and every model call in production has been failing quietly. That
+covers picked pictures, uploaded charts, reading a page without a table, and the chart
+image fallback.
+1. Create a new key in the Anthropic console and set `ANTHROPIC_API_KEY` in Vercel
+   (Production). Then redeploy.
+2. Set the monthly spend limit (above).
+3. Tell engineering. The read of the two CMU swag charts is ready to run (Session 100).

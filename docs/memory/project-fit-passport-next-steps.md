@@ -938,3 +938,14 @@ Oct 28); swap in course-provided logo files if any. **Engineering after the show
 split (todo/eng/13); 人台 / 写实 toggle on /check; /outfits 3D preview; per-size height/weight ranges as a weak
 signal (todo 11; 03 and 10 stay blocked on real pages). Still open from before: extension 0.9.1 upload; six
 MetaHuman faces; /body review.
+
+## Session 100 (2026-10-19) — post-showcase engineering, chart from a picture, pilot walk, DONE
+
+Shipped: page split, 人台/写实 toggle on /check, /outfits 3D, seller height/weight signal (todo 11), chart from
+a picture alone (upload/paste on /check; extension 0.9.2 screenshot), "Save to buy" on /check.
+**Next — founder:** replace the production `ANTHROPIC_API_KEY` (it answers 401; todo/people/06) and set a spend
+limit; upload extension 0.9.2 (`app-web/store-build/fit-passport-extension-0.9.2-store.zip`); pick from
+`todo/engineering/16-pilot-readiness.md` (P0: the key, inches + a clear error in onboarding, errors shown
+under the button, error logging + events, a feedback link, closet photos out of Postgres); remove the test
+account FP-SJSK-DJDV-8N527. **Engineering after the key:** read the two CMU swag charts on production.
+

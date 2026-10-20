@@ -1456,3 +1456,20 @@ Realistic heads: options in `todo/engineering/15-realistic-heads.md` (MetaHuman 
 axis), so the browser code is unchanged. Licence checked on Epic's MetaHuman page (runtime outside Unreal OK, no
 royalties; seat licence over US$1M; no AI training). heads.json field `variant` (was `ancestry`).
 
+**SESSION 100 (2026-10-19).** 1,325 → **1,363 tests**. Pages split (/check 116 kB, /closet 126 kB): parts
+opened later load with `next/dynamic` (`app/check/*.tsx`, `app/closet/{AddItemFlow,EditRow,DetailSheet,shared}.tsx`);
+`confidenceWeights.ts` is a leaf again and the PROVENANCE registry lives in `scoringProvenance.ts`. /check fit
+map: dress form / realistic toggle (`components/useRealisticBody.ts`, `readBodyLook`/`saveBodyKind` on
+`fp-body3d`). /outfits 3D tab (`lib/outfitColours.ts`, FitMap3D `outfit`). Seller height/weight per size
+(`sellerBodyRanges`, `SizeOption.bodyHeight*/bodyWeight*`, migration `20261019120000`, signal `seller-range`,
+`SELLER_RANGE` 0.2). Flat chest (`FLAT_CHEST_RE` + a header starting "Width") doubled after its unit; 5XL/6XL
+labels. Chart from a picture alone: `/api/check` `chartUpload` (`lib/chartUpload.ts`, `readUploadedChart`,
+`settlePicked`), "Save to buy" on /check (`NameAndSave.tsx`). Extension **0.9.2** (screenshot of the tab as
+a chart; the type retry keeps the picture) — store zip built, founder to upload. Production
+`ANTHROPIC_API_KEY` answers 401 (Session 100c): every model read fails until the founder replaces it.
+
+**NEW INVARIANT:**
+**(99)** **A chart in a picture is read by the page-table rules: the model transcribes, the parser reads.**
+The vision reader returns the chart cell by cell (`grid`); that is what is cached, and `parseSizeGrid` reads it
+— units, a flat chest doubled, ranges, the seller's height and weight, garment or body. Never ask a model to
+convert, double or complete numbers the parser already knows how to read.

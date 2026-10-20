@@ -31,6 +31,40 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-19 · Session 100c — A first-time walk through the live site, and what to fix before a pilot
+
+**Asked by the founder:** use the product as a real user would, check that it flows,
+and say what to change before testing with real people. Playwright walked
+www.fitpassport.fit twice with a made-up person, screenshotting every step:
+- on a desktop in English;
+- on a phone in Chinese (390 px, iPhone).
+
+The findings, ranked P0–P2 with what was seen and what was only read in code, are in
+`todo/engineering/16-pilot-readiness.md`.
+
+**The production API key is rejected.**
+- The swag-chart upload on production failed in 0.8 s.
+- The new `detail` reports `http-401-authentication_error`: the `ANTHROPIC_API_KEY` in
+  Vercel is wrong or revoked.
+- Every model call in production has been failing quietly: picked pictures, uploads,
+  reading text, and the image fallback.
+- This is on the founder (`todo/people/06`). The engine's answer for the two charts,
+  read from their exact transcriptions, is checked locally: a 98 cm chest gets S in the
+  1566 crewneck and M in the IND4000Z hoodie.
+
+**Also seen:**
+- Onboarding takes centimetres only, and "40" gets "Something went wrong.".
+- A refused check prints its message a screen below the button on a phone.
+- A real Uniqlo product link is refused on the website: the chart loads by script.
+- The phone home page leads with "Add to Chrome".
+- After claiming, the header still says "Claim account".
+- The closet's first box, which has the focus, is the link box, not the brand.
+
+**A mistake to learn from.** The desktop run did not log its test account's password
+before claiming it, so that account (code FP-SJSK-DJDV-8N527, empty but for the made-up
+body) could not be deactivated, and is listed for removal. The phone run wrote its
+credentials down first, and deactivated cleanly.
+
 ## 2026-10-19 · Session 100b — A size from a chart picture alone, and extension 0.9.2
 
 **Asked by the founder.** When a page has only a size chart, and the chart is complete

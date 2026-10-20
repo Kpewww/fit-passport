@@ -16,3 +16,4 @@ visible table). What remains:
 | ~~13~~ | ~~/closet and /check over their JS budgets~~ — **done (Session 100)**: /check 116 kB, /closet 126 kB after splitting | — |
 | 14 | 3D try-on: the fit map on /check and /body (Sessions 97–98); the 人台 / 写实 toggle on /check and the /outfits 3D preview (Session 100). Nothing open but realistic heads (15) | — |
 | 15 | Realistic heads for /body: MetaHuman chosen (Session 98h); converter built and self-tested (`tools/metahuman/`) | Six exported faces: `people/07-metahuman-faces.md` |
+| 16 | Before real users: what a walk through the live site found (P0–P2, with evidence) | The founder choosing which to do — see the file |
