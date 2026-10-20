@@ -39,7 +39,7 @@
 (function (root) {
   "use strict";
 
-  var VERSION = "0.9.1";
+  var VERSION = "0.9.2";
 
   // The server refuses supplied markup over 1,000,000 characters. A capture this
   // big means something went wrong, and the popup says so instead of sending it.
@@ -103,7 +103,7 @@
     /chest|bust|waist|hip|shoulder|sleeve|arm\s*length|length|inseam|width|pit\s*to\s*pit|胸围|胸|腰围|腰|臀|肩宽|肩|袖长|袖|衣长|总长|后中长|身幅|着丈|裄丈|肩幅/i;
 
   // pageParse.ts SIZE_LABEL_RE — what a size label looks like.
-  var SIZE_LABEL_RE = /^(XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|\d{1,3}(?:\.\d)?|EU\s?\d{2}|US\s?\d{1,2}|UK\s?\d{1,2})$/i;
+  var SIZE_LABEL_RE = /^(XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|5XL|6XL|\d{1,3}(?:\.\d)?|EU\s?\d{2}|US\s?\d{1,2}|UK\s?\d{1,2})$/i;
   // pageParse.ts TITLE_SUFFIX_RE — a marketplace appended to the <title>.
   var TITLE_SUFFIX_RE =
     /\s*(?:【[^】]{0,40}】)?\s*[-–—_|]\s*(?:tmall\.com天猫|天猫tmall\.com|天猫|淘宝网|淘宝|京东|jd\.com|拼多多|唯品会|得物)\s*$/i;

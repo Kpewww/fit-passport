@@ -28,6 +28,7 @@ import {
   findSizeChartImages,
   looksBlocked,
   listingTexts,
+  parseSizeGrid,
 } from "./pageParse";
 import { normalizeToAlpha } from "./sizing";
 import { domainForCategory } from "./sizeSystems";
@@ -141,9 +142,12 @@ type VisionExtract = z.infer<typeof VisionExtractSchema>;
 // trouser chart's waist is kept.
 const PickedChartSchema = z.object({
   header: z.string().nullable().optional(),
+  // The chart transcribed cell by cell (Session 100), read afterwards by the page-table
+  // rules. Bounded: a size chart is a few dozen cells.
+  grid: z.array(z.array(z.union([z.string(), z.number()]).transform(String)).max(20)).max(40).nullable().optional(),
   sizes: z.array(
     LLMExtractSchema.shape.sizes.element.extend({ waistCm: z.number().positive().optional().nullable() }),
-  ),
+  ).default([]),
 });
 
 /** Ask Claude to extract structured product data from the page's rendered text. */
@@ -455,11 +459,12 @@ async function callVisionLLM(imageUrls: string[]): Promise<VisionExtract | null>
  * failure is NOT remembered, a "not a chart" is.
  */
 export async function visionReadPicked(
-  imageUrl: string,
-): Promise<{ sizes: ExtractedSize[]; header: string | null } | "not-a-chart" | null> {
+  src: string | { data: string; mediaType: string },
+): Promise<{ sizes: ExtractedSize[]; header: string | null; grid: string[][] | null } | "not-a-chart" | null> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return null;
-  const img = await fetchImageBase64(imageUrl);
+  // A picture picked on a page is fetched; an uploaded one arrives as its bytes.
+  const img = typeof src === "string" ? await fetchImageBase64(src) : src;
   if (!img) return null;
   const system =
     "You read apparel SIZE CHARTS from an image for a fit engine. Extract ONLY the " +
@@ -468,10 +473,13 @@ export async function visionReadPicked(
     "near 30-50 for a chest are inches: multiply by 2.54). A chest given as a range " +
     "(\"38-40\") goes in bodyChestMinCm/bodyChestMaxCm. Chinese headers: 胸围=chest, " +
     "腰围=waist, 肩宽=shoulder, 袖长=sleeve, 衣长=length. Copy the chart's own title " +
-    "and notes word for word into `header` (null if none). If the image is not a " +
-    "size chart, return {\"sizes\": [], \"header\": null}.";
+    "and notes word for word into `header` (null if none). ALSO transcribe the chart " +
+    "into `grid` exactly as printed: one array per printed row, the header row first, " +
+    "every cell's text as written, units and fractions included (\"Chest Width (1/2)\", " +
+    "\"28 1/2\", \"160-180\"); do not convert, double or complete anything in `grid`. " +
+    "If the image is not a size chart, return {\"sizes\": [], \"grid\": null, \"header\": null}.";
   const schemaHint =
-    "Schema: {header: string|null, sizes:[{label, region?, chestCm?, waistCm?, " +
+    "Schema: {header: string|null, grid: string[][]|null, sizes:[{label, region?, chestCm?, waistCm?, " +
     "shoulderCm?, sleeveCm?, lengthCm?, bodyChestMinCm?, bodyChestMaxCm?}]}";
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), PAGE_FETCH_TIMEOUT_MS * 2);
@@ -482,7 +490,7 @@ export async function visionReadPicked(
       headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
       body: JSON.stringify({
         model: LLM_MODEL,
-        max_tokens: 1500,
+        max_tokens: 3000,
         temperature: 0,
         system,
         messages: [
@@ -503,9 +511,10 @@ export async function visionReadPicked(
     if (!match) return null;
     const parsed = PickedChartSchema.safeParse(JSON.parse(match[0]));
     if (!parsed.success) return null;
-    if (parsed.data.sizes.length < 2) return "not-a-chart";
+    const grid = parsed.data.grid && parsed.data.grid.length >= 2 ? parsed.data.grid : null;
+    if (parsed.data.sizes.length < 2 && !grid) return "not-a-chart";
     const sizes = parsed.data.sizes.map((row, i) => ({ ...mapLlmSizes([row])[0], waistCm: row.waistCm ?? undefined, label: row.label || String(i + 1) }));
-    return { sizes, header: parsed.data.header?.slice(0, 400) ?? null };
+    return { sizes, header: parsed.data.header?.slice(0, 400) ?? null, grid };
   } catch {
     return null;
   } finally {
@@ -563,6 +572,40 @@ function applyKind(
     out.source.measurementKind = r.kind;
     out.source.measurementKindFrom = r.kindFrom ?? undefined;
   }
+}
+
+/**
+ * Put a picture's chart into `out` (Session 100), true when it held one. The model's
+ * cell-by-cell transcription is read by the page-table rules (parseSizeGrid): a flat
+ * chest doubled, units, ranges, the seller's height and weight, what the numbers
+ * measure. Only a read without one (cached before Session 100) falls back to the
+ * model's own sizes. The chart's printed heading goes first in the wording, so its
+ * words ("body measurements", "平铺") decide what the numbers measure.
+ */
+export function settlePicked(
+  out: ExtractedProduct,
+  picked: { sizes: ExtractedSize[]; header: string | null; grid?: string[][] | null },
+  html: string,
+  brandKind: "body" | "garment" | undefined,
+  by: "picked-picture" | "uploaded-picture",
+): boolean {
+  const wording = `${picked.header ?? ""}\n${html}`;
+  const fromGrid = picked.grid ? parseSizeGrid(picked.grid, wording, brandKind) : null;
+  if (fromGrid && fromGrid.sizes.length >= 2) {
+    creditPage(out, by);
+    out.sizes = fromGrid.sizes;
+    if (fromGrid.kind) {
+      out.source.measurementKind = fromGrid.kind;
+      out.source.measurementKindFrom = fromGrid.kindFrom ?? undefined;
+    }
+    return true;
+  }
+  if (picked.sizes.length >= 2) {
+    creditPage(out, by);
+    applyKind(out, picked.sizes, wording, brandKind);
+    return true;
+  }
+  return false;
 }
 
 /**
@@ -818,13 +861,7 @@ export async function extractSmart(
       hasKey: !!process.env.ANTHROPIC_API_KEY,
     });
     out.source.chartImage = picked.status;
-    if (picked.sizes.length >= 2) {
-      creditPage(out, "picked-picture");
-      // The chart's own printed heading goes first, so its wording ("body
-      // measurements", "平铺") decides what the numbers measure.
-      applyKind(out, picked.sizes, `${picked.header ?? ""}\n${html}`, brandChart?.kind);
-      return out;
-    }
+    if (settlePicked(out, picked, html, brandChart?.kind, "picked-picture")) return out;
   }
 
   // 2b. A one-off listing (eBay …): no chart, but the seller's own tape measure,

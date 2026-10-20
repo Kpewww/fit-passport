@@ -276,6 +276,7 @@
           });
         }) : null,
         button(t("rescan"), start),
+        hasChart ? null : shotButton(cap),
         button(t("saveToBuy"), function () { saveForm(cap, null, function () { preview(cap, tab); }); }),
         button(t("ownThis"), function () { closetForm(cap, null, function () { preview(cap, tab); }); }),
       ]),
@@ -322,8 +323,12 @@
 
   // ---- 3. send, and render whatever the API says ----
 
-  async function send(cap, seller, chartImage, category) {
+  async function send(cap, seller, chartImage, category, shot) {
     show(el("p", { className: "muted", text: t("checking") }));
+    // Kept so that "what kind of garment is this?" sends the same picture again
+    // (it was dropped before Session 100, and the retry came back "no chart").
+    cap.chartImage = chartImage || null;
+    cap.shot = shot || null;
     var res;
     var body = null;
     try {
@@ -334,14 +339,18 @@
         credentials: "include",
         // x-fp-lang: the popup's language, so reasons and refusals come back in it.
         headers: { "content-type": "application/json", "x-fp-client": "extension/" + CFG.version, "x-fp-lang": I18N.lang() },
-        body: JSON.stringify({ url: cap.url, html: cap.html, seller: seller || undefined, chartImage: chartImage || undefined, category: category || undefined }),
+        // A screenshot of the tab (Session 100) is sent alone: the chart, and the
+        // page's address as its reference — not the page.
+        body: JSON.stringify(shot
+          ? { chartUpload: { data: shot, link: cap.url }, category: category || undefined }
+          : { url: cap.url, html: cap.html, seller: seller || undefined, chartImage: chartImage || undefined, category: category || undefined }),
       });
       try { body = await res.json(); } catch (e) { body = null; }
     } catch (e) {
       return message(
         t("unreachableTitle"),
         t(origin().indexOf("localhost") >= 0 ? "unreachableBodyDev" : "unreachableBody", { origin: origin() }),
-        [button(t("tryAgain"), function () { send(cap, seller, chartImage, category); }, true)]
+        [button(t("tryAgain"), function () { send(cap, seller, chartImage, category, shot); }, true)]
       );
     }
     if (body) { cap.features = body.features || cap.features; cap.seller = seller; }
@@ -377,6 +386,7 @@
       return message(REFUSAL_TITLES[code] ? t(REFUSAL_TITLES[code]) : t("cantSize"),
         [body.message, pickNote(body.source)].filter(Boolean).join(" "), [
         pick,
+        noChart ? shotButton(cap, !pick) : null,
         // A shop with no chart at all (a vintage football shirt shop, say) can
         // still have the seller's measurements on the page, or answer an email.
         noChart ? button(t("enterMeasurements"), function () { measureForm(cap, null); }, !pick && (listingPage || code === "no-measurements-listing")) : null,
@@ -548,7 +558,45 @@
         return b;
       })),
       el("p", { className: "small", text: t("pickPrivacy") }),
-      el("div", { className: "actions" }, [button(t("back"), function () { start(); })])
+      el("div", { className: "actions" }, [shotButton(cap), button(t("back"), function () { start(); })])
+    );
+  }
+
+  // A size chart that is on screen but not a picture the page can hand over — a
+  // Google Drive preview, a PDF, a chart drawn by script (Session 100): a screenshot
+  // of the visible tab, shown first and sent only on the shopper's click. activeTab
+  // already allows it; no new permission.
+  function shotButton(cap, primary) {
+    return button(t("shotButton"), function () { shotChart(cap); }, primary);
+  }
+
+  async function shotChart(cap) {
+    var dataUrl;
+    try {
+      dataUrl = await chrome.tabs.captureVisibleTab(undefined, { format: "png" });
+    } catch (e) {
+      return message(t("shotFailed"), "", [button(t("back"), start)]);
+    }
+    var img = await loadImg(dataUrl);
+    var k = Math.min(1, 1600 / Math.max(img.width, img.height));
+    var c = document.createElement("canvas");
+    c.width = Math.round(img.width * k);
+    c.height = Math.round(img.height * k);
+    var ctx = c.getContext("2d");
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, c.width, c.height);
+    ctx.drawImage(img, 0, 0, c.width, c.height);
+    var jpeg = c.toDataURL("image/jpeg", 0.85);
+    var data = jpeg.slice(jpeg.indexOf(",") + 1);
+    show(
+      el("p", { className: "title", text: t("shotTitle") }),
+      el("p", { className: "muted", text: t("shotIntro") }),
+      el("img", { src: jpeg, alt: "", className: "shot" }),
+      el("p", { className: "small", text: t("shotSize", { kb: Math.round((data.length * 3) / 4 / 1024) }) }),
+      el("div", { className: "actions" }, [
+        button(t("shotSend"), function () { send(cap, null, null, null, data); }, true),
+        button(t("back"), start),
+      ])
     );
   }
 
@@ -618,7 +666,7 @@
       text ? el("p", { className: "muted", text: text }) : null,
       el("div", { className: "form" }, [field(t("fieldCategory"), sel)]),
       el("div", { className: "actions" }, [
-        button(t("check"), function () { send(cap, cap.seller, null, sel.value); }, true),
+        button(t("check"), function () { send(cap, cap.seller, cap.chartImage, sel.value, cap.shot); }, true),
         button(t("rescan"), start),
       ])
     );

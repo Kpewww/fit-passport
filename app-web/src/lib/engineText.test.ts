@@ -61,6 +61,12 @@ const ARGS: Args = {
   notConnected: null,
   verdictName: ["snug"],
   refuseListingNoMeasurements: null,
+  refuseUploadBad: null,
+  refuseUploadUnreadable: null,
+  refuseUploadOff: null,
+  refuseUploadNotChart: null,
+  refuseUploadFewSizes: null,
+  refuseUploadNoGirth: null,
   listingFlat: [{ field: "chest", value: 24, unit: "in", cm: 121.9, typed: false, unitInferred: true }],
   listingVsGarment: [{ refLabel: "Uniqlo L", refCm: 118, dir: "snug", deltaCm: 3.9 }],
   listingVsBody: [{ dim: "chest", targetCm: 110, bodyCm: 100, pref: "regular" }],
@@ -80,7 +86,7 @@ function render(M: EngineText): Array<[string, string]> {
 
 // Words that are the same in both languages: brands and codes from the args
 // above, size labels, units, and the product's own name.
-const SAME_IN_BOTH = new Set(["Uniqlo", "COS", "XL", "XXL", "cm", "Polo", "AI", "Fit", "Passport", "Cookie"]);
+const SAME_IN_BOTH = new Set(["Uniqlo", "COS", "XL", "XXL", "cm", "Polo", "AI", "Fit", "Passport", "Cookie", "JPEG", "PNG", "WebP", "MB"]);
 const englishWords = (s: string) => (s.match(/[A-Za-z]{2,}/g) ?? []).filter((w) => !SAME_IN_BOTH.has(w));
 // The copy spec writes "T 恤" and "Polo 衫" with the space, like every Latin letter
 // beside a Chinese one.

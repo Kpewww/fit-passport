@@ -20,6 +20,7 @@ const ZH = new Map(leaves(zh));
 const SAME_IN_BOTH = new Set([
   "sizeInput.hint.intimate", // "S–XL" in both: a size range, not words
   "outfits.view3d", // "3D" in both: the abbreviation, not words
+  "check.upload.linkPlaceholder", // "https://…", an address
   "meta.title",
   "common.zhShort",
   "common.enShort",

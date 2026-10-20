@@ -71,6 +71,15 @@ picker still closed in a drawer). Patagonia's product page also carries its revi
 filters, hidden, with every size the brand sells, and all 49 had reached the save form
 and the check (Session 95, a live run). No permission change.
 
+## 0.9.2
+
+A size chart that is only on screen — a Google Drive preview, a PDF, a chart drawn by
+script — can be read from a screenshot of the tab: shown first, sent only on a click,
+with the page's address as its reference and nothing else from the page (Session 100).
+Choosing the garment type after a picked picture now sends the picture again (it was
+dropped, and the retry answered "no chart"). No permission change: `activeTab` already
+allows the screenshot, as it does for closet photos.
+
 ## Install (development)
 
 1. `chrome://extensions` → enable **Developer mode**.

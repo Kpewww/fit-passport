@@ -26,9 +26,11 @@ import { z } from "zod";
 import { normalizeUrl } from "@/lib/normalizeUrl";
 import { prisma } from "@/lib/db";
 import { getCurrentUser, readSession } from "@/lib/session";
-import { extractSmart } from "@/lib/extractorLLM";
-import { MAX_IMAGE_URL } from "@/lib/chartImage";
-import { withUserCategory } from "@/lib/extractor";
+import { extractSmart, visionReadPicked, VISION_MODEL } from "@/lib/extractorLLM";
+import { MAX_IMAGE_URL, MAX_UPLOAD_BYTES, readUploadedChart } from "@/lib/chartImage";
+import { withUserCategory, type ExtractedProduct } from "@/lib/extractor";
+import { chartGaps, productFromUpload } from "@/lib/chartUpload";
+import { siteOrigin } from "@/lib/site";
 import { PICKABLE_CATEGORIES } from "@/lib/garments";
 import { computeRecommendation } from "@/lib/recommendService";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
@@ -72,6 +74,7 @@ const PER_IP = { limit: 300, windowMs: 10 * 60_000 };
 // Accept a loose string and normalize it (people paste bare domains), so
 // "patagonia.com/product/..." works the same as a full https:// link.
 const Body = z.object({
+  // Optional only with `chartUpload`: a chart uploaded on its own has no page.
   url: z.string().min(3).transform((v, ctx) => {
     const u = normalizeUrl(v);
     if (!u) {
@@ -79,7 +82,7 @@ const Body = z.object({
       return z.NEVER;
     }
     return u;
-  }),
+  }).optional(),
   // Optional: the page's markup, from a caller that already has it open.
   html: z
     .string()
@@ -118,7 +121,16 @@ const Body = z.object({
   // A picture the shopper picked as the size chart (Session 83): its address only.
   // chartImage.ts refuses anything but https.
   chartImage: z.string().max(MAX_IMAGE_URL).optional(),
-});
+  // A size chart the shopper uploaded or pasted, with no page (Session 100): the
+  // picture's bytes (base64; the browser scales it down first) and, if they gave
+  // one, the link it belongs to — kept as the product's reference, never fetched.
+  chartUpload: z
+    .object({
+      data: z.string().min(16).max(Math.ceil((MAX_UPLOAD_BYTES * 4) / 3) + 8),
+      link: z.string().max(2048).optional(),
+    })
+    .optional(),
+}).refine((b) => b.url || b.chartUpload, { message: "a product link or a size chart picture is needed" });
 
 // A picked picture can cost one vision call. Most picks are cache hits, but the
 // limit bounds the bill for the ones that are not. WORKING VALUES, like the ones above.
@@ -153,14 +165,43 @@ export async function POST(req: Request) {
   if (!parsed.success) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
-  const { url, html, seller, chartImage, category } = parsed.data;
+  const { html, seller, chartImage, category, chartUpload } = parsed.data;
 
-  if (chartImage) {
+  if (chartImage || chartUpload) {
     const picks = await rateLimit(`chart-pick:${user.id}`, PICKS_PER_USER.limit, PICKS_PER_USER.windowMs);
     if (!picks.ok) return tooMany(picks.retryAfterSec, req);
   }
 
-  const extracted = withUserCategory(await extractSmart(url, { html, seller, chartImage }), category);
+  // An uploaded chart (Session 100): read the picture, check the chart can size
+  // anyone, and stand it in for a product — no page, no fetch (chartUpload.ts).
+  let extracted: ExtractedProduct;
+  let url: string;
+  let uploadLink: string | null = null;
+  if (chartUpload) {
+    const store = (await import("@/lib/chartImageStore")).prismaChartImageStore;
+    const read = await readUploadedChart(Buffer.from(chartUpload.data, "base64"), {
+      store,
+      vision: visionReadPicked,
+      model: VISION_MODEL,
+      hasKey: !!process.env.ANTHROPIC_API_KEY,
+    });
+    const refuse = (error: string, message: string, status = 422) =>
+      NextResponse.json({ error, message, features: features() }, { status });
+    if (read.status === "bad-address") return refuse("upload-bad", M.refuseUploadBad, 400);
+    if (read.status === "unavailable") return refuse("upload-off", M.refuseUploadOff);
+    if (read.status === "failed") return refuse("upload-unreadable", M.refuseUploadUnreadable);
+    uploadLink = chartUpload.link ? normalizeUrl(chartUpload.link) : null;
+    const fromUpload = productFromUpload(read, { sha: read.sha, link: uploadLink });
+    if (!fromUpload) return refuse("upload-not-a-chart", M.refuseUploadNotChart);
+    const gap = chartGaps(fromUpload.sizes);
+    if (gap) return refuse(gap === "few-sizes" ? "upload-few-sizes" : "upload-no-girth", gap === "few-sizes" ? M.refuseUploadFewSizes : M.refuseUploadNoGirth);
+    extracted = withUserCategory(fromUpload, category);
+    url = fromUpload.source.url;
+  } else {
+    if (!parsed.data.url) return NextResponse.json({ error: "invalid", message: "a product link is needed" }, { status: 400 });
+    url = parsed.data.url;
+    extracted = withUserCategory(await extractSmart(url, { html, seller, chartImage }), category);
+  }
 
   // Not clothing, a page we never saw, a category we cannot measure anyone
   // against, or an invented ladder on a page the browser handed us: say so, and
@@ -210,6 +251,13 @@ export async function POST(req: Request) {
     },
     include: { sizeOptions: true },
   });
+
+  // An uploaded chart with no link of its own gets one: this check, reopened. A to-buy
+  // item saved from it (which needs a link) then leads back here.
+  if (chartUpload && !uploadLink) {
+    product.url = `${siteOrigin()}/check?product=${product.id}`;
+    await prisma.product.update({ where: { id: product.id }, data: { url: product.url } });
+  }
 
   const computed = await computeRecommendation(user.id, product, undefined, locale);
   const { effectiveFit, body } = computed;

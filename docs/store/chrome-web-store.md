@@ -2,11 +2,12 @@
 
 **Live since 2026-10-05:** https://chromewebstore.google.com/detail/fit-passport/ciecejomnniicliemefagfegkmgfkgfe
 — **0.9.0** is live as of 2026-10-08 (the founder): the new address, www.fitpassport.fit.
-Next update: **0.9.1**, a fix only — no new permission, nothing to change in the
-Privacy tab. On a page that also holds hidden size lists (Patagonia's review filters
-list every size the brand sells), it now reads the size buttons on screen first, so
-the save form and the check see the garment's own sizes. Upload
-`app-web/store-build/fit-passport-extension-0.9.1-store.zip`.
+**0.9.1** was uploaded by the founder (2026-10-19). Next update: **0.9.2**: no new
+permission, nothing to change in the Privacy tab. It adds reading a size chart from a
+screenshot of the tab (for a chart that is only on screen, like a Google Drive
+preview), shown first and sent only on a click, under the existing `activeTab`. It also
+fixes choosing the garment type after picking a chart picture. Upload
+`app-web/store-build/fit-passport-extension-0.9.2-store.zip`.
 
 Everything the Developer Dashboard asks for, ready to paste. The upload is
 `app-web/store-build/fit-passport-extension-<version>-store.zip`, built with

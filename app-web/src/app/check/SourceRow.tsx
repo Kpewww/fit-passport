@@ -16,6 +16,7 @@ export function SourceRow({ product, source }: { product: Product; source: Sourc
     source.extractedBy === "llm-text" ? t("source.sizesAiText")
       : source.extractedBy === "llm-vision" ? t("source.sizesAiImage")
       : source.extractedBy === "picked-picture" ? t("source.sizesPicked")
+      : source.extractedBy === "uploaded-picture" ? t("source.sizesUploaded")
       : null;
   const host = source.host || t("source.thePage");
   return (
@@ -30,7 +31,10 @@ export function SourceRow({ product, source }: { product: Product; source: Sourc
             — so we say "identified", never "read". The extension hands us the
             page from the user's own browser, which is how we reach retailers
             our server is refused by. */}
-        {source.sizesFrom === "brand-chart" || source.fetch === "blocked" || source.fetch === "unreachable" ? (
+        {source.extractedBy === "uploaded-picture" ? (
+          // An uploaded chart (Session 100): no page was read at all.
+          <span className="inline-flex items-center gap-1.5"><Ruler size={16} className="text-ink-faint" />{t("source.uploaded")}</span>
+        ) : source.sizesFrom === "brand-chart" || source.fetch === "blocked" || source.fetch === "unreachable" ? (
           // Also when the store refused our server and the numbers are the
           // user's own, typed from the listing: nothing was read (Session 80).
           <span className="inline-flex items-center gap-1.5"><LinkIcon size={16} className="text-ink-faint" />{t("source.identified")}</span>

@@ -14,6 +14,7 @@ import { Headline } from "@/components/Headline";
 import { GarmentIcon } from "@/components/GarmentIcon";
 import { sameEngineCategory } from "@/lib/garmentTaxonomy";
 import type { SellerInput } from "./ListingForms";
+import type { ChartUploadInput } from "./ChartUpload";
 import type { Body, CheckResponse, FitPref, Product, SizeOption, SizeScore, Source, Status } from "./types";
 
 const LiveConverter = dynamic(() => import("./LiveConverter").then((m) => m.LiveConverter));
@@ -22,6 +23,8 @@ const SellerMeasureForm = dynamic(() => import("./ListingForms").then((m) => m.S
 const FitFigure = dynamic(() => import("@/components/FitFigure").then((m) => m.FitFigure));
 const SignalGuide = dynamic(() => import("./SignalGuide").then((m) => m.SignalGuide));
 const FitMapCard = dynamic(() => import("./FitMapCard").then((m) => m.FitMapCard));
+const ChartUpload = dynamic(() => import("./ChartUpload").then((m) => m.ChartUpload));
+const NameAndSave = dynamic(() => import("./NameAndSave").then((m) => m.NameAndSave));
 const SourceRow = dynamic(() => import("./SourceRow").then((m) => m.SourceRow));
 const JudgementCard = dynamic(() => import("./JudgementCard").then((m) => m.JudgementCard));
 
@@ -52,6 +55,9 @@ function CheckInner() {
   // No rule and no classifier could name the garment (Session 85b): the user picks
   // it, and the same link is checked again with that.
   const [pickFor, setPickFor] = useState<string | null>(null);
+  // An uploaded chart (Session 100), kept so that "what kind of garment is this?" can
+  // send it again with the answer (the server has it cached by then).
+  const [upload, setUpload] = useState<ChartUploadInput | null>(null);
   const [status, setStatus] = useState<Status | null>(null);
 
   // The fit currently being previewed on the result. Seeded from the saved
@@ -63,8 +69,9 @@ function CheckInner() {
     fetch("/api/status").then((r) => r.json()).then(setStatus).catch(() => {});
   }, []);
 
-  const runCheck = useCallback(async (targetUrl: string, seller?: SellerInput, category?: string) => {
+  const runCheck = useCallback(async (targetUrl: string, seller?: SellerInput, category?: string, chartUpload?: ChartUploadInput) => {
     setErr(null);
+    setUpload(chartUpload ?? null);
     setCanMeasure(false);
     setPickFor(null);
     setLoading(true);
@@ -73,7 +80,7 @@ function CheckInner() {
       const r = await fetch("/api/check", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ url: targetUrl, seller, category }),
+        body: JSON.stringify(chartUpload ? { chartUpload, category } : { url: targetUrl, seller, category }),
       });
       const j = await r.json();
       const code = typeof j.error === "string" ? j.error : "";
@@ -81,7 +88,7 @@ function CheckInner() {
       if (!r.ok && (code === "no-measurements-listing" || (isResaleHost(host) && (code === "unreadable" || code === "no-chart-on-page")))) {
         setCanMeasure(true);
       }
-      if (!r.ok && code === "pick-category") setPickFor(targetUrl);
+      if (!r.ok && code === "pick-category") setPickFor(chartUpload ? "upload" : targetUrl);
       // Prefer the API's human sentence over its machine code. A refusal here is
       // the product working correctly — "we don't size footwear yet, and here is
       // why" — and showing the raw slug `unsupported-category` instead throws away
@@ -124,7 +131,8 @@ function CheckInner() {
         );
       }
       setData({ product: j.product, source: j.source ?? {}, result: j.result, body: j.body, effectiveFit: j.effectiveFit });
-      setUrl(j.product.url ?? "");
+      // An uploaded chart's address is this page itself: not something to paste back.
+      setUrl(j.source?.extractedBy === "uploaded-picture" ? "" : j.product.url ?? "");
       setFit(j.effectiveFit as FitPref);
     } catch (e: unknown) {
       setErr(e instanceof Error ? e.message : t("reopenFailed"));
@@ -217,6 +225,9 @@ function CheckInner() {
             </button>
           </form>
 
+          {/* Only a size chart, no page (Session 100). */}
+          <ChartUpload busy={loading} onSubmit={(chart, category) => runCheck("", undefined, category, chart)} />
+
           <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs">
             <span className="text-ink-faint">{t("try")}</span>
             {DEMO_URLS.map((d) => (
@@ -260,7 +271,7 @@ function CheckInner() {
           </div>
         )}
         {canMeasure && !loading && <SellerMeasureForm onSubmit={(seller) => runCheck(url, seller)} />}
-        {pickFor && !loading && <CategoryPicker onPick={(category) => runCheck(pickFor, undefined, category)} />}
+        {pickFor && !loading && <CategoryPicker onPick={(category) => runCheck(pickFor, undefined, category, pickFor === "upload" ? upload ?? undefined : undefined)} />}
 
         {loading && <LoadingResult />}
         {data && !loading && data.result.judgement ? (
@@ -426,7 +437,9 @@ function Result({
       <div className="overflow-hidden rounded-2xl bg-white ring-1 ring-line">
         <div className="p-6 sm:p-8">
           {meta && <p className="eyebrow text-ink-faint">{meta}</p>}
-          <h2 className="mt-2 text-h3 font-semibold text-ink">{product.productName}</h2>
+          <h2 className="mt-2 text-h3 font-semibold text-ink">
+            {product.productName || (source.extractedBy === "uploaded-picture" ? t("result.uploadedTitle") : null)}
+          </h2>
 
           {/* When the engine reports `undetermined`, every size scored identically
               and `best` is just the first rung of the ladder — so we must NOT print
@@ -508,6 +521,14 @@ function Result({
         <div className="border-t border-line px-6 py-4 sm:px-8">
           <SourceRow product={product} source={source} />
         </div>
+
+        {/* Name it and keep it (Session 100): open at once for an uploaded chart,
+            which arrives with no brand or name. */}
+        {!result.undetermined && (
+          <div className="border-t border-line px-6 py-4 sm:px-8">
+            <NameAndSave product={product} size={result.best.label} startOpen={source.extractedBy === "uploaded-picture"} />
+          </div>
+        )}
 
         <div className="flex flex-col gap-3 border-t border-line px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <p className="text-xs text-ink-faint">{t("result.recordNote")}</p>

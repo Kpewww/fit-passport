@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { detectMeasurementKind, parsePage, parseSizeChart, parseSizeTables, parseSizeLabels, parseChineseSizeCode, findSizeChartImages, looksBlocked, inferGender, siteNameAsBrand } from "./pageParse";
+import { detectMeasurementKind, parsePage, parseSizeChart, parseSizeGrid, parseSizeTables, parseSizeLabels, parseChineseSizeCode, findSizeChartImages, looksBlocked, inferGender, siteNameAsBrand } from "./pageParse";
 
 describe("pageParse — JSON-LD", () => {
   it("reads brand/name/material from a schema.org Product block", () => {
@@ -617,5 +617,88 @@ describe("a seller's per-size height and weight (Session 100, todo 11)", () => {
     expect(parseSizeTables(fabric)!.every((s) => s.bodyWeightMinKg == null)).toBe(true);
     const odd = TMALL.replace("160-180", "60-80");
     expect(parseSizeTables(odd)!.find((s) => s.label === "M")!.bodyHeightMinCm).toBeUndefined();
+  });
+});
+
+describe("a chest given laid flat, as half the garment (Session 100)", () => {
+  // The two CMU swag items. Numbers as published by resellers of the blanks:
+  // Independent Trading Co. IND4000Z (hookgrip.com), Comfort Colors 1566 (merchize.com).
+  const IND4000Z = `<table>
+    <tr><th>Size</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>2XL</th><th>3XL</th></tr>
+    <tr><td>Body Length</td><td>28.5</td><td>29.5</td><td>30.5</td><td>31.5</td><td>32.5</td><td>33.5</td></tr>
+    <tr><td>Chest Width (1/2)</td><td>21</td><td>23</td><td>24.5</td><td>26.5</td><td>27.5</td><td>28.5</td></tr>
+  </table>`;
+  const CC1566 = `<table>
+    <tr><th>Size</th><th>Body Width</th><th>Body Length</th></tr>
+    <tr><td>S</td><td>21</td><td>27.5</td></tr><tr><td>M</td><td>23</td><td>28.5</td></tr>
+    <tr><td>L</td><td>25</td><td>29.5</td></tr><tr><td>XL</td><td>26.5</td><td>30.5</td></tr>
+    <tr><td>2XL</td><td>28</td><td>31.5</td></tr><tr><td>3XL</td><td>29.5</td><td>32.5</td></tr>
+  </table>`;
+
+  it("doubles an inch half chest into the garment's circumference (IND4000Z)", () => {
+    const chart = parseSizeChart(IND4000Z)!;
+    expect(chart.sizes.map((s) => [s.label, s.chestCm])).toEqual([
+      ["S", 106.7], ["M", 116.8], ["L", 124.5], ["XL", 134.6], ["2XL", 139.7], ["3XL", 144.8],
+    ]);
+    expect(chart.sizes[0].lengthCm).toBe(72.4);
+    expect(chart.kind).toBe("garment");
+  });
+
+  it("reads 'Body Width' as the flat chest of the garment, not the wearer's body (CC 1566)", () => {
+    const chart = parseSizeChart(CC1566)!;
+    expect(chart.sizes.map((s) => s.chestCm)).toEqual([106.7, 116.8, 127, 134.6, 142.2, 149.9]);
+    expect(chart.sizes.every((s) => s.bodyChestMinCm == null)).toBe(true);
+    expect(chart.kind).toBe("garment");
+  });
+
+  it("doubles a centimetre half chest without taking it for inches", () => {
+    const cm = `<table><tr><th>尺码</th><th>平铺胸围</th><th>衣长</th></tr>
+      <tr><td>S</td><td>50</td><td>68</td></tr><tr><td>M</td><td>53</td><td>70</td></tr><tr><td>L</td><td>56</td><td>72</td></tr></table>`;
+    expect(parseSizeTables(cm)!.map((s) => s.chestCm)).toEqual([100, 106, 112]);
+  });
+
+  it("leaves a whole chest, and a shoulder width, alone", () => {
+    const whole = `<table><tr><th>Size</th><th>Chest</th><th>Shoulder Width</th></tr>
+      <tr><td>S</td><td>96</td><td>43</td></tr><tr><td>M</td><td>102</td><td>45</td></tr><tr><td>L</td><td>108</td><td>47</td></tr></table>`;
+    const sizes = parseSizeTables(whole)!;
+    expect(sizes.map((s) => s.chestCm)).toEqual([96, 102, 108]);
+    expect(sizes.map((s) => s.shoulderCm)).toEqual([43, 45, 47]);
+  });
+});
+
+describe("the two CMU swag charts, as their pictures print them (Session 100)", () => {
+  // Transcribed cell for cell from the PNGs on the iii swag form (2026-10-19).
+  const COMFORT_COLORS_1566 = [
+    ["Size", "Width (in)", "Length (in)", "Sleeve center back (in)", "Packaging (dz)"],
+    ["S", "21", "27.5", "31.5", "2"], ["M", "23", "28.5", "33.5", "2"], ["L", "25", "29.5", "35.25", "2"],
+    ["XL", "26.5", "30.5", "36.75", "2"], ["2XL", "28", "31.5", "38.25", "2"], ["3XL", "29.5", "32.5", "39.25", "2"],
+  ];
+  const IND4000Z = [
+    ["DESCRIPTION", "XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "6XL"],
+    ["BODY LENGTH FROM HPS", "27.5", "28.5", "29.5", "30.5", "31.5", "32.5", "33.5", "34", "34.5", "35"],
+    ["CHEST WIDTH 1\" BELOW ARMHOLE", "20.5", "21", "23", "24.5", "26.5", "27.5", "28.5", "30", "31.5", "33"],
+    ["SLEEVE LENGTH FROM CENTER BACK TO HEM", "34.5", "35.5", "36.5", "37.5", "38.5", "39.5", "40.5", "41", "41.5", "42"],
+  ];
+
+  it("reads a bare 'Width (in)' as the flat chest, and ignores the packaging", () => {
+    const chart = parseSizeGrid(COMFORT_COLORS_1566, "")!;
+    expect(chart.sizes.map((s) => [s.label, s.chestCm])).toEqual([
+      ["S", 106.7], ["M", 116.8], ["L", 127], ["XL", 134.6], ["2XL", 142.2], ["3XL", 149.9],
+    ]);
+    expect(chart.sizes[0].lengthCm).toBe(69.9);
+    expect(chart.kind).toBe("garment");
+  });
+
+  it("reads all ten sizes of the IND4000Z, XS to 6XL", () => {
+    const chart = parseSizeGrid(IND4000Z, "")!;
+    expect(chart.sizes.map((s) => s.label)).toEqual(["XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "6XL"]);
+    expect(chart.sizes.find((s) => s.label === "M")!.chestCm).toBe(116.8);
+    expect(chart.sizes.find((s) => s.label === "6XL")!.chestCm).toBe(167.6);
+    expect(chart.kind).toBe("garment");
+  });
+
+  it("still reads 'Shoulder width' as a shoulder", () => {
+    const g = [["Size", "Chest", "Shoulder width"], ["S", "96", "43"], ["M", "102", "45"], ["L", "108", "47"]];
+    expect(parseSizeGrid(g, "")!.sizes.map((s) => s.shoulderCm)).toEqual([43, 45, 47]);
   });
 });

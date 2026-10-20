@@ -82,6 +82,13 @@ export interface EngineText {
   notConnected: string;
   /** A one-off listing with no measurement and no printed size (Session 80). */
   refuseListingNoMeasurements: string;
+  // ---- an uploaded size chart (Session 100) ----
+  refuseUploadBad: string;
+  refuseUploadUnreadable: string;
+  refuseUploadOff: string;
+  refuseUploadNotChart: string;
+  refuseUploadFewSizes: string;
+  refuseUploadNoGirth: string;
   // ---- one-off listings (listingJudgement.ts, Session 80) ----
   /** A flat width, doubled: "The seller measured 24 in pit to pit … about 122 cm round." */
   listingFlat(p: { field: "chest" | "waist"; value: number; unit: "in" | "cm"; cm: number; typed: boolean; unitInferred: boolean }): string;
@@ -243,6 +250,12 @@ export const EN_TEXT: EngineText = {
   refuseListingNoMeasurements:
     "The seller hasn't given a measurement we could read, so we can't judge the fit yet. If the listing shows a " +
     "pit-to-pit width — in the description or a photo — enter it below.",
+  refuseUploadBad: "That file isn't a picture we can read. Upload a JPEG, PNG or WebP of the size chart, up to 3 MB.",
+  refuseUploadUnreadable: "We couldn't read the picture just now. Try again in a moment.",
+  refuseUploadOff: "Reading size charts from pictures isn't switched on here, so this picture can't be read. Paste a product link instead.",
+  refuseUploadNotChart: "We couldn't find a size chart in that picture. Upload a clear picture of the chart itself: sizes in one direction, measurements in the other.",
+  refuseUploadFewSizes: "The chart in that picture has fewer than three sizes, which is not enough to compare them.",
+  refuseUploadNoGirth: "The chart in that picture gives lengths only, with no chest, waist or hip, so it can't tell whether a size goes round you.",
   listingFlat: ({ field, value, unit, cm, typed, unitInferred }) =>
     `${typed ? "You entered" : "The seller measured"} ${value} ${unit} ${field === "chest" ? "pit to pit" : "across the waist"}, laid flat — ` +
     `about ${cm} cm all the way round${unitInferred ? ` (no unit given; read as ${unit === "in" ? "inches" : "centimetres"})` : ""}.`,
@@ -371,6 +384,12 @@ export const ZH_TEXT: EngineText = {
   verdictName: (v) => ZH_VERDICT[v],
   refuseListingNoMeasurements:
     "卖家没有标注可读取的尺寸，暂时无法判断是否合身。如果商品描述或图片里有腋下平铺宽度，请在下方填写。",
+  refuseUploadBad: "这个文件不是我们能读取的图片。请上传尺码表的 JPEG、PNG 或 WebP 图片，不超过 3 MB。",
+  refuseUploadUnreadable: "暂时没能读取这张图片，请稍后再试。",
+  refuseUploadOff: "这里没有开启图片尺码表读取，所以无法读取这张图片。请改为粘贴商品链接。",
+  refuseUploadNotChart: "在这张图片里没找到尺码表。请上传尺码表本身的清晰图片：一个方向是尺码，另一个方向是尺寸。",
+  refuseUploadFewSizes: "这张图里的尺码表不到三个尺码，无法互相比较。",
+  refuseUploadNoGirth: "这张图里的尺码表只有长度，没有胸围、腰围或臀围，无法判断衣服围度是否合适。",
   listingFlat: ({ field, value, unit, cm, typed, unitInferred }) =>
     `${typed ? "你填写的" : "卖家实测"}${field === "chest" ? "腋下平铺宽度" : "腰部平铺宽度"}为 ${value} ${unit === "in" ? "英寸" : "cm"}，换算为一圈约 ${cm} cm` +
     `${unitInferred ? `（未注明单位，按${unit === "in" ? "英寸" : "厘米"}理解）` : ""}。`,

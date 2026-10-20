@@ -298,7 +298,19 @@ export function inferGender(text: string): Gender | undefined {
  */
 export const VISIBLE_CHART_ATTR = "data-fp-visible";
 
+/**
+ * A chest given as HALF the garment, laid flat (Session 100): "Chest width 1/2"
+ * (Independent Trading Co.), "Body Width" (Comfort Colors), "pit to pit", 胸宽 / 半胸 /
+ * 平铺胸围. Read into `chestCm` and DOUBLED once its unit is known — a flat width
+ * doubled is a garment circumference (invariant 85). Before this, a half chest was
+ * taken as the whole one and every size read about half too small, and "Body Width"
+ * was not read at all. Plain alternatives only: the drift test turns each into a header
+ * the extension must keep. Listed before the chest pattern, which would otherwise win.
+ */
+export const FLAT_CHEST_RE = /chest\s*width|1\/2\s*chest|½\s*chest|half\s*chest|body\s*width|pit\s*to\s*pit|胸宽|半胸|平铺胸/i;
+
 export const MEASURE_MAP: Array<{ re: RegExp; field: keyof ExtractedSize }> = [
+  { re: FLAT_CHEST_RE, field: "chestCm" },
   { re: /chest|bust|胸围|胸/i, field: "chestCm" },
   { re: /waist|腰围|腰/i, field: "waistCm" },
   // Hip (Session 84): dresses and jumpsuits are sized by bust, waist and hip.
@@ -310,10 +322,25 @@ export const MEASURE_MAP: Array<{ re: RegExp; field: keyof ExtractedSize }> = [
 
 /** What a size label looks like. Shared with the extension, which counts only
  *  size-shaped values as size options (a swatch valued "item" is not a size). */
-export const SIZE_LABEL_RE = /^(XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|\d{1,3}(?:\.\d)?|EU\s?\d{2}|US\s?\d{1,2}|UK\s?\d{1,2})$/i;
+export const SIZE_LABEL_RE = /^(XXS|XS|S|M|L|XL|XXL|XXXL|2XL|3XL|4XL|5XL|6XL|\d{1,3}(?:\.\d)?|EU\s?\d{2}|US\s?\d{1,2}|UK\s?\d{1,2})$/i;
+
+/**
+ * A header that is just "Width" ("Width (in)", 宽度) on a size chart is the garment's
+ * width laid flat: Comfort Colors prints its chart so (Session 100, a CMU swag form).
+ * Only when the header STARTS with it, so "Shoulder width" stays a shoulder. Not in
+ * MEASURE_MAP, whose patterns must be plain alternatives (the drift test); the
+ * extension already keeps any table that says "width".
+ */
+const BARE_WIDTH_RE = /^\s*(?:width\b|宽度)/i;
+
+/** Whether a header cell gives the chest as half the garment, laid flat. */
+function isFlatChestHeader(cell: string): boolean {
+  return FLAT_CHEST_RE.test(cell) || BARE_WIDTH_RE.test(cell);
+}
 
 /** Which measurement field (if any) a header cell names. */
 function fieldFor(cell: string): keyof ExtractedSize | null {
+  if (BARE_WIDTH_RE.test(cell)) return "chestCm";
   for (const { re, field } of MEASURE_MAP) if (re.test(cell)) return field;
   return null;
 }
@@ -407,13 +434,18 @@ function tableGrid(tableHtml: string): string[][] {
 function inchesToCm(sizes: GridSize[]): GridSize[] {
   const chests = sizes.map((s) => s.chestCm).filter((n): n is number => typeof n === "number");
   const median = chests.length ? chests.sort((a, b) => a - b)[Math.floor(chests.length / 2)] : undefined;
-  if (median === undefined || median >= 65) return sizes; // already cm
+  // A half chest is half as big: under 35 is inches (an adult's flat chest is about
+  // 45-75 cm, 18-30 in), where a whole chest is inches under 65.
+  const flat = sizes.some((s) => s.flatChest);
+  if (median === undefined || median >= (flat ? 35 : 65)) return sizes; // already cm
   const conv = (n?: number) => (typeof n === "number" ? Math.round(n * 2.54 * 10) / 10 : n);
   const convRange = (r?: [number, number]): [number, number] | undefined =>
     r ? [conv(r[0])!, conv(r[1])!] : undefined;
+  // A flat chest keeps its precision here and is rounded once, after doubling.
+  const exact = (n?: number) => (typeof n === "number" ? n * 2.54 : n);
   return sizes.map((s) => ({
     ...s,
-    chestCm: conv(s.chestCm),
+    chestCm: s.flatChest ? exact(s.chestCm) : conv(s.chestCm),
     waistCm: conv(s.waistCm),
     hipCm: conv(s.hipCm),
     shoulderCm: conv(s.shoulderCm),
@@ -445,6 +477,8 @@ function inchesToCm(sizes: GridSize[]): GridSize[] {
  */
 type GridSize = ExtractedSize & {
   ranges?: { chestCm?: [number, number]; waistCm?: [number, number]; hipCm?: [number, number] };
+  /** The chest came from a flat (half) column: doubled after the unit is settled. */
+  flatChest?: boolean;
 };
 
 /** Fields whose stated ranges are kept — those a body chart publishes as ranges. */
@@ -469,8 +503,9 @@ function sizesFromGrid(grid: string[][]): { sizes: GridSize[]; ranged: boolean }
     }
     return { v: values[0] };
   };
-  const put = (size: GridSize, f: keyof ExtractedSize, r: { v: number; range?: [number, number] }) => {
+  const put = (size: GridSize, f: keyof ExtractedSize, r: { v: number; range?: [number, number] }, flat = false) => {
     (size as Record<string, unknown>)[f] = r.v;
+    if (flat && f === "chestCm") size.flatChest = true;
     if (r.range && RANGED_FIELDS.has(f)) {
       size.ranges = { ...size.ranges, [f]: r.range };
     }
@@ -496,6 +531,7 @@ function sizesFromGrid(grid: string[][]): { sizes: GridSize[]; ranged: boolean }
   if (scoreB >= scoreA) {
     // sizes as rows
     const fields = header.map(fieldFor); // fields[col], fields[0] is the label col
+    const flats = header.map(isFlatChestHeader);
     for (const row of grid.slice(1)) {
       const label = (row[0] ?? "").trim();
       if (!looksLikeSizeLabel(label)) continue;
@@ -506,7 +542,7 @@ function sizesFromGrid(grid: string[][]): { sizes: GridSize[]; ranged: boolean }
         if (!f) continue;
         const n = read(row[c]);
         if (n != null) {
-          put(size, f, n);
+          put(size, f, n, flats[c]);
           any = true;
         }
       }
@@ -523,9 +559,10 @@ function sizesFromGrid(grid: string[][]): { sizes: GridSize[]; ranged: boolean }
     for (const row of grid.slice(1)) {
       const f = fieldFor(row[0] ?? "");
       if (!f) continue;
+      const flat = isFlatChestHeader(row[0] ?? "");
       for (const { idx, size } of cols) {
         const n = read(row[idx] ?? "");
-        if (n != null) put(size, f, n);
+        if (n != null) put(size, f, n, flat);
       }
     }
     for (const { size } of cols) {
@@ -536,7 +573,20 @@ function sizesFromGrid(grid: string[][]): { sizes: GridSize[]; ranged: boolean }
   }
 
   if (sizes.length < 2) return null; // one row is not a chart
-  return { sizes: inchesToCm(sizes), ranged: numericCells > 0 && rangedCells / numericCells >= 0.5 };
+  return { sizes: doubleFlatChest(inchesToCm(sizes)), ranged: numericCells > 0 && rangedCells / numericCells >= 0.5 };
+}
+
+/** A flat (half) chest, now in cm, doubled to the garment's circumference. */
+function doubleFlatChest(sizes: GridSize[]): GridSize[] {
+  return sizes.map((s) => {
+    if (!s.flatChest || s.chestCm == null) return s;
+    const r1 = (n: number) => Math.round(n * 20) / 10;
+    return {
+      ...s,
+      chestCm: r1(s.chestCm),
+      ...(s.ranges?.chestCm ? { ranges: { ...s.ranges, chestCm: [r1(s.ranges.chestCm[0]), r1(s.ranges.chestCm[1])] as [number, number] } } : {}),
+    };
+  });
 }
 
 /**
@@ -888,7 +938,37 @@ export function parseSizeChart(
     if (better) best = entry;
   }
   if (!best) return null;
-  const { kind, from } = resolveMeasurementKind(detectMeasurementKind(html), kindFallback, best.ranged);
+  return settleChart(best, html, kindFallback);
+}
+
+/**
+ * A chart transcribed cell by cell — by a vision model reading a picture
+ * (Session 100) — read by exactly the rules a page's table is: orientation, units,
+ * a flat chest doubled, stated ranges, the seller's height and weight, and what the
+ * numbers measure. `wording` is the chart's own heading and notes. Null when the grid
+ * is not a chart, or its chest falls as the sizes rise.
+ */
+export function parseSizeGrid(
+  grid: string[][],
+  wording: string,
+  kindFallback?: Kind | null,
+): { sizes: ExtractedSize[]; kind: Kind | null; kindFrom: KindSource | null } | null {
+  const clean = grid.filter((r) => Array.isArray(r)).map((r) => r.map((c) => String(c ?? "").trim()));
+  const chart = sizesFromGrid(clean);
+  if (!chart || !risesWithSize(chart.sizes)) return null;
+  return settleChart({ ...chart, grid: clean }, wording, kindFallback);
+}
+
+function settleChart(
+  best: { sizes: GridSize[]; ranged: boolean; grid: string[][] },
+  html: string,
+  kindFallback?: Kind | null,
+): { sizes: ExtractedSize[]; kind: Kind | null; kindFrom: KindSource | null } {
+  // A chart that gives its chest laid flat measures the garment, whatever else it
+  // says (invariant 85); otherwise the usual rule.
+  const { kind, from } = best.sizes.some((s) => s.flatChest)
+    ? { kind: "garment" as const, from: "table" as const }
+    : resolveMeasurementKind(detectMeasurementKind(html), kindFallback, best.ranged);
   const seller = sellerBodyRanges(best.grid);
   const sizes = foldByLabel(best.sizes, kind).map((s) => {
     const r = seller.get(s.label);

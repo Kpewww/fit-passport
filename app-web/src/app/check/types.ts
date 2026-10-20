@@ -55,7 +55,7 @@ export type Source = {
   /** "extension" = the page came from the user's own browser, not our fetch. */
   fetch?: "ok" | "blocked" | "unreachable" | "skipped" | "extension";
   /** Which reader produced page sizes — a table, or a model reading text/images. */
-  extractedBy?: "table" | "llm-text" | "llm-vision" | "picked-picture" | "hao-xing" | "seller-title" | "seller-specs" | "seller-description" | "seller-typed";
+  extractedBy?: "table" | "llm-text" | "llm-vision" | "picked-picture" | "uploaded-picture" | "hao-xing" | "seller-title" | "seller-specs" | "seller-description" | "seller-typed";
 };
 
 export type Body = {

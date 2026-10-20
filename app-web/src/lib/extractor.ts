@@ -168,7 +168,7 @@ export type ExtractedProduct = {
      * four very different levels of trust that the UI and the evaluation both
      * need to tell apart.
      */
-    extractedBy?: "table" | "llm-text" | "llm-vision" | "picked-picture" | "hao-xing" | "seller-title" | "seller-specs" | "seller-description" | "seller-typed";
+    extractedBy?: "table" | "llm-text" | "llm-vision" | "picked-picture" | "uploaded-picture" | "hao-xing" | "seller-title" | "seller-specs" | "seller-description" | "seller-typed";
     /**
      * What happened to a picture the shopper picked as the size chart (Session 83,
      * chartImage.ts): read now, read before (cached), not a chart, the reader is
