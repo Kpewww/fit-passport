@@ -102,6 +102,22 @@ Both match the local reading of their transcriptions.
 The two timing misses were the local login's password hash, longer than the wait;
 the offer then appeared and the fold moved the piece.
 
+**Then, on production.**
+- **Uniqlo.** With the key working, a Uniqlo link is now read by the text model as its
+  size labels without numbers: a tie, not a refusal. So the tie offers "upload a
+  screenshot of the size chart" too.
+- **The browser run on www.fitpassport.fit passed every check**:
+  - the phone hero;
+  - onboarding and "I meant 40 inches", saving 101.6 cm;
+  - the passport's held-back number;
+  - the tie's next step;
+  - the nav after claiming;
+  - the login offer and the fold;
+  - terms and feedback.
+- **One claimed test account is kept for later testing**, as the founder asked. Its
+  credentials are in local memory, not the repo. A feedback row "Verification run: …"
+  is from this run.
+
 ## 2026-10-19 · Session 100c — A first-time walk through the live site, and what to fix before a pilot
 
 **Asked by the founder:** use the product as a real user would, check that it flows,
