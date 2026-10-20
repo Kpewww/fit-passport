@@ -460,12 +460,17 @@ async function callVisionLLM(imageUrls: string[]): Promise<VisionExtract | null>
  */
 export async function visionReadPicked(
   src: string | { data: string; mediaType: string },
-): Promise<{ sizes: ExtractedSize[]; header: string | null; grid: string[][] | null } | "not-a-chart" | null> {
+): Promise<{ sizes: ExtractedSize[]; header: string | null; grid: string[][] | null } | "not-a-chart" | { failed: string } | null> {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return null;
   // A picture picked on a page is fetched; an uploaded one arrives as its bytes.
   const img = typeof src === "string" ? await fetchImageBase64(src) : src;
-  if (!img) return null;
+  if (!img) return { failed: "image-fetch" };
+  // Why a read failed goes to the log (no key, no picture), and back to the caller.
+  const fail = (why: string) => {
+    console.warn(`[chart-image] read failed: ${why}`);
+    return { failed: why };
+  };
   const system =
     "You read apparel SIZE CHARTS from an image for a fit engine. Extract ONLY the " +
     "numbers printed in the chart; never recommend a size. Respond with a SINGLE " +
@@ -504,19 +509,24 @@ export async function visionReadPicked(
         ],
       }),
     });
-    if (!r.ok) return null;
-    const j = (await r.json()) as { content?: Array<{ type: string; text?: string }> };
+    if (!r.ok) {
+      const err = await r.json().catch(() => null) as { error?: { type?: string } } | null;
+      return fail(`http-${r.status}${err?.error?.type ? `-${err.error.type}` : ""}`);
+    }
+    const j = (await r.json()) as { content?: Array<{ type: string; text?: string }>; stop_reason?: string };
     const text = (j.content ?? []).find((c) => c.type === "text")?.text ?? "";
     const match = text.match(/\{[\s\S]*\}/);
-    if (!match) return null;
-    const parsed = PickedChartSchema.safeParse(JSON.parse(match[0]));
-    if (!parsed.success) return null;
+    if (!match) return fail(`no-json${j.stop_reason ? `-${j.stop_reason}` : ""}`);
+    let json: unknown;
+    try { json = JSON.parse(match[0]); } catch { return fail(`bad-json${j.stop_reason ? `-${j.stop_reason}` : ""}`); }
+    const parsed = PickedChartSchema.safeParse(json);
+    if (!parsed.success) return fail("schema");
     const grid = parsed.data.grid && parsed.data.grid.length >= 2 ? parsed.data.grid : null;
     if (parsed.data.sizes.length < 2 && !grid) return "not-a-chart";
     const sizes = parsed.data.sizes.map((row, i) => ({ ...mapLlmSizes([row])[0], waistCm: row.waistCm ?? undefined, label: row.label || String(i + 1) }));
     return { sizes, header: parsed.data.header?.slice(0, 400) ?? null, grid };
-  } catch {
-    return null;
+  } catch (e) {
+    return fail(e instanceof Error && e.name === "AbortError" ? "timeout" : "exception");
   } finally {
     clearTimeout(t);
   }

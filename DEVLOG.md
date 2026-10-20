@@ -112,6 +112,12 @@ parser improves every cached read. Older cached reads, which are sizes only, sti
 **Not tested yet.** A real model read of the swag PNGs: the local key is empty, so it
 runs on production next, and it is also the first real read `todo/people/06` asked for.
 
+**First run on production.** It failed in 0.8 s with "couldn't read the picture". A real
+read takes seconds, so the model API answered with an error at once, and the reader
+said no more than `null`. A failed read now says why: `http-<status>-<error type>`,
+`no-json`, `bad-json`, `schema`, `timeout`, `image-fetch` or `exception`. The reason goes
+to the server log and into the refusal's `detail`, never with the key or the picture.
+
 ## 2026-10-19 · Session 100a — Lighter /check and /closet, the realistic body on /check and /outfits, a seller's height-and-weight guide
 
 The founder confirmed that the showcase materials were handed in and extension 0.9.1

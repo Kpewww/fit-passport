@@ -186,7 +186,7 @@ export async function POST(req: Request) {
       hasKey: !!process.env.ANTHROPIC_API_KEY,
     });
     const refuse = (error: string, message: string, status = 422) =>
-      NextResponse.json({ error, message, features: features() }, { status });
+      NextResponse.json({ error, message, features: features(), ...(read.detail ? { detail: read.detail } : {}) }, { status });
     if (read.status === "bad-address") return refuse("upload-bad", M.refuseUploadBad, 400);
     if (read.status === "unavailable") return refuse("upload-off", M.refuseUploadOff);
     if (read.status === "failed") return refuse("upload-unreadable", M.refuseUploadUnreadable);

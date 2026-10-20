@@ -31,6 +31,8 @@ export type ChartImageResult = {
    * `sizes` is only the model's own reading, kept as a fallback.
    */
   grid?: string[][] | null;
+  /** Why a read failed ("http-401", "no-json", …), when it did. */
+  detail?: string;
 };
 
 export type CachedRead = { sizesJson: string; header: string | null };
@@ -45,7 +47,11 @@ export type ImageSource = string | { data: string; mediaType: string };
 
 export type VisionRead = { sizes: ExtractedSize[]; header: string | null; grid?: string[][] | null };
 
-export type VisionReader = (src: ImageSource) => Promise<VisionRead | "not-a-chart" | null>;
+/** A failed read says why, in a word or a status (Session 100), for the log and the
+ *  shopper's own request: never the key, never the picture. */
+export type VisionFailure = { failed: string };
+
+export type VisionReader = (src: ImageSource) => Promise<VisionRead | "not-a-chart" | VisionFailure | null>;
 
 /**
  * The address as cached: https only, no fragment. Null for anything else — a
@@ -123,7 +129,9 @@ async function readVia(
   if (!deps.hasKey) return { status: "unavailable", sizes: [], header: null };
 
   const read = await deps.vision(src);
-  if (read == null) return { status: "failed", sizes: [], header: null };
+  if (read == null || (typeof read === "object" && "failed" in read)) {
+    return { status: "failed", sizes: [], header: null, detail: read?.failed ?? "unknown" };
+  }
   if (read === "not-a-chart") {
     await deps.store.put(key, label, { sizesJson: "[]", header: null }, deps.model).catch(() => undefined);
     return { status: "not-a-chart", sizes: [], header: null };
