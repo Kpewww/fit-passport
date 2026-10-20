@@ -32,7 +32,7 @@ for (let cursor; ;) {
     if (!apply) { moved++; continue; }
     try {
       const owner = createHash("sha256").update(r.userId).digest("hex").slice(0, 16);
-      const blob = await put(`closet/${owner}/photo.${m[1].split("/")[1].replace("jpeg", "jpg")}`, buf, { access: "public", contentType: m[1], addRandomSuffix: true });
+      const blob = await put(`closet/${owner}/photo.${m[1].split("/")[1].replace("jpeg", "jpg")}`, buf, { access: "private", contentType: m[1], addRandomSuffix: true });
       await prisma.knownGoodItem.update({ where: { id: r.id }, data: { imageDataUrl: "blob:" + blob.url } });
       moved++;
     } catch (e) {

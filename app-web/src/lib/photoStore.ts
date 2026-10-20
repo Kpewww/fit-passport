@@ -5,13 +5,14 @@
 // BLOB_READ_WRITE_TOKEN set (a Vercel Blob store), a new photo goes to object storage
 // and the row keeps a reference, "blob:<url>". Without it, nothing changes.
 //
-// Vercel Blob's files are public to whoever has their address (the address has a
-// random part), so the address never leaves the server: the browser gets
-// /api/closet/photo/<item id>, which checks the item is the viewer's own and passes
-// the bytes on. A closet photo stays its owner's only (invariant 92).
+// The store is PRIVATE (the founder created it so, 2026-10-20; @vercel/blob 2.8):
+// a file needs the store's token to be read, so even a leaked address shows nothing.
+// The browser gets /api/closet/photo/<item id>, which checks the item is the viewer's
+// own and reads the file with the token. A closet photo stays its owner's only
+// (invariant 92).
 
 import { createHash } from "node:crypto";
-import { del, put } from "@vercel/blob";
+import { del, get, put } from "@vercel/blob";
 
 export const BLOB_REF = "blob:";
 /** What the browser is given for a stored photo, and may send back unchanged. */
@@ -30,7 +31,7 @@ export async function storePhoto(userId: string, dataUrl: string): Promise<strin
   const ext = m[1].split("/")[1].replace("jpeg", "jpg");
   // The account id is hashed: the address need not say whose photo it is.
   const owner = createHash("sha256").update(userId).digest("hex").slice(0, 16);
-  const blob = await put(`closet/${owner}/photo.${ext}`, bytes, { access: "public", contentType: m[1], addRandomSuffix: true });
+  const blob = await put(`closet/${owner}/photo.${ext}`, bytes, { access: "private", contentType: m[1], addRandomSuffix: true });
   return BLOB_REF + blob.url;
 }
 
@@ -50,10 +51,14 @@ export function photoForClient(itemId: string, stored: string | null): string | 
 
 /** The stored photo's bytes, for the route that serves it. */
 export async function readPhoto(stored: string | null): Promise<{ bytes: ArrayBuffer; type: string } | null> {
-  if (!isRef(stored)) return null;
-  const r = await fetch(stored.slice(BLOB_REF.length), { cache: "no-store" });
-  if (!r.ok) return null;
-  return { bytes: await r.arrayBuffer(), type: r.headers.get("content-type") ?? "image/jpeg" };
+  if (!isRef(stored) || !photoStoreOn()) return null;
+  try {
+    const r = await get(stored.slice(BLOB_REF.length), { access: "private", useCache: false });
+    if (!r || r.statusCode !== 200) return null;
+    return { bytes: await new Response(r.stream).arrayBuffer(), type: r.blob.contentType || "image/jpeg" };
+  } catch {
+    return null;
+  }
 }
 
 export const isStoredRef = isRef;

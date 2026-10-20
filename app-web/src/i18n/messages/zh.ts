@@ -1658,6 +1658,24 @@ export const zh: Messages = {
   },
 
   admin: {
+    del: {
+      title: "删除账户",
+      intro: "按账户代码或用户名查找。用于删除用户已停用的账户（停用后无法登录，用户自己删不掉）。账户里的一切都会被删除，无法恢复。",
+      placeholder: "FP-XXXX-XXXX-XXXXX 或用户名",
+      find: "查找",
+      none: "没有找到这个代码或用户名的账户。",
+      noName: "（没有用户名）",
+      claimed: "已认领",
+      unclaimed: "未认领",
+      deactivated: "已停用",
+      holds: "{pieces} 件衣物，{checks} 次查询",
+      isAdmin: "这是管理员账户，不能在这里删除。",
+      word: "删除",
+      type: "输入“{word}”确认删除这个账户",
+      submit: "删除这个账户",
+      done: "已删除 {name}。",
+      failed: "没能删除。",
+    },
     pilot: {
       title: "试点",
       people: "本周有 {n} 人有操作。",

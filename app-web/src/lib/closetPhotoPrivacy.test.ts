@@ -27,7 +27,7 @@ const files = (d: string): string[] =>
 // and erasing an account (which deletes the stored files).
 const MAY_NAME_PHOTO = new Set([
   "app/api/closet/route.ts", "lib/closetItemInput.ts",
-  "app/api/closet/photo/[id]/route.ts", "app/api/auth/delete/route.ts",
+  "app/api/closet/photo/[id]/route.ts", "lib/accountDelete.ts",
 ]);
 
 const PUBLIC = ["app/api/view", "app/api/community", "app/api/leaderboard", "app/api/posts", "app/api/answers", "app/api/outfits", "lib/evidence.ts"];

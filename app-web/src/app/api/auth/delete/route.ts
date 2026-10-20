@@ -16,7 +16,7 @@ import { say } from "@/lib/apiText";
 import { prisma } from "@/lib/db";
 import { canEdit, clearSession, readSession } from "@/lib/session";
 import { verifySecret } from "@/lib/auth";
-import { dropPhotos } from "@/lib/photoStore";
+import { eraseAccount } from "@/lib/accountDelete";
 import { resolveAccount } from "@/lib/accountMerge";
 
 const Body = z.object({ password: z.string().max(200).optional(), confirm: z.literal("delete") });
@@ -35,17 +35,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: say(req, "password is incorrect") }, { status: 401 });
     }
   }
-  const folded = await prisma.user.findMany({ where: { mergedIntoId: user.id }, select: { id: true } });
-  const ids = [user.id, ...folded.map((f) => f.id)];
-  // Photos in object storage go too (lib/photoStore.ts); rows cascade, files do not.
-  const photos = await prisma.knownGoodItem.findMany({ where: { userId: { in: ids } }, select: { imageDataUrl: true } });
-  await prisma.$transaction([
-    prisma.event.deleteMany({ where: { userId: { in: ids } } }),
-    prisma.feedback.deleteMany({ where: { userId: { in: ids } } }),
-    prisma.user.deleteMany({ where: { id: { in: folded.map((f) => f.id) } } }),
-    prisma.user.delete({ where: { id: user.id } }),
-  ]);
-  await dropPhotos(photos.map((p) => p.imageDataUrl));
+  await eraseAccount(user.id);
   clearSession();
   return NextResponse.json({ ok: true });
 }

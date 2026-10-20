@@ -1678,6 +1678,24 @@ export const en = {
 
   // /admin — the moderation queue. English is exactly what the page printed before.
   admin: {
+    del: {
+      title: "Delete an account",
+      intro: "By its account code or username. For an account its owner deactivated, which cannot log in to delete itself. Everything in it goes, and cannot be brought back.",
+      placeholder: "FP-XXXX-XXXX-XXXXX or username",
+      find: "Find",
+      none: "No account with that code or name.",
+      noName: "(no username)",
+      claimed: "claimed",
+      unclaimed: "unclaimed",
+      deactivated: "deactivated",
+      holds: "{pieces} closet pieces, {checks} checks",
+      isAdmin: "This is an admin account; it can't be deleted here.",
+      word: "delete",
+      type: "Type “{word}” to delete this account",
+      submit: "Delete this account",
+      done: "{name} was deleted.",
+      failed: "Couldn't delete it.",
+    },
     pilot: {
       title: "Pilot",
       people: "{n} people did something this week.",

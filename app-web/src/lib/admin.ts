@@ -5,9 +5,12 @@
 // can be abused into minting admins — and this app has no second factor to fall
 // back on.
 //
-// Admins get one power: the moderation review queue. They cannot read anyone's
-// measurements; the privacy invariant is not a permission, it's a property of the
-// data model, and /api/view/[code] still doesn't select the cm fields for anybody.
+// Admins get two powers: the moderation review queue, and (Session 100f) erasing an
+// account by its code or username — the one way to remove an account its owner
+// deactivated, since a deactivated account cannot log in to delete itself. They
+// cannot read anyone's measurements; the privacy invariant is not a permission, it's
+// a property of the data model, and /api/view/[code] still doesn't select the cm
+// fields for anybody.
 
 import { prisma } from "./db";
 import { readSession } from "./session";

@@ -31,6 +31,41 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-20 · Session 100f — A private photo store, and deleting an account from /admin
+
+**The Blob store is private.** The founder was about to create the store, and Vercel
+now offers **Private** (a token is needed to read). The code had been written for
+public files with the address kept on the server. It now uses private storage
+(`@vercel/blob` 2.8.0):
+- writes are `access: "private"`;
+- `/api/closet/photo/[id]` reads with `get(…, { access: "private" })`, after the owner
+  check;
+- `scripts/photos-to-blob.mjs` likewise.
+
+A leaked address shows nothing now. The SDK upgrade had the same lockfile treatment:
+the `libc` entries were restored after `cpu`, and the removals are only the old
+SDK's own dependencies. The founder should create the store as Private, and tick
+"Add a read-write token env var", because the code switches on `BLOB_READ_WRITE_TOKEN`.
+
+**Why no one could delete that account.** "Delete everything" needs the account's own
+session, and a deactivated account cannot log in. Both rules are on purpose, and
+together they left no way in. This machine has no production database credentials.
+
+**What changed:**
+- **/admin can now delete an account** by its code or username. It shows the name, the
+  code, claimed or deactivated, and how many pieces and checks it holds, then asks for
+  the word.
+  - It never deletes another admin or yourself (403).
+  - The routes are `GET`/`POST /api/admin/users`; the POST needs a password session.
+- **One erase function.** `lib/accountDelete.ts` `eraseAccount` is shared by the
+  owner's delete and the admin's.
+- **The admin gate's comment** now lists the second power.
+
+**Checked in a browser.** An account was claimed, then deactivated; an admin found it
+and deleted it; its code then answered 404. Deleting yourself returned 403.
+
+**Tests**: 1,381.
+
 ## 2026-10-20 · Session 100e — Whose account a code is, and the pilot's P2
 
 **Asked by the founder:** show, once an account code is typed, whose account it is, so

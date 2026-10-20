@@ -17,6 +17,7 @@ import { ArrowRight } from "@/components/Icon";
 import { useT } from "@/i18n/client";
 import { Headline } from "@/components/Headline";
 import { PilotPanel } from "./PilotPanel";
+import { DeleteAccount } from "./DeleteAccount";
 
 type Item = {
   kind: "POST" | "ANSWER" | "OUTFIT";
@@ -109,6 +110,7 @@ export default function AdminPage() {
         </p>
 
         <PilotPanel />
+        <DeleteAccount />
 
         {data.items.length === 0 ? (
           <Card className="mt-6 bg-paper-soft text-center">
