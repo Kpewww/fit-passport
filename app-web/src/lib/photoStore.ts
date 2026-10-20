@@ -62,3 +62,32 @@ export async function readPhoto(stored: string | null): Promise<{ bytes: ArrayBu
 }
 
 export const isStoredRef = isRef;
+
+/**
+ * Move photos still kept in the database to the store, a batch at a time (Session 100g:
+ * run from /admin, on the server, so neither the database address nor the token ever
+ * leaves Vercel). Each photo is uploaded, then its row updated; a failure leaves that
+ * row as it was. Returns what moved and what is left.
+ */
+export async function movePhotosBatch(limit = 25): Promise<{ moved: number; failed: number; left: number }> {
+  const { prisma } = await import("./db");
+  if (!photoStoreOn()) return { moved: 0, failed: 0, left: await prisma.knownGoodItem.count({ where: { imageDataUrl: { startsWith: "data:" } } }) };
+  const rows = await prisma.knownGoodItem.findMany({
+    where: { imageDataUrl: { startsWith: "data:" } },
+    select: { id: true, userId: true, imageDataUrl: true },
+    take: limit,
+  });
+  let moved = 0, failed = 0;
+  for (const r of rows) {
+    try {
+      const ref = await storePhoto(r.userId, r.imageDataUrl!);
+      if (!isRef(ref)) { failed++; continue; }
+      await prisma.knownGoodItem.update({ where: { id: r.id }, data: { imageDataUrl: ref } });
+      moved++;
+    } catch {
+      failed++;
+    }
+  }
+  const left = await prisma.knownGoodItem.count({ where: { imageDataUrl: { startsWith: "data:" } } });
+  return { moved, failed, left };
+}

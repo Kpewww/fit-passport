@@ -18,6 +18,7 @@ import { useT } from "@/i18n/client";
 import { Headline } from "@/components/Headline";
 import { PilotPanel } from "./PilotPanel";
 import { DeleteAccount } from "./DeleteAccount";
+import { MovePhotos } from "./MovePhotos";
 
 type Item = {
   kind: "POST" | "ANSWER" | "OUTFIT";
@@ -111,6 +112,7 @@ export default function AdminPage() {
 
         <PilotPanel />
         <DeleteAccount />
+        <MovePhotos />
 
         {data.items.length === 0 ? (
           <Card className="mt-6 bg-paper-soft text-center">

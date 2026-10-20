@@ -31,6 +31,24 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-20 · Session 100g — Moving the old photos from /admin
+
+The founder created the Blob store (closet-photos, Private, connected to Production and
+Preview). New photos go to it once a deployment sees `BLOB_READ_WRITE_TOKEN`; the photos
+already in Postgres stay there until moved.
+
+- **Moved on the server, from /admin.** `scripts/photos-to-blob.mjs` needs the production
+  database address and the store token on a laptop. Instead, /admin now has a
+  "Closet photos" card:
+  - it shows whether the store is on, and how many photos are in the store and in the
+    database (`GET /api/admin/photos`);
+  - its button moves them, 25 per request until none are left (`POST`, admin and
+    `canEdit` only). Each photo is uploaded first and its row updated after, so a
+    failure leaves that row as it was (`movePhotosBatch`, lib/photoStore.ts).
+- **Guard test.** `closetPhotoPrivacy.test.ts` allows the two new files: they move and
+  count photos on the server and send none to a browser.
+- 1,382 tests pass; /admin builds at 105 kB first load.
+
 ## 2026-10-20 · Session 100f — A private photo store, and deleting an account from /admin
 
 **The Blob store is private.** The founder was about to create the store, and Vercel

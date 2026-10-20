@@ -1676,6 +1676,14 @@ export const zh: Messages = {
       done: "已删除 {name}。",
       failed: "没能删除。",
     },
+    photos: {
+      title: "衣橱照片",
+      off: "这里没有开启照片存储（没有 BLOB_READ_WRITE_TOKEN），照片仍存放在数据库里。",
+      on: "私有照片存储已开启。存储里有 {store} 张照片，数据库里还有 {db} 张。",
+      move: "把 {n} 张照片迁移到存储",
+      moving: "迁移中…",
+      done: "已迁移 {n} 张照片（{failed} 张未迁移，保持原样）。",
+    },
     pilot: {
       title: "试点",
       people: "本周有 {n} 人有操作。",

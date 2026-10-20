@@ -1696,6 +1696,14 @@ export const en = {
       done: "{name} was deleted.",
       failed: "Couldn't delete it.",
     },
+    photos: {
+      title: "Closet photos",
+      off: "The photo store is not switched on here (no BLOB_READ_WRITE_TOKEN): photos stay in the database.",
+      on: "The private photo store is on. {store} photos are in it; {db} are still in the database.",
+      move: "Move {n} photos to the store",
+      moving: "Moving…",
+      done: "Moved {n} photos ({failed} left in place).",
+    },
     pilot: {
       title: "Pilot",
       people: "{n} people did something this week.",
