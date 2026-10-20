@@ -49,6 +49,12 @@ faint, not solid or sharp.
   - Checked in a browser: opacity 0.5 and blur 0.4px when settled; nothing for a
     partial or unknown code.
 
+**Cleanup.** The lost walk account was found by its code through the new hint
+(`fpwalkmvgaytmd`). The walk script had built its password from the username, so it
+could be logged in to and removed with Delete everything. Its code now names no
+account. The founder keeps one test account (in local memory). The phone walk's
+account is deactivated, so it cannot log in, and is left for the database.
+
 **P2 of todo 16:**
 - The "Save your passport" nudge now says what is true: the account opens on another
   device, and survives this browser's data being cleared. It used to say the data

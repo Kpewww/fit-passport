@@ -953,5 +953,5 @@ account FP-SJSK-DJDV-8N527. **Engineering after the key:** read the two CMU swag
 
 All P0/P1 of `todo/engineering/16` shipped; the production key works (both CMU swag charts read on production).
 **Next — founder:** create the Vercel Blob store (`todo/people/08-blob-store.md`), then move old photos; upload
-extension 0.9.2; delete FP-SJSK-DJDV-8N527 in the database. A kept test account for production testing is in the
+extension 0.9.2. (FP-SJSK-DJDV-8N527 was deleted in Session 100e.) A kept test account for production testing is in the
 local (not repo) memory. **Engineering:** P2 of todo 16 when asked; read pilot events/feedback on /admin.
