@@ -31,6 +31,54 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-21 · Session 101 — Size regimes by standard, a brand registry, and the closet tie
+
+**What prompted it.** The founder's closet (a Muji XL bought in China, a Rythm M shirt)
+was checked against an Independent Trading hoodie chart, and the answer was M.
+- The chart was read right: a flat chest, doubled, so M is 116.8 cm.
+- The two closet pieces put M and XL level (0.39 each). M showed only because it comes
+  first on the ladder.
+- With no chest on file, a regional average body stood in. Nothing knew Muji's XL is a
+  Japanese size.
+
+**Done (1,393 tests pass; /check and /closet build sizes unchanged):**
+- **A closet tie is a tie** (`closetTie`, fitEngine.ts). Two closet pieces pointing at
+  different sizes with equal weight, and no other signal, now give no pick. The
+  explanation names both pieces and asks for a chest, or for which one fits tight or
+  loose. `isUndetermined` uses the same rule, so the to-buy list does not show it as a
+  size. The rough guess no longer breaks such a tie. Regression test: `closetTie.test.ts`
+  (the founder's own case).
+- **Size regimes with cited evidence** (`sizeRegimes.ts`). A label becomes the body
+  chest range it is cut for, with its source:
+  - 号型 "175/96A": by GB/T 1335.1/.2-2008 §3.2 and §4.1.3 (±2 cm);
+  - European letter sizes (CEN member brands: IT, FR, UK and the EU): by EN 13402-3:2017
+    Tables A.24/A.25.
+  - Japanese, Korean, US, Chinese-letter and Australian labels answer null until their
+    standards (JIS, KS, ASTM, AS) or the brands' own guides are in hand. Nothing is
+    guessed.
+- **A chest from the closet** (`closetChest.ts`). With no chest of their own, pieces the
+  wearer says fit, whose labels a standard reads, give the overlap of their ranges. It
+  is used before the regional average. It is shown as a context reason that names the
+  pieces and the standard, and its confidence is capped like any estimated body.
+  Contradicting pieces give no estimate.
+- **Brand registry** (`scripts/brands/build-registry.mjs` → `src/lib/data/brandRegistry.json`,
+  `brandRegistry.ts`): 4,604 clothing and footwear brands, each with a Wikidata QID and a
+  country.
+  - Sources: Wikidata (CC0) classes and industries, plus the brand QIDs of OpenStreetMap's
+    name-suggestion-index (BSD-3-Clause).
+  - Used server-side only, to find a brand's regime.
+- **Sources table**: `docs/design/size-regimes-sources.md`. It lists every number with
+  its table or clause, and the standards still to obtain.
+- **The standards' PDFs are not in the repository.** The founder supplied GB/T 1335.1,
+  GB/T 1335.2 and DIN EN 13402-3; they are copyrighted.
+
+**Still to do:**
+- the registry to 6,000+ brands, with better Chinese, Japanese and Korean coverage;
+- grade B brand guides, in batches;
+- JIS, KS, ASTM and AS tables;
+- the closet's "which country's sizes" field and brand autocomplete from the registry;
+- 4XL–6XL on the alpha ladder.
+
 ## 2026-10-20 · Session 100g — Moving the old photos from /admin
 
 The founder created the Blob store (closet-photos, Private, connected to Production and

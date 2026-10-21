@@ -61,6 +61,10 @@ export interface EngineText {
   /** The runner-up, worded by which way it lies from the pick; null when unknown. */
   alternative(label: string, direction: "bigger" | "smaller" | null): string;
   undeterminedHelp: string;
+  /** Two closet pieces pointing at different sizes with equal weight (Session 101). */
+  closetTie(a: string | null, b: string | null): string;
+  /** A chest estimated from closet labels read by a size standard (closetChest.ts). */
+  closetChest(p: { pieces: string[]; lo: number; hi: number; sources: string[] }): string;
   /** The same tie when the wearer's numbers are on file and the page's sizes carry none. */
   undeterminedNoChart: string;
   limitedData: string;
@@ -196,6 +200,11 @@ export const EN_TEXT: EngineText = {
     direction == null
       ? `Alternative: ${label} is close.`
       : `Alternative: ${label} is close — consider it if you prefer ${direction === "bigger" ? "extra room" : "a snugger fit"}.`,
+  closetTie: (a, b) =>
+    `${a && b ? `Your ${a} and your ${b}` : "Two pieces in your closet"} point to different sizes here, with equal weight, so there is no honest pick between them. ` +
+    "Add your chest measurement, or mark which of them fits tight or loose.",
+  closetChest: ({ pieces, lo, hi, sources }) =>
+    `Your chest is estimated at ${lo}–${hi} cm from ${pieces.join(" and ")}, read by ${sources.join("; ")}. Your own measurement would replace it.`,
   undeterminedHelp:
     "Add your chest measurement, or one garment of this type that fits you well — " +
     "either one turns this into a real answer.",
@@ -355,6 +364,10 @@ export const ZH_TEXT: EngineText = {
     direction == null
       ? `备选：${label} 也较接近。`
       : `备选：${label} 也较接近。若你希望${direction === "bigger" ? "更宽松一些" : "更贴身一些"}，可以考虑。`,
+  closetTie: (a, b) =>
+    `${a && b ? `你的 ${a} 和 ${b} ` : "你衣橱里的两件衣服"}在这里指向不同的尺码，分量相同，无法如实地二选一。请补充胸围，或标出其中哪件偏紧、哪件偏松。`,
+  closetChest: ({ pieces, lo, hi, sources }) =>
+    `按 ${sources.join("；")}，从 ${pieces.join(" 和 ")} 估计你的胸围约 ${lo}–${hi} cm。填入你自己的胸围后会以它为准。`,
   undeterminedHelp: "补充胸围，或添加一件同类型且合身的衣物，即可让这次推荐有据可依。",
   undeterminedNoChart: "这一页只列出了尺码，没有尺寸。请打开页面上的尺码表后再查看一次，或添加一件同类型且合身的衣物。",
   limitedData: "商品信息有限，当前推荐依据你的衣橱和版型偏好。",

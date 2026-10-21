@@ -12,6 +12,8 @@ import type { SellerReading } from "./sellerMeasurements";
 import type { FitPreference } from "./sizing";
 import { regionBodyPrior } from "./populationPrior";
 import { engineSizes } from "./engineInput";
+import { chestFromCloset } from "./closetChest";
+import { lookupBrand } from "./brandRegistry";
 
 type ProductWithSizes = {
   id: string;
@@ -74,17 +76,35 @@ export async function computeRecommendation(
   // off self-reported region + sex; never inferred, never stored. See
   // populationPrior.ts for the governance rules and survey sources.
   const hasOwnChest = profile?.chestCm != null;
-  const prior = hasOwnChest ? null : regionBodyPrior(profile?.region, profile?.sex);
+  // Before the regional average: the closet's own labels, where a size standard says
+  // what body they are cut for (closetChest.ts, Session 101).
+  const fromCloset = hasOwnChest
+    ? null
+    : chestFromCloset(
+        knownGood.map((k) => ({ ...k, gender: k.gender ?? soleDepartment(profile?.shopsFor), name: k.displayName })),
+        (b) => lookupBrand(b)?.country ?? null,
+      );
+  const prior = hasOwnChest || fromCloset ? null : regionBodyPrior(profile?.region, profile?.sex);
+  const M0 = engineText(locale);
+  const chestNote = fromCloset
+    ? M0.closetChest({
+        pieces: fromCloset.used.map((u) => M0.pieceLabel(u.piece.brand, u.piece.size, u.piece.name)),
+        lo: fromCloset.lo,
+        hi: fromCloset.hi,
+        sources: [...new Set(fromCloset.used.map((u) => (locale === "zh" ? u.range.evidence.sourceZh : u.range.evidence.source)))],
+      })
+    : null;
 
   const engineInput: EngineInput = {
     profile: {
-      chestCm: profile?.chestCm ?? prior?.chestCm ?? null,
+      chestCm: profile?.chestCm ?? fromCloset?.chestCm ?? prior?.chestCm ?? null,
       waistCm: profile?.waistCm ?? prior?.waistCm ?? null,
       shoulderCm: profile?.shoulderCm ?? prior?.shoulderCm ?? null,
       // No regional prior for hip: it is scored only when the wearer gave theirs.
       hipCm: profile?.hipCm ?? null,
       preferredFit: effectiveFit,
-      chestIsEstimated: !hasOwnChest && prior != null,
+      chestIsEstimated: !hasOwnChest && (prior != null || fromCloset != null),
+      chestNote,
       // Read only by the seller's height-and-weight guide, when there is no own chest.
       heightCm: profile?.heightCm ?? null,
       weightKg: profile?.weightKg ?? null,

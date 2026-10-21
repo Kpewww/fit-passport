@@ -173,6 +173,9 @@ export type EngineInput = {
      *  seller-range signal, and only when there is no chest of their own. */
     heightCm?: number | null;
     weightKg?: number | null;
+    /** Where an estimated chest came from, when it came from the closet's labels read
+     *  by a size standard (closetChest.ts, Session 101). Shown as a context reason. */
+    chestNote?: string | null;
   };
   product: {
     brand?: string | null;
@@ -906,7 +909,28 @@ function scoreBrandBiasForSize(
  */
 export function isUndetermined(ranked: ReadonlyArray<{ score: number; reasons: ReadonlyArray<unknown> }>): boolean {
   const best = ranked[0];
-  return !!best && best.reasons.length === 0 && ranked.length > 1 && ranked.every((r) => Math.abs(r.score - best.score) < TIE.epsilon);
+  if (!best || ranked.length < 2) return false;
+  if (best.reasons.length === 0 && ranked.every((r) => Math.abs(r.score - best.score) < TIE.epsilon)) return true;
+  return closetTie(ranked) != null;
+}
+
+/**
+ * Two closet pieces that point at different sizes with equal force, and nothing else
+ * spoke (Session 101): a Muji XL and a Rythm M put XL and M level. Picking whichever
+ * came first on the ladder presented one piece's word as an answer. It is a tie, and
+ * the explanation names both pieces. Returns their reasons' item ids, or null.
+ */
+export function closetTie(ranked: ReadonlyArray<{ score: number; reasons: ReadonlyArray<unknown> }>): [string | undefined, string | undefined] | null {
+  const [a, b] = ranked;
+  if (!a || !b || Math.abs(a.score - b.score) >= TIE.epsilon) return null;
+  const only = (rs: ReadonlyArray<unknown>) =>
+    rs.length > 0 && rs.every((r) => (r as Reason).signal === "known-good" || (r as Reason).weight === 0);
+  if (!only(a.reasons) || !only(b.reasons)) return null;
+  const top = (rs: ReadonlyArray<unknown>) =>
+    (rs as Reason[]).filter((r) => r.signal === "known-good").sort((x, y) => y.weight - x.weight)[0];
+  const ra = top(a.reasons), rb = top(b.reasons);
+  if (!ra || !rb || (ra.itemId != null && ra.itemId === rb.itemId) || ra.message === rb.message) return null;
+  return [ra.itemId, rb.itemId];
 }
 
 /**
@@ -1065,6 +1089,7 @@ export function recommend(
     // moved the target every size was measured against. It is here so the user
     // can SEE that their closet changed the question, which is the whole
     // explainability contract. A hidden adjustment is the black box we refuse to be.
+    if (profile.chestNote) reasons.push({ signal: "preference", weight: 0, message: profile.chestNote });
     if (easeUsed.personalised && easeUsed.reason) {
       reasons.push({ signal: "preference", weight: 0, message: easeUsed.reason });
     }
@@ -1092,7 +1117,7 @@ export function recommend(
   // Only on a dead heat, so it can never move a size a real signal chose; under a
   // low confidence ceiling, and its reason says how to make it a real answer.
   let unplaced: KnownGoodInput | null = null;
-  if (isUndetermined(ranked)) {
+  if (isUndetermined(ranked) && !closetTie(ranked)) {
     const guess = roughGuess(product, sizes, knownGood);
     if (guess?.kind === "unreadable") unplaced = guess.piece;
     else if (guess) {
@@ -1239,7 +1264,15 @@ export function recommend(
     !undetermined && !edgeNote && ranked[1] && ranked[1].score > best.score - TIE.alternativeWithin
       ? M.alternative(ranked[1].label, sizeDirection(best.label, ranked[1].label, input.sizes, input.product.gender))
       : null;
-  const explanation = undetermined
+  const tiedPieces = undetermined ? closetTie(ranked) : null;
+  const pieceById = (id: string | undefined) => usableKnownGood.find((k) => k.id != null && k.id === id);
+  const tieA = tiedPieces ? pieceById(tiedPieces[0]) : undefined, tieB = tiedPieces ? pieceById(tiedPieces[1]) : undefined;
+  const explanation = tiedPieces
+    ? M.closetTie(
+        tieA ? M.pieceLabel(tieA.brand, tieA.size, tieA.name) : null,
+        tieB ? M.pieceLabel(tieB.brand, tieB.size, tieB.name) : null,
+      )
+    : undetermined
     // The UI's own heading already states that the sizes tied. This says the one
     // thing it does not: what is missing. Four sentences repeating the tie made
     // the screen read as an apology instead of an instruction.
