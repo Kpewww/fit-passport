@@ -67,7 +67,7 @@ const EN_SOURCE = (table: "A.24" | "A.25"): Evidence => ({
   sourceZh: `EN 13402-3:2017 附录 A 表 ${table}（欧洲标准示例）`,
 });
 
-// EN 13402-3:2017 Table A.24 (men) and A.25 (women): letter size → chest/bust range, cm.
+// EN 13402-3:2017 Table A.24 (men) and A.25 (women): letter size to chest/bust range, cm.
 // Read from the table's "Range" row, 2026-10-21; the two columns under each letter
 // give its lower and upper bound.
 const EN_MEN: Record<string, [number, number]> = {

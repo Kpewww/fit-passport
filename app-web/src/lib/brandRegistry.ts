@@ -1,4 +1,4 @@
-// The brand registry (Session 101): a brand's name → its Wikidata item and country.
+// The brand registry (Session 101): a brand's name to its Wikidata item and country.
 // Built by scripts/brands/build-registry.mjs; every row is checkable by its QID
 // (evidence grade C, sizeRegimes.ts). Server only: the file is ~450 kB.
 

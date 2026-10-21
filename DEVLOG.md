@@ -79,6 +79,8 @@ was checked against an Independent Trading hoodie chart, and the answer was M.
 - the closet's "which country's sizes" field and brand autocomplete from the registry;
 - 4XL–6XL on the alpha ladder.
 
+(Follow-up push: two arrow glyphs in the new src comments replaced by words, per the no-arrows rule.)
+
 ## 2026-10-20 · Session 100g — Moving the old photos from /admin
 
 The founder created the Blob store (closet-photos, Private, connected to Production and
