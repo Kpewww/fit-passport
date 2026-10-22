@@ -31,6 +31,18 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-22 · Session 101j — Garment types named in reasons
+
+- **The bug.** On production a closet "tank" read as "Muji XL（衣物）". `ZH_CATEGORY`
+  in engineText.ts listed only the engine's ~20 keys, so every Session 98 type fell
+  back to "衣物". English printed the raw key ("tank").
+- **The fix.**
+  - Chinese now uses the picker's own names (zh.ts `garment.cat`). A test keeps every
+    type equal to the picker's name.
+  - English uses the taxonomy's labels ("tank / cami").
+  - /check and /closet sizes are unchanged.
+- 1,419 tests pass.
+
 ## 2026-10-22 · Session 101i — Verified on production after the deploy
 
 - **The case.** The founder's case, rerun on www.fitpassport.fit once 22f777b deployed

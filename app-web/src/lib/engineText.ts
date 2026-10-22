@@ -12,11 +12,15 @@
 // Chinese is written to docs/design/chinese-copy.md (glossary, spacing, voice).
 //
 // Pure, no runtime imports from the engine (types only), so it cannot create a
-// cycle.
+// cycle. The one runtime import, garmentTaxonomy.ts, imports nothing.
 
 import type { FitPreference } from "./sizing";
 import type { SizeDomain } from "./sizeSystems";
 import type { Locale } from "@/i18n/config";
+import { GARMENT_TYPES } from "./garmentTaxonomy";
+
+// English names of the garment types, for "Matches your Uniqlo M (tank / cami)".
+const EN_CATEGORY: Record<string, string> = Object.fromEntries(GARMENT_TYPES.map((g) => [g.key, g.label.toLowerCase()]));
 
 export type Verdict = "too small" | "snug" | "true to size" | "relaxed" | "too big";
 export type DirectionKey = "too-tight" | "snug" | "just-right" | "roomy" | "too-loose";
@@ -161,7 +165,7 @@ export const EN_TEXT: EngineText = {
     `${steps} step${plural ? "s" : ""} from your ${label}, which runs ${EN_DIRECTION[dir]}`,
   anchorShifted: (up, label, pref) => `Sized ${up ? "up" : "down"} from your ${label} for a ${pref} fit`,
   anchorAdjustedSteps: (steps, label, pref) => `${steps} step${steps > 1 ? "s" : ""} from your ${pref}-adjusted ${label}`,
-  anchorMatches: (label, category) => `Matches your ${label} (${category})`,
+  anchorMatches: (label, category) => `Matches your ${label} (${EN_CATEGORY[category] ?? category})`,
   pieceLabel: (brand, size, name) => (name ? `${brand} "${name}" ${size}` : `${brand} ${size}`),
   anchorSteps: (steps, label) => `${steps} step${steps > 1 ? "s" : ""} from your ${label}`,
   roughSameLabel: (label) =>
@@ -317,9 +321,24 @@ const ZH_VERDICT: Record<Verdict, string> = {
   "too big": "过大",
 };
 const ZH_DOMAIN: Record<SizeDomain, string> = { top: "上装", bottom: "下装", onepiece: "连衣裙和连体装", intimate: "内衣", shoe: "鞋履", sock: "袜子", accessory: "配饰" };
+// Every garment type's Chinese name, the same as zh.ts garment.cat (a test keeps the
+// two equal); the engine's own keys are all types too. Session 101i: a closet
+// "tank" used to read as "衣物" because only engine keys were listed.
 const ZH_CATEGORY: Record<string, string> = {
-  tshirt: "T 恤", top: "上衣", dress: "连衣裙", jumpsuit: "连体裤", swimsuit: "泳衣", underwear: "内衣", shirt: "衬衫", polo: "Polo 衫", sweater: "毛衣", hoodie: "连帽衫", jacket: "夹克／外套", coat: "大衣",
-  pants: "长裤", jeans: "牛仔裤", shorts: "短裤", skirt: "裙装",
+      tshirt: "T 恤", "longsleeve-tee": "长袖 T 恤", "sport-top": "运动上衣", polo: "Polo 衫", shirt: "衬衫", blouse: "雪纺衫／蕾丝衫", tank: "背心／吊带", "tube-top": "抹胸",
+      "base-layer": "打底衫", sweatshirt: "卫衣", hoodie: "连帽卫衣", bodysuit: "连体上衣", cardigan: "开衫", top: "其他上衣", sweater: "毛衣／针织衫", "sweater-vest": "针织马甲",
+      "knit-tank": "针织背心", blazer: "西装外套", jacket: "夹克", "denim-jacket": "牛仔外套", "leather-jacket": "皮衣", trench: "风衣", coat: "大衣",
+      "down-jacket": "羽绒服", "padded-jacket": "棉服", "shell-jacket": "冲锋衣", fur: "皮草", cape: "斗篷／披风", gilet: "马甲", outerwear: "其他外套", dress: "连衣裙",
+      "slip-dress": "吊带裙", "knit-dress": "针织连衣裙", "shirt-dress": "衬衫裙", gown: "礼服裙", qipao: "旗袍", hanfu: "汉服／新中式", kimono: "和服／浴衣",
+      traditional: "其他民族服饰", jumpsuit: "连体裤", playsuit: "连体短裤", overalls: "背带裤／背带裙", skirt: "半身裙", "a-line-skirt": "A 字裙", "pleated-skirt": "百褶裙",
+      "pencil-skirt": "包臀裙", "denim-skirt": "牛仔裙", skort: "裙裤", jeans: "牛仔裤", pants: "长裤／休闲裤", "dress-pants": "西裤", joggers: "运动裤／卫裤",
+      "cargo-pants": "工装裤", "ski-pants": "冲锋裤／滑雪裤", leggings: "打底裤／瑜伽裤", shorts: "短裤", "denim-shorts": "牛仔短裤", "sport-shorts": "运动短裤", suit: "西服套装",
+      tracksuit: "运动套装", "co-ord": "休闲套装", "tang-suit": "唐装／中山装", uniform: "制服／职业装", bra: "文胸", "sports-bra": "运动内衣", underwear: "内裤",
+      shapewear: "塑身衣", thermals: "保暖内衣", pajamas: "睡衣／家居服", nightdress: "睡裙", robe: "睡袍／浴袍", tights: "丝袜／连裤袜", lingerie: "其他内衣", swimsuit: "连体泳衣",
+      bikini: "比基尼／分体泳衣", "swim-trunks": "泳裤／沙滩裤", "rash-guard": "防晒衣", sneakers: "运动鞋", "casual-shoes": "休闲鞋／板鞋", "canvas-shoes": "帆布鞋",
+      "dress-shoes": "皮鞋", loafers: "乐福鞋", flats: "单鞋／平底鞋", heels: "高跟鞋", boots: "靴子", sandals: "凉鞋", slippers: "拖鞋", "cloth-shoes": "布鞋",
+      "rain-boots": "雨靴", shoes: "其他鞋", socks: "袜子", bag: "包", hat: "帽子", scarf: "围巾／披肩", belt: "腰带", gloves: "手套", sunglasses: "眼镜／墨镜", tie: "领带／领结",
+      cufflinks: "袖扣", "hair-accessory": "发饰", jewellery: "首饰／手表", accessory: "其他配饰", other: "其他",
 };
 // "你曾将 Uniqlo 的 M…" / "你曾将相似品牌的 M…": whose garment, with the spacing rule.
 const brandText = (brand: string | null) => (brand ? ` ${brand} ` : "相似品牌");

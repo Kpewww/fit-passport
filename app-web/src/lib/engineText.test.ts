@@ -162,3 +162,18 @@ describe("choosing Chinese changes only the words", () => {
     expect(zh && englishWords(zh.message)).toEqual([]);
   });
 });
+
+import { zh } from "@/i18n/messages/zh";
+import { GARMENT_TYPES } from "./garmentTaxonomy";
+describe("garment type names in reasons (Session 101i)", () => {
+  it("names every type in Chinese, as the picker does, never the fallback 衣物", () => {
+    for (const g of GARMENT_TYPES) {
+      const s = ZH_TEXT.anchorMatches("Uniqlo M", g.key);
+      expect(s).toContain(`（${(zh.garment.cat as Record<string, string>)[g.key]}）`);
+    }
+    expect(ZH_TEXT.anchorMatches("Uniqlo M", "tank")).toBe("与已有的 Uniqlo M（背心／吊带）尺码相符。");
+  });
+  it("names it in English, not by its key", () => {
+    expect(EN_TEXT.anchorMatches("Uniqlo M", "tank")).toBe("Matches your Uniqlo M (tank / cami)");
+  });
+});
