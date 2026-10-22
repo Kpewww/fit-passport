@@ -22,7 +22,9 @@ export type FitPreference = "slim" | "regular" | "relaxed" | "oversized";
 // when translating between EU numeric and US alpha.
 // This is intentionally coarse for the MVP — the engine is explainable, not
 // pretending to be a full retail sizing database.
-export const ALPHA_LADDER = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL"] as const;
+// 4XL to 6XL added in Session 101 (charts such as Independent Trading's run to 6XL;
+// those sizes were shown and then not scored). Appended, so every earlier index holds.
+export const ALPHA_LADDER = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL", "4XL", "5XL", "6XL"] as const;
 export type AlphaSize = (typeof ALPHA_LADDER)[number];
 
 /** Approximate mapping from EU numeric men's jacket sizing to US alpha. */
@@ -79,10 +81,15 @@ export function normalizeToAlpha(raw: string | null | undefined, line?: string |
   // ladder, not a synonym for XL, and guessing at it would misplace a real size.
   const multi = s.match(/^([2-9])\s*XL?$/);
   if (multi) {
-    const expanded = "X".repeat(Number(multi[1])) + "L";
+    const n = Number(multi[1]);
+    const expanded = n <= 3 ? "X".repeat(n) + "L" : `${n}XL`;
     if ((ALPHA_LADDER as readonly string[]).includes(expanded)) return expanded as AlphaSize;
-    return null; // 4XL and up have no rung; say so rather than clamping to XXXL
+    return null; // 7XL and up have no rung; say so rather than clamping
   }
+
+  // "XXXXL" and beyond, written out
+  const xs = s.match(/^(X{4,6})L$/);
+  if (xs) return `${xs[1].length}XL` as AlphaSize;
 
   // "M/L" ambiguous → take first
   const slash = s.split("/")[0];

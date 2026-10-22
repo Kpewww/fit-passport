@@ -1202,6 +1202,13 @@ export const zh: Messages = {
     namePlaceholder: "如：蓝色牛津纺衬衫",
     type: "类型",
     lineLabel: "系列",
+    regime: {
+      label: "标签尺码",
+      hint: "标签用的是哪国尺码。日本的 XL 和美国的 XL 不一样大。",
+      auto: "自动",
+      autoFrom: "自动（按品牌：{country}）",
+      CN: "中国", JP: "日本", KR: "韩国", US: "美国", UK: "英国", AU: "澳洲", IT: "意大利", FR: "法国", EU: "欧洲",
+    },
     howSits: "穿起来，松紧如何？",
     size: "尺码",
     color: "颜色",

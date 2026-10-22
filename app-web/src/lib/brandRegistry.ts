@@ -10,6 +10,8 @@ const key = (s: string) =>
   s.toLowerCase().normalize("NFKC")
     .replace(/[’'`]/g, "")
     .replace(/\b(co|company|inc|ltd|limited|corp|corporation|group|gmbh|s\.?p\.?a|s\.?a|ag|plc|llc|holdings?)\b\.?/g, "")
+    // The same for company words in Chinese, Japanese and Korean ("李宁公司" is 李宁).
+    .replace(/(股份有限公司|有限公司|公司|集团|集團|株式会社|주식회사|\(株\))/g, "")
     .replace(/[^\p{L}\p{N}]+/gu, " ")
     .trim();
 
@@ -35,3 +37,30 @@ export function lookupBrand(name: string | null | undefined): RegistryBrand | nu
 }
 
 export const registrySize = () => (registry as { count: number }).count;
+
+/**
+ * Brands whose name, Chinese name or alias starts with the query (then contains it),
+ * best-known first. `label` is the name the query matched, so typing "MUJI" offers
+ * MUJI, not "Ryohin Keikaku".
+ */
+export function searchBrands(query: string, limit = 8): Array<{ label: string; name: string; country: string }> {
+  const q = key(query);
+  if (q.length < 1) return [];
+  const idx = index ?? build();
+  const starts: Array<[string, RegistryBrand]> = [];
+  const contains: Array<[string, RegistryBrand]> = [];
+  for (const [k, b] of idx) {
+    if (k.startsWith(q)) starts.push([k, b]);
+    else if (q.length >= 3 && k.includes(q)) contains.push([k, b]);
+  }
+  const seen = new Set<string>();
+  const out: Array<{ label: string; name: string; country: string }> = [];
+  for (const [k, b] of [...starts.sort((x, y) => y[1].w - x[1].w), ...contains.sort((x, y) => y[1].w - x[1].w)]) {
+    if (seen.has(b.q)) continue;
+    seen.add(b.q);
+    const label = [b.name, b.zh, ...(b.aka ?? [])].find((n) => n && key(n) === k) ?? b.name;
+    out.push({ label, name: b.name, country: b.country });
+    if (out.length >= limit) break;
+  }
+  return out;
+}

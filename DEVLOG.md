@@ -31,6 +31,40 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-21 · Session 101b — 7,058 brands, the label-country picker, and sizes to 6XL
+
+- **Brand registry: 4,604 → 7,058 brands** (`scripts/brands/build-registry.mjs`).
+  - **New sources:**
+    - Wikipedia category trees (en/zh/ja/ko);
+    - Wikidata description search (in 7 languages);
+    - trade classes, kept only when the item has a Wikipedia article or an official
+      website.
+  - **Country fallbacks:** where the brand was founded (P740), then the country its
+    category names (marked `countryFrom: "category"`).
+  - **"Luxury brands" category dropped:** sampled, it was mostly cars and hotels.
+  - **Non-clothing filter:** applies to members found only through categories,
+    products or trade classes. It drops Apple Inc. (it makes a watch band) and Goznak.
+  - **By country:** CN 157 (was 74), HK 61, JP 489 (110), KR 146 (44). Anta, Li-Ning,
+    Giordano, Semir and Tricker's are now found.
+  - **Lookup:** now strips Chinese, Japanese and Korean company words, so 李宁 finds
+    李宁公司.
+- **`/api/brands`.** `?q=` searches the registry for the brand box. `?name=` returns the
+  brand's country and size regime.
+  - `BrandInput` merges the registry's matches after the curated list and shows each
+    brand's country faintly.
+- **"Size label from" picker** (`RegimePicker`). It is on the add flow's size step and
+  in the edit row, and is stored in the existing `KnownGoodItem.region`, so no
+  migration was needed.
+  - "Automatic" shows the brand's country from the registry, e.g. "自动（按品牌：日本）"
+    for Muji.
+  - `closetChest` reads the field before the brand's country.
+  - Checked in a production build at 1280 px, in Chinese.
+- **The alpha ladder runs to 6XL** (`sizing.ts`).
+  - "4XL"–"6XL" and "XXXXL" now normalise; 7XL+ still returns null rather than clamping.
+  - Nike's 4XL row now reaches the engine.
+  - The measured ladder step is unchanged: the median over 20 steps is still 8.3 cm.
+- 1,393 tests pass; /closet first load is unchanged at 126 kB.
+
 ## 2026-10-21 · Session 101 — Size regimes by standard, a brand registry, and the closet tie
 
 **What prompted it.** The founder's closet (a Muji XL bought in China, a Rythm M shirt)

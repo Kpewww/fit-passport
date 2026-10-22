@@ -88,15 +88,12 @@ describe("chartToSizes", () => {
     expect(m.bodyChestMaxCm).toBe(104.1); // 41in
   });
 
-  it("drops a label the engine's ladder cannot place, rather than shipping a size that is never scored", () => {
-    // Nike prints 4XL. ALPHA_LADDER stops at XXXL, so `alphaIndex` would return
-    // null downstream and the size would be displayed and then silently ignored
-    // in scoring. Dropping it here keeps "what we showed" == "what we scored".
+  it("keeps every label the engine's ladder can place, now including 4XL (Session 101)", () => {
+    // Nike prints 4XL. Until the ladder reached 6XL it was dropped here, so that
+    // "what we showed" stayed "what we scored"; it now has a rung, so it stays.
     expect(nike.rows.some((r) => r.label === "4XL")).toBe(true);
     const labels = chartToSizes(nike).map((s) => s.label);
-    expect(labels).not.toContain("4XL");
-    expect(labels).toContain("3XL"); // this one DOES have a rung (→ XXXL)
-    expect(labels).toEqual(["XS", "S", "M", "L", "XL", "XXL", "3XL"]);
+    expect(labels).toEqual(["XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL"]);
   });
 
   it("takes the midpoint for a garment chart, and marks it as a garment measurement", () => {
@@ -174,10 +171,13 @@ describe("normalizeToAlpha — the multi-X labels retailers actually print", () 
     expect(normalizeToAlpha("2xl")).toBe("XXL");
   });
 
-  it("returns null above the ladder instead of clamping", () => {
-    // Clamping 4XL to XXXL would put a size on a rung it does not occupy.
-    expect(normalizeToAlpha("4XL")).toBeNull();
-    expect(normalizeToAlpha("5XL")).toBeNull();
+  it("places 4XL to 6XL on their own rungs, and returns null above them instead of clamping", () => {
+    // Session 101: the ladder runs to 6XL. Clamping 7XL to 6XL would still put a
+    // size on a rung it does not occupy.
+    expect(normalizeToAlpha("4XL")).toBe("4XL");
+    expect(normalizeToAlpha("XXXXL")).toBe("4XL");
+    expect(normalizeToAlpha("6XL")).toBe("6XL");
+    expect(normalizeToAlpha("7XL")).toBeNull();
   });
 
   it("leaves 1X alone — it is a different ladder, not a synonym for XL", () => {

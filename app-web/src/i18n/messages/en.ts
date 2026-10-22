@@ -1217,6 +1217,13 @@ export const en = {
     namePlaceholder: "e.g. Blue Oxford",
     type: "Type",
     lineLabel: "Line",
+    regime: {
+      label: "Size label from",
+      hint: "Which country's sizes the label uses. A Japanese XL is not an American XL.",
+      auto: "Automatic",
+      autoFrom: "Automatic ({country}, from the brand)",
+      CN: "China", JP: "Japan", KR: "Korea", US: "US", UK: "UK", AU: "Australia", IT: "Italy", FR: "France", EU: "Europe",
+    },
     howSits: "How does it sit on you?",
     size: "Size",
     color: "Color",

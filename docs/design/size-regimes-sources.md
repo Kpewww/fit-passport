@@ -57,14 +57,38 @@ and the engine says so rather than guessing.
 - **From OpenStreetMap's name-suggestion-index (BSD-3-Clause)**: the brand QIDs of
   clothes, shoes, sports, accessories and department-store shops.
 
-Each brand's country is its country of origin (P495), else its country (P17), else its
-headquarters' country. A brand with no country is left out.
+- **From Wikipedia categories** (Session 101b): the clothing, fashion, sportswear and
+  shoe brand categories of the English, Chinese, Japanese and Korean Wikipedias. Only
+  the member articles' QIDs are taken.
+- **From Wikidata descriptions** ("clothing brand", "服装品牌", "ファッションブランド",
+  "패션 브랜드"…).
+- **From trade classifications** (clothing wholesale, textile industry): only items with
+  a Wikipedia article or an official website.
 
-- **First build** (2026-10-21): 4,604 brands.
-- **Still to do**:
-  - the 6,000+ target;
-  - better coverage of Chinese, Japanese and Korean brands;
-  - filtering out a few non-fashion items (e.g. Snap Inc.).
+**Country.** Each brand's country is, in order:
+1. its country of origin (P495);
+2. its country (P17);
+3. the country of its headquarters (P159) or of where it was founded (P740);
+4. for a category member with none of these, the country its category names. These
+   rows carry `countryFrom: "category"`.
+
+A brand with no country is left out.
+
+**Filtering.** Members found only through categories, products or trade classes are
+dropped when their class or industry is plainly not clothing (hotels, champagne,
+jewellery, cars, electronics…). The test is a regex on the English labels of their
+P31 and P452.
+
+**Sampled after filtering (2026-10-21):** there is still some noise (a watchmaker, a
+golf club). The registry is only used to find a brand's country, so a wrong row costs
+one brand's regime.
+
+**Build history:**
+
+| Build | Brands | Notes |
+|---|---|---|
+| 1 | 4,604 | Wikidata and OSM only |
+| 2 | 7,058 | CN 157, HK 61, JP 489, KR 146, IT 378, FR 547, US 1,659 |
 
 ## Grade B: brand guides, in batches
 

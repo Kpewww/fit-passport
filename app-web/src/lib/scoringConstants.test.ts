@@ -85,7 +85,7 @@ describe("scoringConstants — every number declares where it came from", () => 
     }
     const sorted = [...steps].sort((a, b) => a - b);
     const median = sorted.length % 2 ? sorted[(sorted.length - 1) / 2] : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
-    expect(steps.length).toBe(19);
+    expect(steps.length).toBe(20); // 20 since Session 101: Nike's 4XL has a rung
     expect(R.PERSONAL_EASE.ladderStepChestCm).toBeCloseTo(median, 1);
   });
 });

@@ -58,7 +58,7 @@ export type Group = { key: string; label: string; items: Item[]; isVariant: bool
 // Product line values; their names come from garment.line (messages).
 export const GENDERS = ["", "mens", "womens", "unisex"] as const;
 
-export const BLANK = { brand: "", displayName: "", category: "tshirt", gender: "", size: "", fitRating: 5, fitDirection: DIRECTION_DEFAULT, areaNotes: "", color: "", onlineAvailable: true, imageDataUrl: "" };
+export const BLANK = { brand: "", displayName: "", category: "tshirt", gender: "", size: "", fitRating: 5, fitDirection: DIRECTION_DEFAULT, areaNotes: "", color: "", onlineAvailable: true, imageDataUrl: "", region: "" };
 
 export function GenderBadge({ gender }: { gender: string }) {
   const g = useGarmentText();

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Button, Card, Chip, Field, inputClass } from "@/components/ui";
 import { CaretDown, Check, Close } from "@/components/Icon";
 import { BrandInput } from "@/components/BrandInput";
+import { RegimePicker } from "@/components/RegimePicker";
 import { SizeInput } from "@/components/SizeInput";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { GarmentIcon } from "@/components/GarmentIcon";
@@ -189,6 +190,7 @@ export function AddItemFlow({
       body: JSON.stringify({
         brand: src.brand, displayName: src.displayName || null,
         category: src.category, gender: src.gender || null, size: src.size,
+        region: src.region || null,
         fitRating: src.fitRating, fitDirection: src.fitDirection, color: src.color || null,
         onlineAvailable: src.onlineAvailable,
         ...garmentMeasurementsFor(src.size),
@@ -277,6 +279,9 @@ export function AddItemFlow({
                 </div>
               )}
               <SizeInput category={form.category} value={form.size} onChange={(v) => setForm({ ...form, size: v })} line={form.gender} />
+              <div className="mt-3">
+                <RegimePicker brand={form.brand} value={form.region} onChange={(v) => setForm({ ...form, region: v })} />
+              </div>
             </>
           )}
           {step === "fit" && (

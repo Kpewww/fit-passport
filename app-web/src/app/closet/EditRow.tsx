@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button, Card, Field, inputClass } from "@/components/ui";
 import { BrandInput } from "@/components/BrandInput";
+import { RegimePicker } from "@/components/RegimePicker";
 import { SizeInput } from "@/components/SizeInput";
 import { CategoryPicker } from "@/components/CategoryPicker";
 import { isValidSize } from "@/lib/sizeSystems";
@@ -36,6 +37,7 @@ export function EditRow({
     areaNotes: safeNotes(item.areaNotesJson) ?? "",
     imageDataUrl: item.imageDataUrl ?? "",
     productUrl: item.productUrl ?? "",
+    region: item.region ?? "",
   });
   // Garment measurements taken from the product page's chart (ProductLinkCheck).
   const [garment, setGarment] = useState<GarmentFields | null>(null);
@@ -52,6 +54,7 @@ export function EditRow({
       body: JSON.stringify({
         id: item.id, brand: f.brand, displayName: f.displayName || null,
         category: f.category, gender: f.gender || null, size: f.size,
+        region: f.region || null,
         fitRating: f.fitRating, fitDirection: f.fitDirection, color: f.color || null,
         collectionId: f.collectionId || null,
         imageDataUrl: f.imageDataUrl || null,
@@ -125,6 +128,9 @@ export function EditRow({
           <Field label={t("size")}>
             <SizeInput category={f.category} value={f.size} onChange={(v) => setF({ ...f, size: v })} line={f.gender} />
           </Field>
+        </div>
+        <div className="sm:col-span-3">
+          <RegimePicker brand={f.brand} value={f.region} onChange={(v) => setF({ ...f, region: v })} />
         </div>
         <div className="sm:col-span-6">
           <Field as="div" label={t("color")}><ColorPicker value={f.color} onChange={(v) => setF({ ...f, color: v })} /></Field>

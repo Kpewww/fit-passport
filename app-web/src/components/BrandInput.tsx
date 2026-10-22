@@ -19,12 +19,31 @@ export function BrandInput({
   const t = useT("sizeInput");
   const [open, setOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  // The registry's country for a suggestion (Session 101), shown faintly beside it.
+  const [countryOf, setCountryOf] = useState<Record<string, string>>({});
   const [active, setActive] = useState(-1);
   const boxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setSuggestions(suggestBrands(value));
+    const local = suggestBrands(value);
+    setSuggestions(local);
     setActive(-1);
+    // Then the brand registry (7,000+ brands), merged after the curated list.
+    if (value.trim().length < 2) return;
+    const ctl = new AbortController();
+    const timer = setTimeout(() => {
+      fetch(`/api/brands?q=${encodeURIComponent(value.trim())}`, { signal: ctl.signal })
+        .then((r) => (r.ok ? r.json() : null))
+        .then((j: { brands?: Array<{ label: string; country: string }> } | null) => {
+          if (!j?.brands) return;
+          const seen = new Set(local.map((b) => b.toLowerCase()));
+          const more = j.brands.filter((b) => !seen.has(b.label.toLowerCase())).map((b) => b.label);
+          setSuggestions([...local, ...more].slice(0, 10));
+          setCountryOf(Object.fromEntries(j.brands.map((b) => [b.label, b.country])));
+        })
+        .catch(() => {});
+    }, 180);
+    return () => { clearTimeout(timer); ctl.abort(); };
   }, [value]);
 
   // Close on outside click.
@@ -91,6 +110,7 @@ export function BrandInput({
                 }`}
               >
                 {b}
+                {countryOf[b] && <span className="ml-2 text-[10px] text-ink-faint">{countryOf[b]}</span>}
               </button>
             </li>
           ))}
