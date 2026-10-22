@@ -61,5 +61,11 @@
     "kind": "body",
     "kindEvidence": "Measure your chest over the fullest part."
   },
-  "_draftNotes": "Unverified assistant transcription from the logged-out retailer page in user Chrome. Regular tab only. cm values copied directly from the cm rows, not converted. Two independent human transcriptions still required."
+  "_draftNotes": "Unverified assistant transcription from the logged-out retailer page in user Chrome. Regular tab only. cm values copied directly from the cm rows, not converted. Two independent human transcriptions still required.",
+  "_screenshots": [
+    "screenshots/hm-xs-m.jpg",
+    "screenshots/hm-l-xxl.jpg",
+    "screenshots/hm-3xl.jpg",
+    "screenshots/hm-kind-evidence.jpg"
+  ]
 }

@@ -52,5 +52,8 @@
     "where": "page-table",
     "units": "cm"
   },
-  "_draftNotes": "Assistant draft from official product sizing iframe in user Chrome. Page says fit has been revised; chart includes XXS absent from product size options. Human verification required."
+  "_draftNotes": "Assistant draft from official product sizing iframe in user Chrome. Page says fit has been revised; chart includes XXS absent from product size options. Human verification required.",
+  "_screenshots": [
+    "screenshots/arcteryx-chart.jpg"
+  ]
 }

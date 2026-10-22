@@ -11,5 +11,8 @@
     "where": "none",
     "units": null
   },
-  "_draftNotes": "Current user-Chrome product page says Sorry, this item is no longer available. Product details and size guide absent on this current page. This is not an anti-bot refusal. Human verification required."
+  "_draftNotes": "Current user-Chrome product page says Sorry, this item is no longer available. Product details and size guide absent on this current page. This is not an anti-bot refusal. Human verification required.",
+  "_screenshots": [
+    "screenshots/everlane-unavailable.jpg"
+  ]
 }

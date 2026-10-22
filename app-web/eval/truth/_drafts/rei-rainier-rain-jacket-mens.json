@@ -59,5 +59,11 @@
     "kind": "body",
     "kindEvidence": "Size chart values represent body measurements, not garment measurements."
   },
-  "_draftNotes": "Unverified assistant transcription from user Chrome. Login link visible. Measurements are stated in inches unless otherwise indicated. Regular alpha sizes only; Tall adjustments and pants waist columns not transcribed. Human verification required."
+  "_draftNotes": "Unverified assistant transcription from user Chrome. Login link visible. Measurements are stated in inches unless otherwise indicated. Regular alpha sizes only; Tall adjustments and pants waist columns not transcribed. Human verification required.",
+  "_screenshots": [
+    "screenshots/rei-chart.jpg",
+    "screenshots/rei-chart-middle.jpg",
+    "screenshots/rei-chart-large.jpg",
+    "screenshots/rei-chart-xxxl.jpg"
+  ]
 }
