@@ -955,3 +955,29 @@ All P0/P1 of `todo/engineering/16` shipped; the production key works (both CMU s
 **Next — founder:** create the Vercel Blob store (`todo/people/08-blob-store.md`), then move old photos; upload
 extension 0.9.2. (FP-SJSK-DJDV-8N527 was deleted in Session 100e.) A kept test account for production testing is in the
 local (not repo) memory. **Engineering:** P2 of todo 16 when asked; read pilot events/feedback on /admin.
+
+## Session 101 (2026-10-21/22) — sizes by national standards, brand registry, calibration
+
+Shipped:
+- Closet labels are read by their market's standard (`sizeRegimes.ts`): GB/T 1335,
+  JIS L 4004/4005:2023, KS K 0050/0051:2025, ASTM (men's numbers, Misses, Petite, Plus),
+  BS 3666 and EN 13402-3. The founder bought the standards; they are NOT in the repo.
+- A 7,058-brand Wikidata registry (`brandRegistry.json`).
+- A closet tie names both pieces.
+- Pieces vote by centimetres.
+- Brand calibration per market (`brandOffsets.ts`), plus brand-guide entry on /admin.
+- Waist for bottoms.
+
+Every number's source is in `docs/design/sizing-standards-list.md`,
+`size-regimes-sources.md` and `size-calibration.md`.
+
+**Correction kept on record:** DIN 61516 is NOT verified to define the 44–56 numbers.
+Do not recommend it.
+
+**Next — founder:**
+- type 10+ US brands' and 5 luxury brands' own size guides on /admin. US letters
+  need 3 brands; ASTM defines no letters;
+- start a small pilot; only outcomes measure real accuracy.
+
+**Engineering:** use the US-letter consensus in `bodyChestFor` once it forms;
+maternity (ASTM D7197) when needed.

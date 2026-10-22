@@ -31,6 +31,18 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-22 · Session 101i — Verified on production after the deploy
+
+- **The case.** The founder's case, rerun on www.fitpassport.fit once 22f777b deployed
+  (the migration ran, and the site is up).
+- **The answer.** L, scoring 0.74 against M 0.57.
+- **The explanation.** It now reads "与已有的 Muji XL（衣物）尺码相符": the Muji piece
+  votes for L by centimetres. The JIS L 4004 Table 16 chest estimate is still cited.
+- **The conflict note** ("your closet says M") is gone.
+- **Confidence** stays capped at 40%, because the body is an estimate from the closet.
+  That is right until the wearer enters a chest.
+- **Memory.** `next-steps` gained Session 101 (repo copy and local copy are identical).
+
 ## 2026-10-22 · Session 101h — Verified on production; brand calibration and bottoms wired in; brand-guide entry
 
 - **Verified on production first.** The founder's case was run in a fresh anonymous
