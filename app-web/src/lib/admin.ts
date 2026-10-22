@@ -19,7 +19,7 @@ export const ADMIN_ROLE = "ADMIN";
 
 /** The current session's user if they're an admin, else null. */
 export async function currentAdmin() {
-  const session = readSession();
+  const session = (await readSession());
   if (!session) return null;
   const user = await prisma.user.findUnique({
     where: { id: session.userId },

@@ -569,7 +569,10 @@ function Result({
 
         <div className="flex flex-col gap-3 border-t border-line px-6 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <p className="text-xs text-ink-faint">{t("result.recordNote")}</p>
-          <LinkButton href="/history" variant="secondary" size="sm" icon={<Check size={16} />}>{t("result.recordCta")}</LinkButton>
+          <LinkButton
+            href={`/history?product=${encodeURIComponent(product.id)}&size=${encodeURIComponent(result.undetermined ? "" : result.best.label)}`}
+            variant="secondary" size="sm" icon={<Check size={16} />}
+          >{t("result.recordCta")}</LinkButton>
         </div>
       </div>
 

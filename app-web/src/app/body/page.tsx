@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { getT } from "@/i18n/server";
 import { BodyStudio } from "./BodyStudio";
 
-export function generateMetadata(): Metadata {
-  return { title: getT("body3d")("metaTitle"), robots: { index: false, follow: true } };
+export async function generateMetadata(): Promise<Metadata> {
+  return { title: (await getT("body3d"))("metaTitle"), robots: { index: false, follow: true } };
 }
 
 export default function Page() {

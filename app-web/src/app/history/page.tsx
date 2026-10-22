@@ -46,6 +46,15 @@ export default function HistoryPage() {
     setProducts(prods.products ?? []);
   }
   useEffect(() => { load(); }, []);
+  // From a check's "record" link (Session 103): the product and the size it answered,
+  // so reporting what happened is one choice, not a form to fill in again.
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const productId = q.get("product");
+    if (!productId) return;
+    const size = q.get("size") ?? "";
+    setForm((f) => ({ ...f, productId, purchasedSize: f.purchasedSize || size }));
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();

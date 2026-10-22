@@ -32,7 +32,7 @@ export async function GET() {
 
 export async function POST(req: Request) {
   const admin = await currentAdmin();
-  if (!admin || !canEdit()) return notAdmin();
+  if (!admin || !(await canEdit())) return notAdmin();
   const body = await req.json().catch(() => null);
   if (body?.delete && typeof body.id === "string") {
     await prisma.brandChartEntry.delete({ where: { id: body.id } }).catch(() => null);

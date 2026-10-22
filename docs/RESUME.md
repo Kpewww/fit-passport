@@ -33,7 +33,7 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 
 **【沟通约定】全程中文聊天;git commit message 用英文;DEVLOG.md 用英文。**
 
-**技术栈:** Node 24 LTS + **Next.js 14.2.35** App Router + React 18 + TS +
+**技术栈:** Node 24 LTS + **Next.js 15.5.28** App Router + React 19 + TS +
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
 Framer Motion(**Lenis 已移除**);three.js 懒加载:徽章 inspect **以及** 3D 人台/松量壳(`BodyMesh3D.tsx`)。
 命令:`npm run dev`、`npm run typecheck`、`npm test`(**637 个 + 1 个诚实跳过;看退出码,不要只看 Tests 那一行**)、`npm run build`、
@@ -44,6 +44,9 @@ Framer Motion(**Lenis 已移除**);three.js 懒加载:徽章 inspect **以及** 
 评估:`npm run eval`(离线 B+S5)、`EVAL_LIVE=1 npm run eval`(加上服务器路径 A)。
 **每轮结束务必:tsc + test + build + live smoke 全过 → commit & push → 更新
 DEVLOG + memory。**
+
+**⚠️ 工作方式(Session 103):直接 commit 并 push 到 `main`(和以往一样,`main` 即生产部署)。**
+不要用旁支:Vercel 对其他分支的 Preview 构建会在约 9 秒失败(原因未确认,多半是 Preview 环境缺变量),生产不受影响。
 
 **课程分工:** `coursework/technical/` = 技术实现/可行性/作业；`coursework/startup/` = 市场/商业/产品交付。核心代码仍只有 `app-web/` 一份。
 

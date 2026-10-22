@@ -13,7 +13,7 @@ import { readSession } from "@/lib/session";
 export async function GET() {
   // readSession, NOT getCurrentUser: this is a public endpoint and creating an
   // anonymous account for every scraper that hits it would be absurd.
-  const session = readSession();
+  const session = (await readSession());
   const hiddenUsers = session ? await invisibleUserIds(session.userId) : [];
 
   const users = await prisma.user.findMany({

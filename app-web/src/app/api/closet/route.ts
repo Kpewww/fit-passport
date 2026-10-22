@@ -25,7 +25,7 @@ export async function GET() {
 export async function POST(req: Request) {
   // The extension adds to the closet too (Session 88d): like /api/saved, a request
   // from it with no session is refused, never answered by minting an empty account.
-  if (sessionGate(isExtensionRequest(req.headers), readSession() != null) === "not-connected") {
+  if (sessionGate(isExtensionRequest(req.headers), (await readSession()) != null) === "not-connected") {
     const M = engineText(localeFromRequest(req));
     return NextResponse.json({ error: "not-connected", message: M.notConnected }, { status: 401 });
   }

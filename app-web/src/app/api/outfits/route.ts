@@ -112,7 +112,7 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
-  if (!canEdit()) {
+  if (!(await canEdit())) {
     return NextResponse.json({ error: say(req, "read-only — password required") }, { status: 403 });
   }
   const parsed = CreateSchema.safeParse(await req.json());

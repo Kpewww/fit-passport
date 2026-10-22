@@ -8,8 +8,9 @@ import { readSession } from "@/lib/session";
 import { readPhoto } from "@/lib/photoStore";
 import { resolveAccount } from "@/lib/accountMerge";
 
-export async function GET(_req: Request, { params }: { params: { id: string } }) {
-  const session = readSession();
+export async function GET(_req: Request, { params: paramsP }: { params: Promise<{ id: string }> }) {
+  const params = await paramsP;
+  const session = (await readSession());
   if (!session) return new NextResponse(null, { status: 404 });
   const item = await prisma.knownGoodItem.findFirst({ where: { id: params.id, userId: await resolveAccount(session.userId) }, select: { imageDataUrl: true } });
   const photo = item ? await readPhoto(item.imageDataUrl) : null;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import { ArrowLeft, Download } from "@/components/Icon";
 import { FitStars } from "@/components/ui";
 import Link from "next/link";
@@ -44,7 +44,7 @@ type PublicView = {
 export default function ViewByCodePage({
   params,
 }: {
-  params: { code: string };
+  params: Promise<{ code: string }>;
 }) {
   const t = useT("profile");
   const tc = useT("common");
@@ -52,7 +52,7 @@ export default function ViewByCodePage({
   const g = useGarmentText();
   const people = usePeopleWords();
   const tSocial = useT("social");
-  const { code } = params;
+  const { code } = use(params);
   const [data, setData] = useState<PublicView | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [follow, setFollow] = useState<{

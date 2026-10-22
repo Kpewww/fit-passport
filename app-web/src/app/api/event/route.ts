@@ -21,6 +21,6 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success || !CLIENT_EVENTS.has(parsed.data.name as EventName)) return NextResponse.json({ ok: false }, { status: 400 });
   // Never minted here: an error report must not create an account (readSession only).
-  await track(parsed.data.name, { userId: readSession()?.userId ?? null, detail: parsed.data.detail, path: parsed.data.path });
+  await track(parsed.data.name, { userId: (await readSession())?.userId ?? null, detail: parsed.data.detail, path: parsed.data.path });
   return NextResponse.json({ ok: true });
 }

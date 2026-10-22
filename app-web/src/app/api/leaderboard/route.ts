@@ -26,7 +26,7 @@ export async function GET(req: Request) {
   const w = parseLeaderWindow(new URL(req.url).searchParams.get("window"));
   const since = windowStart(w, Date.now());
   // Public endpoint, so read the session without minting one.
-  const session = readSession();
+  const session = (await readSession());
   const hiddenUsers = session ? await invisibleUserIds(session.userId) : [];
   const notBlockedUser = hiddenUsers.length ? { userId: { notIn: hiddenUsers } } : {};
 

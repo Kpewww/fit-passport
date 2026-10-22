@@ -15,8 +15,9 @@ import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 
 export async function GET(
   req: Request,
-  { params }: { params: { code: string } },
+  { params: paramsP }: { params: Promise<{ code: string }> },
 ) {
+  const params = await paramsP;
   // Anti-scrape: 60 reads / min per IP.
   const rl = await rateLimit(clientKey(req, "view"), 60, 60_000);
   if (!rl.ok) return tooMany(rl.retryAfterSec, req);

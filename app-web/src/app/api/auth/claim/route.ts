@@ -94,7 +94,7 @@ export async function POST(req: Request) {
     exportPolicy: exportPolicy ?? "owner",
   });
 
-  setSession({ userId: updated.id, canEdit: true });
+  await setSession({ userId: updated.id, canEdit: true });
   await track("account-claimed", { userId: updated.id, detail: updated.email ? "with-email" : null });
 
   return NextResponse.json({

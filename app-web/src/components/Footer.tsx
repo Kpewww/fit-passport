@@ -42,8 +42,8 @@ const COLUMNS: Array<{ title: KeyIn<"footer">; links: Array<{ label: LinkKey; hr
   },
 ];
 
-export function Footer() {
-  const t = getT("footer");
+export async function Footer() {
+  const t = (await getT("footer"));
   return (
     <footer className="mt-auto border-t border-line bg-paper">
       <div className="mx-auto max-w-6xl px-4 pb-10 pt-12 sm:px-6 sm:pt-14">

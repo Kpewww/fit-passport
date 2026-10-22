@@ -15,8 +15,8 @@ import { BrowserIcon, Lock, Shield } from "@/components/Icon";
 import { EXTENSION_DISTRIBUTION } from "@/lib/extensionDistribution";
 import { getT } from "@/i18n/server";
 
-export function generateMetadata(): Metadata {
-  const t = getT("extension");
+export async function generateMetadata(): Promise<Metadata> {
+  const t = (await getT("extension"));
   return { title: t("metaTitle"), description: t("metaDescription") };
 }
 
@@ -24,8 +24,8 @@ const b = (c: string) => <b>{c}</b>;
 const privacyLink = (c: string) => <Link href="/privacy" className="underline underline-offset-2 hover:text-ink">{c}</Link>;
 const manualLink = (c: string) => <Link href="/help#manual-install" className="underline underline-offset-2 hover:text-ink">{c}</Link>;
 
-export default function ExtensionPage() {
-  const t = getT("extension");
+export default async function ExtensionPage() {
+  const t = (await getT("extension"));
   return (
     <Page width="read">
       <PageHeader eyebrow={t("eyebrow")} title={t("title")} lede={t("lede")} />

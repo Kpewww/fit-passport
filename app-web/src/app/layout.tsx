@@ -34,8 +34,8 @@ const fraunces = localFont({
   display: "swap",
 });
 
-export function generateMetadata(): Metadata {
-  const { meta } = messagesFor(getLocale());
+export async function generateMetadata(): Promise<Metadata> {
+  const { meta } = messagesFor((await getLocale()));
   return {
     title: meta.title,
     description: meta.description,
@@ -44,14 +44,14 @@ export function generateMetadata(): Metadata {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   // The language is decided once, here, and handed down: server components ask
   // getT(), client components useT() — and only this language's messages ship.
-  const locale = getLocale();
+  const locale = (await getLocale());
   return (
     // suppressHydrationWarning: the intro script below may mark <html> before React
     // hydrates, and that attribute is meant to differ from the server's.

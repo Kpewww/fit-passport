@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   const state = req.nextUrl.searchParams.get("state");
   const receive = new URL("/api/session/receive", siteOrigin());
   receive.searchParams.set("next", safeNext(req.nextUrl.searchParams.get("next")));
-  const session = readSession();
+  const session = (await readSession());
   const userId = session && isCarryState(state) ? await resolveAccount(session.userId) : null;
   if (session && userId && isCarryState(state)) {
     receive.searchParams.set("pass", encodeCarryPass({ userId, canEdit: session.canEdit }, state));

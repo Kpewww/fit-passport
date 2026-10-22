@@ -60,6 +60,6 @@ export async function POST(req: Request) {
     data: { passwordHash },
   });
 
-  setSession({ userId: user.id, canEdit: true });
+  await setSession({ userId: user.id, canEdit: true });
   return NextResponse.json({ ok: true, username: user.username });
 }

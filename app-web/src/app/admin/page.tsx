@@ -17,6 +17,7 @@ import { ArrowRight } from "@/components/Icon";
 import { useT } from "@/i18n/client";
 import { Headline } from "@/components/Headline";
 import { PilotPanel } from "./PilotPanel";
+import { AccuracyPanel } from "./AccuracyPanel";
 import { DeleteAccount } from "./DeleteAccount";
 import { MovePhotos } from "./MovePhotos";
 import { BrandCalibration } from "./BrandCalibration";
@@ -113,6 +114,7 @@ export default function AdminPage() {
         </p>
 
         <PilotPanel />
+        <AccuracyPanel />
         <DeleteAccount />
         <MovePhotos />
         <BrandCalibration />

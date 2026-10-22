@@ -15,7 +15,7 @@ const Body = z.object({ password: z.string().min(1).max(200) });
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
-  if (!user.claimed || !canEdit()) {
+  if (!user.claimed || !(await canEdit())) {
     return NextResponse.json({ error: say(req, "not allowed") }, { status: 403 });
   }
   const parsed = Body.safeParse(await req.json());
@@ -29,6 +29,6 @@ export async function POST(req: Request) {
     where: { id: user.id },
     data: { deactivated: true, listedInCommunity: false },
   });
-  clearSession();
+  await clearSession();
   return NextResponse.json({ ok: true });
 }

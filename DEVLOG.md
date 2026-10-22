@@ -10687,3 +10687,104 @@ DEVLOG.md, README.md, .gitignore              (created)
   mechanism switches on by itself as data arrives.
 - **Next:** pilot; US/luxury guides on /admin; Codex handles the people/ tasks
   (captures, Redis/Blob checks, truth drafts — drafts only, humans verify).
+
+## Session 103b (2026-10-22) — Codex's people-tasks report, board cleaned
+
+Codex (desktop, operating the founder's browser) worked `todo/people/` on branch `codex/people-tasks`
+(not merged; report in `docs/people-tasks-2026-10-22.md` there):
+- **Redis:** both Upstash variables exist in Production. `people/03` deleted.
+- **Blob:** `closet-photos` exists (private, iad1), token in Production and Preview; /admin shows
+  0 photos left in the database. `people/08` and `engineering/07` deleted.
+- **Ground truth:** unverified drafts for all 11 cases (8 answer, 3 refuse) with 24 screenshots, in
+  `eval/truth/_drafts/`, `verifiedBy` empty. They are NOT truth (invariant 66); two people still verify.
+- **Evidence for engineering/03:** Arc'teryx and Gap DO show a chart in a person's browser once the size
+  guide is opened (screenshots); the captures hold 0 tables because they were taken without it.
+- **Blocked for Codex:** loading the extension (chrome://extensions refused) and the Web Store console
+  (Not allowed), so captures C/D and the 0.9.2 upload stay with a person. The 0.9.2 store zip was built.
+- **npm audit:** Next 14.2.35 carries critical/high advisories fixed only in 15.5.24+ (the 14 line gets
+  no more fixes). Exposure on Vercel is limited (no rewrites, no Server Actions, one next/image, no
+  remotePatterns), but the upgrade to Next 15 + React 19 is the next engineering item if approved.
+
+## Session 103c (2026-10-22) — Next 14.2.35 to 15.5.28, React 18 to 19
+
+**Why:** Next 14 is out of security support; `npm audit` listed critical (RCE in image optimisation)
+and high advisories fixed only in 15.5.24+.
+
+**What changed:**
+- `cookies()`/`headers()` are async, so the session and locale helpers became async and every caller
+  awaits them (about 45 call sites, mostly route handlers).
+- Dynamic `params` is a Promise: route handlers await it, `/u/[code]` and `/ask/[id]` use `use(params)`.
+- `useAnchoredPanel` takes `RefObject<HTMLElement | null>` (React 19 types).
+- `npm audit fix` for source-map-js.
+
+**Verified locally (production build, `next start`):** typecheck; 1,437 tests; build. A browser
+walk of 21 pages in English, 3 in Chinese (`<html lang="zh">`), session cookie minted on first
+visit, `/api/auth/me`, admin login, `/admin`, `/u/[code]`, `/ask/[id]`, the dynamic APIs,
+a demo `/api/check`, logout. No page errors, no console errors, no server warnings.
+`/api/view/[code]/export` answered 403, which is its rule (export policy "owner").
+
+**Audit after:** 0 critical. 1 high + 1 moderate, both Next's own build-time postcss.
+
+**Cost:** shared First Load JS 87 -> 103 kB (React 19); /closet 136 kB, /check 127 kB.
+
+## Session 103d (2026-10-22) — /admin: was the recommended size right?
+
+- `lib/pilotAccuracy.ts` (tested): each reported purchase is judged against the latest recommendation the
+  same person got for that product before reporting. Kept and about right (|direction| <= 2): the size
+  bought was right. Exchanged: the size swapped to. Returned or kept tight/loose: only a side, never an
+  exact hit. Returned with no fit reason: no signal. Order by the product's own chart, the S/M/L ladder
+  only as a fallback (numbers like 48/50 can normalise to the same letter, so they never compare as letters).
+- `/api/admin/accuracy` + `AccuracyPanel` on /admin: exact rate, how many bought what was recommended,
+  side verdicts, and hit rate by stated confidence (is 80% confidence 80% right?).
+- Verified on a local production build with three real check + outcome flows: 1 hit, 1 miss, 1 right side,
+  as constructed; EN and ZH screenshots, no page errors.
+
+## Session 103e (2026-10-22) — reporting a purchase from a check is one choice
+
+/check's "record what happened" link now carries the product and the size it answered
+(`/history?product=…&size=…`), and /history pre-fills both. Before, it opened an empty form: pick the
+product from a list, type the size again. Verified in a browser: anonymous (no size answered) pre-selects
+the product only; logged in, product + "M".
+
+**Open, for the founder:** "Bought it" on the to-buy list moves the piece into the closet but records no
+FitOutcome, so the extension's main buying path never reaches the accuracy panel (or outcome learning).
+Recording a "keep" outcome there would change what the engine learns from; not done without a decision.
+
+## Session 103f (2026-10-22) — the October 2026 Node.js Brotli flaw
+
+**What the alarm was:** two separate disclosures on 2026-10-21.
+- **PHP** (CVE-2026-109618/-109619, RCE). Does not apply here: no PHP anywhere.
+- **Node.js** (nodejs.org "October 21, 2026 Security Releases": 10 CVEs, highest HIGH). It applies.
+  CVE-2026-111497 is an out-of-bounds write in the Brotli decoder that permits RCE. The fixed releases
+  are 22.23.4, 24.22.1 and 26.12.1.
+
+**Why it applies:** `extractorLLM.ts` fetches pages and chart pictures from addresses people paste, and
+fetch() decompresses whatever Content-Encoding the far side sends. Production runs Node 24.x on Vercel.
+Vercel moves the patch version itself, with no date given, and the running patch was not visible from
+here: the sandbox and the fetch tool both cannot reach the site.
+
+**Done:**
+- `lib/runtimePatch.ts` (tested) answers whether this Node has the fix.
+- `gate()` refuses every untrusted fetch while it does not. Pasted links are then not read; the extension
+  path (HTML sent by the browser) is unaffected.
+- `/admin`'s pilot panel shows the server's Node version and whether it is patched.
+- Verified locally on an unpatched Node 22.22.0: /admin says unpatched; a pasted link fetches nothing;
+  an extension-style `{html}` check reads its table.
+- **The guard lifts by itself once Vercel runs 24.22.1+.**
+
+**Known wording gap while blocked:** /check says the retailer "didn't serve" the page, which is not the
+reason in that case.
+
+## Session 103g (2026-10-22) — brand size guides collected into the repo
+
+An agent can now collect brands' own size guides, and people verify them through GitHub:
+- **Files:** `app-web/data/brand-guides/<brand>-<line>.json`, one per brand and line, each with a
+  screenshot. Schema in `lib/brandGuides.ts`; example in `_example.json`.
+- **Build:** `npm run guides` checks every file (names the file and field on error) and compiles the
+  verified BODY guides into `src/lib/brandGuides.generated.json`.
+- **Use:** `brandOffsets.ts` reads that output as official guides, like /admin entries.
+- **Only verified data counts:** nothing counts until a person adds their name to `verifiedBy`. Single
+  printed numbers are kept as printed but never widened into ranges, and never counted.
+- **Guards:** tests fail on an invalid file, a missing screenshot, or a stale generated file.
+- **The task for the agent and for the reviewers:** `todo/people/09-brand-size-guides.md` (brand list,
+  rules: brand's own site only, logged out, no bypassing, copy as printed).

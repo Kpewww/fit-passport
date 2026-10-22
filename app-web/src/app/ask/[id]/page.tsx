@@ -4,7 +4,7 @@
 // helpful; claimed members can answer with a garment from their own closet
 // attached as evidence.
 
-import { useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import { ArrowLeft, ArrowUpRight, Check } from "@/components/Icon";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -58,8 +58,8 @@ type Thread = {
   }>;
 };
 
-export default function ThreadPage({ params }: { params: { id: string } }) {
-  const { id } = params;
+export default function ThreadPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const t = useT("thread");
   const ta = useT("ask");
   const tc = useT("common");

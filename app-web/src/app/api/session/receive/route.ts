@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
 
   if (carried) {
     const there = await resolveAccount(carried.userId);
-    const current = readSession();
+    const current = (await readSession());
     let keep = there;
     let canEdit = carried.canEdit;
     if (current) {

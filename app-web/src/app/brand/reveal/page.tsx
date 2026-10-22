@@ -8,8 +8,8 @@ import { Suspense } from "react";
 import { getT } from "@/i18n/server";
 import { RevealStage } from "./RevealStage";
 
-export function generateMetadata(): Metadata {
-  const t = getT("brandReveal");
+export async function generateMetadata(): Promise<Metadata> {
+  const t = (await getT("brandReveal"));
   return { title: t("metaTitle"), robots: { index: false } };
 }
 

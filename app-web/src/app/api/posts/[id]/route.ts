@@ -14,7 +14,8 @@ import { loadEvidence } from "@/lib/evidence";
 import { invisibleUserIds } from "@/lib/blocks";
 import { say } from "@/lib/apiText";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params: paramsP }: { params: Promise<{ id: string }> }) {
+  const params = await paramsP;
   const user = await getCurrentUser();
   const hiddenUsers = await invisibleUserIds(user.id);
 
@@ -138,7 +139,8 @@ const PatchSchema = z.object({
   resolvedAnswerId: z.string().nullable(),
 });
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params: paramsP }: { params: Promise<{ id: string }> }) {
+  const params = await paramsP;
   const user = await getCurrentUser();
   const post = await prisma.post.findUnique({
     where: { id: params.id },
@@ -166,7 +168,8 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
   return NextResponse.json({ resolvedAnswerId });
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params: paramsP }: { params: Promise<{ id: string }> }) {
+  const params = await paramsP;
   const user = await getCurrentUser();
   // deleteMany scoped by userId = an authorization check that can't be skipped.
   const res = await prisma.post.deleteMany({ where: { id: params.id, userId: user.id } });

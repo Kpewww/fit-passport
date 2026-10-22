@@ -9,10 +9,10 @@ import { zh } from "./messages/zh";
 import { makeT } from "./translator";
 import type { Messages, Namespace } from "./types";
 
-export function getLocale(): Locale {
+export async function getLocale(): Promise<Locale> {
   return resolveLocale({
-    cookie: cookies().get(LANG_COOKIE)?.value ?? null,
-    acceptLanguage: headers().get("accept-language"),
+    cookie: (await cookies()).get(LANG_COOKIE)?.value ?? null,
+    acceptLanguage: (await headers()).get("accept-language"),
   });
 }
 
@@ -20,6 +20,6 @@ export function messagesFor(locale: Locale): Messages {
   return locale === "zh" ? zh : en;
 }
 
-export function getT<N extends Namespace>(ns: N) {
-  return makeT(messagesFor(getLocale()), ns);
+export async function getT<N extends Namespace>(ns: N) {
+  return makeT(messagesFor((await getLocale())), ns);
 }
