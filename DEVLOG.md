@@ -31,6 +31,21 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-22 · Session 101f — A correction: DIN 61516
+
+- **What earlier notes said.** They called DIN 61516-1/-2 the source of the European
+  men's 44–56 numbers "which most luxury houses use", and told the founder to buy it.
+  That was an unchecked inference.
+- **What is actually verified.** Only that DIN 61516-1 ("Control body dimensions for
+  clothes; principles") and DIN 61516-2 ("application") exist, from 1978, and are
+  withdrawn (dinmedia.de).
+- **What is not verified.** That they define the numbered sizes, or that luxury houses
+  follow them.
+- **The current European standard** is EN 13402-3:2017, with ISO 8559-1:2017,
+  ISO 8559-2:2025 and ISO 8559-3:2018. None of these defines the 44–56 numbers.
+- **The fix.** `size-regimes-sources.md` and `size-calibration.md` were corrected. The
+  plan for the Italian/French numbers is now the brands' own guides (grade B).
+
 ## 2026-10-22 · Session 101e — Backtest, brand calibration, and the full list of standards
 
 - **Backtest (synthetic, labelled as such).** `regimeBacktest.test.ts`. Made-up men own

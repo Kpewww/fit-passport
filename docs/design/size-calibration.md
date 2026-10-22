@@ -127,7 +127,7 @@ standard, in cm and in size steps.
 | Europe | EN 13402-3 | 2017 | Body measurements and intervals (letters, Annex A) | Current at DIN; in hand |
 | Europe | EN 13402-1 / -2 | 2001 / 2002 | Terms and measuring / primary dimensions | Partly replaced by ISO 8559 |
 | UK | BS 3666 | 1982 | Women 8–32 | "Current, under review" at BSI; in hand |
-| Germany | DIN 61516-1 / -2 | 1978 | Body dimensions for clothes (European men's numbers) | Withdrawn; not in hand |
+| Germany | DIN 61516-1 / -2 | 1978 | "Control body dimensions for clothes" (principles / application) | Withdrawn; not in hand. Whether it defines the 44–56 numbers is NOT verified |
 | Australia | AS 1344 | 1997 | Women | Withdrawn (2017 per Intertek; 2009 per one paper); not in hand |
 | Australia | AS 1182 | 1997 | Infants and children | Not verified; not in hand |
 | Russia | GOST 31399 | 2009 | Typical men's figures | Current per catalogues; not in hand |
@@ -153,7 +153,7 @@ standard, in cm and in size steps.
 **Gaps worth closing, in order of what they unlock:**
 1. **US brand charts for letters** (no standard exists). These come through product
    pages, or a person entering them by hand.
-2. **DIN 61516-1/-2.** European and luxury men's numbers.
+2. **Italian/French men's numbers (44–56).** No current standard is known to define them; EN 13402-3 replaced the national systems. Read them from luxury brands' own guides (grade B), not from DIN 61516, whose content is unverified.
 3. **GB/T 1335.3 and JIS L 4001–4003.** Children.
 4. **GOST 31399/31396.** Russian sizes, only if the pilot reaches there.
 

@@ -71,7 +71,7 @@ size. Where it gives ranges, they are used as printed.
 |---|---|---|
 | Australia | AS 1344-1997 | women's sizes |
 | United States | ASTM D6829 (withdrawn 2024) | juniors, for older garments |
-| Germany | DIN 61516-1, DIN 61516-2 (withdrawn) | European men's numbers 44–56, which most luxury houses use |
+| Germany | DIN 61516-1, DIN 61516-2 (1978, withdrawn) | German "Körper-Kennmaße" (control body dimensions). NOT verified to define the 44–56 numbers or to be what luxury houses use: an unchecked inference, corrected 2026-10-22 |
 
 **Still no standard meaning, for any edition:**
 - **A Chinese letter size.** GB/T 1335 defines only 号型.
