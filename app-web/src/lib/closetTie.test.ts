@@ -4,6 +4,8 @@
 import { describe, expect, it } from "vitest";
 import { parseSizeGrid } from "./pageParse";
 import { isUndetermined, recommend } from "./fitEngine";
+import { chestFromCloset } from "./closetChest";
+import { lookupBrand } from "./brandRegistry";
 
 const grid = [
   ["DESCRIPTION", "XS", "S", "M", "L", "XL", "2XL", "3XL", "4XL", "5XL", "6XL"],
@@ -37,5 +39,17 @@ describe("two closet pieces that disagree", () => {
     const out = recommend({ profile: { chestCm: 110, preferredFit: "regular" }, product: { category: "hoodie" }, sizes, knownGood: closet, outcomes: [] });
     expect(out.undetermined).toBe(false);
     expect(out.best.label).toBe("L");
+  });
+
+  it("with the standards in hand, the Muji XL reads as Japanese (JIS L 4004) and settles it", () => {
+    // The path recommendService takes when no chest is on file (Session 101d).
+    const est = chestFromCloset(closet, (b) => lookupBrand(b)?.country ?? null)!;
+    expect(est).toMatchObject({ lo: 104, hi: 112, chestCm: 108 });
+    const out = recommend({
+      profile: { chestCm: est.chestCm, chestIsEstimated: true, chestNote: "from the Muji XL", preferredFit: "regular" },
+      product: { category: "hoodie" }, sizes, knownGood: closet, outcomes: [],
+    });
+    expect(out.undetermined).toBe(false);
+    expect(["L", "XL"]).toContain(out.best.label);
   });
 });

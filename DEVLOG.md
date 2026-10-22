@@ -31,6 +31,40 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-22 · Session 101d — Japanese, Korean, US and UK sizes by their standards
+
+**Source.** The founder bought the standards and shared them (a Drive folder, and the
+same files in ~/Downloads/13篇). They are not in the repository.
+- All but KS are scans. Each table was rendered to an image and read by eye. Every
+  value is in `docs/design/size-regimes-sources.md`, with its table.
+
+**What `sizeRegimes.ts` now reads:**
+- **Japan.** JIS L 4004 Table 16: men's letters, XL is LL. JIS L 4005 Table 15: women's
+  letters. JIS L 4005 Tables 1, 2 and 12: women's 号数.
+- **Korea.** KS K 0050:2025 and KS K 0051:2025: Table 14-1 letters, and the number
+  tables (the number is the chest).
+- **US.**
+  - ASTM D6240 and D8077: men's numbers, where the size is the chest in inches.
+  - ASTM D5585 / D7878: Misses and Petite.
+  - ASTM D6960: Plus.
+  - ASTM defines no letter sizes, so a US letter still reads null.
+- **UK.** BS 3666 Table 1: women's numbers.
+- **Still null** (no standard): Chinese letters, US letters, Australian sizes (AS 1344
+  not in the folder), and European men's numbers (DIN 61516 not bought).
+
+**The founder's case now answers L.** Muji (JP) XL reads as chest 104–112 by JIS. With
+no chest on file this gives an estimate of 108 cm, and the Independent Trading hoodie
+then ranks L 0.67, M 0.59, XL 0.40. The founder had said "at least L/XL".
+- The test is in `closetTie.test.ts`.
+
+**Not used:**
+- ISO 8559-1 and ISO 8559-2: measurement definitions, no size tables.
+- ASTM D7197: maternity, not wired yet.
+- ISO/ASTM 52951:2026: an additive-manufacturing standard that was in the folder by
+  mistake.
+
+1,400 tests pass.
+
 ## 2026-10-21 · Session 101c — The closet accepts a 号型 and 4XL to 6XL
 
 - **What was wrong.** `isValidSize` rejected "175/96A" and "4XL" for tops, bottoms and

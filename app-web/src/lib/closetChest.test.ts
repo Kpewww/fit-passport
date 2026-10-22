@@ -22,10 +22,16 @@ describe("chest from the closet's labels", () => {
     ], country)).toBeNull();
   });
 
-  it("skips what does not fit, bottoms, and regimes with no evidence (a Japanese XL)", () => {
+  it("skips what does not fit, bottoms, and regimes with no evidence (a US letter)", () => {
     expect(chestFromCloset([{ brand: "Zara", category: "tshirt", size: "M", fitRating: 2 }], country)).toBeNull();
     expect(chestFromCloset([{ brand: "Zara", category: "jeans", size: "M", fitRating: 5 }], country)).toBeNull();
-    expect(chestFromCloset([{ brand: "Muji", category: "top", size: "XL", fitRating: 5 }], country)).toBeNull();
+    expect(chestFromCloset([{ brand: "Nike", category: "tshirt", size: "XL", fitRating: 5 }], country)).toBeNull();
+  });
+
+  it("reads a Muji XL as Japanese, by JIS L 4004 (the founder's own piece)", () => {
+    expect(chestFromCloset([{ brand: "Muji", category: "top", size: "XL", fitRating: 5 }], country)).toMatchObject({ lo: 104, hi: 112, chestCm: 108 });
+    // Chosen on the piece, the regime wins over the brand's country.
+    expect(chestFromCloset([{ brand: "Muji", category: "top", size: "XL", fitRating: 5, region: "EU" }], country)).toMatchObject({ lo: 110, hi: 118 });
   });
 
   it("finds brands by name or alias, each with a QID", () => {

@@ -35,18 +35,49 @@ countries only (the member list on the standard's cover page), and to tops only.
 
 GB/T 1335 defines 号型, not letter sizes: a Chinese brand's "XL" has no grade A meaning.
 
-## Grade A, still to obtain
+## Grade A, read in Session 101d (2026-10-22)
 
-| Region | Standard | Would give |
+The founder supplied these copies; they are not in this repository. All except KS are
+scans, so every value was read from a rendered page image and checked.
+
+| Standard | Used for | Where |
 |---|---|---|
-| Japan | JIS L 4004:2023, JIS L 4005:2023 | men's/women's letter and 号数 sizes → body |
-| Korea | KS K 0050, KS K 0051 (latest) | men's/women's 85–110 sizes → body |
-| United States | ASTM D6240/D6240M-24a, ASTM D5585 (latest) | men's chest sizes; women's Misses 00–20 |
-| Australia | AS 1344-1997 | women's 6–24 |
-| International | ISO 8559-2:2017 | primary dimensions for size labels |
+| JIS L 4004:2023 | Japanese men's letters, by chest: SS 72–80, S 80–88, M 88–96, L 96–104, LL (XL) 104–112, 3L 112–120, 4L 120–128, 5L 128–136 | Table 16 |
+| JIS L 4005:2023 | Japanese women's letters, by bust: SS 65–73 … 6L 121–129 | Table 15 |
+| JIS L 4005:2023 | women's 号数 3–21, by bust: 74, 77, 80, 83, 86, 89, 92, 96, 100, 104 | Tables 1, 2, 12 |
+| KS K 0050:2025 | Korean men's numbers (the number is the chest, 80–110); letters M 85–93, L 93–101, XL 101–108 | Tables 10, 14-1 |
+| KS K 0051:2025 | Korean women's numbers (75–105); letters S 72–82, M 82–89, L 89–98, XL 98–109 | Tables 9, 14-1 |
+| ASTM D6240/D6240M-24a | US men's chest sizes 34–52: the size is the chest in inches. No letter sizes | Table 1 |
+| ASTM D8077/D8077M-16(2022) | US big men 46–64, the same rule | Table 2 |
+| ASTM D5585-21 | US Misses 00–20, bust cm (00 79.06 … 20 116.84) | Table 2 |
+| ASTM D7878/D7878M-23 | US Petite 00P–20P: the same busts as D5585 | Table 2 |
+| ASTM D6960/D6960M-16(2023) | US Plus 14W–40W, bust cm (14W 105.41 … 40W 170.18) | Table 2 |
+| BS 3666:1982 | UK women's 8–32, bust from–to (8 78–82 … 32 135–139) | Table 1 |
 
-Until then a Japanese, Korean, US, Chinese-letter or Australian label has no body range,
-and the engine says so rather than guessing.
+**How the tables become ranges.** Where a table gives one value per size (the KS
+numbers, the JIS 号数, the ASTM tables), the range reaches halfway to each neighbouring
+size. Where it gives ranges, they are used as printed.
+
+**In the folder but not used:**
+- **ISO 8559-1:2017 and ISO 8559-2:2017.** These define how to measure the body and
+  which dimensions a label states. They hold no size tables.
+- **ASTM D7197-21 (maternity).** It is not yet used.
+- **ISO/ASTM 52951:2026.** It is an additive-manufacturing standard, unrelated to
+  clothing.
+
+## Grade A, still missing
+
+| Region | Standard | What it would give |
+|---|---|---|
+| Australia | AS 1344-1997 | women's sizes |
+| United States | ASTM D6829 (withdrawn 2024) | juniors, for older garments |
+| Germany | DIN 61516-1, DIN 61516-2 (withdrawn) | European men's numbers 44–56, which most luxury houses use |
+
+**Still no standard meaning, for any edition:**
+- **A Chinese letter size.** GB/T 1335 defines only 号型.
+- **A US letter size.** ASTM defines chest numbers only.
+
+These can only come from brand guides (grade B).
 
 ## Grade C: the brand registry
 

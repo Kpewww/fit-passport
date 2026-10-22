@@ -22,6 +22,23 @@
 //     each letter size covers. The annex calls them examples a country or company
 //     may adopt (§5.3.1, A.1), so a reason built on them says "European standard
 //     example", not "this brand's size".
+//
+// Sources read in Session 101d (the founder's copies, 2026-10-22; every value was read
+// from a rendered page image and checked, since all but KS are scans):
+//   - JIS L 4004:2023 Table 16 (men, 範囲表示 by chest): SS..5L. "LL" is the XL rung.
+//   - JIS L 4005:2023 Table 15 (women, 範囲表示, height 154-162): SS..6L; Tables 1, 2
+//     and 12 (women's 号数 3..21 to a bust; the same bust for every height letter).
+//   - KS K 0050:2025 Table 10 (men's number = chest, 80..110) and Table 14-1 (M, L, XL).
+//   - KS K 0051:2025 Table 9 (women's number = chest, 75..105) and Table 14-1 (S..XL).
+//   - ASTM D6240/D6240M-24a Table 1 (men, chest 34..52 in: the size IS the chest in
+//     inches) and ASTM D8077/D8077M-16(2022) Table 2 (big men 46..64, the same rule).
+//     Neither defines letter sizes, so a US letter has no grade A meaning.
+//   - ASTM D5585-21 Table 2 (Misses 00..20, bust cm), D7878/D7878M-23 (Petite 00P..20P:
+//     Table 2 gives the same busts as D5585) and D6960/D6960M-16(2023) Table 2 (Plus
+//     14W..40W, bust cm).
+//   - BS 3666:1982 Table 1 (UK women's 8..32, bust "from"/"to" in cm).
+// A table that gives one value per size (KS numbers, JIS 号数, ASTM) becomes a range
+// reaching halfway to its neighbours; a table that gives ranges is used as printed.
 
 export type Regime = "CN" | "JP" | "KR" | "US" | "UK" | "AU" | "IT" | "FR" | "EU";
 export type Grade = "A" | "B" | "C";
@@ -77,6 +94,75 @@ const EN_WOMEN: Record<string, [number, number]> = {
   XXS: [66, 74], XS: [74, 82], S: [82, 90], M: [90, 98], L: [98, 106], XL: [106, 118], XXL: [118, 130], "3XL": [130, 142],
 };
 
+type Table = { ranges: Record<string, [number, number]>; source: string; sourceZh: string };
+
+/** Ranges halfway to each neighbour, for a table that gives one value per size. */
+function fromPoints(points: Array<[string, number]>): Record<string, [number, number]> {
+  const out: Record<string, [number, number]> = {};
+  points.forEach(([k, v], i) => {
+    const prev = points[i - 1]?.[1], next = points[i + 1]?.[1];
+    const lo = prev != null ? (prev + v) / 2 : v - ((next ?? v) - v) / 2;
+    const hi = next != null ? (v + next) / 2 : v + (v - (prev ?? v)) / 2;
+    out[k] = [Math.round(lo * 10) / 10, Math.round(hi * 10) / 10];
+  });
+  return out;
+}
+
+const T = (ranges: Record<string, [number, number]>, source: string, sourceZh: string): Table => ({ ranges, source, sourceZh });
+
+// JIS L 4004:2023 Table 16 and JIS L 4005:2023 Table 15 (cm, as printed).
+const JIS_MEN = T(
+  { SS: [72, 80], S: [80, 88], M: [88, 96], L: [96, 104], LL: [104, 112], "3L": [112, 120], "4L": [120, 128], "5L": [128, 136] },
+  "JIS L 4004:2023 Table 16", "JIS L 4004:2023 表 16",
+);
+const JIS_WOMEN = T(
+  { SS: [65, 73], S: [72, 80], M: [79, 87], L: [86, 94], LL: [93, 101], "3L": [100, 108], "4L": [107, 115], "5L": [114, 122], "6L": [121, 129] },
+  "JIS L 4005:2023 Table 15", "JIS L 4005:2023 表 15",
+);
+// JIS L 4005:2023 Tables 1, 2, 12: 号数 to bust (cm).
+const JIS_WOMEN_NO = T(
+  fromPoints([["3", 74], ["5", 77], ["7", 80], ["9", 83], ["11", 86], ["13", 89], ["15", 92], ["17", 96], ["19", 100], ["21", 104]]),
+  "JIS L 4005:2023 Tables 1, 2, 12", "JIS L 4005:2023 表 1、2、12",
+);
+// KS K 0050:2025 / KS K 0051:2025, Table 14-1 (letters, as printed) and the number
+// tables (Table 10 men, Table 9 women: the number is the chest).
+const KS_MEN = T({ M: [85, 93], L: [93, 101], XL: [101, 108] }, "KS K 0050:2025 Table 14-1", "KS K 0050:2025 표 14-1");
+const KS_WOMEN = T({ S: [72, 82], M: [82, 89], L: [89, 98], XL: [98, 109] }, "KS K 0051:2025 Table 14-1", "KS K 0051:2025 표 14-1");
+const KS_MEN_NO = T(fromPoints([80, 85, 90, 95, 100, 105, 110].map((n) => [String(n), n])), "KS K 0050:2025 Table 10", "KS K 0050:2025 표 10");
+const KS_WOMEN_NO = T(fromPoints([75, 80, 85, 90, 95, 100, 105].map((n) => [String(n), n])), "KS K 0051:2025 Table 9", "KS K 0051:2025 표 9");
+// ASTM D6240-24a Table 1 (34..52) and D8077-16(2022) Table 2 (46..64): chest = size, in inches.
+const ASTM_MEN_NO = T(
+  fromPoints([34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 48, 50, 52, 54, 56, 58, 60, 62, 64].map((n) => [String(n), n * 2.54])),
+  "ASTM D6240/D6240M-24a Table 1; ASTM D8077/D8077M-16(2022) Table 2", "ASTM D6240/D6240M-24a 表 1；ASTM D8077/D8077M-16(2022) 表 2",
+);
+// ASTM D5585-21 Table 2 (bust, cm); D7878-23 Petite carries the same busts.
+const ASTM_MISSES = T(
+  fromPoints([["00", 79.06], ["0", 80.65], ["2", 83.82], ["4", 86.68], ["6", 89.54], ["8", 92.08], ["10", 94.62], ["12", 98.43], ["14", 102.55], ["16", 107.0], ["18", 111.76], ["20", 116.84]]),
+  "ASTM D5585-21 Table 2", "ASTM D5585-21 表 2",
+);
+// ASTM D6960/D6960M-16(2023) Table 2 (bust, cm).
+const ASTM_PLUS = T(
+  fromPoints([["14W", 105.41], ["16W", 109.22], ["18W", 114.3], ["20W", 119.38], ["22W", 124.46], ["24W", 129.54], ["26W", 134.62], ["28W", 139.7], ["30W", 144.78], ["32W", 149.86], ["34W", 154.94], ["36W", 160.02], ["38W", 165.1], ["40W", 170.18]]),
+  "ASTM D6960/D6960M-16(2023) Table 2", "ASTM D6960/D6960M-16(2023) 表 2",
+);
+// BS 3666:1982 Table 1 (bust from/to, cm).
+const BS_WOMEN = T(
+  { "8": [78, 82], "10": [82, 86], "12": [86, 90], "14": [90, 94], "16": [95, 99], "18": [100, 104], "20": [105, 109], "22": [110, 114], "24": [115, 119], "26": [120, 124], "28": [125, 129], "30": [130, 134], "32": [135, 139] },
+  "BS 3666:1982 Table 1", "BS 3666:1982 表 1",
+);
+
+function fromTable(t: Table, key: string | null): BodyRange | null {
+  if (!key || !(key in t.ranges)) return null;
+  const [minCm, maxCm] = t.ranges[key];
+  return { minCm, maxCm, evidence: { grade: "A", source: t.source, sourceZh: t.sourceZh } };
+}
+
+/** "XL" as a Japanese label writes it ("LL"), and 2XL..5XL as 3L..; null otherwise. */
+function jisLetter(s: string): string | null {
+  const m: Record<string, string> = { XS: "SS", SS: "SS", S: "S", M: "M", L: "L", XL: "LL", LL: "LL", XXL: "3L", "2XL": "3L", XXXL: "4L", "3XL": "4L", "4XL": "5L", "3L": "3L", "4L": "4L", "5L": "5L", "6L": "6L" };
+  return m[s] ?? null;
+}
+
 /** Regimes whose letter sizes the EN 13402-3 tables describe. */
 const EN_LETTER_REGIMES = new Set<Regime>(["EU", "IT", "FR", "UK"]);
 
@@ -92,8 +178,11 @@ function letterKey(label: string): string | null {
  *   - A Chinese 号型 ("175/96A") reads by GB/T 1335 in any regime: it is a body
  *     measurement written on the label.
  *   - A letter size reads by EN 13402-3 for European regimes.
- *   - Anything else, nothing yet (JIS, KS and ASTM tables are not in hand; brand
- *     guides come in batches as grade B).
+ *   - Japan: JIS L 4004/4005 letters (XL is LL) and women's 号数.
+ *   - Korea: KS K 0050/0051 letters and chest numbers.
+ *   - US: ASTM chest numbers (men), Misses/Petite/Plus numbers (women). No letters.
+ *   - UK women's numbers by BS 3666.
+ *   - Anything else (Chinese letters, US letters, Australia, European numbers), null.
  */
 export function bodyChestFor(
   label: string,
@@ -115,10 +204,33 @@ export function bodyChestFor(
       },
     };
   }
-  if (!regime || !EN_LETTER_REGIMES.has(regime) || domain !== "top") return null;
+  if (!regime || domain !== "top") return null;
+  const womens = line === "womens";
+  const s = label.trim().toUpperCase().replace(/\s+/g, "");
+
+  if (regime === "JP") {
+    const no = s.match(/^(\d{1,2})(?:号|[A-Z]{0,3})$/);
+    if (womens && no) return fromTable(JIS_WOMEN_NO, String(Number(no[1])));
+    return fromTable(womens ? JIS_WOMEN : JIS_MEN, jisLetter(s));
+  }
+  if (regime === "KR") {
+    if (/^\d{2,3}$/.test(s)) return fromTable(womens ? KS_WOMEN_NO : KS_MEN_NO, s);
+    const k = s.replace(/\((P|R|T)\)$/, "");
+    return fromTable(womens ? KS_WOMEN : KS_MEN, k);
+  }
+  if (regime === "US") {
+    const w = s.match(/^(\d{2})W$/);
+    if (w) return fromTable(ASTM_PLUS, `${w[1]}W`);
+    const misses = s.match(/^(00|0|2|4|6|8|10|12|14|16|18|20)P?$/);
+    if (womens && misses) return fromTable(ASTM_MISSES, misses[1]);
+    const men = s.match(/^(\d{2})(?:[SRL]|S|R|L|T)?$/);
+    if (!womens && men) return fromTable(ASTM_MEN_NO, men[1]);
+    return null; // ASTM defines no letter sizes
+  }
+  if (regime === "UK" && womens && /^\d{1,2}$/.test(s)) return fromTable(BS_WOMEN, String(Number(s)));
+  if (!EN_LETTER_REGIMES.has(regime)) return null;
   const k = letterKey(label);
   if (!k) return null;
-  const womens = line === "womens";
   const [minCm, maxCm] = (womens ? EN_WOMEN : EN_MEN)[k];
   return { minCm, maxCm, evidence: EN_SOURCE(womens ? "A.25" : "A.24") };
 }
