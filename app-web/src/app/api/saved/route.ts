@@ -70,7 +70,7 @@ function shape(r: Row) {
 
 /** The user, or a refusal: an extension request never mints an account. */
 async function userFor(req: Request) {
-  const session = readSession();
+  const session = (await readSession());
   if (sessionGate(isExtensionRequest(req.headers), session != null) === "not-connected") {
     const M = engineText(localeFromRequest(req));
     return { error: NextResponse.json({ error: "not-connected", message: M.notConnected }, { status: 401 }) };

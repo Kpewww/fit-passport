@@ -56,19 +56,19 @@ export async function POST(req: Request) {
   // What this browser added before logging in, if it was an unclaimed account of its
   // own: offered, not moved (Session 100). See lib/auth.ts encodeFoldOffer.
   let offer: Holdings | null = null;
-  const before = readSession();
+  const before = (await readSession());
   if (before && before.userId !== user.id) {
     const prev = await prisma.user.findUnique({ where: { id: before.userId }, select: { id: true, claimed: true } });
     if (prev && !prev.claimed) {
       const h = await holdings(prev.id);
       if (holdsAnything(h)) {
         offer = h;
-        cookies().set(FOLD_COOKIE, encodeFoldOffer(prev.id, user.id), { ...COOKIE_OPTS, maxAge: FOLD_OFFER_TTL_MS / 1000 });
+        (await cookies()).set(FOLD_COOKIE, encodeFoldOffer(prev.id, user.id), { ...COOKIE_OPTS, maxAge: FOLD_OFFER_TTL_MS / 1000 });
       }
     }
   }
 
-  setSession({ userId: user.id, canEdit: true });
+  await setSession({ userId: user.id, canEdit: true });
   return NextResponse.json({
     ok: true,
     username: user.username,

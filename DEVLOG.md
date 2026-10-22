@@ -10704,3 +10704,25 @@ Codex (desktop, operating the founder's browser) worked `todo/people/` on branch
 - **npm audit:** Next 14.2.35 carries critical/high advisories fixed only in 15.5.24+ (the 14 line gets
   no more fixes). Exposure on Vercel is limited (no rewrites, no Server Actions, one next/image, no
   remotePatterns), but the upgrade to Next 15 + React 19 is the next engineering item if approved.
+
+## Session 103c (2026-10-22) — Next 14.2.35 to 15.5.28, React 18 to 19
+
+**Why:** Next 14 is out of security support; `npm audit` listed critical (RCE in image optimisation)
+and high advisories fixed only in 15.5.24+.
+
+**What changed:**
+- `cookies()`/`headers()` are async, so the session and locale helpers became async and every caller
+  awaits them (about 45 call sites, mostly route handlers).
+- Dynamic `params` is a Promise: route handlers await it, `/u/[code]` and `/ask/[id]` use `use(params)`.
+- `useAnchoredPanel` takes `RefObject<HTMLElement | null>` (React 19 types).
+- `npm audit fix` for source-map-js.
+
+**Verified locally (production build, `next start`):** typecheck; 1,437 tests; build. A browser
+walk of 21 pages in English, 3 in Chinese (`<html lang="zh">`), session cookie minted on first
+visit, `/api/auth/me`, admin login, `/admin`, `/u/[code]`, `/ask/[id]`, the dynamic APIs,
+a demo `/api/check`, logout. No page errors, no console errors, no server warnings.
+`/api/view/[code]/export` answered 403, which is its rule (export policy "owner").
+
+**Audit after:** 0 critical. 1 high + 1 moderate, both Next's own build-time postcss.
+
+**Cost:** shared First Load JS 87 -> 103 kB (React 19); /closet 136 kB, /check 127 kB.

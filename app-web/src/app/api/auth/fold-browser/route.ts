@@ -18,10 +18,10 @@ const Body = z.object({ accept: z.boolean() });
 export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: say(req, "invalid request") }, { status: 400 });
-  const offer = decodeFoldOffer(cookies().get(FOLD_COOKIE)?.value);
-  cookies().set(FOLD_COOKIE, "", { path: "/", maxAge: 0 });
-  const session = readSession();
-  if (!offer || !session || session.userId !== offer.keep || !canEdit()) {
+  const offer = decodeFoldOffer((await cookies()).get(FOLD_COOKIE)?.value);
+  (await cookies()).set(FOLD_COOKIE, "", { path: "/", maxAge: 0 });
+  const session = (await readSession());
+  if (!offer || !session || session.userId !== offer.keep || !(await canEdit())) {
     return NextResponse.json({ error: say(req, "not allowed") }, { status: 403 });
   }
   if (!parsed.data.accept) return NextResponse.json({ ok: true, moved: null });

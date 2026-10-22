@@ -36,7 +36,7 @@ const Body = z.object({ id: z.string().min(1).max(40), confirm: z.literal("delet
 
 export async function POST(req: Request) {
   const admin = await currentAdmin();
-  if (!admin || !canEdit()) return notAdmin();
+  if (!admin || !(await canEdit())) return notAdmin();
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "invalid" }, { status: 400 });
   const target = await prisma.user.findUnique({ where: { id: parsed.data.id }, select: { id: true, role: true } });

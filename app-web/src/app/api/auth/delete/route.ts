@@ -22,20 +22,20 @@ import { resolveAccount } from "@/lib/accountMerge";
 const Body = z.object({ password: z.string().max(200).optional(), confirm: z.literal("delete") });
 
 export async function POST(req: Request) {
-  const session = readSession();
+  const session = (await readSession());
   if (!session) return NextResponse.json({ error: say(req, "not allowed") }, { status: 403 });
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: say(req, "invalid request") }, { status: 400 });
   const user = await prisma.user.findUnique({ where: { id: await resolveAccount(session.userId) } });
-  if (!user) { clearSession(); return NextResponse.json({ ok: true }); }
+  if (!user) { await clearSession(); return NextResponse.json({ ok: true }); }
   if (user.claimed) {
-    if (!canEdit()) return NextResponse.json({ error: say(req, "not allowed") }, { status: 403 });
+    if (!(await canEdit())) return NextResponse.json({ error: say(req, "not allowed") }, { status: 403 });
     if (!parsed.data.password) return NextResponse.json({ error: say(req, "password required") }, { status: 400 });
     if (!(await verifySecret(parsed.data.password, user.passwordHash))) {
       return NextResponse.json({ error: say(req, "password is incorrect") }, { status: 401 });
     }
   }
   await eraseAccount(user.id);
-  clearSession();
+  await clearSession();
   return NextResponse.json({ ok: true });
 }

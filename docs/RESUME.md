@@ -33,7 +33,7 @@ them. `git checkout -- app-web/package-lock.json` afterwards.
 
 **【沟通约定】全程中文聊天;git commit message 用英文;DEVLOG.md 用英文。**
 
-**技术栈:** Node 24 LTS + **Next.js 14.2.35** App Router + React 18 + TS +
+**技术栈:** Node 24 LTS + **Next.js 15.5.28** App Router + React 19 + TS +
 Tailwind 3 + Prisma 5.22 + SQLite(本地)/ Postgres(生产)+ Zod + Vitest;动效
 Framer Motion(**Lenis 已移除**);three.js 懒加载:徽章 inspect **以及** 3D 人台/松量壳(`BodyMesh3D.tsx`)。
 命令:`npm run dev`、`npm run typecheck`、`npm test`(**637 个 + 1 个诚实跳过;看退出码,不要只看 Tests 那一行**)、`npm run build`、

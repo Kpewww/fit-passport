@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   // Built from the address, not req.url: a self-hosted Next builds req.url from its
   // own hostname, whatever the request's Host was.
-  const session = readSession();
+  const session = (await readSession());
   const hint = req.nextUrl.searchParams.get("h");
   if (session) {
     const same = hint

@@ -11,9 +11,9 @@ import { getLocale } from "@/i18n/server";
 import { DIMS } from "@/lib/bodyEstimate";
 
 export async function GET() {
-  const session = readSession();
+  const session = (await readSession());
   if (!session) return NextResponse.json({ estimates: {} });
-  const locale = getLocale();
+  const locale = (await getLocale());
   const M = engineText(locale);
   const est = await loadBodyEstimate(session.userId);
   const estimates: Record<string, unknown> = {};

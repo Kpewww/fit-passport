@@ -15,13 +15,13 @@ import Link from "next/link";
 import { getT } from "@/i18n/server";
 import { AnimatedFitPassportLogoLazy } from "@/components/AnimatedFitPassportLogoLazy";
 
-export function generateMetadata(): Metadata {
-  const t = getT("extension");
+export async function generateMetadata(): Promise<Metadata> {
+  const t = (await getT("extension"));
   return { title: t("welcome.metaTitle"), robots: { index: false } };
 }
 
-export default function ExtensionWelcomePage() {
-  const t = getT("extension");
+export default async function ExtensionWelcomePage() {
+  const t = (await getT("extension"));
   return (
     <Page width="read">
       {/* The quick reveal: the first thing a new install sees (Session 89). */}

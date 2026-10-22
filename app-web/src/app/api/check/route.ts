@@ -149,7 +149,7 @@ export async function POST(req: Request) {
   // Decide on the session BEFORE anything can create one: `getCurrentUser()`
   // mints an anonymous account for a request without a cookie, which for the
   // extension would mean a silent check against an empty profile.
-  const session = readSession();
+  const session = (await readSession());
   if (sessionGate(isExtensionRequest(req.headers), session != null) === "not-connected") {
     return NextResponse.json({ error: "not-connected", message: M.notConnected }, { status: 401 });
   }

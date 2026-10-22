@@ -9,7 +9,7 @@
 
 import { useLayoutEffect, useState, type CSSProperties, type RefObject } from "react";
 
-export function useAnchoredPanel(open: boolean, anchor: RefObject<HTMLElement>, width: number, maxHeight = 448): CSSProperties | null {
+export function useAnchoredPanel(open: boolean, anchor: RefObject<HTMLElement | null>, width: number, maxHeight = 448): CSSProperties | null {
   const [place, setPlace] = useState<CSSProperties | null>(null);
   useLayoutEffect(() => {
     if (!open) return;

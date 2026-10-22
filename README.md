@@ -140,7 +140,7 @@ print files are *built from*. The mark used to sit under `docs/design/assets/`, 
 made it look optional — it is not, and `src/lib/logoAsset.test.ts` now fails if
 `Logo.tsx` and the master SVG disagree.
 
-**Stack:** Next.js 14.2 · React 18 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
+**Stack:** Next.js 15.5 · React 19 · TypeScript · Tailwind 3 · Prisma 5 · Zod ·
 Vitest (**~730 tests**) · Framer Motion (motion) · three.js (lazy, badge inspect only).
 
 Key design decisions worth knowing before contributing:

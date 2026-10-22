@@ -20,7 +20,7 @@ export async function GET() {
 }
 
 export async function POST() {
-  if (!(await currentAdmin()) || !canEdit()) return notAdmin();
+  if (!(await currentAdmin()) || !(await canEdit())) return notAdmin();
   if (!photoStoreOn()) return NextResponse.json({ error: "store-off" }, { status: 409 });
   return NextResponse.json(await movePhotosBatch(25));
 }

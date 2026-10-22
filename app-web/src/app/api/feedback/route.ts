@@ -27,7 +27,7 @@ export async function POST(req: Request) {
   const parsed = Body.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "invalid", message: say(req, "Write a few words first.") }, { status: 400 });
   const { message, contact, path } = parsed.data;
-  const userId = readSession()?.userId ?? null;
+  const userId = (await readSession())?.userId ?? null;
   const locale = localeFromRequest(req);
   await prisma.feedback.create({ data: { userId, message, contact: contact || null, path: path ?? null, locale } });
   void track("feedback", { userId, path });

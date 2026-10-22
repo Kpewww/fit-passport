@@ -24,7 +24,7 @@ const Body = z.object({
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
-  if (!canEdit()) {
+  if (!(await canEdit())) {
     return NextResponse.json({ error: say(req, "read-only — password required to edit") }, { status: 403 });
   }
   const parsed = Body.safeParse(await req.json());

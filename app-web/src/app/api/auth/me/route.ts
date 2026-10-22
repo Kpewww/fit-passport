@@ -19,6 +19,6 @@ export async function GET() {
     // The nav uses this to show the review queue. It's not a secret — knowing
     // you're an admin doesn't grant anything; lib/admin.ts re-checks server-side.
     role: user.role,
-    canEdit: canEdit(),
+    canEdit: (await canEdit()),
   });
 }

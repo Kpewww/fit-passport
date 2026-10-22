@@ -28,19 +28,19 @@ export const COOKIE_OPTS = {
 };
 
 /** Read + verify the current session payload, or null. */
-export function readSession(): SessionPayload | null {
-  const cookie = cookies().get(SESSION_COOKIE)?.value;
+export async function readSession(): Promise<SessionPayload | null> {
+  const cookie = (await cookies()).get(SESSION_COOKIE)?.value;
   return decodeSession(cookie);
 }
 
 /** Set the session cookie for a user. */
-export function setSession(payload: SessionPayload) {
-  cookies().set(SESSION_COOKIE, encodeSession(payload), COOKIE_OPTS);
+export async function setSession(payload: SessionPayload) {
+  (await cookies()).set(SESSION_COOKIE, encodeSession(payload), COOKIE_OPTS);
 }
 
 /** Clear the session cookie (logout). */
-export function clearSession() {
-  cookies().set(SESSION_COOKIE, "", { ...COOKIE_OPTS, maxAge: 0 });
+export async function clearSession() {
+  (await cookies()).set(SESSION_COOKIE, "", { ...COOKIE_OPTS, maxAge: 0 });
 }
 
 /**
@@ -54,7 +54,7 @@ export function clearSession() {
  * there's genuinely no valid cookie (e.g. an API hit with cookies disabled).
  */
 export async function getCurrentUser() {
-  const session = readSession();
+  const session = (await readSession());
 
   if (session) {
     // Idempotent: create the row for this session id if it doesn't exist yet,
@@ -85,7 +85,7 @@ export async function getCurrentUser() {
       fitProfile: { create: { preferredFit: "regular", region: "US" } },
     },
   });
-  setSession({ userId: user.id, canEdit: true });
+  await setSession({ userId: user.id, canEdit: true });
   return user;
 }
 
@@ -100,7 +100,7 @@ async function followFold<U extends { id: string; mergedIntoId: string | null }>
   const target = await prisma.user.findUnique({ where: { id: await resolveAccount(user.id) } });
   if (!target) return user;
   try {
-    setSession({ userId: target.id, canEdit: session.canEdit });
+    await setSession({ userId: target.id, canEdit: session.canEdit });
   } catch {
     // Outside a route handler the cookie cannot be written; the next request follows again.
   }
@@ -115,6 +115,6 @@ async function followFold<U extends { id: string; mergedIntoId: string | null }>
  * that never touches write endpoints. `canEdit` is surfaced to the UI (via
  * /api/auth/me) and reserved for future viewer-sessions.
  */
-export function canEdit(): boolean {
-  return readSession()?.canEdit ?? false;
+export async function canEdit(): Promise<boolean> {
+  return (await readSession())?.canEdit ?? false;
 }

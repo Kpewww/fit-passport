@@ -38,6 +38,16 @@ Durable build state of the [[project-fit-passport]] web app. **Per-session histo
 
 ---
 
+**SESSION 103 (2026-10-22): Next 15.5.28 + React 19.** Next 14 gets no more security fixes (critical
+advisories fixed only in 15.5.24+). What changed in the code, and the rules from now on:
+- `cookies()` / `headers()` are async. So `readSession`, `setSession`, `clearSession`, `canEdit`
+  (`lib/session.ts`) and `getLocale`, `getT` (`i18n/server.ts`) are **async: always `await` them**.
+  Server components that call `getT` are `async` (Footer, layout, /extension pages, generateMetadata).
+- Dynamic route `params` is a **Promise**: route handlers `await` it; client pages unwrap it with `use(params)`.
+- `RefObject<T>` is `RefObject<T | null>` in React 19 types (`useAnchoredPanel`).
+- Remaining `npm audit` items are Next's bundled build-time postcss 8.4.31: not reachable in production.
+- The shared First Load JS grew 87 -> 103 kB (React 19 itself), so every page's budget moved by that much.
+
 **SESSION 41–42 UPDATE (2026-08-24/25) — the app is LIVE at https://fit-passport.vercel.app.** Stack corrections: **Node 24 LTS** (the "pinned to Node 18.20" line above is a dead constraint from the old Mac), **Next 14.2.35** (security patch — CVE-2025-29927 middleware auth bypass matters here because `src/middleware.ts` is exactly where the session cookie is minted), **Lenis REMOVED** (see [[project-fit-passport-performance]]). **209 tests.**
 
 **NEW INVARIANTS — do not break:**

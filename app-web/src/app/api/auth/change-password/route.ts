@@ -16,7 +16,7 @@ const Body = z.object({
 
 export async function POST(req: Request) {
   const user = await getCurrentUser();
-  if (!user.claimed || !canEdit()) {
+  if (!user.claimed || !(await canEdit())) {
     return NextResponse.json({ error: say(req, "not allowed") }, { status: 403 });
   }
   const parsed = Body.safeParse(await req.json());
