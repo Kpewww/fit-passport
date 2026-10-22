@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { bodyChestFor, regimeForCountry, regimeFromField } from "./sizeRegimes";
+import { isValidSize } from "./sizeSystems";
 
 describe("size regimes", () => {
   it("reads a Chinese 号型 as the body chest it names, by GB/T 1335 (±2 cm, §4.1.3)", () => {
@@ -32,5 +33,11 @@ describe("size regimes", () => {
     expect(regimeForCountry("GB")).toBe("UK");
     expect(regimeForCountry("BR")).toBeNull();
     expect(regimeFromField("de")).toBe("EU");
+  });
+
+  it("lets the closet store a 号型 and 4XL to 6XL", () => {
+    for (const v of ["175/96A", "170/88", "165 / 84B", "4XL", "6XL", "XXXXL"]) expect(isValidSize("tshirt", v)).toBe(true);
+    expect(isValidSize("jeans", "175/80A")).toBe(true);
+    expect(isValidSize("tshirt", "175/")).toBe(false);
   });
 });

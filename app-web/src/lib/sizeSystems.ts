@@ -120,8 +120,14 @@ export function sizeHintFor(category: string): string {
 // Validation patterns per domain. A size is valid if it matches ANY pattern for
 // its domain. Kept permissive (regional systems vary) but strict enough to
 // reject junk like "<", "?", empty, or stray punctuation.
+// A Chinese 号型 ("175/96A", GB/T 1335 §4.5.2) and 4XL–6XL are sizes in every
+// clothing domain (Session 101): the engine reads both (sizeRegimes.ts, sizing.ts).
+const HAO_XING = /^\d{3} ?\/ ?\d{2,3} ?[YABC]?$/i;
+const BIG_ALPHA = /^([2-6] ?XL|X{4,6}L)$/i;
+
 const DOMAIN_PATTERNS: Record<SizeDomain, RegExp[]> = {
   top: [
+    HAO_XING, BIG_ALPHA,
     /^(XXS|XS|S|M|L|XL|XXL|XXXL)$/i,
     /^(XS|S|M|L|XL)\/(XS|S|M|L|XL)$/i, // "M/L"
     /^EU ?\d{2}$/i,
@@ -131,6 +137,7 @@ const DOMAIN_PATTERNS: Record<SizeDomain, RegExp[]> = {
     /^(FR|IT|DE) ?\d{2}$/i, // a women's size by country (womensSizes.ts), Session 88
   ],
   bottom: [
+    HAO_XING, BIG_ALPHA,
     /^(XXS|XS|S|M|L|XL|XXL|XXXL)$/i,
     /^\d{2}$/, // waist "32"
     /^\d{2} ?[x×] ?\d{2}$/i, // "32x32"
@@ -138,6 +145,7 @@ const DOMAIN_PATTERNS: Record<SizeDomain, RegExp[]> = {
     /^EU ?\d{2}$/i,
   ],
   onepiece: [
+    HAO_XING, BIG_ALPHA,
     /^(XXS|XS|S|M|L|XL|XXL|XXXL)$/i,
     /^\d{1,2}$/, // US 0–16, EU 32–48
     /^(EU|UK|US) ?\d{1,2}$/i,

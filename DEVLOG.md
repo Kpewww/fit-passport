@@ -31,6 +31,15 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-21 · Session 101c — The closet accepts a 号型 and 4XL to 6XL
+
+- **What was wrong.** `isValidSize` rejected "175/96A" and "4XL" for tops, bottoms and
+  one-pieces, although the engine now reads both (GB/T 1335 §4.5.2 writes a 号型 as
+  height/girth plus a body type).
+- **The fix.** Both are allowed in those three domains. Tests are in
+  `sizeRegimes.test.ts`.
+- 1,394 tests pass.
+
 ## 2026-10-21 · Session 101b — 7,058 brands, the label-country picker, and sizes to 6XL
 
 - **Brand registry: 4,604 → 7,058 brands** (`scripts/brands/build-registry.mjs`).
