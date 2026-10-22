@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildBodyEvidence } from "./bodyEstimateService";
+import { calibrate, type Observation } from "./brandCalibration";
 
 const piece = (id: string, brand: string, category: string, size: string, fitDirection: number | null, extra = {}) =>
   ({ id, brand, category, size, fitRating: 5, fitDirection, region: null, gender: null, displayName: null, ...extra });
@@ -38,5 +39,16 @@ describe("the body estimate from what is stored (Session 102)", () => {
     expect(r.estimates.height).toMatchObject({ lo: 172.5, hi: 177.5 });
     expect(r.pieceChest.get("t")).toMatchObject({ minCm: 94, maxCm: 98 });
     expect(r.pieceChest.get("j")).toBeNull();
+  });
+
+  it("a US letter: nothing without charts, the consensus once three US brands report it (Session 103)", () => {
+    const tee = piece("u", "Some Co", "tshirt", "M", 0, { region: "US", gender: "mens" });
+    expect(buildBodyEvidence([tee], [], null, []).estimates.chest).toBeUndefined();
+    const o = (b: string, i: number, n: number): Observation =>
+      ({ brand: b, url: `https://${b}.com/p${n}`, line: "mens", label: "M", bodyChestMinCm: 96 + i, bodyChestMaxCm: 104 + i });
+    const reports = calibrate(["A", "B", "C"].flatMap((b, i) => [o(b, i, 1), o(b, i, 2)]), () => "US");
+    const r = buildBodyEvidence([tee], [], null, reports);
+    expect(r.estimates.chest).toMatchObject({ lo: 97, hi: 105 });
+    expect(r.pieceChest.get("u")!.evidence.grade).toBe("B");
   });
 });

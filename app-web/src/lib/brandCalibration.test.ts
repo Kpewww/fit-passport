@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calibrate, usLetterConsensus, type Observation } from "./brandCalibration";
+import { calibrate, usLetterChest, usLetterConsensus, type Observation } from "./brandCalibration";
 
 const o = (brand: string, url: string, label: string, min: number, max: number, line: string | null = "mens"): Observation =>
   ({ brand, url, line, label, bodyChestMinCm: min, bodyChestMaxCm: max });
@@ -33,7 +33,22 @@ describe("brand calibration", () => {
     const two = calibrate(["A", "B"].flatMap((b) => [o(b, `${b}1`, "M", 96, 104), o(b, `${b}2`, "M", 96, 104)]), country);
     expect(usLetterConsensus(two, "mens")).toEqual({});
     const three = calibrate(["A", "B", "C"].flatMap((b, i) => [o(b, `${b}1`, "M", 96 + i, 104 + i), o(b, `${b}2`, "M", 96 + i, 104 + i)]), country);
-    expect(usLetterConsensus(three, "mens")).toEqual({ M: { midCm: 101, brands: 3 } });
+    expect(usLetterConsensus(three, "mens")).toEqual({ M: { midCm: 101, minCm: 97, maxCm: 105, brands: 3 } });
+  });
+
+  it("reads a US letter by the brand's own charts first, then the consensus, else nothing", () => {
+    const obs = ["A", "B", "C"].flatMap((b, i) => [o(b, `${b}1`, "M", 96 + i, 104 + i), o(b, `${b}2`, "M", 96 + i, 104 + i)]);
+    const rs = calibrate(obs, country);
+    expect(usLetterChest(rs, "b", "M", "mens")).toMatchObject({ minCm: 97, maxCm: 105, evidence: { grade: "B" } });
+    expect(usLetterChest(rs, "b", "M", "mens")!.evidence.source).toContain("B's own");
+    const other = usLetterChest(rs, "Unknown Co", "m", "mens");
+    expect(other).toMatchObject({ minCm: 97, maxCm: 105 });
+    expect(other!.evidence.source).toContain("3 US brands");
+    expect(usLetterChest(rs, "Unknown Co", "L", "mens")).toBeNull();
+    expect(usLetterChest(rs, "Unknown Co", "M", "womens")).toBeNull();
+    expect(usLetterChest(rs, "A", "32", "mens")).toBeNull();
+    const two = calibrate(obs.filter((x) => x.brand !== "C"), country);
+    expect(usLetterChest(two, "Unknown Co", "M", "mens")).toBeNull();
   });
 });
 

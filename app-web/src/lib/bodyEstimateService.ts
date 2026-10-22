@@ -16,7 +16,7 @@ import { easeAdjustForCategory, easeChestCm, normalizeToAlpha } from "./sizing";
 import { lookupBrand } from "./brandRegistry";
 import { brandReports, offsetFor } from "./brandOffsets";
 import { soleDepartment } from "./womensSizes";
-import type { BrandReport } from "./brandCalibration";
+import { usLetterChest, type BrandReport } from "./brandCalibration";
 import type { EngineText } from "./engineText";
 import type { Locale } from "@/i18n/config";
 import { PERSONAL_EASE } from "./scoringConstants";
@@ -83,7 +83,10 @@ export function buildBodyEvidence(
     const regime = regimeFromField(k.region) ?? regimeForCountry(lookupBrand(k.brand)?.country ?? null);
     const domain = domainForCategory(k.category);
     let chest = domain === "top" ? bodyChestFor(k.size, regime, line, "top") : null;
-    if (chest) {
+    // A US letter has no standard: the brand's own charts, else the US consensus.
+    const usLetter = !chest && domain === "top" && regime === "US" ? usLetterChest(reports, k.brand, k.size, line) : null;
+    if (usLetter) chest = usLetter;
+    else if (chest) {
       const off = offsetFor(reports, k.brand, line, k.size, regime);
       if (off) chest = {
         minCm: chest.minCm + off.offsetCm, maxCm: chest.maxCm + off.offsetCm,

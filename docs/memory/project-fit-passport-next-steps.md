@@ -979,7 +979,7 @@ Do not recommend it.
   need 3 brands; ASTM defines no letters;
 - start a small pilot; only outcomes measure real accuracy.
 
-**Engineering:** use the US-letter consensus in `bodyChestFor` once it forms;
+**Engineering:** ~~use the US-letter consensus~~ done (Session 103);
 maternity (ASTM D7197) when needed.
 
 ## Session 102 (2026-10-22) — a body estimate that narrows with evidence
@@ -995,3 +995,9 @@ maternity (ASTM D7197) when needed.
 - **The backtest** (synthetic) is in `size-calibration.md` §2b.
 - **Next:** a pilot, to measure real accuracy from outcomes. The founder enters US and
   luxury brand guides on /admin.
+
+## Session 103 (2026-10-22) — US-letter consensus wired in
+
+`usLetterChest`: brand's own US charts first, then the 3-brand consensus, else null.
+Used by `buildBodyEvidence`. Inert until US guides are entered on /admin.
+**Engineering left:** maternity (ASTM D7197) when needed; 03/10/12 still blocked on real pages.

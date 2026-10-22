@@ -10669,3 +10669,21 @@ app-web/src/components/Nav.tsx
 app-web/tailwind.config.ts, postcss.config.mjs, next.config.mjs, .eslintrc.json
 DEVLOG.md, README.md, .gitignore              (created)
 ```
+
+## Session 103 (2026-10-22) — US letters read by brand charts, then a consensus
+
+- **Shipped:** `usLetterChest` (`brandCalibration.ts`). ASTM defines no US letter sizes,
+  so a US closet piece labelled M used to give no chest at all. Now, grade B:
+  1. the brand's own US charts for that letter (median of the observed range ends);
+  2. else the median of `MIN_BRANDS_FOR_CONSENSUS` (3) US brands' charts;
+  3. else null, as before. Never guessed.
+- `BrandSizeRow` keeps `medianMinCm` / `medianMaxCm`, so a consensus has a width, not
+  only a midpoint. `usLetterConsensus` returns them too (/admin ignores the extra fields).
+- Wired into `buildBodyEvidence`, so the passport estimate and the check use it. The
+  reason names the source ("B's own US size charts" / "the median of 3 US brands").
+- Tests: brand-first, consensus, below-threshold null, other line null, numbers untouched;
+  a service test where a US M gives nothing, then 97–105 once three brands report.
+- **Live effect is zero until the founder enters US brand guides on /admin** — the
+  mechanism switches on by itself as data arrives.
+- **Next:** pilot; US/luxury guides on /admin; Codex handles the people/ tasks
+  (captures, Redis/Blob checks, truth drafts — drafts only, humans verify).
