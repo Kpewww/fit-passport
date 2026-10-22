@@ -142,6 +142,14 @@ export type KnownGoodInput = {
   id?: string;
   /** What the wearer calls it ("Ribbed cardigan") — named in the reason, and its style words compared. */
   name?: string | null;
+  /**
+   * The BODY chest this piece's label is cut for, read by its country's standard
+   * (sizeRegimes.ts), possibly corrected by the brand's own charts
+   * (brandCalibration.ts). Session 101h: with it, a cross-brand anchor is placed on
+   * the product's ladder by centimetres, not by its letter, so a Japanese XL is no
+   * longer read as an American XL.
+   */
+  bodyChest?: { minCm: number; maxCm: number } | null;
 };
 
 export type OutcomeInput = {
@@ -176,6 +184,10 @@ export type EngineInput = {
     /** Where an estimated chest came from, when it came from the closet's labels read
      *  by a size standard (closetChest.ts, Session 101). Shown as a context reason. */
     chestNote?: string | null;
+    /** The waist, likewise, when it came from closet bottoms' labels (Session 101h). */
+    waistNote?: string | null;
+    /** True when the waist above is that estimate, not the wearer's own. */
+    waistIsEstimated?: boolean;
   };
   product: {
     brand?: string | null;
@@ -536,6 +548,34 @@ function anchorIndexByMeasurement(
   return bestIdx;
 }
 
+/**
+ * Where a piece whose label means a body chest (kg.bodyChest) sits on this product's
+ * ladder: the size whose body range holds the piece's middle, or, on a garment
+ * chart, the size whose chest is closest to that body plus a regular ease for the
+ * product's type. Null when either side has no numbers; the caller falls back to
+ * the label.
+ */
+function anchorIndexByBody(
+  kg: KnownGoodInput,
+  sizes: SizeOptionInput[],
+  category: string | null | undefined,
+  line?: string | null,
+): number | null {
+  if (!kg.bodyChest) return null;
+  const mid = (kg.bodyChest.minCm + kg.bodyChest.maxCm) / 2;
+  let bestIdx: number | null = null;
+  let bestDelta = Infinity;
+  for (const s of sizes) {
+    const idx = alphaIndex(normalizeToAlpha(s.label, line));
+    if (idx === null) continue;
+    let delta: number | null = null;
+    if (s.bodyChestMinCm != null && s.bodyChestMaxCm != null) delta = Math.abs((s.bodyChestMinCm + s.bodyChestMaxCm) / 2 - mid);
+    else if (s.chestCm != null) delta = Math.abs(s.chestCm - (mid + easeChestCm("regular") + easeAdjustForCategory(category)));
+    if (delta != null && delta < bestDelta) { bestDelta = delta; bestIdx = idx; }
+  }
+  return bestIdx;
+}
+
 function scoreKnownGood(
   size: SizeOptionInput,
   product: EngineInput["product"],
@@ -593,7 +633,9 @@ function scoreKnownGood(
     // Same-brand anchors are left on the label deliberately: within one brand the
     // ladder already lines up, and the label is what the wearer will recognise in
     // the explanation.
-    const byMeasure = strong ? null : anchorIndexByMeasurement(kg, allSizes, product.gender);
+    const byMeasure = strong
+      ? null
+      : anchorIndexByMeasurement(kg, allSizes, product.gender) ?? anchorIndexByBody(kg, allSizes, product.category, product.gender);
     const baseIdx = byMeasure ?? kgIdx;
     const targetIdx = (strong ? baseIdx + preferenceShift(pref) : baseIdx) + dirShift;
     const dist = Math.abs(sizeIdx - targetIdx);
@@ -1090,6 +1132,7 @@ export function recommend(
     // can SEE that their closet changed the question, which is the whole
     // explainability contract. A hidden adjustment is the black box we refuse to be.
     if (profile.chestNote) reasons.push({ signal: "preference", weight: 0, message: profile.chestNote });
+    if (profile.waistNote) reasons.push({ signal: "preference", weight: 0, message: profile.waistNote });
     if (easeUsed.personalised && easeUsed.reason) {
       reasons.push({ signal: "preference", weight: 0, message: easeUsed.reason });
     }
@@ -1200,7 +1243,7 @@ export function recommend(
 
   // A regional-average body is a prior, not a fact — cap confidence so the number
   // can never imply we know the user's measurements.
-  if (profile.chestIsEstimated) {
+  if (profile.chestIsEstimated || profile.waistIsEstimated) {
     for (const r of ranked) r.confidence = Math.min(r.confidence, CONFIDENCE_CAPS.estimatedBody);
   }
   // Measurements that describe no plausible body get the same ceiling as a guessed

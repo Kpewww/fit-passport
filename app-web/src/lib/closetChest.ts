@@ -7,7 +7,7 @@
 // estimate is the overlap of those pieces' ranges; pieces that do not overlap give
 // none, rather than an average of two contradicting bodies.
 
-import { bodyChestFor, regimeForCountry, regimeFromField, type BodyRange, type Regime } from "./sizeRegimes";
+import { bodyChestFor, bodyWaistFor, regimeForCountry, regimeFromField, type BodyRange, type Regime } from "./sizeRegimes";
 import { domainForCategory } from "./sizeSystems";
 
 export type ClosetPiece = {
@@ -19,6 +19,8 @@ export type ClosetPiece = {
   region?: string | null;
   gender?: string | null;
   name?: string | null;
+  /** A range already read for this piece (with any brand calibration); undefined = read it here. */
+  body?: BodyRange | null;
 };
 
 export type ClosetChest = {
@@ -40,7 +42,29 @@ export function chestFromCloset(
   for (const p of pieces) {
     if (domainForCategory(p.category) !== "top" || !fits(p)) continue;
     const regime = regimeFromField(p.region) ?? regimeForCountry(countryOfBrand(p.brand));
-    const range = bodyChestFor(p.size, regime, p.gender, "top");
+    const range = p.body !== undefined ? p.body : bodyChestFor(p.size, regime, p.gender, "top");
+    if (range) used.push({ piece: p, regime, range });
+  }
+  if (!used.length) return null;
+  const lo = Math.max(...used.map((u) => u.range.minCm));
+  const hi = Math.min(...used.map((u) => u.range.maxCm));
+  if (lo > hi) return null;
+  return { chestCm: Math.round(((lo + hi) / 2) * 10) / 10, lo, hi, used };
+}
+
+/**
+ * The same for the waist, from bottoms (Session 101h): the overlap of the waist
+ * ranges their labels are cut for, by JIS, KS or a GB/T 1335 号型.
+ */
+export function waistFromCloset(
+  pieces: ClosetPiece[],
+  countryOfBrand: (brand: string) => string | null,
+): ClosetChest | null {
+  const used: ClosetChest["used"] = [];
+  for (const p of pieces) {
+    if (domainForCategory(p.category) !== "bottom" || !fits(p)) continue;
+    const regime = regimeFromField(p.region) ?? regimeForCountry(countryOfBrand(p.brand));
+    const range = bodyWaistFor(p.size, regime, p.gender);
     if (range) used.push({ piece: p, regime, range });
   }
   if (!used.length) return null;

@@ -235,6 +235,43 @@ export function bodyChestFor(
   return { minCm, maxCm, evidence: EN_SOURCE(womens ? "A.25" : "A.24") };
 }
 
+// Waist, for bottoms (Session 101h). The same tables' waist rows, read from the same
+// rendered pages: JIS L 4004 Table 16, JIS L 4005 Table 15, KS K 0050/0051 Table 14-2,
+// and the 型 of a bottoms 号型 (GB/T 1335 §3.2: 型 is the waist for bottoms; §4.1.4
+// grades waist in 4 or 2 cm, so ±2 cm covers either series).
+const JIS_MEN_WAIST = T(
+  { SS: [60, 68], S: [68, 76], M: [76, 84], L: [84, 94], LL: [94, 104], "3L": [104, 114], "4L": [114, 124], "5L": [124, 134] },
+  "JIS L 4004:2023 Table 16", "JIS L 4004:2023 表 16",
+);
+const JIS_WOMEN_WAIST = T(
+  { SS: [52, 58], S: [58, 64], M: [64, 70], L: [69, 77], LL: [77, 85], "3L": [85, 93], "4L": [93, 101], "5L": [101, 109], "6L": [109, 117] },
+  "JIS L 4005:2023 Table 15", "JIS L 4005:2023 表 15",
+);
+const KS_MEN_WAIST = T({ M: [70, 80], L: [80, 90], XL: [90, 99] }, "KS K 0050:2025 Table 14-2", "KS K 0050:2025 표 14-2");
+const KS_WOMEN_WAIST = T({ S: [58, 69], M: [69, 77], L: [77, 88], XL: [88, 101] }, "KS K 0051:2025 Table 14-2", "KS K 0051:2025 표 14-2");
+
+/** The body waist a bottoms label is cut for, or null when no standard says. */
+export function bodyWaistFor(label: string, regime: Regime | null, line: string | null | undefined): BodyRange | null {
+  const womens = line === "womens";
+  const code = label.trim().match(/^(\d{3})\s*\/\s*(\d{2,3})\s*([YABC])?$/i);
+  if (code) {
+    const height = Number(code[1]), girth = Number(code[2]);
+    if (height < 140 || height > 210 || girth < 40 || girth > 140) return null;
+    return {
+      minCm: girth - 2, maxCm: girth + 2,
+      evidence: {
+        grade: "A",
+        source: `GB/T 1335.${womens ? 2 : 1}-2008 §3.2, §4.1.4`,
+        sourceZh: `GB/T 1335.${womens ? 2 : 1}-2008 第 3.2、4.1.4 条`,
+      },
+    };
+  }
+  const s = label.trim().toUpperCase().replace(/\s+/g, "");
+  if (regime === "JP") return fromTable(womens ? JIS_WOMEN_WAIST : JIS_MEN_WAIST, jisLetter(s));
+  if (regime === "KR") return fromTable(womens ? KS_WOMEN_WAIST : KS_MEN_WAIST, s.replace(/\((P|R|T)\)$/, ""));
+  return null;
+}
+
 export const REGIME_NAME: Record<Regime, { en: string; zh: string }> = {
   CN: { en: "Chinese", zh: "中国" },
   JP: { en: "Japanese", zh: "日本" },

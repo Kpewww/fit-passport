@@ -45,7 +45,7 @@ function backtest(regime: Regime) {
     const after = recommend({
       profile: { preferredFit: "regular", chestCm: est?.chestCm ?? null, chestIsEstimated: true },
       product: { category: "tshirt", brand: "Nike" }, sizes: target as never,
-      knownGood: [{ brand: "Other", category: "tshirt", size: asAlpha(label), fitRating: 5 }], outcomes: [],
+      knownGood: [{ brand: "Other", category: "tshirt", size: asAlpha(label), fitRating: 5, bodyChest: bodyChestFor(label, regime, "mens") }], outcomes: [],
     }, { skipStability: true }).best.label;
     if (before === right) beforeHit++;
     if (after === right) afterHit++;

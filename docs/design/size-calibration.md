@@ -85,8 +85,32 @@ standard, in cm and in size steps.
 
 **Where to read it.** On /admin, under "Brand calibration".
 
-**Not yet done.** The engine does not use the brand offsets yet. Wiring them in
-(grade B, above the standard) is the next step, once enough brands pass the minimum.
+**Wired in.** The engine uses the brand offsets since Session 101h (see 3b).
+
+## 3b. Wired in (Session 101h)
+
+**How it flows into a check:**
+- A closet piece's label is read by its market's standard (`sizeRegimes.ts`).
+- It is then shifted by its brand's own charts **for the same market**
+  (`brandOffsets.ts`). The evidence becomes grade B, and the brand and page count are
+  named.
+- The piece is placed on the product's ladder by centimetres (`anchorIndexByBody`,
+  `fitEngine.ts`), not by its letter.
+
+**Markets.** A page's market is read from its address (`marketOf`: `/us/`, `.co.jp`…).
+- The local data showed why this matters: uniqlo.com/us pages sat a full JIS step above
+  JIS.
+- So the US pages calibrate only US-bought pieces, and a JP-bought Uniqlo is untouched
+  by them.
+
+**Admin entry.** Brands' own guides can be typed in on /admin ("Enter a brand's size
+guide"). Such a guide counts as official and brand-wide, so it needs no page minimum.
+
+**Bottoms.**
+- Waist is read by JIS Tables 15/16, KS K 0050/0051 Table 14-2, and a bottoms 号型
+  (GB/T 1335 §3.2, §4.1.4).
+- With no waist on file, closet bottoms give an estimate (`waistFromCloset`). It is
+  capped like any estimated body.
 
 ## 4. Standards
 

@@ -36,3 +36,45 @@ describe("brand calibration", () => {
     expect(usLetterConsensus(three, "mens")).toEqual({ M: { midCm: 101, brands: 3 } });
   });
 });
+
+import { offsetFor } from "./brandOffsets";
+describe("brand offsets at check time", () => {
+  const reports = calibrate([o("Zara", "z1", "M", 102, 110), o("Zara", "z2", "M", 102, 110), o("Zara", "z1", "L", 110, 118), o("Zara", "z2", "L", 110, 118)], country);
+  it("uses the label's own offset, else the brand's median", () => {
+    expect(offsetFor(reports, "zara", "mens", "M", "EU")).toEqual({ offsetCm: 8, pages: 2 });
+    expect(offsetFor(reports, "Zara", "mens", "XL", "EU")).toEqual({ offsetCm: 8, pages: 2 });
+    expect(offsetFor(reports, "Zara", "womens", "M", "EU")).toBeNull();
+    expect(offsetFor(reports, "Unknown", "mens", "M", "EU")).toBeNull();
+    expect(offsetFor(reports, "Zara", "mens", "M", "JP")).toBeNull(); // another market's pages say nothing
+  });
+});
+
+describe("an official brand-wide guide (Session 101h)", () => {
+  it("speaks for the brand alone, without the page minimum", () => {
+    const [r] = calibrate([{ ...o("A", "https://a.example/size-guide", "M", 96, 104), official: true }], country);
+    expect(r).toMatchObject({ brand: "A", pages: 1 });
+    expect(r.sizes[0]).toMatchObject({ label: "M", medianMidCm: 100 });
+  });
+});
+
+import { marketOf } from "./brandCalibration";
+describe("markets (Session 101h): a brand's US pages do not calibrate its Japanese labels", () => {
+  it("reads the market from the address", () => {
+    expect(marketOf("https://www.uniqlo.com/us/en/products/E1")).toBe("US");
+    expect(marketOf("https://www.uniqlo.com/jp/ja/products/E1")).toBe("JP");
+    expect(marketOf("https://www.muji.com.cn/x")).toBe("CN");
+    expect(marketOf("https://www.zara.com/kr/ko/x")).toBe("KR");
+    expect(marketOf("https://shop.example.co.uk/x")).toBe("GB");
+    expect(marketOf("https://www.nike.com/size-fit/mens-tops")).toBeNull();
+  });
+  it("calibrates each market against its own standard", () => {
+    const rs = calibrate([
+      o("Uniqlo", "https://www.uniqlo.com/us/en/p1", "M", 96, 104), o("Uniqlo", "https://www.uniqlo.com/us/en/p2", "M", 96, 104),
+      o("Uniqlo", "https://www.uniqlo.com/jp/ja/p1", "M", 88, 96), o("Uniqlo", "https://www.uniqlo.com/jp/ja/p2", "M", 88, 96),
+    ], country);
+    const jp = rs.find((r) => r.regime === "JP")!, us = rs.find((r) => r.regime === "US")!;
+    expect(jp.runs).toBe(0);
+    expect(us.runs).toBeNull(); // US letters have no standard
+    expect(offsetFor(rs, "Uniqlo", "mens", "M", "JP")).toEqual({ offsetCm: 0, pages: 2 });
+  });
+});

@@ -52,4 +52,16 @@ describe("two closet pieces that disagree", () => {
     expect(out.undetermined).toBe(false);
     expect(["L", "XL"]).toContain(out.best.label);
   });
+
+  it("the Muji piece itself votes by centimetres (Session 101h), not by its letter", () => {
+    const withBody = [{ ...closet[0], bodyChest: { minCm: 104, maxCm: 112 } }, closet[1]];
+    const out = recommend({
+      profile: { chestCm: 108, chestIsEstimated: true, preferredFit: "regular" },
+      product: { category: "hoodie" }, sizes, knownGood: withBody, outcomes: [],
+    });
+    expect(out.best.label).toBe("L");
+    const l = out.ranked.find((r) => r.label === "L")!;
+    // The Muji anchor now points at L: body 108 + regular hoodie ease is nearest L's 124.5 cm.
+    expect(l.reasons.some((r) => r.signal === "known-good" && r.itemId === "muji" && r.weight > 0)).toBe(true);
+  });
 });

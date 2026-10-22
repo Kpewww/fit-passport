@@ -41,3 +41,18 @@ describe("chest from the closet's labels", () => {
     expect(registrySize()).toBeGreaterThan(4000);
   });
 });
+
+import { waistFromCloset } from "./closetChest";
+import { bodyWaistFor } from "./sizeRegimes";
+describe("waist from the closet's bottoms (Session 101h)", () => {
+  it("reads JIS, KS and a 号型 waist", () => {
+    expect(bodyWaistFor("M", "JP", "mens")).toMatchObject({ minCm: 76, maxCm: 84 });
+    expect(bodyWaistFor("L", "KR", "womens")).toMatchObject({ minCm: 77, maxCm: 88 });
+    expect(bodyWaistFor("175/80A", null, "mens")).toMatchObject({ minCm: 78, maxCm: 82 });
+    expect(bodyWaistFor("M", "US", "mens")).toBeNull();
+  });
+  it("estimates from bottoms only", () => {
+    expect(waistFromCloset([{ brand: "Uniqlo", category: "jeans", size: "M", fitRating: 5 }], country)).toMatchObject({ lo: 76, hi: 84, chestCm: 80 });
+    expect(waistFromCloset([{ brand: "Uniqlo", category: "tshirt", size: "M", fitRating: 5 }], country)).toBeNull();
+  });
+});

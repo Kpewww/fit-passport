@@ -737,3 +737,23 @@ model Feedback {
 
   @@index([createdAt])
 }
+
+/// A brand's own published size guide, typed in by an admin from the brand's page
+/// (Session 101h). The route fetch-strategy.md §2 allows for a site that refuses a
+/// program: a person opens the page and enters the numbers. Grade B evidence
+/// (sizeRegimes.ts); feeds brand calibration as an official, brand-wide chart.
+model BrandChartEntry {
+  id         String   @id @default(cuid())
+  brand      String
+  line       String   // "mens" | "womens"
+  kind       String   // "body" | "garment"
+  units      String   // "in" | "cm", as the page printed them
+  sourceUrl  String
+  capturedAt DateTime
+  enteredBy  String?  // the admin's user id
+  rowsJson   String   // [{ label, chestMin, chestMax, waistMin, waistMax }] in `units`
+  note       String?
+  createdAt  DateTime @default(now())
+
+  @@index([brand])
+}

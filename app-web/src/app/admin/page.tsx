@@ -20,6 +20,7 @@ import { PilotPanel } from "./PilotPanel";
 import { DeleteAccount } from "./DeleteAccount";
 import { MovePhotos } from "./MovePhotos";
 import { BrandCalibration } from "./BrandCalibration";
+import { BrandChartForm } from "./BrandChartForm";
 
 type Item = {
   kind: "POST" | "ANSWER" | "OUTFIT";
@@ -115,6 +116,7 @@ export default function AdminPage() {
         <DeleteAccount />
         <MovePhotos />
         <BrandCalibration />
+        <BrandChartForm />
 
         {data.items.length === 0 ? (
           <Card className="mt-6 bg-paper-soft text-center">

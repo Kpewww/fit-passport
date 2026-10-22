@@ -47,6 +47,7 @@ const ARGS: Args = {
   alternative: ["L", "bigger"],
   undeterminedHelp: null,
   closetTie: ["Uniqlo XL", "COS M"],
+  closetWaist: [{ pieces: ["COS M"], lo: 76, hi: 84, sources: ["JIS L 4004:2023 表 16"] }],
   closetChest: [{ pieces: ["COS M"], lo: 94, hi: 102, sources: ["EN 13402-3:2017 附录 A 表 A.24（欧洲标准示例）"] }],
   limitedData: null,
   crossDomain: [["bottom", "shoe"], "top"],
@@ -90,7 +91,7 @@ function render(M: EngineText): Array<[string, string]> {
 // above, size labels, units, and the product's own name.
 const SAME_IN_BOTH = new Set(["Uniqlo", "COS", "XL", "XXL", "cm", "Polo", "AI", "Fit", "Passport", "Cookie", "JPEG", "PNG", "WebP", "MB",
   // A standard is cited by its own number in both languages (sizeRegimes.ts).
-  "EN", "GB"]);
+  "EN", "GB", "JIS"]);
 const englishWords = (s: string) => (s.match(/[A-Za-z]{2,}/g) ?? []).filter((w) => !SAME_IN_BOTH.has(w));
 // The copy spec writes "T 恤" and "Polo 衫" with the space, like every Latin letter
 // beside a Chinese one.

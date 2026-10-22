@@ -31,6 +31,42 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-22 · Session 101h — Verified on production; brand calibration and bottoms wired in; brand-guide entry
+
+- **Verified on production first.** The founder's case was run in a fresh anonymous
+  session: Muji XL + Rythm M in the closet, no chest on file, the Independent Trading
+  chart uploaded. It answers L, citing JIS L 4004 Table 16.
+  - **One flaw seen.** The Muji piece still voted by its LETTER ("1 size from your
+    Muji XL"), and the conflict note said "your closet says M".
+  - **A slip in the verify script.** A fixed Cookie header had wiped the session, so
+    the first run showed a tie. The script was fixed and the run repeated; nothing was
+    wrong on the site.
+- **Pieces vote by centimetres.** `KnownGoodInput.bodyChest` carries the body range a
+  label is cut for. `anchorIndexByBody` places a cross-brand piece on the product's
+  ladder by that range: it matches the size whose body range holds the range's middle,
+  or, on a garment chart, the size nearest that middle plus regular ease. A piece with
+  no standard (an unknown brand) stays on its letter.
+- **Brand calibration in the engine** (`brandOffsets.ts`). The reports are cached for
+  10 minutes. A piece's standard range is shifted by its brand's offset in the **same
+  market**. The evidence becomes grade B, naming the brand and its page count.
+- **Markets** (`marketOf`). Calibration is per brand, line and market, read from the
+  page address. The local data showed why: uniqlo.com/us pages sat +1 JIS step above
+  JIS, so before this a JP-bought Uniqlo M would have been inflated by its US site.
+  Tested.
+- **Bottoms.** `bodyWaistFor`: JIS L 4004 Table 16 / L 4005 Table 15 waist rows, KS K
+  0050/0051 Table 14-2 (read from the rendered page), and a bottoms 号型 by GB/T 1335
+  §3.2/§4.1.4. `waistFromCloset` estimates a waist when none is on file. It shows as a
+  context reason on bottoms products, and its confidence is capped (`waistIsEstimated`).
+- **Brand-guide entry on /admin.** The new `BrandChartEntry` table has a hand-written
+  additive migration, `20261022120000_brand_chart_entries`.
+  - `/api/admin/brand-charts` takes a guide typed from the brand's own page: the
+    https address is required, units are kept as printed, and the rows are checked.
+  - An entered or curated guide counts as `official`: it speaks for the brand without
+    the page minimum.
+  - Checked in a production build: a made-up guide was entered, listed, appeared in
+    calibration, and was removed.
+- 1,417 tests pass; /admin is 108 kB first load.
+
 ## 2026-10-22 · Session 101g — The corrected list of sizing standards
 
 **What changed.** `docs/design/sizing-standards-list.md` replaces every earlier list.
