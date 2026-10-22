@@ -10738,3 +10738,14 @@ a demo `/api/check`, logout. No page errors, no console errors, no server warnin
   side verdicts, and hit rate by stated confidence (is 80% confidence 80% right?).
 - Verified on a local production build with three real check + outcome flows: 1 hit, 1 miss, 1 right side,
   as constructed; EN and ZH screenshots, no page errors.
+
+## Session 103e (2026-10-22) — reporting a purchase from a check is one choice
+
+/check's "record what happened" link now carries the product and the size it answered
+(`/history?product=…&size=…`), and /history pre-fills both. Before, it opened an empty form: pick the
+product from a list, type the size again. Verified in a browser: anonymous (no size answered) pre-selects
+the product only; logged in, product + "M".
+
+**Open, for the founder:** "Bought it" on the to-buy list moves the piece into the closet but records no
+FitOutcome, so the extension's main buying path never reaches the accuracy panel (or outcome learning).
+Recording a "keep" outcome there would change what the engine learns from; not done without a decision.
