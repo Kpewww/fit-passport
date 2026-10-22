@@ -15,7 +15,7 @@
 // and, where the brand's country has a standard (sizeRegimes.ts), how far that sits
 // from the standard, in cm and in the standard's own size steps.
 
-import { bodyChestFor, regimeForCountry, type Regime } from "./sizeRegimes";
+import { bodyChestFor, regimeForCountry, type BodyRange, type Regime } from "./sizeRegimes";
 
 export const MIN_PAGES = 2;
 
@@ -64,6 +64,9 @@ export type BrandSizeRow = {
   label: string;
   pages: number;
   medianMidCm: number;
+  /** Medians of the observed range ends: the width a brand gives this size. */
+  medianMinCm: number;
+  medianMaxCm: number;
   /** The standard's range for this label in the brand's regime, when one exists. */
   standard: { minCm: number; maxCm: number; source: string } | null;
   /** Brand median minus the standard's midpoint, cm; positive = the brand runs larger. */
@@ -128,6 +131,8 @@ export function calibrate(
       const width = std ? std.maxCm - std.minCm : null;
       sizes.push({
         label, pages, medianMidCm: r1(mid),
+        medianMinCm: r1(median(os.map((o) => o.bodyChestMinCm))),
+        medianMaxCm: r1(median(os.map((o) => o.bodyChestMaxCm))),
         standard: std ? { minCm: std.minCm, maxCm: std.maxCm, source: std.evidence.source } : null,
         offsetCm: stdMid != null ? r1(mid - stdMid) : null,
         offsetSteps: stdMid != null && width ? Math.round(((mid - stdMid) / width) * 100) / 100 : null,
@@ -148,9 +153,61 @@ export function calibrate(
  */
 export function usLetterConsensus(reports: BrandReport[], line: "mens" | "womens") {
   const us = reports.filter((r) => r.regime === "US" && r.line === line);
-  const per = new Map<string, number[]>();
-  for (const r of us) for (const s of r.sizes) per.set(s.label, [...(per.get(s.label) ?? []), s.medianMidCm]);
-  const out: Record<string, { midCm: number; brands: number }> = {};
-  for (const [label, mids] of per) if (mids.length >= MIN_BRANDS_FOR_CONSENSUS) out[label] = { midCm: r1(median(mids)), brands: mids.length };
+  const per = new Map<string, BrandSizeRow[]>();
+  for (const r of us) for (const s of r.sizes) per.set(s.label, [...(per.get(s.label) ?? []), s]);
+  const out: Record<string, { midCm: number; minCm: number; maxCm: number; brands: number }> = {};
+  for (const [label, rows] of per) {
+    if (rows.length < MIN_BRANDS_FOR_CONSENSUS) continue;
+    out[label] = {
+      midCm: r1(median(rows.map((x) => x.medianMidCm))),
+      minCm: r1(median(rows.map((x) => x.medianMinCm))),
+      maxCm: r1(median(rows.map((x) => x.medianMaxCm))),
+      brands: rows.length,
+    };
+  }
   return out;
+}
+
+const US_LETTERS = new Set(["XXS", "XS", "S", "M", "L", "XL", "XXL", "3XL", "4XL", "5XL", "6XL"]);
+
+/**
+ * The body chest a US letter is cut for (Session 103). ASTM defines no letters, so
+ * there is no grade A answer; grade B comes from charts:
+ *   1. the brand's own US charts for that letter, when the brand has a report;
+ *   2. else the consensus of MIN_BRANDS_FOR_CONSENSUS US brands' charts;
+ *   3. else null: never guessed.
+ */
+export function usLetterChest(
+  reports: BrandReport[],
+  brand: string,
+  label: string,
+  line: string | null | undefined,
+): BodyRange | null {
+  const key = normLabel(label);
+  if (!US_LETTERS.has(key)) return null;
+  const ln = line === "womens" ? "womens" : "mens";
+  const own = reports.find((r) => r.regime === "US" && r.line === ln && r.brand.toLowerCase() === brand.trim().toLowerCase());
+  const row = own?.sizes.find((s) => s.label === key);
+  if (row && row.medianMaxCm > row.medianMinCm) {
+    return {
+      minCm: row.medianMinCm, maxCm: row.medianMaxCm,
+      evidence: {
+        grade: "B",
+        source: `${own!.brand}'s own US size charts (${row.pages} page${row.pages === 1 ? "" : "s"})`,
+        sourceZh: `${own!.brand} 自己的美国尺码表（${row.pages} 页）`,
+      },
+    };
+  }
+  const c = usLetterConsensus(reports, ln)[key];
+  if (c && c.maxCm > c.minCm) {
+    return {
+      minCm: c.minCm, maxCm: c.maxCm,
+      evidence: {
+        grade: "B",
+        source: `the median of ${c.brands} US brands' own size charts (no standard defines US letters)`,
+        sourceZh: `${c.brands} 个美国品牌自己尺码表的中位数（美码字母没有国家标准）`,
+      },
+    };
+  }
+  return null;
 }
