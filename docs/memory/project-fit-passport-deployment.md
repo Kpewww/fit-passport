@@ -8,6 +8,13 @@ metadata:
   modified: 2026-08-12T22:34:33.317Z
 ---
 
+**WORKFLOW RULE (Session 103, 2026-10-22).** Commit and push **directly to `main`**, as every session
+before did; `main` deploys production. Do NOT work on a side branch: Vercel **Preview** builds of other
+branches fail in ~9 s (seen on `claude/relaxed-planck-qrsexq`, both commits), while production is fine.
+Cause unconfirmed, most likely the Preview environment lacks the variables `vercel-build` needs. A first
+guess blamed the commit author; wrong (a Kpew-authored commit failed the same way). Commits as
+`Kpew <xchkong@gmail.com>`, like the history.
+
 How [[project-fit-passport]] is set up to deploy (prepared Session 31, 2026-08-12). Full runbook lives in the repo at **`docs/DEPLOYMENT.md`** — read that first; this is the summary + the traps.
 
 **The two-database design.** Verified empirically: **Prisma REJECTS `env()` for `datasource.provider`** (validation error), so one schema file cannot serve SQLite + Postgres. Solution in place: `prisma/schema.prisma` stays **SQLite and is the single source of truth**; `app-web/scripts/gen-postgres-schema.mjs` *derives* `prisma/schema.postgres.prisma` (gitignored, generated at build) by swapping the provider — safe because every model uses portable scalars only. The generator **exits 1 if the source schema is no longer sqlite**. **Local `npm run dev` is unchanged (SQLite, zero setup).** Do NOT hand-write a second schema.

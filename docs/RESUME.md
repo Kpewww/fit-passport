@@ -45,6 +45,9 @@ Framer Motion(**Lenis 已移除**);three.js 懒加载:徽章 inspect **以及** 
 **每轮结束务必:tsc + test + build + live smoke 全过 → commit & push → 更新
 DEVLOG + memory。**
 
+**⚠️ 工作方式(Session 103):直接 commit 并 push 到 `main`(和以往一样,`main` 即生产部署)。**
+不要用旁支:Vercel 对其他分支的 Preview 构建会在约 9 秒失败(原因未确认,多半是 Preview 环境缺变量),生产不受影响。
+
 **课程分工:** `coursework/technical/` = 技术实现/可行性/作业；`coursework/startup/` = 市场/商业/产品交付。核心代码仍只有 `app-web/` 一份。
 
 **动手前必读**:`docs/memory/README.md` 是索引,其中
