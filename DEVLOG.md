@@ -10687,3 +10687,20 @@ DEVLOG.md, README.md, .gitignore              (created)
   mechanism switches on by itself as data arrives.
 - **Next:** pilot; US/luxury guides on /admin; Codex handles the people/ tasks
   (captures, Redis/Blob checks, truth drafts — drafts only, humans verify).
+
+## Session 103b (2026-10-22) — Codex's people-tasks report, board cleaned
+
+Codex (desktop, operating the founder's browser) worked `todo/people/` on branch `codex/people-tasks`
+(not merged; report in `docs/people-tasks-2026-10-22.md` there):
+- **Redis:** both Upstash variables exist in Production. `people/03` deleted.
+- **Blob:** `closet-photos` exists (private, iad1), token in Production and Preview; /admin shows
+  0 photos left in the database. `people/08` and `engineering/07` deleted.
+- **Ground truth:** unverified drafts for all 11 cases (8 answer, 3 refuse) with 24 screenshots, in
+  `eval/truth/_drafts/`, `verifiedBy` empty. They are NOT truth (invariant 66); two people still verify.
+- **Evidence for engineering/03:** Arc'teryx and Gap DO show a chart in a person's browser once the size
+  guide is opened (screenshots); the captures hold 0 tables because they were taken without it.
+- **Blocked for Codex:** loading the extension (chrome://extensions refused) and the Web Store console
+  (Not allowed), so captures C/D and the 0.9.2 upload stay with a person. The 0.9.2 store zip was built.
+- **npm audit:** Next 14.2.35 carries critical/high advisories fixed only in 15.5.24+ (the 14 line gets
+  no more fixes). Exposure on Vercel is limited (no rewrites, no Server Actions, one next/image, no
+  remotePatterns), but the upgrade to Next 15 + React 19 is the next engineering item if approved.

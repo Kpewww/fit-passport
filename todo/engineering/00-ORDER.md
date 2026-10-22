@@ -7,7 +7,7 @@ visible table). What remains:
 | | Task | Blocked on |
 |---|---|---|
 | 03 | Size charts that are not `<table>` | A real capture of such a chart (see the file) |
-| 07 | Closet photos out of the database — **built (Session 100d)** | The Blob store: `people/08-blob-store.md` |
+| ~~07~~ | ~~Closet photos out of the database~~ — **done**: store `closet-photos` (private) live, 0 photos left in Postgres (checked 2026-10-22) | — |
 | ~~08~~ | ~~Demo fixtures may hold body numbers in garment fields~~ — **done (Session 85c)**: Uniqlo now carries the real page's body chart; COS and Levi's demos use made-up links, so there is no page to check them against | — |
 | ~~09~~ | ~~Re-capture the eval pages~~ — **done on this machine**: 9 captures (2026-09-29) are present and S5 runs; H&M and REI remain `people/02` | — |
 | 10 | A size chart that is a picture inside a Taobao description | Picker built (Session 83); needs a real read and a real listing to check the 30-picture cap |
