@@ -4,6 +4,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
 import { currentAdmin, notAdmin } from "@/lib/admin";
+import { brotliPatched } from "@/lib/runtimePatch";
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -27,6 +28,7 @@ export async function GET() {
     week: counts(week),
     month: counts(month),
     peopleThisWeek: people.length,
+    node: { version: process.versions.node, patched: brotliPatched() },
     refusals: refusals.map((r) => ({ detail: r.detail, n: r._count._all })),
     feedback: feedback.map((f) => ({ id: f.id, message: f.message, contact: f.contact, path: f.path, locale: f.locale, at: f.createdAt })),
   });

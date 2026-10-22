@@ -10749,3 +10749,28 @@ the product only; logged in, product + "M".
 **Open, for the founder:** "Bought it" on the to-buy list moves the piece into the closet but records no
 FitOutcome, so the extension's main buying path never reaches the accuracy panel (or outcome learning).
 Recording a "keep" outcome there would change what the engine learns from; not done without a decision.
+
+## Session 103f (2026-10-22) — the October 2026 Node.js Brotli flaw
+
+**What the alarm was:** two separate disclosures on 2026-10-21.
+- **PHP** (CVE-2026-109618/-109619, RCE). Does not apply here: no PHP anywhere.
+- **Node.js** (nodejs.org "October 21, 2026 Security Releases": 10 CVEs, highest HIGH). It applies.
+  CVE-2026-111497 is an out-of-bounds write in the Brotli decoder that permits RCE. The fixed releases
+  are 22.23.4, 24.22.1 and 26.12.1.
+
+**Why it applies:** `extractorLLM.ts` fetches pages and chart pictures from addresses people paste, and
+fetch() decompresses whatever Content-Encoding the far side sends. Production runs Node 24.x on Vercel.
+Vercel moves the patch version itself, with no date given, and the running patch was not visible from
+here: the sandbox and the fetch tool both cannot reach the site.
+
+**Done:**
+- `lib/runtimePatch.ts` (tested) answers whether this Node has the fix.
+- `gate()` refuses every untrusted fetch while it does not. Pasted links are then not read; the extension
+  path (HTML sent by the browser) is unaffected.
+- `/admin`'s pilot panel shows the server's Node version and whether it is patched.
+- Verified locally on an unpatched Node 22.22.0: /admin says unpatched; a pasted link fetches nothing;
+  an extension-style `{html}` check reads its table.
+- **The guard lifts by itself once Vercel runs 24.22.1+.**
+
+**Known wording gap while blocked:** /check says the retailer "didn't serve" the page, which is not the
+reason in that case.

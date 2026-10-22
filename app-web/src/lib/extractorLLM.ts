@@ -15,6 +15,7 @@
 // The public interface `extractSmart(url)` is a drop-in async replacement for
 // `extractFromUrl(url)`.
 
+import { brotliPatched } from "./runtimePatch";
 import { z } from "zod";
 import { detectCategoryStrict, extractFromUrl, resolveCategory, type ExtractedProduct, type ExtractedSize } from "./extractor";
 import { classifyCategory } from "./categoryModel";
@@ -230,6 +231,8 @@ const MAX_REDIRECTS = 4;
  * Returns the safe URL, or null if this hop must not be fetched.
  */
 async function gate(raw: string): Promise<URL | null> {
+  // An unpatched Node must not decompress what a stranger's server sends (runtimePatch.ts).
+  if (!brotliPatched()) return null;
   const verdict = checkUrlSafety(raw);
   if (!verdict.ok) return null;
   if (await resolvesToPrivateAddress(verdict.url.hostname)) return null;

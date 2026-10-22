@@ -13,6 +13,11 @@ import {
   sourceFromRawJson,
 } from "./checkPolicy";
 import { extractSmart, __clearPageCache } from "./extractorLLM";
+
+// The runtime-patch guard (runtimePatch.ts) is tested on its own; here the Node is
+// taken as patched unless a test says otherwise.
+const patch = vi.hoisted(() => ({ ok: true }));
+vi.mock("./runtimePatch", () => ({ brotliPatched: () => patch.ok }));
 import type { ExtractedProduct } from "./extractor";
 import type { EngineOutput, SizeScore } from "./fitEngine";
 

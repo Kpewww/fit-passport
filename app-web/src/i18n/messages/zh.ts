@@ -1729,6 +1729,8 @@ export const zh: Messages = {
       refusals: "最常见的拒绝与错误（30 天）",
       feedback: "意见反馈",
       noFeedback: "暂时没有。",
+      nodePatched: "服务器 Node.js {v}：已修复 2026 年 10 月的 Brotli 漏洞。",
+      nodeUnpatched: "服务器 Node.js {v} 尚未修复 2026 年 10 月的 Brotli 漏洞（CVE-2026-111497）。在托管方更新之前，粘贴链接不会去抓取网页；插件不受影响。",
       accuracy: {
         title: "推荐的尺码对不对？",
         intro: "依据买完之后的实际结果：留下且大致合身的那个尺码，或换成的那个尺码。因为太紧或太松退货的，只能说明合适的尺码在哪一边。",

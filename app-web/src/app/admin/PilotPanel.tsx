@@ -11,6 +11,7 @@ type Pilot = {
   week: Record<string, number>;
   month: Record<string, number>;
   peopleThisWeek: number;
+  node?: { version: string; patched: boolean };
   refusals: Array<{ detail: string | null; n: number }>;
   feedback: Array<{ id: string; message: string; contact: string | null; path: string | null; locale: string | null; at: string }>;
 };
@@ -28,6 +29,11 @@ export function PilotPanel() {
       <h2 className="text-h3 text-ink">{t("pilot.title")}</h2>
       <Card className="!p-4">
         <p className="text-xs text-ink-soft">{t("pilot.people", { n: data.peopleThisWeek })}</p>
+        {data.node && (
+          <p className={`mt-1 text-xs ${data.node.patched ? "text-ink-faint" : "font-medium text-ink"}`}>
+            {t(data.node.patched ? "pilot.nodePatched" : "pilot.nodeUnpatched", { v: data.node.version })}
+          </p>
+        )}
         <table className="mt-3 w-full text-left text-xs">
           <thead className="text-ink-faint"><tr><th className="py-1 font-medium">{t("pilot.event")}</th><th className="font-medium">{t("pilot.week")}</th><th className="font-medium">{t("pilot.month")}</th></tr></thead>
           <tbody>
