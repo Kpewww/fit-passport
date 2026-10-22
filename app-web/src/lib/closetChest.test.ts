@@ -16,10 +16,12 @@ describe("chest from the closet's labels", () => {
       { brand: "Anything", category: "shirt", size: "175/100A", fitRating: 5 },
     ], country);
     expect(both).toMatchObject({ lo: 98, hi: 102 });
+    // Since Session 102 a contradicting piece is set aside (and named in the reason),
+    // so the first, equally strong piece stands.
     expect(chestFromCloset([
       { brand: "Zara", category: "tshirt", size: "S", fitRating: 5 },
       { brand: "Gucci", category: "tshirt", size: "XL", fitRating: 5 },
-    ], country)).toBeNull();
+    ], country)).toMatchObject({ lo: 86, hi: 94 });
   });
 
   it("skips what does not fit, bottoms, and regimes with no evidence (a US letter)", () => {

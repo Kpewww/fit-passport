@@ -9,6 +9,7 @@
 
 import { bodyChestFor, bodyWaistFor, regimeForCountry, regimeFromField, type BodyRange, type Regime } from "./sizeRegimes";
 import { domainForCategory } from "./sizeSystems";
+import { estimate, pieceConstraints } from "./bodyEstimate";
 
 export type ClosetPiece = {
   brand: string;
@@ -30,46 +31,37 @@ export type ClosetChest = {
   used: Array<{ piece: ClosetPiece; regime: Regime | null; range: BodyRange }>;
 };
 
-/** A piece that fits: rated well, or reported as neither tight nor loose. */
-const fits = (p: ClosetPiece) =>
-  p.fitDirection != null ? Math.abs(p.fitDirection) <= 2 : p.fitRating >= 4;
+// Since Session 102 both functions are thin views of bodyEstimate.ts, so there is one
+// rule for the estimate: tight and loose pieces bound it from one side, and a piece
+// that contradicts stronger (or earlier, equally strong) evidence is set aside.
 
-export function chestFromCloset(
+function viaEstimate(
   pieces: ClosetPiece[],
   countryOfBrand: (brand: string) => string | null,
+  dim: "chest" | "waist",
 ): ClosetChest | null {
-  const used: ClosetChest["used"] = [];
-  for (const p of pieces) {
-    if (domainForCategory(p.category) !== "top" || !fits(p)) continue;
+  const byLabel = new Map<string, { piece: ClosetPiece; regime: Regime | null; range: BodyRange }>();
+  const constraints = pieces.flatMap((p, i) => {
     const regime = regimeFromField(p.region) ?? regimeForCountry(countryOfBrand(p.brand));
-    const range = p.body !== undefined ? p.body : bodyChestFor(p.size, regime, p.gender, "top");
-    if (range) used.push({ piece: p, regime, range });
-  }
-  if (!used.length) return null;
-  const lo = Math.max(...used.map((u) => u.range.minCm));
-  const hi = Math.min(...used.map((u) => u.range.maxCm));
-  if (lo > hi) return null;
-  return { chestCm: Math.round(((lo + hi) / 2) * 10) / 10, lo, hi, used };
+    const domain = domainForCategory(p.category);
+    const range = dim === "chest"
+      ? (domain === "top" ? (p.body !== undefined ? p.body : bodyChestFor(p.size, regime, p.gender, "top")) : null)
+      : (domain === "bottom" ? bodyWaistFor(p.size, regime, p.gender) : null);
+    if (!range) return [];
+    const label = `#${i}`;
+    byLabel.set(label, { piece: p, regime, range });
+    return pieceConstraints({ label, fitRating: p.fitRating, fitDirection: p.fitDirection, body: { [dim]: range } });
+  });
+  const e = estimate(constraints)[dim];
+  if (!e) return null;
+  return { chestCm: e.mid, lo: e.lo, hi: e.hi, used: e.used.map((c) => byLabel.get(c.label)!) };
 }
 
-/**
- * The same for the waist, from bottoms (Session 101h): the overlap of the waist
- * ranges their labels are cut for, by JIS, KS or a GB/T 1335 号型.
- */
-export function waistFromCloset(
-  pieces: ClosetPiece[],
-  countryOfBrand: (brand: string) => string | null,
-): ClosetChest | null {
-  const used: ClosetChest["used"] = [];
-  for (const p of pieces) {
-    if (domainForCategory(p.category) !== "bottom" || !fits(p)) continue;
-    const regime = regimeFromField(p.region) ?? regimeForCountry(countryOfBrand(p.brand));
-    const range = bodyWaistFor(p.size, regime, p.gender);
-    if (range) used.push({ piece: p, regime, range });
-  }
-  if (!used.length) return null;
-  const lo = Math.max(...used.map((u) => u.range.minCm));
-  const hi = Math.min(...used.map((u) => u.range.maxCm));
-  if (lo > hi) return null;
-  return { chestCm: Math.round(((lo + hi) / 2) * 10) / 10, lo, hi, used };
+export function chestFromCloset(pieces: ClosetPiece[], countryOfBrand: (brand: string) => string | null): ClosetChest | null {
+  return viaEstimate(pieces, countryOfBrand, "chest");
+}
+
+/** The same for the waist, from bottoms (Session 101h). */
+export function waistFromCloset(pieces: ClosetPiece[], countryOfBrand: (brand: string) => string | null): ClosetChest | null {
+  return viaEstimate(pieces, countryOfBrand, "waist");
 }

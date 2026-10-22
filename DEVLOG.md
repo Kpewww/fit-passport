@@ -31,6 +31,54 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-22 · Session 102a — A body estimate that narrows with every piece of evidence
+
+**What it fixes.** Session 101 estimated chest and waist only from pieces that fit,
+and threw the rest of the evidence away.
+
+**`bodyEstimate.ts` (pure).** Each dimension (chest, waist, hip, height) is an
+interval intersected from constraints, taken strongest first.
+- **Constraints, strongest first:**
+  - exchanged-to size: in range (5)
+  - kept: in range (4)
+  - a piece that fits: in range (3)
+  - returned too small, or kept but tight: at least the size's middle (2)
+  - returned too big, or kept but loose: at most the size's middle (2)
+  - a tight piece: at least its middle (1)
+  - a loose piece: at most its middle (1)
+- **Contradictions.** A constraint that would leave no room is set aside and named in
+  the reason, never dropped silently.
+- **Both bounds needed.** A tight piece alone gives no estimate.
+
+**`bodyEstimateService.ts`.** One builder for every reader, so the check and (next)
+the passport see the same numbers.
+- **Closet pieces.** Each is read by its market's standard. The chest is shifted by
+  the brand's own charts in that market. Waist comes from bottoms, hip from
+  bottoms/dresses, height from a 号型 or a KS suffix.
+- **Purchases.** The size bought, or the size swapped to, is read from that product's
+  own chart: body ranges as printed, or a garment chest less regular ease, ± half the
+  measured step.
+- **`recommendService`** now loads outcomes with their sizes, uses the estimate before
+  the regional prior, and passes the hip to dress checks.
+
+**Hip and height tables** (values re-checked against the Session 101d page images).
+These hold only values printed as ranges for the size:
+- JIS L 4005 Table 15 and BS 3666 Table 1 hips;
+- a 号型's 号 (GB/T 1335 §3.1, §4.1.2, ±2.5 cm);
+- KS K 0050/0051 Table 14-1 (P)/(R)/(T) heights.
+
+KS "reference" means and JIS L 4004's 身長（参考） column are not used.
+
+**Reasons.** The reason lists the evidence used and what was set aside, for example
+"从 Muji XL（合身）、Uniqlo XL（偏紧）、因太小退掉的 Nike L 估计你的胸围约 108–112 cm".
+- The Chinese spacing rule is applied by a helper.
+- `closetChest`/`closetWaist` were replaced by `bodyEstimate`/`evidenceItem`.
+- `chestFromCloset`/`waistFromCloset` are now thin views of the estimator. A
+  contradicting piece is set aside rather than voiding the estimate; the test was
+  updated to say so.
+
+1,433 tests pass.
+
 ## 2026-10-22 · Session 101j — Garment types named in reasons
 
 - **The bug.** On production a closet "tank" read as "Muji XL（衣物）". `ZH_CATEGORY`

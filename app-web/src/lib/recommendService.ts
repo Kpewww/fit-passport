@@ -12,10 +12,8 @@ import type { SellerReading } from "./sellerMeasurements";
 import type { FitPreference } from "./sizing";
 import { regionBodyPrior } from "./populationPrior";
 import { engineSizes } from "./engineInput";
-import { chestFromCloset, waistFromCloset } from "./closetChest";
-import { lookupBrand } from "./brandRegistry";
-import { brandReports, offsetFor } from "./brandOffsets";
-import { bodyChestFor, regimeForCountry, regimeFromField } from "./sizeRegimes";
+import { buildBodyEvidence, estimateNote } from "./bodyEstimateService";
+import { brandReports } from "./brandOffsets";
 import { domainForCategory } from "./sizeSystems";
 
 type ProductWithSizes = {
@@ -62,7 +60,9 @@ export async function computeRecommendation(
   const [profile, knownGood, priorOutcomes] = await Promise.all([
     prisma.fitProfile.findUnique({ where: { userId } }),
     prisma.knownGoodItem.findMany({ where: { userId } }),
-    prisma.fitOutcome.findMany({ where: { userId }, include: { product: true } }),
+    // With the product's sizes, so a purchase can say what body the size bought was
+    // cut for (bodyEstimateService.ts, Session 102).
+    prisma.fitOutcome.findMany({ where: { userId }, include: { product: { include: { sizeOptions: true } } } }),
   ]);
 
   // preferredFit is stored as a CSV (up to 3); the FIRST token is the primary
@@ -78,77 +78,39 @@ export async function computeRecommendation(
   // visitor an explainable (low-confidence) answer instead of a pure guess. Keyed
   // off self-reported region + sex; never inferred, never stored. See
   // populationPrior.ts for the governance rules and survey sources.
-  // Each closet piece's label read by its country's standard (sizeRegimes.ts), then
-  // shifted by how its brand's own charts sit from that standard (brandOffsets.ts).
+  // The body, estimated from the closet AND from purchases, strongest evidence first
+  // (bodyEstimate.ts, Session 102): pieces read by their market's standard and their
+  // brand's own charts; kept, returned and exchanged sizes read by their product's
+  // chart. The wearer's own numbers always come first; the regional average last.
   const { reports } = await brandReports();
-  const pieceBody = new Map(knownGood.map((k) => {
-    const line = k.gender ?? soleDepartment(profile?.shopsFor);
-    const regime = regimeFromField(k.region) ?? regimeForCountry(lookupBrand(k.brand)?.country ?? null);
-    const std = bodyChestFor(k.size, regime, line, domainForCategory(k.category));
-    if (!std) return [k.id, null] as const;
-    const off = offsetFor(reports, k.brand, line, k.size, regime);
-    if (!off) return [k.id, std] as const;
-    return [k.id, {
-      minCm: std.minCm + off.offsetCm,
-      maxCm: std.maxCm + off.offsetCm,
-      evidence: {
-        grade: "B" as const,
-        source: `${std.evidence.source}, adjusted ${off.offsetCm > 0 ? "+" : ""}${off.offsetCm} cm by ${k.brand}'s own charts (${off.pages} pages)`,
-        sourceZh: `${std.evidence.sourceZh}，并按 ${k.brand} 自己的 ${off.pages} 个商品页尺码表修正 ${off.offsetCm > 0 ? "+" : ""}${off.offsetCm} cm`,
-      },
-    }] as const;
-  }));
-
-  const hasOwnChest = profile?.chestCm != null;
-  // Before the regional average: the closet's own labels, where a size standard says
-  // what body they are cut for (closetChest.ts, Session 101).
-  const fromCloset = hasOwnChest
-    ? null
-    : chestFromCloset(
-        knownGood.map((k) => ({ ...k, gender: k.gender ?? soleDepartment(profile?.shopsFor), name: k.displayName, body: pieceBody.get(k.id) ?? null })),
-        (b) => lookupBrand(b)?.country ?? null,
-      );
-  const prior = hasOwnChest || fromCloset ? null : regionBodyPrior(profile?.region, profile?.sex);
+  const { pieceChest: pieceBody, estimates } = buildBodyEvidence(knownGood, priorOutcomes, profile?.shopsFor, reports);
   const M0 = engineText(locale);
-  const chestNote = fromCloset
-    ? M0.closetChest({
-        pieces: fromCloset.used.map((u) => M0.pieceLabel(u.piece.brand, u.piece.size, u.piece.name)),
-        lo: fromCloset.lo,
-        hi: fromCloset.hi,
-        sources: [...new Set(fromCloset.used.map((u) => (locale === "zh" ? u.range.evidence.sourceZh : u.range.evidence.source)))],
-      })
-    : null;
-
-  // The waist, likewise, from closet bottoms (Session 101h): before the regional prior.
+  const hasOwnChest = profile?.chestCm != null;
+  const fromCloset = hasOwnChest ? null : estimates.chest ?? null;
+  const prior = hasOwnChest || fromCloset ? null : regionBodyPrior(profile?.region, profile?.sex);
+  const chestNote = fromCloset ? estimateNote(fromCloset, M0, locale) : null;
   const hasOwnWaist = profile?.waistCm != null;
-  const waistFrom = hasOwnWaist
-    ? null
-    : waistFromCloset(
-        knownGood.map((k) => ({ ...k, gender: k.gender ?? soleDepartment(profile?.shopsFor), name: k.displayName })),
-        (b) => lookupBrand(b)?.country ?? null,
-      );
-  const waistNote = waistFrom
-    ? M0.closetWaist({
-        pieces: waistFrom.used.map((u) => M0.pieceLabel(u.piece.brand, u.piece.size, u.piece.name)),
-        lo: waistFrom.lo,
-        hi: waistFrom.hi,
-        sources: [...new Set(waistFrom.used.map((u) => (locale === "zh" ? u.range.evidence.sourceZh : u.range.evidence.source)))],
-      })
-    : null;
+  const waistFrom = hasOwnWaist ? null : estimates.waist ?? null;
+  const waistNote = waistFrom ? estimateNote(waistFrom, M0, locale) : null;
+  const hasOwnHip = profile?.hipCm != null;
+  const hipFrom = hasOwnHip ? null : estimates.hip ?? null;
 
   const engineInput: EngineInput = {
     profile: {
-      chestCm: profile?.chestCm ?? fromCloset?.chestCm ?? prior?.chestCm ?? null,
-      waistCm: profile?.waistCm ?? waistFrom?.chestCm ?? prior?.waistCm ?? null,
+      chestCm: profile?.chestCm ?? fromCloset?.mid ?? prior?.chestCm ?? null,
+      waistCm: profile?.waistCm ?? waistFrom?.mid ?? prior?.waistCm ?? null,
       shoulderCm: profile?.shoulderCm ?? prior?.shoulderCm ?? null,
       // No regional prior for hip: it is scored only when the wearer gave theirs.
-      hipCm: profile?.hipCm ?? null,
+      hipCm: profile?.hipCm ?? hipFrom?.mid ?? null,
       preferredFit: effectiveFit,
       chestIsEstimated: !hasOwnChest && (prior != null || fromCloset != null),
       chestNote,
       // Only when it matters: on a bottoms product the waist is what is scored.
-      waistNote: product.category && domainForCategory(product.category) === "bottom" ? waistNote : null,
-      waistIsEstimated: !hasOwnWaist && waistFrom != null,
+      waistNote: !product.category ? null
+        : domainForCategory(product.category) === "bottom" ? waistNote
+        : domainForCategory(product.category) === "onepiece" && hipFrom ? estimateNote(hipFrom, M0, locale)
+        : null,
+      waistIsEstimated: (!hasOwnWaist && waistFrom != null) || (!hasOwnHip && hipFrom != null && !!product.category && domainForCategory(product.category) === "onepiece"),
       // Read only by the seller's height-and-weight guide, when there is no own chest.
       heightCm: profile?.heightCm ?? null,
       weightKg: profile?.weightKg ?? null,

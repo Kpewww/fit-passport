@@ -18,6 +18,13 @@ import type { FitPreference } from "./sizing";
 import type { SizeDomain } from "./sizeSystems";
 import type { Locale } from "@/i18n/config";
 import { GARMENT_TYPES } from "./garmentTaxonomy";
+import type { EvidenceKind } from "./bodyEstimate";
+
+const EN_DIM_WORD = { chest: "chest", waist: "waist", hip: "hip", height: "height" } as const;
+const ZH_DIM_WORD = { chest: "胸围", waist: "腰围", hip: "臀围", height: "身高" } as const;
+/** The copy spec's spacing rule (chinese-copy.md): one space wherever a Han character meets a Latin letter or digit. */
+const zhSpaced = (s: string) =>
+  s.replace(/([\u4e00-\u9fff])([A-Za-z0-9])/g, "$1 $2").replace(/([A-Za-z0-9])([\u4e00-\u9fff])/g, "$1 $2");
 
 // English names of the garment types, for "Matches your Uniqlo M (tank / cami)".
 const EN_CATEGORY: Record<string, string> = Object.fromEntries(GARMENT_TYPES.map((g) => [g.key, g.label.toLowerCase()]));
@@ -67,10 +74,10 @@ export interface EngineText {
   undeterminedHelp: string;
   /** Two closet pieces pointing at different sizes with equal weight (Session 101). */
   closetTie(a: string | null, b: string | null): string;
-  /** A chest estimated from closet labels read by a size standard (closetChest.ts). */
-  closetChest(p: { pieces: string[]; lo: number; hi: number; sources: string[] }): string;
-  /** A waist estimated from closet bottoms' labels (Session 101h). */
-  closetWaist(p: { pieces: string[]; lo: number; hi: number; sources: string[] }): string;
+  /** A body dimension estimated from the closet and purchases (bodyEstimate.ts, Session 102). */
+  bodyEstimate(p: { dim: "chest" | "waist" | "hip" | "height"; lo: number; hi: number; evidence: string[]; sources: string[]; ignored: string[] }): string;
+  /** One piece of evidence, as the estimate's reason names it. */
+  evidenceItem(kind: EvidenceKind, label: string): string;
   /** The same tie when the wearer's numbers are on file and the page's sizes carry none. */
   undeterminedNoChart: string;
   limitedData: string;
@@ -209,10 +216,16 @@ export const EN_TEXT: EngineText = {
   closetTie: (a, b) =>
     `${a && b ? `Your ${a} and your ${b}` : "Two pieces in your closet"} point to different sizes here, with equal weight, so there is no honest pick between them. ` +
     "Add your chest measurement, or mark which of them fits tight or loose.",
-  closetChest: ({ pieces, lo, hi, sources }) =>
-    `Your chest is estimated at ${lo}–${hi} cm from ${pieces.join(" and ")}, read by ${sources.join("; ")}. Your own measurement would replace it.`,
-  closetWaist: ({ pieces, lo, hi, sources }) =>
-    `Your waist is estimated at ${lo}–${hi} cm from ${pieces.join(" and ")}, read by ${sources.join("; ")}. Your own measurement would replace it.`,
+  bodyEstimate: ({ dim, lo, hi, evidence, sources, ignored }) =>
+    `Your ${EN_DIM_WORD[dim]} is estimated at ${lo}–${hi} cm from ${evidence.join(", ")}, read by ${sources.join("; ")}.` +
+    (ignored.length ? ` Set aside, as it contradicts stronger evidence: ${ignored.join(", ")}.` : "") +
+    ` Your own measurement would replace it.`,
+  evidenceItem: (kind, label) => ({
+    "piece-fits": `your ${label} (fits)`, "piece-tight": `your ${label} (tight)`, "piece-loose": `your ${label} (loose)`,
+    kept: `the ${label} you kept`, "kept-tight": `the ${label} you kept (tight)`, "kept-loose": `the ${label} you kept (loose)`,
+    "returned-small": `the ${label} you returned as too small`, "returned-big": `the ${label} you returned as too big`,
+    exchanged: `the ${label} you exchanged for`,
+  } as Record<EvidenceKind, string>)[kind],
   undeterminedHelp:
     "Add your chest measurement, or one garment of this type that fits you well — " +
     "either one turns this into a real answer.",
@@ -389,10 +402,16 @@ export const ZH_TEXT: EngineText = {
       : `备选：${label} 也较接近。若你希望${direction === "bigger" ? "更宽松一些" : "更贴身一些"}，可以考虑。`,
   closetTie: (a, b) =>
     `${a && b ? `你的 ${a} 和 ${b} ` : "你衣橱里的两件衣服"}在这里指向不同的尺码，分量相同，无法如实地二选一。请补充胸围，或标出其中哪件偏紧、哪件偏松。`,
-  closetChest: ({ pieces, lo, hi, sources }) =>
-    `按 ${sources.join("；")}，从 ${pieces.join(" 和 ")} 估计你的胸围约 ${lo}–${hi} cm。填入你自己的胸围后会以它为准。`,
-  closetWaist: ({ pieces, lo, hi, sources }) =>
-    `按 ${sources.join("；")}，从 ${pieces.join(" 和 ")} 估计你的腰围约 ${lo}–${hi} cm。填入你自己的腰围后会以它为准。`,
+  bodyEstimate: ({ dim, lo, hi, evidence, sources, ignored }) => zhSpaced(
+    `按${sources.join("；")}，从${evidence.join("、")}估计你的${ZH_DIM_WORD[dim]}约${lo}–${hi} cm。` +
+    (ignored.length ? `与更有力的依据矛盾、暂未采用：${ignored.join("、")}。` : "") +
+    `填入你自己的${ZH_DIM_WORD[dim]}后会以它为准。`),
+  evidenceItem: (kind, label) => ({
+    "piece-fits": `${label}（合身）`, "piece-tight": `${label}（偏紧）`, "piece-loose": `${label}（偏松）`,
+    kept: `留下的 ${label}`, "kept-tight": `留下的 ${label}（偏紧）`, "kept-loose": `留下的 ${label}（偏松）`,
+    "returned-small": `因太小退掉的 ${label}`, "returned-big": `因太大退掉的 ${label}`,
+    exchanged: `换成的 ${label}`,
+  } as Record<EvidenceKind, string>)[kind],
   undeterminedHelp: "补充胸围，或添加一件同类型且合身的衣物，即可让这次推荐有据可依。",
   undeterminedNoChart: "这一页只列出了尺码，没有尺寸。请打开页面上的尺码表后再查看一次，或添加一件同类型且合身的衣物。",
   limitedData: "商品信息有限，当前推荐依据你的衣橱和版型偏好。",

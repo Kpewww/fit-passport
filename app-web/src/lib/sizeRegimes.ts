@@ -272,6 +272,62 @@ export function bodyWaistFor(label: string, regime: Regime | null, line: string 
   return null;
 }
 
+// Hip and height (Session 102). Only values the tables print AS RANGES for the size;
+// the KS "reference" means and JIS L 4004's "身長（参考）" column are not used.
+//   - JIS L 4005:2023 Table 15 (women's letters): hip ranges, as printed.
+//   - BS 3666:1982 Table 1 (UK women's 8..32): hips from/to.
+//   - Height: the 号 of a 号型 (GB/T 1335 §3.1: 号 is the body height; §4.1.2: graded
+//     in 5 cm steps, so ±2.5 cm), and KS K 0050/0051 Table 14-1's height suffixes.
+const JIS_WOMEN_HIP = T(
+  { SS: [77, 85], S: [82, 90], M: [87, 95], L: [92, 100], LL: [97, 105], "3L": [102, 110], "4L": [107, 115], "5L": [112, 120], "6L": [117, 125] },
+  "JIS L 4005:2023 Table 15", "JIS L 4005:2023 表 15",
+);
+const BS_WOMEN_HIP = T(
+  { "8": [83, 87], "10": [87, 91], "12": [91, 95], "14": [95, 99], "16": [100, 104], "18": [105, 109], "20": [110, 114], "22": [115, 119], "24": [120, 124], "26": [125, 129], "28": [130, 134], "30": [135, 139], "32": [140, 144] },
+  "BS 3666:1982 Table 1", "BS 3666:1982 表 1",
+);
+
+/** The body hip a women's label is cut for, or null. */
+export function bodyHipFor(label: string, regime: Regime | null, line: string | null | undefined): BodyRange | null {
+  if (line !== "womens") return null;
+  const s = label.trim().toUpperCase().replace(/\s+/g, "");
+  if (regime === "JP") return fromTable(JIS_WOMEN_HIP, jisLetter(s));
+  if (regime === "UK" && /^\d{1,2}$/.test(s)) return fromTable(BS_WOMEN_HIP, String(Number(s)));
+  return null;
+}
+
+/** The body height a label states: a 号型's 号, or a KS height suffix. Null otherwise. */
+export function bodyHeightFor(label: string, regime: Regime | null, line: string | null | undefined): BodyRange | null {
+  const womens = line === "womens";
+  const code = label.trim().match(/^(\d{3})\s*\/\s*(\d{2,3})\s*([YABC])?$/i);
+  if (code) {
+    const h = Number(code[1]);
+    if (h < 140 || h > 210) return null;
+    return {
+      minCm: h - 2.5, maxCm: h + 2.5,
+      evidence: {
+        grade: "A",
+        source: `GB/T 1335.${womens ? 2 : 1}-2008 §3.1, §4.1.2`,
+        sourceZh: `GB/T 1335.${womens ? 2 : 1}-2008 第 3.1、4.1.2 条`,
+      },
+    };
+  }
+  if (regime === "KR") {
+    const m = label.trim().toUpperCase().match(/^(S|M|L|XL)\((P|R|T)\)$/);
+    if (!m) return null;
+    const ranges: Record<string, [number, number]> = womens
+      ? { P: [145, 155], R: [155, 165], T: [165, 175] }
+      : { R: [157, 170], T: [170, 182] };
+    const r = ranges[m[2]];
+    if (!r) return null;
+    return {
+      minCm: r[0], maxCm: r[1],
+      evidence: { grade: "A", source: `KS K ${womens ? "0051" : "0050"}:2025 Table 14-1`, sourceZh: `KS K ${womens ? "0051" : "0050"}:2025 표 14-1` },
+    };
+  }
+  return null;
+}
+
 export const REGIME_NAME: Record<Regime, { en: string; zh: string }> = {
   CN: { en: "Chinese", zh: "中国" },
   JP: { en: "Japanese", zh: "日本" },
