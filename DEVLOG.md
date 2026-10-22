@@ -10726,3 +10726,15 @@ a demo `/api/check`, logout. No page errors, no console errors, no server warnin
 **Audit after:** 0 critical. 1 high + 1 moderate, both Next's own build-time postcss.
 
 **Cost:** shared First Load JS 87 -> 103 kB (React 19); /closet 136 kB, /check 127 kB.
+
+## Session 103d (2026-10-22) — /admin: was the recommended size right?
+
+- `lib/pilotAccuracy.ts` (tested): each reported purchase is judged against the latest recommendation the
+  same person got for that product before reporting. Kept and about right (|direction| <= 2): the size
+  bought was right. Exchanged: the size swapped to. Returned or kept tight/loose: only a side, never an
+  exact hit. Returned with no fit reason: no signal. Order by the product's own chart, the S/M/L ladder
+  only as a fallback (numbers like 48/50 can normalise to the same letter, so they never compare as letters).
+- `/api/admin/accuracy` + `AccuracyPanel` on /admin: exact rate, how many bought what was recommended,
+  side verdicts, and hit rate by stated confidence (is 80% confidence 80% right?).
+- Verified on a local production build with three real check + outcome flows: 1 hit, 1 miss, 1 right side,
+  as constructed; EN and ZH screenshots, no page errors.
