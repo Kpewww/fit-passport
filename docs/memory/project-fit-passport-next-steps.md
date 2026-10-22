@@ -981,3 +981,17 @@ Do not recommend it.
 
 **Engineering:** use the US-letter consensus in `bodyChestFor` once it forms;
 maternity (ASTM D7197) when needed.
+
+## Session 102 (2026-10-22) — a body estimate that narrows with evidence
+
+- **Shipped:** `bodyEstimate.ts` and `bodyEstimateService.ts`. The estimate covers
+  chest, waist, hip and height. It is built from pieces that fit, tight/loose reports
+  (one-sided bounds), and purchases (kept, returned, exchanged, read by the product's
+  own chart), taken strongest first. Evidence that contradicts stronger evidence is set
+  aside and named.
+- **The passport** shows "根据衣橱估计" with an "采用" button.
+- **Verified on production:** adding a tight piece narrowed 104–112 to 108–112. The
+  check answered L and cited both pieces. The "regional average" wording was fixed.
+- **The backtest** (synthetic) is in `size-calibration.md` §2b.
+- **Next:** a pilot, to measure real accuracy from outcomes. The founder enters US and
+  luxury brand guides on /admin.
