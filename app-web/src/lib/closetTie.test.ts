@@ -64,4 +64,19 @@ describe("two closet pieces that disagree", () => {
     // The Muji anchor now points at L: body 108 + regular hoodie ease is nearest L's 124.5 cm.
     expect(l.reasons.some((r) => r.signal === "known-good" && r.itemId === "muji" && r.weight > 0)).toBe(true);
   });
+
+  it("a chest from the closet is not called a regional average (Session 102)", () => {
+    for (const locale of ["en", "zh"] as const) {
+      const out = recommend({
+        profile: { chestCm: 110, chestIsEstimated: true, chestNote: "from the Muji XL", preferredFit: "regular" },
+        product: { category: "hoodie" }, sizes, knownGood: closet, outcomes: [],
+      }, { locale });
+      expect(out.explanation).not.toMatch(/regional|地区平均/);
+      const prior = recommend({
+        profile: { chestCm: 110, chestIsEstimated: true, preferredFit: "regular" },
+        product: { category: "hoodie" }, sizes, knownGood: [], outcomes: [],
+      }, { locale });
+      expect(prior.explanation).toMatch(/regional|地区平均/);
+    }
+  });
 });

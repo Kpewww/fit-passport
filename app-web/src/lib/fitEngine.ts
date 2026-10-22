@@ -486,7 +486,10 @@ function scoreMeasurementFit(
   const chest = dims.find((d) => d.key === "chest");
   let msg: string;
   if (chest && Math.abs(chest.delta) < BINDING.chestNearCm && (worst.key === "chest" || worst.sub > BINDING.strongSub)) {
-    msg = M.matchesFit(pref, dims.map((d) => d.key), !!profile.chestIsEstimated);
+    // "Using regional averages" only when it IS the regional average: a chest estimated
+    // from the closet carries its own reason (chestNote), and saying "regional
+    // average" beside it was false (seen on production, Session 102).
+    msg = M.matchesFit(pref, dims.map((d) => d.key), !!profile.chestIsEstimated && !profile.chestNote);
   } else if (worst.key !== "chest" && worst.sub < BINDING.weakSub) {
     msg = M.bindingDimension(worst.key, Math.abs(worst.delta).toFixed(1), worst.delta > 0);
   } else {

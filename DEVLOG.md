@@ -31,6 +31,24 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-22 · Session 102d — Verified on production; "regional average" said only when true
+
+**Run.** On www.fitpassport.fit, a fresh session.
+- Muji XL tank (fits): the estimate is 104–112.
+- Add a Uniqlo XL T-shirt reported tight: the estimate narrows to **108–112**, with the
+  evidence "Muji XL（合身） / Uniqlo XL（偏紧）".
+- Upload the Independent Trading hoodie chart: the check answers **L** (0.82; M 0.38).
+  The reason cites JIS L 4004 Table 16 and both pieces.
+- The passport showed "采用", and it saved chest 110.
+
+**One false sentence seen.** The fit line still added "（采用地区平均数据…）" ("using
+regional averages") beside a chest estimated from the closet.
+- **Fix.** `matchesFit`'s estimate flag is now `chestIsEstimated && !chestNote`.
+- **Test** (en and zh). A closet estimate never says "regional average"; the regional
+  prior still does.
+
+1,435 tests pass.
+
 ## 2026-10-22 · Session 102c — Backtest: the estimate narrows as evidence accumulates
 
 `estimateBacktest.test.ts` is synthetic and labelled so. It covers 35 made-up men,
