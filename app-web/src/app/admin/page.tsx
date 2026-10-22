@@ -19,6 +19,7 @@ import { Headline } from "@/components/Headline";
 import { PilotPanel } from "./PilotPanel";
 import { DeleteAccount } from "./DeleteAccount";
 import { MovePhotos } from "./MovePhotos";
+import { BrandCalibration } from "./BrandCalibration";
 
 type Item = {
   kind: "POST" | "ANSWER" | "OUTFIT";
@@ -113,6 +114,7 @@ export default function AdminPage() {
         <PilotPanel />
         <DeleteAccount />
         <MovePhotos />
+        <BrandCalibration />
 
         {data.items.length === 0 ? (
           <Card className="mt-6 bg-paper-soft text-center">

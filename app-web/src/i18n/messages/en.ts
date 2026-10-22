@@ -1703,6 +1703,18 @@ export const en = {
       done: "{name} was deleted.",
       failed: "Couldn't delete it.",
     },
+    cal: {
+      title: "Brand calibration",
+      intro: "{obs} body-chart rows from product pages already read by checks, and the curated charts. {brands} brands have charts from at least two pages. Each size shows the brand's median body chest, and in brackets how far it sits from its country's standard (cm).",
+      usOn: "US letters by consensus of three or more US brands: {list}.",
+      usOff: "US letters: no consensus yet (needs three US brands' own charts for a size). Until then a US letter is not converted.",
+      brand: "Brand",
+      pages: "Pages",
+      runs: "Against its standard",
+      sizes: "Body chest by size, cm",
+      noStandard: "no standard",
+      steps: "{n} size steps",
+    },
     photos: {
       title: "Closet photos",
       off: "The photo store is not switched on here (no BLOB_READ_WRITE_TOKEN): photos stay in the database.",

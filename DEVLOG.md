@@ -31,6 +31,34 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-22 · Session 101e — Backtest, brand calibration, and the full list of standards
+
+- **Backtest (synthetic, labelled as such).** `regimeBacktest.test.ts`. Made-up men own
+  one piece labelled by a standard, then check a product with Nike's published body
+  chart. Reading the piece by its standard, instead of by its letter alone:
+  - Japan (JIS): right 1/45 before, 40/45 after.
+  - Korea (KS): right 0/23 before, 14/23 after.
+  - Europe (EN): 32/45 both before and after; EN letters already sit near Nike's.
+  - The numbers are pinned, so a regression fails CI.
+  - This is not a real-world accuracy figure. Only pilot outcomes can measure that.
+- **Brand calibration** (`brandCalibration.ts`, `/api/admin/calibration`, a panel on
+  /admin).
+  - **Input:** brands' own body charts already read by ordinary checks, plus the
+    curated charts. Nothing is fetched.
+  - **Output:** each brand's median body chest per size, and how many cm and size
+    steps it sits from its country's standard.
+  - **Thresholds:** a brand needs 2+ pages. A US letter consensus needs 3+ US brands,
+    because ASTM defines no letters.
+  - **Not yet wired into the engine.** That is the next step, once enough brands pass.
+- **Most US brands' size-guide pages answer 403 to a plain request** (checked
+  2026-10-22). Under fetch-strategy §2 they are not fetched; their charts arrive
+  through product pages, or by a person typing them in.
+- **Cross-standard comparison**, in `docs/design/size-calibration.md` §1. A men's M is
+  85–93 cm by KS, 88–96 by JIS, 94–102 by EN, 95–104 at Nike and 98–107 at Patagonia.
+- **The full list of standards**, by region, year and status, is in §4 of the same
+  file. It records which are in hand, which are withdrawn, and which were not verified.
+- 1,409 tests pass.
+
 ## 2026-10-22 · Session 101d — Japanese, Korean, US and UK sizes by their standards
 
 **Source.** The founder bought the standards and shared them (a Drive folder, and the
