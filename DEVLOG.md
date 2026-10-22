@@ -31,6 +31,21 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-22 · Session 102c — Backtest: the estimate narrows as evidence accumulates
+
+`estimateBacktest.test.ts` is synthetic and labelled so. It covers 35 made-up men,
+with Nike's chart as the target.
+
+| Evidence | Mean width of the estimate | Holds the true chest | Picks the right size |
+|---|---|---|---|
+| One fitting JIS piece | 8.0 cm | 35/35 | 31 |
+| + a tight/loose report on the same letter | 4.0 cm | 35/35 | 33 |
+| + a Nike size one below, returned as too small | 4.0 cm | 35/35 | 33 |
+
+The return adds no new floor in this setup, because the report already set it higher.
+That is reported as measured, not tuned. The numbers are pinned and recorded in
+`size-calibration.md` §2b.
+
 ## 2026-10-22 · Session 102b — The passport shows the estimate, and one tap adopts it
 
 - **`GET /api/profile/estimate`.** It returns, per dimension, the estimate's range,

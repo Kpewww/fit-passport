@@ -62,6 +62,28 @@ garments drift from their standard (section 1 shows brands do), and wearers choo
 looser or tighter fits. Only pilot outcomes (kept, returned, too big, too small) can
 measure accuracy. The test runs in CI, so a regression in the mechanism fails the build.
 
+## 2b. The estimate narrows as evidence accumulates (SYNTHETIC, Session 102)
+
+`estimateBacktest.test.ts`. Made-up men, chest 80.5–123.5 cm. Each wearer has:
+1. one Japanese piece that fits;
+2. a second piece of the same letter, called tight if their chest is in its upper half,
+   loose otherwise;
+3. a Nike size, one below their right one, returned as too small.
+
+| Evidence | Wearers | Mean width of the estimate | Estimate holds the true chest | Right Nike size |
+|---|---|---|---|---|
+| 1 piece that fits | 35 | 8.0 cm | 35 | 31 |
+| + a tight/loose report | 35 | 4.0 cm | 35 | 33 |
+| + a return, one size below | 35 | 4.0 cm | 35 | 33 |
+
+**What it shows.**
+- A single tight/loose report halves the uncertainty, and the estimate never excludes
+  the true chest.
+- A return one size below adds nothing here, because the tight/loose report already
+  set a higher floor. A return helps when it is the first evidence of that side.
+
+These numbers are pinned in the test. As in §2, this is not real-world accuracy.
+
 ## 3. Brand calibration (grade B, accumulating)
 
 `brandCalibration.ts` measures how each brand's own charts sit against its country's
