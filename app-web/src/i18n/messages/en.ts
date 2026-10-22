@@ -653,6 +653,10 @@ export const en = {
   },
 
   passport: {
+    est: {
+      line: "From your closet: about {lo}–{hi} {unit}.",
+      adopt: "Use {v} {unit}",
+    },
     loading: "Loading…",
     tempBearer: "TEMPORARY BEARER",
     unclaimed: "UNCLAIMED",

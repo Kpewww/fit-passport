@@ -31,6 +31,25 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-22 · Session 102b — The passport shows the estimate, and one tap adopts it
+
+- **`GET /api/profile/estimate`.** It returns, per dimension, the estimate's range,
+  middle, the evidence used and set aside, and the sources, in the reader's language.
+  - It is built by the same `loadBodyEstimate` the check uses.
+  - It needs a session (`readSession`), so it never mints an account, and it stores
+    nothing.
+- **Passport.** Each length field with no value shows "根据衣橱估计：约 104–112 cm。
+  采用 108 cm", with its source (for example JIS L 4004:2023 表 16) for chest, waist,
+  hip and height.
+  - "采用" commits the middle through the field's normal `update()`, so the range
+    check applies and the value becomes the wearer's own.
+  - The evidence list is in the hover title.
+- **Checked in a production build.** zh at 1280 px and en at 390 px, in a fresh
+  session with a Muji XL tank and Uniqlo M jeans.
+  - The estimate is chest 104–112 and waist 76–84; "采用" saved chest 108.
+  - No page errors.
+- **Size.** /passport first load is 138 kB, against 136 kB last recorded.
+
 ## 2026-10-22 · Session 102a — A body estimate that narrows with every piece of evidence
 
 **What it fixes.** Session 101 estimated chest and waist only from pieces that fit,

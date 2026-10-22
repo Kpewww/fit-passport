@@ -638,6 +638,10 @@ export const zh: Messages = {
   },
 
   passport: {
+    est: {
+      line: "根据衣橱估计：约 {lo}–{hi} {unit}。",
+      adopt: "采用 {v} {unit}",
+    },
     loading: "加载中……",
     tempBearer: "临时持有人",
     unclaimed: "未认领",

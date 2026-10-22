@@ -95,6 +95,11 @@ export default function PassportPage() {
   const g = useGarmentText();
   const tf = useT("fit");
   const [profile, setProfile] = useState<Profile | null>(null);
+  // What the closet and purchases point to, per dimension (Session 102).
+  const [estimates, setEstimates] = useState<Partial<Record<"chest" | "waist" | "hip" | "height", BodyEstimate>>>({});
+  useEffect(() => {
+    fetch("/api/profile/estimate").then((r) => (r.ok ? r.json() : null)).then((j) => setEstimates(j?.estimates ?? {})).catch(() => {});
+  }, []);
   const [me, setMe] = useState<Me | null>(null);
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [closetCount, setClosetCount] = useState(0);
@@ -387,13 +392,13 @@ export default function PassportPage() {
                 />
               </div>
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <LenField label={t("m.chest")} hint={t("mostUseful")} unit={lengthUnit} valueCm={profile.chestCm} onCommitCm={(v) => update("chestCm", v)} />
-                <LenField label={t("m.waist")} unit={lengthUnit} valueCm={profile.waistCm} onCommitCm={(v) => update("waistCm", v)} />
-                <LenField label={t("m.hip")} unit={lengthUnit} valueCm={profile.hipCm} onCommitCm={(v) => update("hipCm", v)} />
+                <LenField label={t("m.chest")} hint={t("mostUseful")} unit={lengthUnit} valueCm={profile.chestCm} onCommitCm={(v) => update("chestCm", v)} estimate={estimates.chest} />
+                <LenField label={t("m.waist")} unit={lengthUnit} valueCm={profile.waistCm} onCommitCm={(v) => update("waistCm", v)} estimate={estimates.waist} />
+                <LenField label={t("m.hip")} unit={lengthUnit} valueCm={profile.hipCm} onCommitCm={(v) => update("hipCm", v)} estimate={estimates.hip} />
                 <LenField label={t("m.shoulder")} unit={lengthUnit} valueCm={profile.shoulderCm} onCommitCm={(v) => update("shoulderCm", v)} />
                 <LenField label={t("m.sleeve")} unit={lengthUnit} valueCm={profile.sleeveCm} onCommitCm={(v) => update("sleeveCm", v)} />
                 <LenField label={t("m.inseam")} unit={lengthUnit} valueCm={profile.inseamCm} onCommitCm={(v) => update("inseamCm", v)} />
-                <LenField label={t("m.height")} unit={lengthUnit} valueCm={profile.heightCm} onCommitCm={(v) => update("heightCm", v)} />
+                <LenField label={t("m.height")} unit={lengthUnit} valueCm={profile.heightCm} onCommitCm={(v) => update("heightCm", v)} estimate={estimates.height} />
                 <WeightField label={t("m.weight")} unit={weightUnit} valueKg={profile.weightKg} onCommitKg={(v) => update("weightKg", v)} />
               </div>
             </Section>
@@ -989,18 +994,24 @@ function LenField({
   unit,
   valueCm,
   onCommitCm,
+  estimate,
 }: {
   label: string;
   hint?: string;
   unit: "cm" | "in";
   valueCm: number | null;
   onCommitCm: (v: number | null) => void;
+  /** What the closet and purchases point to (Session 102), shown only while empty. */
+  estimate?: BodyEstimate | null;
 }) {
+  const t = useT("passport");
   const toDisplay = (cm: number | null) =>
     cm == null ? "" : String(unit === "in" ? Math.round((cm / 2.54) * 10) / 10 : cm);
   const [text, setText] = useState(toDisplay(valueCm));
   useEffect(() => setText(toDisplay(valueCm)), [valueCm, unit]);
+  const show = (cm: number) => (unit === "in" ? Math.round((cm / 2.54) * 10) / 10 : Math.round(cm * 10) / 10);
   return (
+    <div>
     <RawNumField
       label={label} hint={hint} unit={unit} text={text} onText={setText}
       onCommit={() => {
@@ -1010,8 +1021,20 @@ function LenField({
         onCommitCm(unit === "in" ? Math.round(n * 2.54 * 10) / 10 : n);
       }}
     />
+    {valueCm == null && estimate && (
+      <div className="mt-1 text-[10px] leading-snug text-ink-soft" title={[...estimate.evidence, ...estimate.sources].join(" · ")}>
+        {t("est.line", { lo: show(estimate.lo), hi: show(estimate.hi), unit })}
+        <button type="button" className="ml-1 font-medium text-brand underline" onClick={() => onCommitCm(Math.round(estimate.mid * 10) / 10)}>
+          {t("est.adopt", { v: show(estimate.mid), unit })}
+        </button>
+        <span className="block text-ink-faint">{estimate.sources.join("; ")}</span>
+      </div>
+    )}
+    </div>
   );
 }
+
+type BodyEstimate = { lo: number; hi: number; mid: number; evidence: string[]; ignored: string[]; sources: string[] };
 
 // A weight field that STORES kg but DISPLAYS the chosen unit (kg/lb).
 function WeightField({
