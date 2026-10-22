@@ -17,7 +17,8 @@
     "db:pg:generate": "npm run db:pg:schema && prisma generate --schema prisma/schema.postgres.prisma",
     "vercel-build": "npm run db:pg:generate && prisma migrate deploy --schema prisma/schema.postgres.prisma && next build",
     "postinstall": "prisma generate",
-    "icons": "node scripts/gen-icons.mjs"
+    "icons": "node scripts/gen-icons.mjs",
+    "guides": "node scripts/build-brand-guides.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

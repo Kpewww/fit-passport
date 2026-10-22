@@ -10774,3 +10774,17 @@ here: the sandbox and the fetch tool both cannot reach the site.
 
 **Known wording gap while blocked:** /check says the retailer "didn't serve" the page, which is not the
 reason in that case.
+
+## Session 103g (2026-10-22) — brand size guides collected into the repo
+
+An agent can now collect brands' own size guides, and people verify them through GitHub:
+- **Files:** `app-web/data/brand-guides/<brand>-<line>.json`, one per brand and line, each with a
+  screenshot. Schema in `lib/brandGuides.ts`; example in `_example.json`.
+- **Build:** `npm run guides` checks every file (names the file and field on error) and compiles the
+  verified BODY guides into `src/lib/brandGuides.generated.json`.
+- **Use:** `brandOffsets.ts` reads that output as official guides, like /admin entries.
+- **Only verified data counts:** nothing counts until a person adds their name to `verifiedBy`. Single
+  printed numbers are kept as printed but never widened into ranges, and never counted.
+- **Guards:** tests fail on an invalid file, a missing screenshot, or a stale generated file.
+- **The task for the agent and for the reviewers:** `todo/people/09-brand-size-guides.md` (brand list,
+  rules: brand's own site only, logged out, no bypassing, copy as printed).

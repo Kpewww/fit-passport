@@ -11,6 +11,8 @@ import { calibrate, type BrandReport, type Observation } from "./brandCalibratio
 import { lookupBrand } from "./brandRegistry";
 import type { Regime } from "./sizeRegimes";
 import { BRAND_CHARTS, chartToSizes } from "./brandCharts";
+import type { CompiledGuide } from "./brandGuides";
+import guides from "./brandGuides.generated.json";
 
 const CACHE_MS = 10 * 60 * 1000;
 let cache: { at: number; reports: BrandReport[]; observations: number } | null = null;
@@ -48,6 +50,14 @@ export async function loadObservations(): Promise<Observation[]> {
     for (const r of rows) {
       if (r.chestMin == null || r.chestMax == null) continue;
       obs.push({ brand: e.brand, url: e.sourceUrl, line: e.line, label: r.label, bodyChestMinCm: cm(r.chestMin), bodyChestMaxCm: cm(r.chestMax), official: true });
+    }
+  }
+  // Guides collected into the repo and verified by a person (brandGuides.ts).
+  for (const g of guides as CompiledGuide[]) {
+    const cm = (v: number) => (g.units === "in" ? Math.round(v * 2.54 * 10) / 10 : v);
+    for (const r of g.rows) {
+      if (r.chestMin == null || r.chestMax == null) continue;
+      obs.push({ brand: g.brand, url: g.sourceUrl, line: g.line, label: r.label, bodyChestMinCm: cm(r.chestMin), bodyChestMaxCm: cm(r.chestMax), official: true });
     }
   }
   return obs;
