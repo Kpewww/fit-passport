@@ -31,6 +31,21 @@ Team: Xiangchen Kong · Alyssa Qi · Jenny Cao · Nicolas Wang.
 
 ---
 
+## 2026-10-22 · Session 101g — The corrected list of sizing standards
+
+**What changed.** `docs/design/sizing-standards-list.md` replaces every earlier list.
+Each row gives the edition, its status, the source for that status, and why it is
+wanted. Old and new editions are listed side by side.
+
+**Re-checked this session:**
+- ASTM D6960, D7197 and D8077 edition histories;
+- the JIS L 4004/4005 2001 to 2023 replacement;
+- the GB/T 1335 1997 to 2008 replacement.
+
+**Removed.** The DIN 61516 recommendation, which was unverified (Session 101f).
+
+`size-calibration.md` §4 now points to the new file.
+
 ## 2026-10-22 · Session 101f — A correction: DIN 61516
 
 - **What earlier notes said.** They called DIN 61516-1/-2 the source of the European
