@@ -1,0 +1,115 @@
+{
+  "brand": "Tommy Hilfiger",
+  "kind": "body",
+  "units": "in",
+  "kindEvidence": "All body measurements are in inches.",
+  "capturedAt": "2026-10-22",
+  "capturedBy": "Codex",
+  "verifiedBy": [],
+  "line": "mens",
+  "sourceUrl": "https://usa.tommy.com/en/size-guide-men.html#MensTopsCS",
+  "screenshot": "screenshots/tommy-hilfiger-mens.png",
+  "note": "Men's Tops numeric equivalents copied as labels. Printed halves represented exactly as .5. Big & Tall, Tommy Jeans and dress-shirt fit tables omitted.",
+  "rows": [
+    {
+      "label": "24",
+      "chest": 31.5,
+      "waist": 25.5
+    },
+    {
+      "label": "25",
+      "chest": 32.5,
+      "waist": 26.5
+    },
+    {
+      "label": "26",
+      "chest": 33.5,
+      "waist": 27.5
+    },
+    {
+      "label": "27",
+      "chest": 34.5,
+      "waist": 28.5
+    },
+    {
+      "label": "28",
+      "chest": 35.5,
+      "waist": 29.5
+    },
+    {
+      "label": "29",
+      "chest": 36.5,
+      "waist": 30.5
+    },
+    {
+      "label": "30",
+      "chest": 37.5,
+      "waist": 31.5
+    },
+    {
+      "label": "31",
+      "chest": 38.5,
+      "waist": 32.5
+    },
+    {
+      "label": "32",
+      "chest": 39.5,
+      "waist": 33.5
+    },
+    {
+      "label": "33",
+      "chest": 40.5,
+      "waist": 34.5
+    },
+    {
+      "label": "34",
+      "chest": 41.5,
+      "waist": 35.5
+    },
+    {
+      "label": "35",
+      "chest": 42.5,
+      "waist": 36.5
+    },
+    {
+      "label": "36",
+      "chest": 43.5,
+      "waist": 37.5
+    },
+    {
+      "label": "38",
+      "chest": 45.5,
+      "waist": 39.5
+    },
+    {
+      "label": "40",
+      "chest": 47.5,
+      "waist": 41.5
+    },
+    {
+      "label": "42",
+      "chest": 49.5,
+      "waist": 43.5
+    },
+    {
+      "label": "44",
+      "chest": 51.5,
+      "waist": 45.5
+    },
+    {
+      "label": "46",
+      "chest": 53.5,
+      "waist": 47.5
+    },
+    {
+      "label": "48",
+      "chest": 55.5,
+      "waist": 49.5
+    },
+    {
+      "label": "50",
+      "chest": 57.5,
+      "waist": 51.5
+    }
+  ]
+}

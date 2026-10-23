@@ -1,0 +1,64 @@
+{
+  "brand": "Banana Republic",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://bananarepublic.gap.com/browse/info.do?cid=35404",
+  "capturedAt": "2026-10-22",
+  "capturedBy": "Codex",
+  "verifiedBy": [],
+  "line": "mens",
+  "kindEvidence": "Raise your arms slightly and measure around your body. Be sure to measure across your shoulder blades and the fullest part of your chest.",
+  "screenshot": "screenshots/banana-republic-mens.png",
+  "note": "Men's Outerwear regular chart. Tall and Japan exclusive charts not copied. Values follow the visible current page, not the older archive chart.",
+  "rows": [
+    {
+      "label": "XXS",
+      "chestMin": 32,
+      "chestMax": 33,
+      "waistMin": 25,
+      "waistMax": 26
+    },
+    {
+      "label": "XS",
+      "chestMin": 34,
+      "chestMax": 35,
+      "waistMin": 27,
+      "waistMax": 28
+    },
+    {
+      "label": "S",
+      "chestMin": 36,
+      "chestMax": 37,
+      "waistMin": 29,
+      "waistMax": 31
+    },
+    {
+      "label": "M",
+      "chestMin": 38,
+      "chestMax": 40,
+      "waistMin": 32,
+      "waistMax": 34
+    },
+    {
+      "label": "L",
+      "chestMin": 41,
+      "chestMax": 44,
+      "waistMin": 36,
+      "waistMax": 38
+    },
+    {
+      "label": "XL",
+      "chestMin": 45,
+      "chestMax": 48,
+      "waistMin": 40,
+      "waistMax": 42
+    },
+    {
+      "label": "XXL",
+      "chestMin": 49,
+      "chestMax": 52,
+      "waistMin": 44,
+      "waistMax": 46
+    }
+  ]
+}

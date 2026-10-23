@@ -1,0 +1,64 @@
+{
+  "brand": "J.Crew",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.jcrew.com/r/size-charts",
+  "capturedAt": "2026-10-22",
+  "capturedBy": "Codex",
+  "verifiedBy": [],
+  "line": "mens",
+  "kindEvidence": "Measure under your arms around the fullest part of your chest.",
+  "screenshot": "screenshots/jcrew-mens.png",
+  "note": "Regular Tops only. Slim and Tall are separate options, not copied. Neck and arm length are omitted because the guide schema accepts chest and waist.",
+  "rows": [
+    {
+      "label": "XS",
+      "chestMin": 32,
+      "chestMax": 34,
+      "waistMin": 26,
+      "waistMax": 28
+    },
+    {
+      "label": "S",
+      "chestMin": 35,
+      "chestMax": 37,
+      "waistMin": 29,
+      "waistMax": 31
+    },
+    {
+      "label": "M",
+      "chestMin": 38,
+      "chestMax": 40,
+      "waistMin": 32,
+      "waistMax": 34
+    },
+    {
+      "label": "L",
+      "chestMin": 41,
+      "chestMax": 43,
+      "waistMin": 35,
+      "waistMax": 37
+    },
+    {
+      "label": "XL",
+      "chestMin": 44,
+      "chestMax": 46,
+      "waistMin": 38,
+      "waistMax": 40
+    },
+    {
+      "label": "XXL",
+      "chestMin": 47,
+      "chestMax": 49,
+      "waistMin": 41,
+      "waistMax": 43
+    },
+    {
+      "label": "XXXL",
+      "chestMin": 50,
+      "chestMax": 52,
+      "waistMin": 44,
+      "waistMax": 45
+    }
+  ]
+}

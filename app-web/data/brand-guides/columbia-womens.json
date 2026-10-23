@@ -1,0 +1,55 @@
+{
+  "brand": "Columbia",
+  "rows": [
+    {
+      "label": "XS",
+      "chest": 33.5,
+      "waist": 26.5
+    },
+    {
+      "label": "S",
+      "chestMax": 35.5,
+      "chestMin": 34.5,
+      "waistMin": 28,
+      "waistMax": 29
+    },
+    {
+      "label": "M",
+      "chestMax": 37.5,
+      "chestMin": 36.5,
+      "waistMin": 30,
+      "waistMax": 31
+    },
+    {
+      "label": "L",
+      "chestMax": 40.5,
+      "chestMin": 39,
+      "waistMin": 32.5,
+      "waistMax": 34
+    },
+    {
+      "label": "XL",
+      "chestMax": 43.5,
+      "chestMin": 42,
+      "waistMin": 35.5,
+      "waistMax": 37.5
+    },
+    {
+      "label": "XXL",
+      "chestMax": 46,
+      "chestMin": 44,
+      "waistMin": 38,
+      "waistMax": 41
+    }
+  ],
+  "kindEvidence": "Body measurements are in inches.",
+  "screenshot": "screenshots/columbia-womens.png",
+  "capturedAt": "2026-10-22",
+  "units": "in",
+  "verifiedBy": [],
+  "line": "womens",
+  "note": "Standard tops only. Extended sizes not copied. XS single values preserved without widening.",
+  "sourceUrl": "https://www.columbia.com/t/size-fit/",
+  "capturedBy": "Codex",
+  "kind": "body"
+}

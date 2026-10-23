@@ -1,0 +1,71 @@
+{
+  "brand": "Under Armour",
+  "capturedBy": "Codex",
+  "kindEvidence": "Place tape measure under your arms at the fullest part of your chest, wrap around your body until your fingers meet and mark the measurement.",
+  "units": "in",
+  "line": "womens",
+  "verifiedBy": [],
+  "kind": "body",
+  "note": "Regular chart only; Tall/Short not copied. Womens 1X-3X extended-size rows excluded. Printed SM/MD/LG labels retained; half-inch fractions represented exactly as .5.",
+  "rows": [
+    {
+      "label": "XXS",
+      "waistMin": 24.5,
+      "chestMin": 31,
+      "chestMax": 32.5,
+      "waistMax": 25.5
+    },
+    {
+      "label": "XS",
+      "waistMin": 25.5,
+      "chestMin": 32.5,
+      "chestMax": 33.5,
+      "waistMax": 27
+    },
+    {
+      "label": "SM",
+      "waistMin": 27,
+      "chestMin": 33.5,
+      "chestMax": 36,
+      "waistMax": 29
+    },
+    {
+      "label": "MD",
+      "waistMin": 29,
+      "chestMin": 36,
+      "chestMax": 38,
+      "waistMax": 31
+    },
+    {
+      "label": "LG",
+      "waistMin": 31,
+      "chestMin": 38,
+      "chestMax": 41,
+      "waistMax": 34
+    },
+    {
+      "label": "XL",
+      "waistMin": 34,
+      "chestMin": 41,
+      "chestMax": 44,
+      "waistMax": 37
+    },
+    {
+      "label": "XXL",
+      "waistMin": 37,
+      "chestMin": 44,
+      "chestMax": 47,
+      "waistMax": 40
+    },
+    {
+      "label": "3XL",
+      "waistMin": 40,
+      "chestMin": 47,
+      "chestMax": 50,
+      "waistMax": 43
+    }
+  ],
+  "sourceUrl": "https://www.underarmour.com/en-us/t/size-guide/womens-tops/",
+  "screenshot": "screenshots/under-armour-womens.png",
+  "capturedAt": "2026-10-22"
+}

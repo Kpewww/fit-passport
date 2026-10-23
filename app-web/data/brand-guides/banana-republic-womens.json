@@ -1,0 +1,80 @@
+{
+  "brand": "Banana Republic",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://bananarepublic.gap.com/browse/info.do?cid=35404",
+  "capturedAt": "2026-10-22",
+  "capturedBy": "Codex",
+  "verifiedBy": [],
+  "line": "womens",
+  "kindEvidence": "With arms relaxed at your sides, measure the fullest part of your bust, keeping the tape parallel to the ground.",
+  "screenshot": "screenshots/banana-republic-womens.png",
+  "note": "Regular Tops & Sweaters. Numeric labels as printed; bust stored as chest. Printed halves represented exactly as .5 in JSON, no unit conversion. Petite and Tall omitted.",
+  "rows": [
+    {
+      "label": "000",
+      "chest": 30.5,
+      "waist": 24
+    },
+    {
+      "label": "00",
+      "chest": 31.5,
+      "waist": 25
+    },
+    {
+      "label": "0",
+      "chest": 32.5,
+      "waist": 26
+    },
+    {
+      "label": "2",
+      "chest": 33.5,
+      "waist": 27
+    },
+    {
+      "label": "4",
+      "chest": 34.5,
+      "waist": 28
+    },
+    {
+      "label": "6",
+      "chest": 35.5,
+      "waist": 29
+    },
+    {
+      "label": "8",
+      "chest": 36.5,
+      "waist": 30
+    },
+    {
+      "label": "10",
+      "chest": 37.5,
+      "waist": 31
+    },
+    {
+      "label": "12",
+      "chest": 39,
+      "waist": 32.5
+    },
+    {
+      "label": "14",
+      "chest": 40.5,
+      "waist": 34
+    },
+    {
+      "label": "16",
+      "chest": 42.5,
+      "waist": 36
+    },
+    {
+      "label": "18",
+      "chest": 44.5,
+      "waist": 38
+    },
+    {
+      "label": "20",
+      "chest": 47.5,
+      "waist": 41
+    }
+  ]
+}
