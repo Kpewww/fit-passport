@@ -250,10 +250,18 @@ export async function runA(c: Case, personas: Persona[]): Promise<SystemRun> {
 const toCm = (v: number, units: "in" | "cm") => (units === "in" ? v * CM_PER_INCH : v);
 const labelKey = (l: string) => (normalizeToAlpha(l) ?? l.trim().toUpperCase());
 
+/** Two body points closer than this to the wearer count as a tie: both sizes are right. */
+export const NEAREST_TIE_CM = 0.5;
+
 /**
  * The sizes the retailer's own chart says fit this wearer — body charts only.
  * The stated range that contains the chest; in a gap, both neighbours. Null for a
- * garment chart (no retailer rule; see README) or a chart with no ranges.
+ * garment chart (no retailer rule; see README).
+ *
+ * A body chart that prints ONE number per size (Arc'teryx, Patagonia) states no
+ * range. Rule decided by the founder (Session 103): the size whose printed point is
+ * nearest the wearer's chest; within NEAREST_TIE_CM of a tie, both. A label printed
+ * twice (Patagonia's two XS rows) is one size with two points.
  */
 export function acceptableSizes(truth: Truth, chestCm: number): string[] | null {
   const chart = truth.chart;
@@ -261,7 +269,14 @@ export function acceptableSizes(truth: Truth, chestCm: number): string[] | null 
   const ranged = chart.sizes
     .filter((s) => s.chestMin != null && s.chestMax != null)
     .map((s) => ({ label: s.label, lo: toCm(s.chestMin!, chart.units), hi: toCm(s.chestMax!, chart.units) }));
-  if (ranged.length < 2) return null;
+  if (ranged.length < 2) {
+    const points = chart.sizes
+      .filter((s) => s.chest != null)
+      .map((s) => ({ label: s.label, d: Math.abs(toCm(s.chest!, chart.units) - chestCm) }));
+    if (points.length < 2) return null;
+    const best = Math.min(...points.map((p) => p.d));
+    return [...new Set(points.filter((p) => p.d <= best + NEAREST_TIE_CM).map((p) => p.label))];
+  }
   const inside = ranged.filter((s) => chestCm >= s.lo - 0.05 && chestCm <= s.hi + 0.05).map((s) => s.label);
   if (inside.length) return inside;
   const below = ranged.filter((s) => s.hi < chestCm).pop();

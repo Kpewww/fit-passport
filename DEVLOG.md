@@ -10859,3 +10859,7 @@ An agent can now collect brands' own size guides, and people verify them through
 - **Effect on the next deploy:** the men's US letter consensus forms from 9 brands (these seven plus the
   curated Nike and Patagonia), XS to 3XL; for example M = 96.5–104.1 cm. An unknown US brand's "M" in a
   closet now gets a grade-B chest. Women's has no verified guide yet, so no consensus.
+- **Eval rule (founder's decision):** a body chart that prints one number per size is now scored by the
+  nearest printed point (ties within 0.5 cm: both; a repeated label is one size). Before, such charts were
+  not scored at all. Implemented in `eval/lib.ts acceptableSizes` and pinned by `src/lib/evalTruthRule.test.ts`.
+  This affects Arc'teryx and Patagonia men's and women's.

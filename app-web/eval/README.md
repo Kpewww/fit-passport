@@ -97,6 +97,9 @@ the right answer can be derived from the chart.
 - **Body charts:** the retailer's own rule — the size whose stated range contains
   the wearer's chest. If the chest falls in a gap between two ranges, both
   neighbours are acceptable.
+- **Body charts that print one number per size** (no range; Arc'teryx, Patagonia):
+  the size whose printed number is **nearest** the wearer's chest; within 0.5 cm of
+  a tie, both. A label printed twice is one size. Decided by the founder, Session 103.
 - **Garment charts:** there is no retailer rule, and using our own ease constants
   would be the engine grading itself. These are **not scored** until an external
   ease reference is chosen and frozen here (open decision #5). Extraction metrics
