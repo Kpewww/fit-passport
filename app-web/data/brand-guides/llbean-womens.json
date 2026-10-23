@@ -1,0 +1,45 @@
+{
+  "kindEvidence": "Body Measurements are indicated in inches.",
+  "kind": "body",
+  "note": "Regular tops only. Full labels copied including numeric equivalents. Petite, Plus, Medium Tall and Tall excluded. No waist printed in tops table. Recorded from saved 2026-10-22 screenshot; not revisited on 2026-10-23.",
+  "capturedBy": "Codex",
+  "sourceUrl": "https://www.llbean.com/llb/shop/518113?page=sizing-charts",
+  "rows": [
+    {
+      "label": "XX-Small (00-0)",
+      "chestMin": 31,
+      "chestMax": 32
+    },
+    {
+      "label": "X-Small (2-4)",
+      "chestMin": 33,
+      "chestMax": 34
+    },
+    {
+      "label": "Small (6-8)",
+      "chestMin": 35,
+      "chestMax": 36
+    },
+    {
+      "label": "Medium (10-12)",
+      "chestMin": 37,
+      "chestMax": 38.5
+    },
+    {
+      "label": "Large (14-16)",
+      "chestMin": 40,
+      "chestMax": 41.5
+    },
+    {
+      "label": "X-Large (18-20)",
+      "chestMin": 43.5,
+      "chestMax": 45.5
+    }
+  ],
+  "brand": "L.L.Bean",
+  "units": "in",
+  "verifiedBy": [],
+  "capturedAt": "2026-10-22",
+  "screenshot": "screenshots/llbean-womens.png",
+  "line": "womens"
+}

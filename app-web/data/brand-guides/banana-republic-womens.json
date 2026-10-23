@@ -9,7 +9,7 @@
   "line": "womens",
   "kindEvidence": "With arms relaxed at your sides, measure the fullest part of your bust, keeping the tape parallel to the ground.",
   "screenshot": "screenshots/banana-republic-womens.png",
-  "note": "Regular Tops & Sweaters. Numeric labels as printed; bust stored as chest. Printed halves represented exactly as .5 in JSON, no unit conversion. Petite and Tall omitted.",
+  "note": "Regular Tops & Sweaters header: XXS=000,00; XS=0,2; S=4,6; M=8,10; L=12,14; XL=16,18; XXL=20. Numeric labels and single values retained; bust stored as chest. Printed halves represented exactly as .5. Petite and Tall excluded.",
   "rows": [
     {
       "label": "000",

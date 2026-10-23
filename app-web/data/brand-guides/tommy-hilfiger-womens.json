@@ -9,7 +9,7 @@
   "line": "womens",
   "sourceUrl": "https://usa.tommy.com/en/size-guide-women.html#WomensDressesTopsandOuterwearCS",
   "screenshot": "screenshots/tommy-hilfiger-womens.png",
-  "note": "Women's Dresses, Tops, and Outerwear. Numeric Size labels copied; two printed 0 columns retained in order (XXS then XS), not corrected. Bust stored as chest. Other collections omitted.",
+  "note": "Dresses, Tops, and Outerwear header: XXS=0; XS=0,2; S=4,6; M=8,10; L=12,14; XL=16,18; XXL=20,22. The first 0 is under XXS, the second under XS, as printed. Single values retained; no ranges inferred.",
   "rows": [
     {
       "label": "0",
