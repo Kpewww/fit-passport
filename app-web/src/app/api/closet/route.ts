@@ -10,7 +10,7 @@ import { engineText } from "@/lib/engineText";
 import { localeFromRequest } from "@/i18n/request";
 import { collectionForGarment } from "@/lib/collections";
 import { isValidSize } from "@/lib/sizeSystems";
-import { DIRECTION_MIN, DIRECTION_MAX, clampDirection } from "@/lib/fitDirection";
+import { DIRECTION_MIN, DIRECTION_MAX, clampDirection, ratingFromDirection } from "@/lib/fitDirection";
 import { ItemSchema } from "@/lib/closetItemInput";
 
 export async function GET() {
@@ -39,9 +39,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
   const { fromSavedId, ...data } = parsed.data;
+  let savedProductId: string | null = null;
   if (fromSavedId) {
-    const saved = await prisma.savedItem.findFirst({ where: { id: fromSavedId, userId: user.id }, select: { id: true } });
+    const saved = await prisma.savedItem.findFirst({
+      where: { id: fromSavedId, userId: user.id },
+      select: { id: true, product: { select: { id: true, userId: true } } },
+    });
     if (!saved) return NextResponse.json({ error: "not found" }, { status: 404 });
+    if (saved.product?.userId === user.id) savedProductId = saved.product.id;
   }
 
   // A photo goes to object storage when it is set up (photoStore.ts).
@@ -66,7 +71,23 @@ export async function POST(req: Request) {
     },
   });
   if (fromSavedId) {
-    const [item] = await prisma.$transaction([create, prisma.savedItem.deleteMany({ where: { id: fromSavedId, userId: user.id } })]);
+    // "Bought it" is a purchase that was kept (Session 103): when the saved product was
+    // checked, record it as an outcome too, with the fit just reported, so it counts in
+    // outcome learning and in /admin's accuracy. Never twice for the same product.
+    const already = savedProductId
+      ? await prisma.fitOutcome.count({ where: { userId: user.id, productId: savedProductId } })
+      : 1;
+    const outcome = !already && savedProductId
+      ? [prisma.fitOutcome.create({
+          data: {
+            userId: user.id, productId: savedProductId, purchasedSize: data.size, decision: "keep",
+            fitDirection: data.fitDirection ?? null, overallFit: ratingFromDirection(data.fitDirection),
+            notes: "from the to-buy list",
+          },
+        })]
+      : [];
+    const [item] = await prisma.$transaction([create, prisma.savedItem.deleteMany({ where: { id: fromSavedId, userId: user.id } }), ...outcome]);
+    if (outcome.length) await track("outcome", { userId: user.id, detail: "keep:from-saved" });
     await track("piece-added", { userId: user.id, detail: "from-saved" });
     return NextResponse.json({ item: forClient(item) });
   }

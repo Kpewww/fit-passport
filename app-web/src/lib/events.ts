@@ -17,6 +17,7 @@ export const EVENT_NAMES = [
   "extension-check",  // a check that came from the extension
   "feedback",
   "client-error",     // detail = the error's message, cut short
+  "outcome",          // a purchase reported; detail = decision, and ":from-saved" from the to-buy list
 ] as const;
 export type EventName = (typeof EVENT_NAMES)[number];
 

@@ -10816,3 +10816,17 @@ An agent can now collect brands' own size guides, and people verify them through
   - production path: still runs migrate, and stops the build when migrate fails.
 - **Flaky test fixed:** `foldOffer.test.ts` corrupted a signature by setting its first character to "x". That was a no-op
   whenever the signature already began with "x" (seen once by the agent).
+
+## Session 103j (2026-10-23) — "Bought it" records the purchase
+
+- **Change:** moving a saved product into the closet ("Bought it") now also writes a FitOutcome, when the
+  saved item carries a checked product of the same user:
+  - `keep`, the size bought, and the fit just reported (required there already);
+  - written in the same transaction, and never twice for one product.
+- **Effect:** the extension's buying path reaches outcome learning and /admin's accuracy. Before, only
+  /history reports did.
+- **New event `outcome`** (from /history and from the to-buy list), so the pilot panel counts reports.
+- **Verified locally:** check, save, "Bought it". Outcomes went 3 to 4 (keep, EU 48, -3, "from the to-buy
+  list"). Accuracy judged it "wrong side": kept but tight, and the recommended size was the size bought.
+- **Not done:** the remote branch `claude/relaxed-planck-qrsexq` could not be deleted from this session (the
+  git proxy refuses deletes). The founder deletes it on GitHub.

@@ -49,8 +49,7 @@ Reporting is the step people forget.
 
 ## 3. Known gaps before starting
 
-- **"Bought it" on the to-buy list records no outcome.** It moves the piece into the closet only, so a
-  purchase made that way does not reach the accuracy panel. Until this is decided, tell participants to
-  record purchases on /history (step 4 above).
+- ~~"Bought it" on the to-buy list records no outcome~~: fixed (Session 103). It now records a kept
+  purchase with the fit the person reports, when the saved product had been checked.
 - **Shops that refuse to serve their pages to us** can only be read through the extension, not by pasting a link.
 - **Prices and payments:** none. Hobby-plan Vercel forbids commercial use (`docs/DEPLOYMENT.md`).

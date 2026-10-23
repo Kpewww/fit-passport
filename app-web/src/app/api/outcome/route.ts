@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
 import { ratingFromDirection } from "@/lib/fitDirection";
 import { OutcomeSchema } from "@/lib/outcomeInput";
+import { track } from "@/lib/events";
 
 export async function GET() {
   const user = await getCurrentUser();
@@ -40,5 +41,6 @@ export async function POST(req: Request) {
       overallFit: fitDirection != null ? ratingFromDirection(fitDirection) : overallFit ?? null,
     },
   });
+  await track("outcome", { userId: user.id, detail: parsed.data.decision });
   return NextResponse.json({ outcome });
 }
