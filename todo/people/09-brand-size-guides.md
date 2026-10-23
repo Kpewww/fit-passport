@@ -78,3 +78,30 @@ Gucci · Prada · Burberry · Saint Laurent · Balenciaga · Moncler · Zegna（
 **完成标准：** 至少 10 个美国品牌和 5 个奢侈品牌的人体尺码表核对完毕并合并；`/admin` 的美码字母共识里出现 S/M/L/XL。
 
 **为什么这样设计：** 数据进仓库，每个数字都有来源网址和截图可查，谁采的、谁核的都有记录。没人核对的数据，引擎一律不用（和评测标准答案是同一个原则）。
+
+---
+
+## 进度(2026-10-23)
+
+**第一批已采集**,在 `codex/people-tasks` 分支:9 个美国品牌、16 份表。报告见该分支的 `docs/brand-guide-research-2026-10-23.md`。
+
+**Claude 预检**(机器预检,**不算人工核对**,`verifiedBy` 仍为空):
+- 16 份逐一对照截图,数字、单位、尺码标签**全部一致**,没有发现抄错;
+- 都来自品牌官网,都是人体尺寸。
+
+| 能被引擎使用(有印出的范围) | 只印单个数字(照规则不计入) |
+|---|---|
+| Banana Republic 男、Calvin Klein 男/女、Columbia 男/女、J.Crew 男、Levi's 男、L.L.Bean 男、Under Armour 男/女 | Banana Republic 女、J.Crew 女、Levi's 女、Madewell 女、Tommy Hilfiger 男/女 |
+
+**核对通过后的效果**(用这批数据模拟):
+- 男装美码共识覆盖 XS 到 3XL,大多来自 7 个品牌。例如 M 对应胸围 96.5–101.6 cm。
+- 女装形成 S、M、L 三个尺码的共识,各来自 3 个品牌。
+
+**人核对时留意:**
+- **Tommy Hilfiger 男/女、Banana Republic 女**:表头的字母尺码(S、M…)横跨两列数字尺码,文件里只记了数字。要不要把"字母对应哪几列"也记下来,待定。
+- **Calvin Klein 女 M**:腰围页面印成 "29.5" 30.5""(缺连字符),已按规则省略。
+- **Madewell**:品牌库里查不到它的国家,而且只印单个数字,不影响结果。
+
+**还没做:**
+- 美国品牌:Gap、Old Navy、Abercrombie & Fitch、American Eagle、Ralph Lauren、Carhartt(条款弹窗,未接受)、Brooks Brothers、Everlane、L.L.Bean 女装(尺码标签长度上限已放宽到 24,可以补)。
+- 7 个奢侈品牌全部未完成。

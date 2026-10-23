@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calibrate, usLetterChest, usLetterConsensus, type Observation } from "./brandCalibration";
+import { calibrate, normLabel, usLetterChest, usLetterConsensus, type Observation } from "./brandCalibration";
 
 const o = (brand: string, url: string, label: string, min: number, max: number, line: string | null = "mens"): Observation =>
   ({ brand, url, line, label, bodyChestMinCm: min, bodyChestMaxCm: max });
@@ -34,6 +34,17 @@ describe("brand calibration", () => {
     expect(usLetterConsensus(two, "mens")).toEqual({});
     const three = calibrate(["A", "B", "C"].flatMap((b, i) => [o(b, `${b}1`, "M", 96 + i, 104 + i), o(b, `${b}2`, "M", 96 + i, 104 + i)]), country);
     expect(usLetterConsensus(three, "mens")).toEqual({ M: { midCm: 101, minCm: 97, maxCm: 105, brands: 3 } });
+  });
+
+  it("brands' ways of writing a letter are one size (L.L.Bean Medium, Under Armour MD)", () => {
+    expect(["Small", "SM", "s"].map(normLabel)).toEqual(["S", "S", "S"]);
+    expect(["Medium", "MD", "Med."].map(normLabel)).toEqual(["M", "M", "M"]);
+    expect(["Large", "LG", "X-Large", "XX-Large", "XXX-Large", "XXXL", "2XL"].map(normLabel)).toEqual(["L", "L", "XL", "XXL", "3XL", "3XL", "XXL"]);
+    expect(["X-Small", "XX-Small"].map(normLabel)).toEqual(["XS", "XXS"]);
+    // Numbers stay numbers: a women's 2 is not a letter, and 2X is a plus size, not XXL.
+    expect(["2", "10", "000", "2X", "3X", "1X"].map(normLabel)).toEqual(["2", "10", "000", "2X", "3X", "1X"]);
+    const rs = calibrate([o("A", "a1", "Medium", 96, 104), o("A", "a2", "MD", 96, 104)], country);
+    expect(rs[0].sizes.map((x) => x.label)).toEqual(["M"]);
   });
 
   it("reads a US letter by the brand's own charts first, then the consensus, else nothing", () => {
