@@ -1,0 +1,60 @@
+{
+  "brand": "Moncler",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.moncler.com/en-us/client-service/size_guide",
+  "kindEvidence": "Measure around the chest, passing the tape measure under the arms. The tape should sit snugly against your body, but should not be pulled too tight. Make sure to keep it horizontal and parallel to the floor.",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/moncler-mens.png",
+  "note": "Tops. Printed inch decimal commas represented as JSON decimal points; no unit conversion or ranges. Printed waist 3XL=41,43 retained. Body evidence: screenshots/moncler-mens-evidence.png.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "XXS",
+      "chest": 33.07,
+      "waist": 28.35
+    },
+    {
+      "label": "XS",
+      "chest": 34.65,
+      "waist": 29.92
+    },
+    {
+      "label": "S",
+      "chest": 36.22,
+      "waist": 31.5
+    },
+    {
+      "label": "M",
+      "chest": 37.8,
+      "waist": 33.07
+    },
+    {
+      "label": "L",
+      "chest": 39.37,
+      "waist": 34.65
+    },
+    {
+      "label": "XL",
+      "chest": 41.73,
+      "waist": 37.01
+    },
+    {
+      "label": "XXL",
+      "chest": 44.09,
+      "waist": 39.37
+    },
+    {
+      "label": "3XL",
+      "chest": 46.46,
+      "waist": 41.43
+    },
+    {
+      "label": "4XL",
+      "chest": 48.82,
+      "waist": 44.09
+    }
+  ]
+}

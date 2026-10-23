@@ -1,0 +1,59 @@
+{
+  "brand": "Gucci",
+  "line": "mens",
+  "kind": "body",
+  "units": "cm",
+  "sourceUrl": "https://www.gucci.com/us/en/st/gucci-clothing-size-chart",
+  "kindEvidence": "To correctly measure your shirt size or take your chest measurements, pay special attention to the first three arrows, whereas for pant sizing, please refer to the fourth.",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/gucci-mens.png",
+  "note": "Tops; printed CM column copied. US labels retained: XXS=32; XS=34; S=36; M=38; L=40; XL=42; XXL=44; XXXL=46. SIZE shows - for US 30,48,50. Single numbers, not ranges. Body diagram/evidence: screenshots/gucci-measure-evidence.png.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "30",
+      "chest": 82
+    },
+    {
+      "label": "32",
+      "chest": 86
+    },
+    {
+      "label": "34",
+      "chest": 90
+    },
+    {
+      "label": "36",
+      "chest": 94
+    },
+    {
+      "label": "38",
+      "chest": 98
+    },
+    {
+      "label": "40",
+      "chest": 102
+    },
+    {
+      "label": "42",
+      "chest": 106
+    },
+    {
+      "label": "44",
+      "chest": 110
+    },
+    {
+      "label": "46",
+      "chest": 114
+    },
+    {
+      "label": "48",
+      "chest": 118
+    },
+    {
+      "label": "50",
+      "chest": 122
+    }
+  ]
+}

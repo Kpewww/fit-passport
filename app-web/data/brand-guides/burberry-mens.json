@@ -1,0 +1,60 @@
+{
+  "brand": "Burberry",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://us.burberry.com/check-collar-cotton-polo-shirt-p81326081",
+  "kindEvidence": "Measure across your back, under your arms and around the widest part of your chest.",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/burberry-mens.png",
+  "note": "Mens Knitwear guide opened from Classic Fit polo. Printed inches and singleton values retained. Evidence: screenshots/burberry-mens-evidence.png.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "XXXS",
+      "chest": 29.1,
+      "waist": 23.2
+    },
+    {
+      "label": "XXS",
+      "chest": 31.5,
+      "waist": 25.6
+    },
+    {
+      "label": "XS",
+      "chest": 33.9,
+      "waist": 28
+    },
+    {
+      "label": "S",
+      "chest": 36.2,
+      "waist": 30.3
+    },
+    {
+      "label": "M",
+      "chest": 38.6,
+      "waist": 32.7
+    },
+    {
+      "label": "L",
+      "chest": 41,
+      "waist": 35
+    },
+    {
+      "label": "XL",
+      "chest": 43.3,
+      "waist": 37.4
+    },
+    {
+      "label": "XXL",
+      "chest": 45.7,
+      "waist": 39.8
+    },
+    {
+      "label": "XXXL",
+      "chest": 48,
+      "waist": 42.1
+    }
+  ]
+}
