@@ -10803,3 +10803,16 @@ An agent can now collect brands' own size guides, and people verify them through
   - men's consensus XS–3XL from up to 7 brands (M = 96.5–101.6 cm);
   - women's S/M/L from 3 brands;
   - an unknown US brand's "M" in a closet now gets a grade-B chest.
+
+## Session 103i (2026-10-23) — preview builds fixed; one flaky test
+
+- **Why every branch push "failed to deploy":** the agent's PR #2 build log showed the cause. Vercel builds every branch as a
+  Preview. Our build ran `prisma migrate deploy`, which needs `DIRECT_URL`, and Preview has none (Prisma P1012). Production was
+  never affected. The commit-author theory from earlier was wrong.
+- **Fix:** `scripts/vercel-build.mjs` migrates only when `VERCEL_ENV=production`. Previews generate the client and build, so a
+  PR shows whether the code compiles, and a branch can never change the live database.
+- **Verified locally:**
+  - preview path: skipped migrations, compiled;
+  - production path: still runs migrate, and stops the build when migrate fails.
+- **Flaky test fixed:** `foldOffer.test.ts` corrupted a signature by setting its first character to "x". That was a no-op
+  whenever the signature already began with "x" (seen once by the agent).
