@@ -10848,3 +10848,14 @@ An agent can now collect brands' own size guides, and people verify them through
   through their stubbed fetch, as before.
 - **Not verified here:** a live retailer page. This sandbox cannot reach the internet, and the SSRF gate
   rightly refuses a local server. First thing to check after deploy: paste a link on /check.
+
+## Session 103l (2026-10-23) — first brand guides verified; the US letter consensus is live
+
+- **Second pass (PR #3, merged):** the agent read seven men's guides page first, independently of the
+  files. All matched. The only change was an unrelated women's line removed from Under Armour's note.
+  The PR's Preview deployment went green, which confirms the Session 103i build fix.
+- **Signed:** the founder (Kpew) signed the seven men's guides after reading the review: J.Crew, Levi's,
+  Calvin Klein, Columbia, Under Armour, L.L.Bean, A&F. `npm run guides`: 7 counted.
+- **Effect on the next deploy:** the men's US letter consensus forms from 9 brands (these seven plus the
+  curated Nike and Patagonia), XS to 3XL; for example M = 96.5–104.1 cm. An unknown US brand's "M" in a
+  closet now gets a grade-B chest. Women's has no verified guide yet, so no consensus.

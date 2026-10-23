@@ -1,1 +1,352 @@
-[]
+[
+  {
+    "brand": "Abercrombie & Fitch",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.abercrombie.com/shop/us/p/a-and-f-essential-crew-sweater-63845823?categoryId=12206&faceout=life&seq=02&afsource=social+proofing&gridProductPosition=4",
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 28.5,
+        "chestMax": 31.5
+      },
+      {
+        "label": "XS",
+        "chestMin": 31.5,
+        "chestMax": 34.5
+      },
+      {
+        "label": "S",
+        "chestMin": 34.5,
+        "chestMax": 37.5
+      },
+      {
+        "label": "M",
+        "chestMin": 37.5,
+        "chestMax": 40.5
+      },
+      {
+        "label": "L",
+        "chestMin": 40.5,
+        "chestMax": 43.5
+      },
+      {
+        "label": "XL",
+        "chestMin": 43.5,
+        "chestMax": 46.5
+      },
+      {
+        "label": "XXL",
+        "chestMin": 46.5,
+        "chestMax": 49.5
+      },
+      {
+        "label": "3XL",
+        "chestMin": 49.5,
+        "chestMax": 52.5
+      }
+    ]
+  },
+  {
+    "brand": "Calvin Klein",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.calvinklein.us/en/men-size-guide.html#wl-shirts",
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 35,
+        "chestMax": 36,
+        "waistMin": 27,
+        "waistMax": 28
+      },
+      {
+        "label": "S",
+        "chestMin": 37,
+        "chestMax": 38,
+        "waistMin": 29,
+        "waistMax": 30
+      },
+      {
+        "label": "M",
+        "chestMin": 39,
+        "chestMax": 41,
+        "waistMin": 31,
+        "waistMax": 33
+      },
+      {
+        "label": "L",
+        "chestMin": 42,
+        "chestMax": 44,
+        "waistMin": 34,
+        "waistMax": 36
+      },
+      {
+        "label": "XL",
+        "chestMin": 45,
+        "chestMax": 47,
+        "waistMin": 37,
+        "waistMax": 39
+      },
+      {
+        "label": "XXL",
+        "chestMin": 48,
+        "chestMax": 50,
+        "waistMin": 40,
+        "waistMax": 42
+      }
+    ]
+  },
+  {
+    "brand": "Columbia",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.columbia.com/t/size-fit/",
+    "rows": [
+      {
+        "label": "S",
+        "chestMin": 36,
+        "chestMax": 37,
+        "waistMin": 30,
+        "waistMax": 31
+      },
+      {
+        "label": "M",
+        "chestMin": 39,
+        "chestMax": 41,
+        "waistMin": 33,
+        "waistMax": 35
+      },
+      {
+        "label": "L",
+        "chestMin": 42.5,
+        "chestMax": 44,
+        "waistMin": 36,
+        "waistMax": 38
+      },
+      {
+        "label": "XL",
+        "chestMin": 46.5,
+        "chestMax": 48,
+        "waistMin": 40,
+        "waistMax": 42
+      },
+      {
+        "label": "XXL",
+        "chestMin": 50.5,
+        "chestMax": 52,
+        "waistMin": 44,
+        "waistMax": 46
+      }
+    ]
+  },
+  {
+    "brand": "J.Crew",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.jcrew.com/r/size-charts",
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 32,
+        "chestMax": 34,
+        "waistMin": 26,
+        "waistMax": 28
+      },
+      {
+        "label": "S",
+        "chestMin": 35,
+        "chestMax": 37,
+        "waistMin": 29,
+        "waistMax": 31
+      },
+      {
+        "label": "M",
+        "chestMin": 38,
+        "chestMax": 40,
+        "waistMin": 32,
+        "waistMax": 34
+      },
+      {
+        "label": "L",
+        "chestMin": 41,
+        "chestMax": 43,
+        "waistMin": 35,
+        "waistMax": 37
+      },
+      {
+        "label": "XL",
+        "chestMin": 44,
+        "chestMax": 46,
+        "waistMin": 38,
+        "waistMax": 40
+      },
+      {
+        "label": "XXL",
+        "chestMin": 47,
+        "chestMax": 49,
+        "waistMin": 41,
+        "waistMax": 43
+      },
+      {
+        "label": "XXXL",
+        "chestMin": 50,
+        "chestMax": 52,
+        "waistMin": 44,
+        "waistMax": 45
+      }
+    ]
+  },
+  {
+    "brand": "L.L.Bean",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.llbean.com/llb/shop/518113?page=sizing-charts",
+    "rows": [
+      {
+        "label": "Small",
+        "chestMin": 34,
+        "chestMax": 36
+      },
+      {
+        "label": "Medium",
+        "chestMin": 38,
+        "chestMax": 40
+      },
+      {
+        "label": "Large",
+        "chestMin": 42,
+        "chestMax": 44
+      },
+      {
+        "label": "X-Large",
+        "chestMin": 46,
+        "chestMax": 48
+      },
+      {
+        "label": "XX-Large",
+        "chestMin": 50,
+        "chestMax": 52
+      },
+      {
+        "label": "XXX-Large",
+        "chestMin": 54,
+        "chestMax": 56
+      }
+    ]
+  },
+  {
+    "brand": "Levi's",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.levi.com/US/en_US/info/sizeguide",
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 32,
+        "chestMax": 34,
+        "waistMin": 26,
+        "waistMax": 28
+      },
+      {
+        "label": "S",
+        "chestMin": 35,
+        "chestMax": 37,
+        "waistMin": 29,
+        "waistMax": 31
+      },
+      {
+        "label": "M",
+        "chestMin": 38,
+        "chestMax": 40,
+        "waistMin": 32,
+        "waistMax": 34
+      },
+      {
+        "label": "L",
+        "chestMin": 41,
+        "chestMax": 43,
+        "waistMin": 35,
+        "waistMax": 37
+      },
+      {
+        "label": "XL",
+        "chestMin": 44,
+        "chestMax": 46,
+        "waistMin": 38,
+        "waistMax": 40
+      }
+    ]
+  },
+  {
+    "brand": "Under Armour",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.underarmour.com/en-us/t/size-guide/mens-tops/",
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 31,
+        "chestMax": 34,
+        "waistMin": 28,
+        "waistMax": 29
+      },
+      {
+        "label": "SM",
+        "chestMin": 34,
+        "chestMax": 37,
+        "waistMin": 29,
+        "waistMax": 31
+      },
+      {
+        "label": "MD",
+        "chestMin": 37,
+        "chestMax": 41,
+        "waistMin": 31,
+        "waistMax": 34
+      },
+      {
+        "label": "LG",
+        "chestMin": 41,
+        "chestMax": 44,
+        "waistMin": 34,
+        "waistMax": 37
+      },
+      {
+        "label": "XL",
+        "chestMin": 44,
+        "chestMax": 48,
+        "waistMin": 37,
+        "waistMax": 41
+      },
+      {
+        "label": "XXL",
+        "chestMin": 48,
+        "chestMax": 52,
+        "waistMin": 41,
+        "waistMax": 45.5
+      },
+      {
+        "label": "3XL",
+        "chestMin": 52,
+        "chestMax": 56,
+        "waistMin": 45.5,
+        "waistMax": 50
+      },
+      {
+        "label": "4XL",
+        "chestMin": 56,
+        "chestMax": 60,
+        "waistMin": 50,
+        "waistMax": 54.5
+      },
+      {
+        "label": "5XL",
+        "chestMin": 60,
+        "chestMax": 64,
+        "waistMin": 54.5,
+        "waistMax": 59
+      }
+    ]
+  }
+]

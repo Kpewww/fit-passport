@@ -46,7 +46,9 @@
   "screenshot": "screenshots/columbia-mens.png",
   "capturedAt": "2026-10-22",
   "units": "in",
-  "verifiedBy": [],
+  "verifiedBy": [
+    "Kpew"
+  ],
   "line": "mens",
   "note": "Standard tops only. Extended sizes not copied. XS single values preserved without widening.",
   "sourceUrl": "https://www.columbia.com/t/size-fit/",
