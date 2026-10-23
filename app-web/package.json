@@ -15,7 +15,7 @@
     "db:pg:schema": "node scripts/gen-postgres-schema.mjs",
     "db:pg:migrate": "npm run db:pg:schema && prisma migrate deploy --schema prisma/schema.postgres.prisma",
     "db:pg:generate": "npm run db:pg:schema && prisma generate --schema prisma/schema.postgres.prisma",
-    "vercel-build": "npm run db:pg:generate && prisma migrate deploy --schema prisma/schema.postgres.prisma && next build",
+    "vercel-build": "node scripts/vercel-build.mjs",
     "postinstall": "prisma generate",
     "icons": "node scripts/gen-icons.mjs",
     "guides": "node scripts/build-brand-guides.mjs"

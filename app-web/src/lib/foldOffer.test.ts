@@ -14,7 +14,10 @@ describe("login's offer to bring this browser's things over (Session 100)", () =
     const [body, sig] = raw.split(".");
     const other = Buffer.from(JSON.stringify({ fold: "someone-else", keep: "claimed", exp: Date.now() + 60_000 })).toString("base64url");
     expect(decodeFoldOffer(`${other}.${sig}`)).toBeNull();
-    expect(decodeFoldOffer(`${body}.x${sig.slice(1)}`)).toBeNull();
+    // Change the first character to one it is not, so the signature always differs
+    // (replacing it with a fixed "x" was a no-op whenever the signature began with x).
+    const flipped = (sig[0] === "x" ? "y" : "x") + sig.slice(1);
+    expect(decodeFoldOffer(`${body}.${flipped}`)).toBeNull();
     expect(decodeFoldOffer("nonsense")).toBeNull();
   });
 

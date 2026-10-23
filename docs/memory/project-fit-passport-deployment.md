@@ -11,7 +11,7 @@ metadata:
 **WORKFLOW RULE (Session 103, 2026-10-22).** Commit and push **directly to `main`**, as every session
 before did; `main` deploys production. Do NOT work on a side branch: Vercel **Preview** builds of other
 branches fail in ~9 s (seen on `claude/relaxed-planck-qrsexq`, both commits), while production is fine.
-Cause unconfirmed, most likely the Preview environment lacks the variables `vercel-build` needs. A first
+Cause FOUND (Session 103, PR #2's build log): Prisma P1012, `DIRECT_URL` missing in Preview, at `prisma migrate deploy`. Fixed in code: `scripts/vercel-build.mjs` migrates ONLY when `VERCEL_ENV=production`; previews generate + build. Never give Preview the production DIRECT_URL (a branch would migrate the live database). A first
 guess blamed the commit author; wrong (a Kpew-authored commit failed the same way). Commits as
 `Kpew <xchkong@gmail.com>`, like the history.
 
@@ -21,7 +21,7 @@ How [[project-fit-passport]] is set up to deploy (prepared Session 31, 2026-08-1
 
 **Migrations.** `prisma/migrations/0_init/migration.sql` (337 lines) is committed, generated offline via `prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.postgres.prisma --script` — no live DB needed. After any schema change: `npm run db:push` (local) then diff a new migration against `prisma/migrations` (needs a throwaway Postgres as shadow DB; command is in DEPLOYMENT.md).
 
-**Scripts (`app-web/package.json`):** `typecheck`, `db:push` (local SQLite), `db:pg:schema|generate|migrate`, **`vercel-build`** = `db:pg:generate && prisma migrate deploy --schema prisma/schema.postgres.prisma && next build`, plus `postinstall: prisma generate`. Verified `prisma generate` tolerates a Postgres `DATABASE_URL` against the SQLite schema (exit 0), so postinstall won't break Vercel.
+**Scripts (`app-web/package.json`):** `typecheck`, `db:push` (local SQLite), `db:pg:schema|generate|migrate`, **`vercel-build`** = `node scripts/vercel-build.mjs` (Session 103: generate; migrate only in production; next build), plus `postinstall: prisma generate`. Verified `prisma generate` tolerates a Postgres `DATABASE_URL` against the SQLite schema (exit 0), so postinstall won't break Vercel.
 
 **Vercel settings:** Root Directory = **`app-web`** (app isn't at repo root); Build Command = **`npm run vercel-build`**. Required env: `DATABASE_URL` (Neon **pooled** `-pooler` host), `SESSION_SECRET`, `APP_URL`. Optional (all degrade gracefully): `ANTHROPIC_API_KEY`, `REPLICATE_API_TOKEN`, `RESEND_API_KEY`+`EMAIL_FROM`, `TRYON_API_URL/KEY`.
 
