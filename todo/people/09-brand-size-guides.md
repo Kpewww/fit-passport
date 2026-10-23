@@ -105,3 +105,12 @@ Gucci · Prada · Burberry · Saint Laurent · Balenciaga · Moncler · Zegna（
 **还没做:**
 - 美国品牌:Gap、Old Navy、Abercrombie & Fitch、American Eagle、Ralph Lauren、Carhartt(条款弹窗,未接受)、Brooks Brothers、Everlane、L.L.Bean 女装(尺码标签长度上限已放宽到 24,可以补)。
 - 7 个奢侈品牌全部未完成。
+
+### 第二批预检(2026-10-23,PR #2,共 31 份)
+
+- **数字核对**:新增 15 份里,有印出范围、会被引擎使用的 9 份已对照截图逐个核对,数字全部一致:
+  A&F 男/女、Everlane 男/女、L.L.Bean 女、Moncler 男、Burberry 女、Ralph Lauren 男、Gucci 男。
+- **未逐个核对**:Burberry 男、Gucci 女、Moncler 女、Ralph Lauren 女、Saint Laurent 男/女。这 6 份每个尺码只印一个数字,引擎不使用。
+- **⚠ Ralph Lauren 男装不要按"人体"核对通过。** 页面标题写 Body Measurements,但表里有后身长 28、短袖长 8.75,胸围 M=44——这些是衣服的尺寸。应改成 `"kind": "garment"`,或者不收。
+- **Burberry 女装**:XXXS 胸围 26 英寸看起来偏小,但页面确实这么印,和同表的中国号型(S 84 cm,170/84A)也对得上,不算抄错。
+- **PR 的 Preview 部署失败**:已在 main 修好(`8f19bdf`:Preview 不再跑数据库迁移)。把 main 合并进 `codex/people-tasks` 后,Preview 应该会通过。
