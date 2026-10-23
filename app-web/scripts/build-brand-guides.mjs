@@ -34,6 +34,6 @@ for (const f of files) {
 }
 const compiled = compile(ok);
 writeFileSync(out, JSON.stringify(compiled, null, 2) + "\n");
-const unverified = ok.filter((f) => !f.verifiedBy.length).length;
-console.log(`${files.length} files · ${bad} invalid · ${unverified} waiting for a person to verify · ${compiled.length} counted (verified body guides)`);
+const unverified = ok.filter((f) => !f.reviewed && !f.verifiedBy.length).length;
+console.log(`${files.length} files · ${bad} invalid · ${unverified} waiting for review · ${compiled.length} counted (reviewed body guides)`);
 process.exit(bad ? 1 : 0);

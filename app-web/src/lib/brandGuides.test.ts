@@ -24,20 +24,21 @@ describe("brand size guides in data/brand-guides (Session 103)", () => {
     expect(generated).toEqual(JSON.parse(JSON.stringify(compile(all))));
   });
 
-  it("only verified BODY guides count", () => {
+  it("only reviewed BODY guides count", () => {
     const base = { brand: "X", line: "mens", kind: "body", units: "cm", sourceUrl: "https://x.com/size", kindEvidence: "body measurements",
       capturedAt: "2026-10-22", capturedBy: "agent", screenshot: "screenshots/x.png",
       rows: [{ label: "S", chestMin: 88, chestMax: 96 }, { label: "M", chestMin: 96, chestMax: 104 }] } as const;
-    const ok = GuideFile.parse({ ...base, verifiedBy: ["A"] });
+    const ok = GuideFile.parse({ ...base, reviewed: true });
+    expect(compile([GuideFile.parse({ ...base, verifiedBy: ["A"] })])).toHaveLength(1); // older files
     expect(compile([ok])).toHaveLength(1);
     expect(compile([GuideFile.parse(base)])).toHaveLength(0);
-    expect(compile([GuideFile.parse({ ...base, kind: "garment", verifiedBy: ["A"] })])).toHaveLength(0);
-    expect(compile([GuideFile.parse({ ...base, kind: "body", verifiedBy: ["A", "B"] })])).toHaveLength(1);
+    expect(compile([GuideFile.parse({ ...base, kind: "garment", reviewed: true })])).toHaveLength(0);
+    expect(compile([GuideFile.parse({ ...base, kind: "body", reviewed: true })])).toHaveLength(1);
   });
 
   it("single printed numbers are kept as printed but never counted as a range", () => {
     const f = GuideFile.parse({ brand: "X", line: "mens", kind: "body", units: "in", sourceUrl: "https://x.com/size", kindEvidence: "Body measurements",
-      capturedAt: "2026-10-22", capturedBy: "agent", screenshot: "screenshots/x.png", verifiedBy: ["A"],
+      capturedAt: "2026-10-22", capturedBy: "agent", screenshot: "screenshots/x.png", reviewed: true,
       rows: [{ label: "S", chest: 36 }, { label: "M", chest: 40 }] });
     expect(compile([f])).toEqual([]);
   });

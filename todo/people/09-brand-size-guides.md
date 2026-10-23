@@ -33,7 +33,7 @@
    - 把页面上用来判断这一点的原话**逐字**复制到 `kindEvidence`。
    - 一页里两种表都有，就分成两个文件。
 7. **只抄常规版型（Regular）。** Tall / Petite / Big & Tall / Slim 不抄，在 `note` 里写一句它们存在。
-8. **`verifiedBy` 必须留空 `[]`。** 永远不要填名字，核对是人的工作。没有人核对的数据，引擎不会使用。
+8. **`reviewed` 必须是 `false`。** 只有人审核通过后才改成 `true`；agent 永远不要自己改。没审核的数据，引擎不会使用。
 
 ### 文件放哪、叫什么
 
@@ -72,7 +72,7 @@ Gucci · Prada · Burberry · Saint Laurent · Balenciaga · Moncler · Zegna（
 1. 打开截图，对照 JSON 的**每一个数字**、单位、尺码标签。
 2. 打开 `sourceUrl` 确认是品牌官网，而且内容和截图一致。
 3. 看 `kindEvidence` 是不是页面原话，`kind` 填得对不对。
-4. 都对的话，在 `verifiedBy` 里加上自己的名字，运行 `npm run guides`，提交。
+4. 都对的话，把 `reviewed` 改成 `true`（不用写名字），运行 `npm run guides`，提交。
 5. 全部核对完再合并 PR。合并后，数据在下一次部署时生效。可以在 `/admin` 的"品牌校准"里看到。
 
 **完成标准：** 至少 10 个美国品牌和 5 个奢侈品牌的人体尺码表核对完毕并合并；`/admin` 的美码字母共识里出现 S/M/L/XL。
@@ -85,7 +85,7 @@ Gucci · Prada · Burberry · Saint Laurent · Balenciaga · Moncler · Zegna（
 
 **第一批已采集**,在 `codex/people-tasks` 分支:9 个美国品牌、16 份表。报告见该分支的 `docs/brand-guide-research-2026-10-23.md`。
 
-**Claude 预检**(机器预检,**不算人工核对**,`verifiedBy` 仍为空):
+**Claude 预检**(机器预检,**不算人工审核**,`reviewed` 仍为 false):
 - 16 份逐一对照截图,数字、单位、尺码标签**全部一致**,没有发现抄错;
 - 都来自品牌官网,都是人体尺寸。
 
@@ -114,3 +114,9 @@ Gucci · Prada · Burberry · Saint Laurent · Balenciaga · Moncler · Zegna（
 - **⚠ Ralph Lauren 男装不要按"人体"核对通过。** 页面标题写 Body Measurements,但表里有后身长 28、短袖长 8.75,胸围 M=44——这些是衣服的尺寸。应改成 `"kind": "garment"`,或者不收。
 - **Burberry 女装**:XXXS 胸围 26 英寸看起来偏小,但页面确实这么印,和同表的中国号型(S 84 cm,170/84A)也对得上,不算抄错。
 - **PR 的 Preview 部署失败**:已在 main 修好(`8f19bdf`:Preview 不再跑数据库迁移)。把 main 合并进 `codex/people-tasks` 后,Preview 应该会通过。
+
+### 审核状态(2026-10-23)
+
+- **已审核通过(`reviewed: true`)**:J.Crew、Levi's、Calvin Klein、Columbia、Under Armour、L.L.Bean、A&F 男装。
+  这 7 份已进入引擎,男装美码共识来自 9 个品牌。
+- **审核方式改了**:创始人决定不写名字,改成 `reviewed: true`。旧文件里的 `verifiedBy` 仍然被认可。

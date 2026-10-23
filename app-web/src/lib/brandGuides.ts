@@ -40,7 +40,9 @@ export const GuideFile = z.object({
   capturedBy: z.string().min(1).max(80),
   screenshot: z.string().regex(/^screenshots\/[\w.-]+\.(png|jpe?g)$/),
   note: z.string().max(300).optional().nullable(),
-  /** Names of the people who checked every number against the screenshot. Empty = not counted. */
+  /** A person reviewed every number against the page and approved it. False = not counted. */
+  reviewed: z.boolean().default(false),
+  /** Older files named the reviewer instead (Session 103, before the founder chose a plain flag). */
   verifiedBy: z.array(z.string().min(1)).default([]),
   rows: z.array(GuideRow).min(2).max(20),
 });
@@ -54,7 +56,7 @@ export type CompiledGuide = Pick<GuideFileT, "brand" | "line" | "units" | "sourc
 
 export function compile(files: GuideFileT[]): CompiledGuide[] {
   return files
-    .filter((f) => f.kind === "body" && f.verifiedBy.length > 0)
+    .filter((f) => f.kind === "body" && (f.reviewed || f.verifiedBy.length > 0))
     .map((f) => ({
       brand: f.brand, line: f.line, units: f.units, sourceUrl: f.sourceUrl,
       rows: f.rows

@@ -2,7 +2,7 @@
   "screenshot": "screenshots/calvin-klein-womens.png",
   "kind": "body",
   "kindEvidence": "With arms relaxed at your side, measure the fullest part of your bust while keeping the measuring tape parallel to the ground.",
-  "verifiedBy": [],
+  "reviewed": false,
   "line": "womens",
   "sourceUrl": "https://www.calvinklein.us/en/women-size-guide.html#wl-t-shirts",
   "note": "Tanks, T-Shirts and Sweatshirts. M waist omitted: source prints two values without a range delimiter. XL single values preserved. Body-measurement instructions in calvin-klein-womens-evidence.png.",

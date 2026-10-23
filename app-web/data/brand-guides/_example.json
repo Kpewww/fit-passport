@@ -9,10 +9,28 @@
   "capturedBy": "agent name",
   "screenshot": "screenshots/gap-mens.png",
   "note": "Regular fit only; Tall is a separate table, not copied.",
-  "verifiedBy": [],
+  "reviewed": false,
   "rows": [
-    { "label": "XS", "chestMin": 33, "chestMax": 35, "waistMin": 27, "waistMax": 28 },
-    { "label": "S", "chestMin": 35, "chestMax": 37, "waistMin": 29, "waistMax": 30 },
-    { "label": "M", "chestMin": 38, "chestMax": 40, "waistMin": 31, "waistMax": 32 }
+    {
+      "label": "XS",
+      "chestMin": 33,
+      "chestMax": 35,
+      "waistMin": 27,
+      "waistMax": 28
+    },
+    {
+      "label": "S",
+      "chestMin": 35,
+      "chestMax": 37,
+      "waistMin": 29,
+      "waistMax": 30
+    },
+    {
+      "label": "M",
+      "chestMin": 38,
+      "chestMax": 40,
+      "waistMin": 31,
+      "waistMax": 32
+    }
   ]
 }

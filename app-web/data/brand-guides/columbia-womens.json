@@ -46,7 +46,7 @@
   "screenshot": "screenshots/columbia-womens.png",
   "capturedAt": "2026-10-22",
   "units": "in",
-  "verifiedBy": [],
+  "reviewed": false,
   "line": "womens",
   "note": "Standard tops only. Extended sizes not copied. XS single values preserved without widening.",
   "sourceUrl": "https://www.columbia.com/t/size-fit/",
