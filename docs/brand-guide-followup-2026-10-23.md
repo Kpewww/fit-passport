@@ -2,7 +2,7 @@
 
 ## Completed
 
-Current total: 26 unverified JSON guides and 33 source/measurement screenshots in app-web/data/brand-guides. Every verifiedBy remains []. No guide is counted by the runtime compiler. This is draft research, not completion of the TODO human-verification target.
+Current total: 31 unverified JSON guides and 39 source/measurement screenshots in app-web/data/brand-guides. Every verifiedBy remains []. No guide is counted by the runtime compiler. This is draft research, not completion of the TODO human-verification target.
 
 Added since the 16-guide checkpoint: L.L.Bean women; Gucci men/women; Moncler men/women; Burberry men/women; Ralph Lauren men/women; Abercrombie & Fitch women. Supplemented printed header mappings for Tommy Hilfiger and Banana Republic. Values, units and printed singleton measurements are preserved. No body/garment sentence was invented to fill an evidence gap.
 
@@ -29,17 +29,17 @@ Done means saved draft plus complete relevant screenshot, NOT human verified. Sk
 | Moncler | Done | Done | Official US tops; printed inches, decimal commas represented by JSON decimal points; no unit conversion. Men's3XL waist41,43 retained. |
 | Burberry | Done | Done | Official US classic-fit knitwear size dialogs. Women's numeric and alpha tables differ; alpha table retained without invented mapping. |
 | Ralph Lauren | Done | Done | BODY/IN selected. Men's page labels body but also displays garment-like columns; uncertainty retained. Women's full numeric/alpha mapping recorded. |
-| Abercrombie & Fitch | Unfinished | Done | Legacy guide404; current men's US product URL redirected home. Women's general Tops body guide collected, excluding product-specific oversized garment length. No access denial claimed for men. |
+| Abercrombie & Fitch | Done | Done | Follow-up: normal US home navigation reached the general Tops guide for men, XXS through printed 3XL. Earlier redirect is resolved; Tall and product garment length excluded. |
 | Gap | Skip | Skip | Official guide opens, clicking men/women links did not display numeric chart. Rendering/expansion failure; not proof no chart exists. |
 | Old Navy | Skip | Skip | Same: official guide link clicks did not expose numeric table. |
 | American Eagle | Skip | Unfinished | Prior men's units unclear; current visit displayed usage banner linking agreement to Terms of Service. No acceptance. Women not separately revisited after banner. |
 | Brooks Brothers | Skip | Skip | Official tables readable; explicit body/garment original sentence not established. Women's guide rechecked; numeric data alone not sufficient under09. |
-| Everlane | Unfinished | Unfinished | Official support explains product-specific body guides but has no numeric table. No universal chart obtained; not blocked/login-required. |
+| Everlane | Done | Done | Follow-up: official product Size Guide dialogs provide body tables. Women Body Measurements selected; men explicit chest measurement instructions saved. Mixed ranges/singletons and exact numeric mappings retained. Product garment toggle not collected. |
 | Carhartt | Skip | Skip | Earlier explicit Terms and Conditions consent gate; not accepted or retried. |
-| Prada | Unfinished | Unfinished | US homepage/FAQ/online-purchases help visited; no general numeric tops guide obtained. No retailer refusal claimed. |
-| Saint Laurent | Unfinished | Unfinished | US FAQ accessible; product-page sizing mentioned, no general numeric chart obtained. No retailer refusal claimed. |
-| Balenciaga | Skip | Unfinished | Men's table visible but no original body/garment sentence; women's US Size guide click did not produce a visible table. No invented evidence. |
-| Zegna | Skip | Not in repository09 scope | US men's shirt table and body diagram visible; no explicit original body/garment sentence. Repository requests men only. |
+| Prada | Skip after terms gate | Skip | Follow-up: women Find your size opened a Measmerize service stating use agrees to its ToS. No personal data entered or service continued. Men not separately attempted after this terms gate; no claim that Prada has no chart. |
+| Saint Laurent | Done | Done | Follow-up: US product Size Guide dialogs expose general MEN'S SHIRTS and WOMEN READY TO WEAR tables labeled BODY MEASUREMENT, CM selected. Singletons and exact header mappings retained. |
+| Balenciaga | Skip | Skip | Follow-up: women guide now visibly expanded; numeric table and units present, but no body/garment original sentence. Same semantic evidence limitation as men. Not an access refusal. |
+| Zegna | Skip | Unavailable in inspected US catalog | Women explicitly checked despite repository list saying men only. US home labels Menswear; Ready to Wear page explicitly describes men's collection and no women category was found. No third-party or invented women table. Men retains missing-original-sentence limitation. |
 | Nike / Patagonia | Existing baseline | Existing baseline where applicable | Not recollected, per09. |
 
 ## Source and incomplete evidence
@@ -63,3 +63,19 @@ At25 guides: npm run guides passed: 25 files,0 invalid,25 waiting for a person t
 
 No paid full eval, production settings, permissions, payment, store submission, formal truth promotion or human verifier name added. Taobao's earlier safety denial remains untouched. This report supersedes the old browser-unavailable and pending-cleanup statements; prior reports remain historical checkpoints.
 Final validation: npm run guides:26 files,0 invalid,26 awaiting human verification,0 counted; npm test:87 passed files,1480 passed tests,1 existing evalCases skip,exit0; git diff --check passed. Runtime generated data has no semantic diff.
+
+## Bounded remaining-brand follow-up
+
+Added five unverified guides: Abercrombie & Fitch men, Everlane men/women, Saint Laurent men/women; six screenshots (Everlane men includes a separate measurement-instruction image). Latest browser check confirmed main window824150303 focused and work window824150846 unfocused. All collection was signed out. No previously refused retailer was retried.
+
+Exact follow-up blocked/limited evidence (workspace C:\Users\Kpew\Documents\Codex\2026-10-22\task):
+
+- balenciaga-womens-chart-no-kind-evidence.png: https://www.balenciaga.com/en-us/cropped-t-shirt-balenciaga-grey-814264361.html — table visible; insufficient semantic original text.
+- prada-size-service-terms-gate.png: https://www.prada.com/us/en/p/short-sleeved-wool-and-mouline-cashmere-polo-sweater/P24E3P_6348_F0Y20_S_OOO — third-party sizing service terms; stopped without entering data.
+- zegna-us-mens-only-navigation.png: https://www.zegna.com/us-en/ready-to-wear/ — inspected official catalog is explicitly men's. Women availability not inferred solely from repository scope.
+
+Unattempted standalone gender follow-ups: Prada men (stopped brand after terms gate) and American Eagle women (previous terms banner, not retried). The other requested remaining items were attempted and have either saved drafts or the specific limitations above. No assertion that unvisited pages have no tables. No broad search or scraping was used.
+
+Merge remains paused: commit353f742 Preview failed in Prisma get-config P1012 because DIRECT_URL was absent, before Next build. See https://github.com/Kpewww/fit-passport/pull/2#issuecomment-6361541052 . No environment/configuration changes, credential handling or merge occurred in this follow-up.
+
+Follow-up validation: npm run guides: 31 files, 0 invalid, 31 waiting for human verification, 0 counted. npm test first run: 1484 passed, 1 failed, 1 skipped; existing foldOffer.test.ts:17 replaces signature first character with x, which is not a mutation when it already starts with x. No authentication code changed. Immediate full rerun: 87 test files passed, 1485 tests passed, 1 existing evalCases test skipped, exit 0. Both attempts are disclosed; no paid full eval. git diff --check passed. Generated runtime guide JSON has no semantic diff.

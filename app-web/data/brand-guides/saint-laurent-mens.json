@@ -1,0 +1,60 @@
+{
+  "brand": "Saint Laurent",
+  "line": "mens",
+  "kind": "body",
+  "units": "cm",
+  "sourceUrl": "https://www.ysl.com/en-us/pr/cassandre-shirt-in-striped-cotton-poplin-A001QBY2O084272.html",
+  "kindEvidence": "BODY MEASUREMENT",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/saint-laurent-mens.png",
+  "note": "General MEN'S SHIRTS guide, CM. Printed BUST copied to chest. YSL labels36-44; US labels14,14 1/2,15,15 1/2,15 3/4,16,16 1/2,17,17 1/2 respectively. No alpha row. All singleton values.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "36",
+      "chest": 88,
+      "waist": 72
+    },
+    {
+      "label": "37",
+      "chest": 92,
+      "waist": 76
+    },
+    {
+      "label": "38",
+      "chest": 96,
+      "waist": 80
+    },
+    {
+      "label": "39",
+      "chest": 100,
+      "waist": 84
+    },
+    {
+      "label": "40",
+      "chest": 104,
+      "waist": 88
+    },
+    {
+      "label": "41",
+      "chest": 108,
+      "waist": 92
+    },
+    {
+      "label": "42",
+      "chest": 112,
+      "waist": 96
+    },
+    {
+      "label": "43",
+      "chest": 116,
+      "waist": 100
+    },
+    {
+      "label": "44",
+      "chest": 120,
+      "waist": 104
+    }
+  ]
+}

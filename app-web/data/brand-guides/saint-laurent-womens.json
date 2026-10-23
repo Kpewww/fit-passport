@@ -1,0 +1,45 @@
+{
+  "brand": "Saint Laurent",
+  "line": "womens",
+  "kind": "body",
+  "units": "cm",
+  "sourceUrl": "https://www.ysl.com/en-us/pr/lavalliere-shirt-in-cotton-poplin-870726Y1H489000.html",
+  "kindEvidence": "BODY MEASUREMENT",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/saint-laurent-womens.png",
+  "note": "General WOMEN READY TO WEAR chart, CM selected. YSL alpha/numeric: XXS=32; XS=34; S=36; M=38; L=40; XL=42. US: 0,2,4,6,8,10 respectively. All singleton values. Product oversized cut is not used as garment measurements.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "XXS",
+      "chest": 76,
+      "waist": 58.5
+    },
+    {
+      "label": "XS",
+      "chest": 79,
+      "waist": 61.5
+    },
+    {
+      "label": "S",
+      "chest": 82,
+      "waist": 64.5
+    },
+    {
+      "label": "M",
+      "chest": 86,
+      "waist": 68.5
+    },
+    {
+      "label": "L",
+      "chest": 90,
+      "waist": 72.5
+    },
+    {
+      "label": "XL",
+      "chest": 94,
+      "waist": 76.5
+    }
+  ]
+}
