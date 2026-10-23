@@ -1,14 +1,14 @@
 {
   "brand": "Ralph Lauren",
   "line": "mens",
-  "kind": "body",
+  "kind": "garment",
   "units": "in",
   "sourceUrl": "https://www.ralphlauren.com/hidden-men-polo-shirts/the-iconic-classic-fit-mesh-polo/401480.html?poloProductSetID=401480-P",
-  "kindEvidence": "These measurements reflect body size. Select the “Product” chart for product measurements when available.",
+  "kindEvidence": "BACK BODY",
   "capturedAt": "2026-10-23",
   "capturedBy": "Codex",
   "screenshot": "screenshots/ralph-lauren-mens.png",
-  "note": "Classic fit; BODY selected, IN selected. Page calls these body measurements although back-body/shoulder columns also appear. Preserve printed chest singleton values; human review should check this apparent labeling ambiguity. Custom Slim and Slim excluded.",
+  "note": "Garment classification per latest TODO09 review: BACK BODY and short SLEEVE columns are clothing dimensions. Page misleadingly selects BODY and says body size. Original screenshot preserved; chest singletons unchanged. Do not approve as body data. Classic only; Custom Slim/Slim excluded.",
   "verifiedBy": [],
   "rows": [
     {

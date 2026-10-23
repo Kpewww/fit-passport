@@ -28,7 +28,7 @@ Done means saved draft plus complete relevant screenshot, NOT human verified. Sk
 | Gucci | Done | Done | Official US general tops tables, printed CM chest singletons; separate body diagram/original instructions. |
 | Moncler | Done | Done | Official US tops; printed inches, decimal commas represented by JSON decimal points; no unit conversion. Men's3XL waist41,43 retained. |
 | Burberry | Done | Done | Official US classic-fit knitwear size dialogs. Women's numeric and alpha tables differ; alpha table retained without invented mapping. |
-| Ralph Lauren | Done | Done | BODY/IN selected. Men's page labels body but also displays garment-like columns; uncertainty retained. Women's full numeric/alpha mapping recorded. |
+| Ralph Lauren | Garment draft | Body draft | Men reclassified per latest TODO09 and screenshot: BACK BODY and short sleeve dimensions contradict the page body label. Do not verify as body. Women numeric/alpha mapping retained. |
 | Abercrombie & Fitch | Done | Done | Follow-up: normal US home navigation reached the general Tops guide for men, XXS through printed 3XL. Earlier redirect is resolved; Tall and product garment length excluded. |
 | Gap | Skip | Skip | Official guide opens, clicking men/women links did not display numeric chart. Rendering/expansion failure; not proof no chart exists. |
 | Old Navy | Skip | Skip | Same: official guide link clicks did not expose numeric table. |
@@ -79,3 +79,7 @@ Unattempted standalone gender follow-ups: Prada men (stopped brand after terms g
 Merge remains paused: commit353f742 Preview failed in Prisma get-config P1012 because DIRECT_URL was absent, before Next build. See https://github.com/Kpewww/fit-passport/pull/2#issuecomment-6361541052 . No environment/configuration changes, credential handling or merge occurred in this follow-up.
 
 Follow-up validation: npm run guides: 31 files, 0 invalid, 31 waiting for human verification, 0 counted. npm test first run: 1484 passed, 1 failed, 1 skipped; existing foldOffer.test.ts:17 replaces signature first character with x, which is not a mutation when it already starts with x. No authentication code changed. Immediate full rerun: 87 test files passed, 1485 tests passed, 1 existing evalCases test skipped, exit 0. Both attempts are disclosed; no paid full eval. git diff --check passed. Generated runtime guide JSON has no semantic diff.
+
+Integration follow-up: merged main1309fa5 (Preview skips migrations; signature test always mutates). Per new TODO09 review and original screenshot, Ralph Lauren men is now kind=garment with literal BACK BODY evidence; contradictory body label documented. No human verification or measurements changed.
+
+Post-main integration validation: guides31/0 invalid/0 counted; npm test1485 passed,1 existing skipped,87 files passed; node --check scripts/vercel-build.mjs and git diff --check passed. Preview and merge must be verified for the pushed head.
