@@ -10788,3 +10788,18 @@ An agent can now collect brands' own size guides, and people verify them through
 - **Guards:** tests fail on an invalid file, a missing screenshot, or a stale generated file.
 - **The task for the agent and for the reviewers:** `todo/people/09-brand-size-guides.md` (brand list,
   rules: brand's own site only, logged out, no bypassing, copy as printed).
+
+## Session 103h (2026-10-23) — first brand guides pre-checked; letters as brands print them
+
+- **Collected:** the agent's first batch, 16 guides from 9 US brands, on `codex/people-tasks`.
+- **Pre-check:** every file read against its screenshot; every number, unit and label matches; all come from
+  the brand's own site and are body charts. Recorded in `todo/people/09`. A pre-check is not verification;
+  `verifiedBy` stays empty.
+- **Engine fix:** `normLabel` (brandCalibration.ts) reads Small/SM/Medium/MD/LG/X-Large… as S/M/L/XL.
+  Numbers and women's plus labels (2X, 3X) stay as printed. Without this, L.L.Bean and Under Armour would
+  never join the US letter consensus.
+- **Schema:** guide labels may be up to 24 characters (L.L.Bean women's could not be saved at 12).
+- **Simulation**, as if all 16 were verified:
+  - men's consensus XS–3XL from up to 7 brands (M = 96.5–101.6 cm);
+  - women's S/M/L from 3 brands;
+  - an unknown US brand's "M" in a closet now gets a grade-B chest.

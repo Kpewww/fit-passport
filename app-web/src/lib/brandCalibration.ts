@@ -94,9 +94,16 @@ const median = (xs: number[]) => {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 };
 const r1 = (x: number) => Math.round(x * 10) / 10;
-const normLabel = (l: string) => {
-  const s = l.trim().toUpperCase().replace(/\s+/g, "");
-  return ({ XXXL: "3XL", "2XL": "XXL" } as Record<string, string>)[s] ?? s;
+// Letters as brands print them (Session 103: L.L.Bean "Medium", Under Armour "MD"),
+// so one size is one label across brands. Numbers are left alone.
+const LETTER_SYNONYMS: Record<string, string> = {
+  XXXL: "3XL", "2XL": "XXL", XXXXL: "4XL",
+  SMALL: "S", SM: "S", MEDIUM: "M", MED: "M", MD: "M", LARGE: "L", LG: "L",
+  XSMALL: "XS", XXSMALL: "XXS", XLARGE: "XL", XXLARGE: "XXL", XXXLARGE: "3XL",
+};
+export const normLabel = (l: string) => {
+  const s = l.trim().toUpperCase().replace(/[\s.-]+/g, "");
+  return LETTER_SYNONYMS[s] ?? s;
 };
 
 export function calibrate(

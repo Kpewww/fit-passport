@@ -13,7 +13,8 @@ const num = z.number().positive().max(400).optional();
 
 export const GuideRow = z
   .object({
-    label: z.string().trim().min(1).max(12),
+    // Up to 24: some brands print long labels (L.L.Bean women's, reported Session 103).
+    label: z.string().trim().min(1).max(24),
     chestMin: num, chestMax: num, waistMin: num, waistMax: num,
     /** When the page prints ONE number per size, not a range. Kept as printed; never widened into a range. */
     chest: num, waist: num,
