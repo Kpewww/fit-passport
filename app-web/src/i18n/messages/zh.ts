@@ -1730,7 +1730,7 @@ export const zh: Messages = {
       feedback: "意见反馈",
       noFeedback: "暂时没有。",
       nodePatched: "服务器 Node.js {v}：已修复 2026 年 10 月的 Brotli 漏洞。",
-      nodeUnpatched: "服务器 Node.js {v} 尚未修复 2026 年 10 月的 Brotli 漏洞（CVE-2026-111497）。在托管方更新之前，粘贴链接不会去抓取网页；插件不受影响。",
+      nodeUnpatched: "服务器 Node.js {v} 尚未修复 2026 年 10 月的 Brotli 漏洞（CVE-2026-111497）。粘贴链接抓取网页时已不经过 Brotli 解码，照常可用；托管方更新仍然需要，因为同一批还修了其他问题。",
       accuracy: {
         title: "推荐的尺码对不对？",
         intro: "依据买完之后的实际结果：留下且大致合身的那个尺码，或换成的那个尺码。因为太紧或太松退货的，只能说明合适的尺码在哪一边。",

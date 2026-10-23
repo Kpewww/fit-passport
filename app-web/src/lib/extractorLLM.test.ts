@@ -9,10 +9,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { extractSmart, htmlToLlmText, __clearPageCache } from "./extractorLLM";
 
-// The runtime-patch guard (runtimePatch.ts) is tested on its own; here the Node is
-// taken as patched unless a test says otherwise.
-const patch = vi.hoisted(() => ({ ok: true }));
-vi.mock("./runtimePatch", () => ({ brotliPatched: () => patch.ok }));
+// The page transport (safeFetch.ts) is tested on its own against a real server;
+// here it goes through the stubbed global fetch, as the page fetch always did.
+vi.mock("./safeFetch", () => ({ safeFetch: (u: URL | string, i?: RequestInit) => fetch(u, i) }));
 import { recommend } from "./fitEngine";
 import { engineSizes } from "./engineInput";
 
@@ -147,19 +146,6 @@ describe("extractSmart — deterministic pipeline (network stubbed, no key)", ()
 // (needs a better reader). Until we record which, we're guessing about where to
 // spend. See docs/design/fetch-strategy.md §6.
 describe("fetch-outcome instrumentation", () => {
-  it("an unpatched Node fetches nothing from a pasted address (CVE-2026-111497)", async () => {
-    const f = vi.fn(async () => resp("<html><table><tr><th>Size</th><th>Chest</th></tr><tr><td>M</td><td>100</td></tr></table></html>"));
-    vi.stubGlobal("fetch", f);
-    patch.ok = false;
-    try {
-      const out = await extractSmart("https://shop.test/p/mens-shirt-unpatched");
-      expect(f).not.toHaveBeenCalled();
-      expect(out.source.sizesFrom).not.toBe("page");
-    } finally {
-      patch.ok = true;
-    }
-  });
-
   it("records a 403 as 'blocked', not merely unreachable", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => resp("<html>Access Denied</html>", { status: 403 })));
     const out = await extractSmart("https://shop.test/p/mens-shirt-b1");

@@ -14,10 +14,9 @@ import {
 } from "./checkPolicy";
 import { extractSmart, __clearPageCache } from "./extractorLLM";
 
-// The runtime-patch guard (runtimePatch.ts) is tested on its own; here the Node is
-// taken as patched unless a test says otherwise.
-const patch = vi.hoisted(() => ({ ok: true }));
-vi.mock("./runtimePatch", () => ({ brotliPatched: () => patch.ok }));
+// The page transport (safeFetch.ts) is tested on its own against a real server;
+// here it goes through the stubbed global fetch, as the page fetch always did.
+vi.mock("./safeFetch", () => ({ safeFetch: (u: URL | string, i?: RequestInit) => fetch(u, i) }));
 import type { ExtractedProduct } from "./extractor";
 import type { EngineOutput, SizeScore } from "./fitEngine";
 

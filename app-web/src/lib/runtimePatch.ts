@@ -4,10 +4,10 @@
 // out-of-bounds write in Node's Brotli decoder permits remote code execution. Our
 // server fetches pages and chart pictures from addresses people paste, and fetch()
 // decompresses whatever Content-Encoding the far side sends, so a hostile site
-// could send a crafted Brotli body. Vercel moves the Node patch version itself, on
-// its own schedule. Until it runs a fixed release, the server does not fetch
-// untrusted addresses (extractorLLM.ts gate); the extension path, which sends the
-// page's HTML from the browser, is unaffected.
+// could send a crafted Brotli body. Since Session 103 untrusted addresses go through
+// safeFetch.ts, which never runs the Brotli decoder, so the flaw is not reachable
+// that way on any Node. This check now only reports, on /admin, whether the host has
+// moved to a fixed release (the same release fixed TLS and DNS issues too).
 
 /** The first fixed release of each line. Lines not listed are treated as unfixed. */
 export const FIXED: Record<number, [number, number, number]> = {

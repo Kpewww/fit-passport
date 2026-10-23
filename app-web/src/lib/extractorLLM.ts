@@ -15,7 +15,7 @@
 // The public interface `extractSmart(url)` is a drop-in async replacement for
 // `extractFromUrl(url)`.
 
-import { brotliPatched } from "./runtimePatch";
+import { safeFetch } from "./safeFetch";
 import { z } from "zod";
 import { detectCategoryStrict, extractFromUrl, resolveCategory, type ExtractedProduct, type ExtractedSize } from "./extractor";
 import { classifyCategory } from "./categoryModel";
@@ -231,8 +231,6 @@ const MAX_REDIRECTS = 4;
  * Returns the safe URL, or null if this hop must not be fetched.
  */
 async function gate(raw: string): Promise<URL | null> {
-  // An unpatched Node must not decompress what a stranger's server sends (runtimePatch.ts).
-  if (!brotliPatched()) return null;
   const verdict = checkUrlSafety(raw);
   if (!verdict.ok) return null;
   if (await resolvesToPrivateAddress(verdict.url.hostname)) return null;
@@ -256,9 +254,9 @@ async function fetchOnce(url: string): Promise<FetchOutcome> {
 
     let r: Response | null = null;
     for (let hop = 0; hop <= MAX_REDIRECTS; hop++) {
-      r = await fetch(current, {
+      // safeFetch, not fetch: it never follows redirects and never decodes Brotli (safeFetch.ts).
+      r = await safeFetch(current, {
         signal: controller.signal,
-        redirect: "manual",
         headers: {
           "user-agent": UA,
           accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -362,9 +360,8 @@ async function fetchImageBase64(url: string): Promise<{ data: string; mediaType:
     // an internal address is the same SSRF with an extra step. Same gate.
     const safe = await gate(url);
     if (!safe) return null;
-    const r = await fetch(safe, {
+    const r = await safeFetch(safe, {
       signal: controller.signal,
-      redirect: "manual",
       headers: { "user-agent": UA },
     });
     if (!r.ok) return null;

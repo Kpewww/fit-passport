@@ -1750,7 +1750,7 @@ export const en = {
       feedback: "Feedback",
       noFeedback: "Nothing yet.",
       nodePatched: "Server Node.js {v}: patched against the October 2026 Brotli flaw.",
-      nodeUnpatched: "Server Node.js {v} is not yet patched against the October 2026 Brotli flaw (CVE-2026-111497). Pasted links are not fetched until the host updates it; the extension still works.",
+      nodeUnpatched: "Server Node.js {v} is not yet patched against the October 2026 Brotli flaw (CVE-2026-111497). Pasted links are read without the Brotli decoder, so they still work; the host's update still matters for the release's other fixes.",
       accuracy: {
         title: "Was the recommended size right?",
         intro: "From what people did after buying: a size kept that fits about right, or the size exchanged to. A return for being tight or loose only says which side the right size is on.",

@@ -10830,3 +10830,21 @@ An agent can now collect brands' own size guides, and people verify them through
   list"). Accuracy judged it "wrong side": kept but tight, and the recommended size was the size bought.
 - **Not done:** the remote branch `claude/relaxed-planck-qrsexq` could not be deleted from this session (the
   git proxy refuses deletes). The founder deletes it on GitHub.
+
+## Session 103k (2026-10-23) — pasted links never reach the Brotli decoder, on any Node
+
+- **New transport:** `lib/safeFetch.ts` fetches untrusted addresses (pages and chart pictures) with
+  node:http(s), which decompresses nothing.
+  - It asks for gzip or deflate only and decodes those with zlib inflate.
+  - It refuses a Brotli (or zstd) body unread, even when the server sends one unasked.
+  - It never follows redirects, so the caller's SSRF gate re-checks every hop as before.
+  - It caps the body on the wire (6 MB) and after decoding (12 MB, so a gzip bomb is stopped).
+  - It honours the caller's abort timer.
+- **Effect:** the Session 103f guard (no pasted-link fetching on an unpatched Node) is removed, and pasted
+  links work again. `/admin` still shows the server's Node version, as information only: the same Node
+  release also fixed TLS and DNS issues.
+- **Tests:** `safeFetch.test.ts` runs against a real local server (plain, gzip, deflate; a Brotli body
+  refused; a redirect not followed; a bomb capped; an abort). The extractor tests route the transport
+  through their stubbed fetch, as before.
+- **Not verified here:** a live retailer page. This sandbox cannot reach the internet, and the SSRF gate
+  rightly refuses a local server. First thing to check after deploy: paste a link on /check.
