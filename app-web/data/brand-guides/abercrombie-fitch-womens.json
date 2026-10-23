@@ -1,0 +1,55 @@
+{
+  "brand": "Abercrombie & Fitch",
+  "line": "womens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.abercrombie.com/shop/us/p/new-york-giants-graphic-oversized-sunday-crew-57527613",
+  "kindEvidence": "Sizes are designed to fit the following body measurements",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/abercrombie-fitch-womens.png",
+  "note": "General Tops body guide, USA/IN, separate from product garment length. A&F-to-USA: XXS=000-00; XS=0-2; S=4-6; M=8-10; L=12-14; XL=16-18; XXL=20-22; XXXL=24. Product-specific oversized garment measurement excluded.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "XXS",
+      "chestMin": 29.5,
+      "chestMax": 31.5
+    },
+    {
+      "label": "XS",
+      "chestMin": 31.5,
+      "chestMax": 33.5
+    },
+    {
+      "label": "S",
+      "chestMin": 33.5,
+      "chestMax": 35.5
+    },
+    {
+      "label": "M",
+      "chestMin": 35.5,
+      "chestMax": 38
+    },
+    {
+      "label": "L",
+      "chestMin": 38,
+      "chestMax": 41
+    },
+    {
+      "label": "XL",
+      "chestMin": 41,
+      "chestMax": 45
+    },
+    {
+      "label": "XXL",
+      "chestMin": 45,
+      "chestMax": 49
+    },
+    {
+      "label": "XXXL",
+      "chestMin": 49,
+      "chestMax": 53
+    }
+  ]
+}

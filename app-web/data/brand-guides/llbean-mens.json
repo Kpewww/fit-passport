@@ -1,0 +1,45 @@
+{
+  "brand": "L.L.Bean",
+  "rows": [
+    {
+      "label": "Small",
+      "chestMax": 36,
+      "chestMin": 34
+    },
+    {
+      "label": "Medium",
+      "chestMax": 40,
+      "chestMin": 38
+    },
+    {
+      "label": "Large",
+      "chestMax": 44,
+      "chestMin": 42
+    },
+    {
+      "label": "X-Large",
+      "chestMax": 48,
+      "chestMin": 46
+    },
+    {
+      "label": "XX-Large",
+      "chestMax": 52,
+      "chestMin": 50
+    },
+    {
+      "label": "XXX-Large",
+      "chestMax": 56,
+      "chestMin": 54
+    }
+  ],
+  "kindEvidence": "Body Measurements are indicated in inches.",
+  "screenshot": "screenshots/llbean-mens.png",
+  "capturedAt": "2026-10-22",
+  "units": "in",
+  "verifiedBy": [],
+  "line": "mens",
+  "note": "Regular tops only. Tall excluded. No waist printed in the tops table; pants measurements not combined.",
+  "sourceUrl": "https://www.llbean.com/llb/shop/518113?page=sizing-charts",
+  "capturedBy": "Codex",
+  "kind": "body"
+}

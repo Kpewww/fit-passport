@@ -1,0 +1,50 @@
+{
+  "brand": "Levi's",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.levi.com/US/en_US/info/sizeguide",
+  "capturedAt": "2026-10-22",
+  "capturedBy": "Codex",
+  "verifiedBy": [],
+  "kindEvidence": "Measure the widest part of your chest. Make sure to keep the tape horizontal.",
+  "line": "womens",
+  "screenshot": "screenshots/levis-womens.png",
+  "note": "Standard Women's Tops table; Plus Tops omitted. Single chest and waist values copied unchanged, no ranges inferred.",
+  "rows": [
+    {
+      "label": "XXS",
+      "chest": 31,
+      "waist": 24.25
+    },
+    {
+      "label": "XS",
+      "chest": 33,
+      "waist": 26.25
+    },
+    {
+      "label": "S",
+      "chest": 35,
+      "waist": 28.25
+    },
+    {
+      "label": "M",
+      "chest": 37,
+      "waist": 30.25
+    },
+    {
+      "label": "L",
+      "chest": 39.5,
+      "waist": 32.75
+    },
+    {
+      "label": "XL",
+      "chest": 42.5,
+      "waist": 35.75
+    },
+    {
+      "label": "XXL",
+      "chest": 45.5,
+      "waist": 38.75
+    }
+  ]
+}

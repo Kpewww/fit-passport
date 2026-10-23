@@ -1,0 +1,65 @@
+{
+  "brand": "Moncler",
+  "line": "womens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.moncler.com/en-us/client-service/size_guide",
+  "kindEvidence": "Measure around the bust, passing the tape measure under the arms. The tape should sit snugly against your body, but should not be pulled too tight. Make sure to keep it horizontal and parallel to the floor.",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/moncler-womens.png",
+  "note": "Tops & Bottoms, letter-labelled table. MONCLER-to-IT: 3XS=36; XXS=38; XS=40; S=42; M=44; L=46; XL=48; XXL=50; 3XL=52; 4XL=54. Printed inch decimal commas represented as JSON decimal points; no unit conversion/ranges. Evidence: screenshots/moncler-womens-evidence.png.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "3XS",
+      "chest": 31.1,
+      "waist": 23.62
+    },
+    {
+      "label": "XXS",
+      "chest": 32.28,
+      "waist": 24.8
+    },
+    {
+      "label": "XS",
+      "chest": 33.86,
+      "waist": 26.38
+    },
+    {
+      "label": "S",
+      "chest": 35.43,
+      "waist": 27.95
+    },
+    {
+      "label": "M",
+      "chest": 37.01,
+      "waist": 29.53
+    },
+    {
+      "label": "L",
+      "chest": 38.58,
+      "waist": 31.1
+    },
+    {
+      "label": "XL",
+      "chest": 40.16,
+      "waist": 32.68
+    },
+    {
+      "label": "XXL",
+      "chest": 42.52,
+      "waist": 35.04
+    },
+    {
+      "label": "3XL",
+      "chest": 44.88,
+      "waist": 37.4
+    },
+    {
+      "label": "4XL",
+      "chest": 46.46,
+      "waist": 38.98
+    }
+  ]
+}

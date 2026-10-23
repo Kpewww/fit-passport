@@ -1,0 +1,44 @@
+{
+  "brand": "Everlane",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.everlane.com/products/m-t-fvj-prm-ls-nvystpe",
+  "kindEvidence": "Measure at the fullest part of your chest, keeping the tape parallel to the floor.",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/everlane-mens.png",
+  "note": "US Alpha Size to US Numeric Size: XS=34; S=36; M=38 - 40; L=42; XL=44 - 46; XXL=48. XS singleton retained. How To Measure evidence in everlane-mens-evidence.png. Standard chart accessed through Archive Long-Sleeve Crew.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "XS",
+      "chest": 34
+    },
+    {
+      "label": "S",
+      "chestMin": 35,
+      "chestMax": 37
+    },
+    {
+      "label": "M",
+      "chestMin": 38,
+      "chestMax": 40
+    },
+    {
+      "label": "L",
+      "chestMin": 41,
+      "chestMax": 43
+    },
+    {
+      "label": "XL",
+      "chestMin": 44,
+      "chestMax": 46
+    },
+    {
+      "label": "XXL",
+      "chestMin": 47,
+      "chestMax": 49
+    }
+  ]
+}

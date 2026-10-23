@@ -1,0 +1,50 @@
+{
+  "brand": "Levi's",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.levi.com/US/en_US/info/sizeguide",
+  "capturedAt": "2026-10-22",
+  "capturedBy": "Codex",
+  "verifiedBy": [],
+  "kindEvidence": "Measure the widest part of your chest. Make sure to keep the tape horizontal.",
+  "line": "mens",
+  "screenshot": "screenshots/levis-mens.png",
+  "note": "Standard Men's Tops table only. Big & Tall not copied. LMC sizes, neck and seat are present in screenshot but omitted from schema.",
+  "rows": [
+    {
+      "label": "XS",
+      "chestMin": 32,
+      "chestMax": 34,
+      "waistMin": 26,
+      "waistMax": 28
+    },
+    {
+      "label": "S",
+      "chestMin": 35,
+      "chestMax": 37,
+      "waistMin": 29,
+      "waistMax": 31
+    },
+    {
+      "label": "M",
+      "chestMin": 38,
+      "chestMax": 40,
+      "waistMin": 32,
+      "waistMax": 34
+    },
+    {
+      "label": "L",
+      "chestMin": 41,
+      "chestMax": 43,
+      "waistMin": 35,
+      "waistMax": 37
+    },
+    {
+      "label": "XL",
+      "chestMin": 44,
+      "chestMax": 46,
+      "waistMin": 38,
+      "waistMax": 40
+    }
+  ]
+}

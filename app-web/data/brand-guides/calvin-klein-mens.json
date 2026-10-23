@@ -1,0 +1,57 @@
+{
+  "screenshot": "screenshots/calvin-klein-mens.png",
+  "rows": [
+    {
+      "waistMax": 28,
+      "label": "XS",
+      "chestMax": 36,
+      "waistMin": 27,
+      "chestMin": 35
+    },
+    {
+      "waistMax": 30,
+      "label": "S",
+      "chestMax": 38,
+      "waistMin": 29,
+      "chestMin": 37
+    },
+    {
+      "waistMax": 33,
+      "label": "M",
+      "chestMax": 41,
+      "waistMin": 31,
+      "chestMin": 39
+    },
+    {
+      "waistMax": 36,
+      "label": "L",
+      "chestMax": 44,
+      "waistMin": 34,
+      "chestMin": 42
+    },
+    {
+      "waistMax": 39,
+      "label": "XL",
+      "chestMax": 47,
+      "waistMin": 37,
+      "chestMin": 45
+    },
+    {
+      "waistMax": 42,
+      "label": "XXL",
+      "chestMax": 50,
+      "waistMin": 40,
+      "chestMin": 48
+    }
+  ],
+  "kindEvidence": "Body Circumference (Measurement at chest)",
+  "line": "mens",
+  "kind": "body",
+  "capturedAt": "2026-10-22",
+  "sourceUrl": "https://www.calvinklein.us/en/men-size-guide.html#wl-shirts",
+  "units": "in",
+  "capturedBy": "Codex",
+  "brand": "Calvin Klein",
+  "verifiedBy": [],
+  "note": "Shirts, Dress Shirts, Jackets + Blazers, Suit Separates table. Only body chest and waist copied; garment neck and sleeve columns omitted."
+}

@@ -1,0 +1,46 @@
+{
+  "screenshot": "screenshots/calvin-klein-womens.png",
+  "kind": "body",
+  "kindEvidence": "With arms relaxed at your side, measure the fullest part of your bust while keeping the measuring tape parallel to the ground.",
+  "verifiedBy": [],
+  "line": "womens",
+  "sourceUrl": "https://www.calvinklein.us/en/women-size-guide.html#wl-t-shirts",
+  "note": "Tanks, T-Shirts and Sweatshirts. M waist omitted: source prints two values without a range delimiter. XL single values preserved. Body-measurement instructions in calvin-klein-womens-evidence.png.",
+  "capturedAt": "2026-10-22",
+  "brand": "Calvin Klein",
+  "rows": [
+    {
+      "waistMax": 26.5,
+      "label": "XS",
+      "chestMax": 34,
+      "waistMin": 25.5,
+      "chestMin": 33
+    },
+    {
+      "waistMax": 28.5,
+      "label": "S",
+      "chestMax": 36,
+      "waistMin": 27.5,
+      "chestMin": 35
+    },
+    {
+      "label": "M",
+      "chestMax": 38,
+      "chestMin": 37
+    },
+    {
+      "waistMax": 32.5,
+      "label": "L",
+      "chestMax": 40,
+      "waistMin": 31.5,
+      "chestMin": 39
+    },
+    {
+      "waist": 35.5,
+      "label": "XL",
+      "chest": 43
+    }
+  ],
+  "capturedBy": "Codex",
+  "units": "in"
+}

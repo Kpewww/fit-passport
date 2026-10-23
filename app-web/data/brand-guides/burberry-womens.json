@@ -1,0 +1,60 @@
+{
+  "brand": "Burberry",
+  "line": "womens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://us.burberry.com/birkhall-wool-sweater-p81327771",
+  "kindEvidence": "Measure across your back, under your arms and around the fullest part of your bust.",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/burberry-womens.png",
+  "note": "Womens Knitwear alphabetic table from Classic Fit sweater. Separate numeric table differs; no alpha-to-number mapping inferred. Printed inches and singleton values retained. Evidence: screenshots/burberry-womens-evidence.png.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "XXXS",
+      "chest": 26,
+      "waist": 19.3
+    },
+    {
+      "label": "XXS",
+      "chest": 28.3,
+      "waist": 21.7
+    },
+    {
+      "label": "XS",
+      "chest": 30.7,
+      "waist": 24
+    },
+    {
+      "label": "S",
+      "chest": 33.1,
+      "waist": 26.4
+    },
+    {
+      "label": "M",
+      "chest": 35.4,
+      "waist": 28.7
+    },
+    {
+      "label": "L",
+      "chest": 37.8,
+      "waist": 31.1
+    },
+    {
+      "label": "XL",
+      "chest": 40.2,
+      "waist": 33.5
+    },
+    {
+      "label": "XXL",
+      "chest": 42.5,
+      "waist": 35.8
+    },
+    {
+      "label": "XXXL",
+      "chest": 44.9,
+      "waist": 38.2
+    }
+  ]
+}

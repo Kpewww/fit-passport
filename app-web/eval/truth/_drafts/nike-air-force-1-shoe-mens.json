@@ -1,0 +1,18 @@
+{
+  "id": "nike-air-force-1-shoe-mens",
+  "verifiedBy": [],
+  "readOn": "2026-10-22",
+  "outcome": "refuse",
+  "refusal": "unsupported-category",
+  "chart": {
+    "where": "none",
+    "kind": "unstated",
+    "kindEvidence": "",
+    "units": null,
+    "sizes": []
+  },
+  "_draftNotes": "Unverified assistant transcription from the retailer in user Chrome, isolated window 824150713. Human verification by two independent people is still required. Product page explicitly says Men's Shoes. Shoes are outside the supported clothing evaluation category. This refusal does not claim there is no shoe chart. Sign In visible. Screenshot: nike-shoe.jpg.",
+  "_screenshots": [
+    "screenshots/nike-shoe.jpg"
+  ]
+}

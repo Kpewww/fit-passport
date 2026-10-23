@@ -1,0 +1,70 @@
+{
+  "brand": "Madewell",
+  "capturedBy": "Codex",
+  "kindEvidence": "Measure under your arms, around the fullest part of your chest.",
+  "units": "in",
+  "line": "womens",
+  "verifiedBy": [],
+  "kind": "body",
+  "note": "Tops regular rows through 16 / XL; extended 1X-3X omitted. Duplicate printed 0 / XS labels retained, not corrected. Single values preserved. See madewell-womens-evidence.png for body instructions.",
+  "rows": [
+    {
+      "label": "00 / XXS",
+      "waist": 24,
+      "chest": 31
+    },
+    {
+      "label": "0 / XS",
+      "waist": 25,
+      "chest": 32
+    },
+    {
+      "label": "0 / XS",
+      "waist": 26,
+      "chest": 33
+    },
+    {
+      "label": "2 / S",
+      "waist": 27,
+      "chest": 34
+    },
+    {
+      "label": "4 / S",
+      "waist": 28,
+      "chest": 35
+    },
+    {
+      "label": "6 / M",
+      "waist": 29,
+      "chest": 36
+    },
+    {
+      "label": "8 / M",
+      "waist": 30,
+      "chest": 37
+    },
+    {
+      "label": "10 / L",
+      "waist": 31,
+      "chest": 38
+    },
+    {
+      "label": "12 / L",
+      "waist": 32.5,
+      "chest": 39.5
+    },
+    {
+      "label": "14 / XL",
+      "waist": 34,
+      "chest": 41
+    },
+    {
+      "label": "16 / XL",
+      "waist": 35.5,
+      "chest": 42.5
+    }
+  ],
+  "sourceUrl": "https://www.madewell.com/c/size-chart/#wtops",
+  "screenshot": "screenshots/madewell-womens.png",
+  "capturedAt": "2026-10-22"
+}

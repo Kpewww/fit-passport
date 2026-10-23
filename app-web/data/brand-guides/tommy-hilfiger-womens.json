@@ -1,0 +1,80 @@
+{
+  "brand": "Tommy Hilfiger",
+  "kind": "body",
+  "units": "in",
+  "kindEvidence": "All body measurements are in inches.",
+  "capturedAt": "2026-10-22",
+  "capturedBy": "Codex",
+  "verifiedBy": [],
+  "line": "womens",
+  "sourceUrl": "https://usa.tommy.com/en/size-guide-women.html#WomensDressesTopsandOuterwearCS",
+  "screenshot": "screenshots/tommy-hilfiger-womens.png",
+  "note": "Dresses, Tops, and Outerwear header: XXS=0; XS=0,2; S=4,6; M=8,10; L=12,14; XL=16,18; XXL=20,22. The first 0 is under XXS, the second under XS, as printed. Single values retained; no ranges inferred.",
+  "rows": [
+    {
+      "label": "0",
+      "chest": 32,
+      "waist": 24.5
+    },
+    {
+      "label": "0",
+      "chest": 33,
+      "waist": 25.5
+    },
+    {
+      "label": "2",
+      "chest": 34,
+      "waist": 26.5
+    },
+    {
+      "label": "4",
+      "chest": 35,
+      "waist": 27.5
+    },
+    {
+      "label": "6",
+      "chest": 36,
+      "waist": 28.5
+    },
+    {
+      "label": "8",
+      "chest": 37,
+      "waist": 29.5
+    },
+    {
+      "label": "10",
+      "chest": 38.5,
+      "waist": 31
+    },
+    {
+      "label": "12",
+      "chest": 40,
+      "waist": 32.5
+    },
+    {
+      "label": "14",
+      "chest": 41.5,
+      "waist": 34
+    },
+    {
+      "label": "16",
+      "chest": 43,
+      "waist": 35.5
+    },
+    {
+      "label": "18",
+      "chest": 44.5,
+      "waist": 37
+    },
+    {
+      "label": "20",
+      "chest": 46,
+      "waist": 38.5
+    },
+    {
+      "label": "22",
+      "chest": 47.5,
+      "waist": 40
+    }
+  ]
+}

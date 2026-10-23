@@ -1,0 +1,69 @@
+{
+  "brand": "Everlane",
+  "line": "womens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.everlane.com/products/womens-organic-cotton-box-cut-tee-green-lily",
+  "kindEvidence": "Body Measurements",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/everlane-womens.png",
+  "note": "Body Measurements selected, IN. Alpha-to-numeric: XXS=000; XS=00 - 0; S=2 - 4; M=6 - 8; L=10 - 12; XL=14 - 16; XXL=18 - 20; XXXL=20-22. XXS singletons preserved. Product garment toggle not collected.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "XXS",
+      "chest": 30.5,
+      "waist": 23
+    },
+    {
+      "label": "XS",
+      "chestMin": 31.5,
+      "chestMax": 32.5,
+      "waistMin": 24,
+      "waistMax": 25
+    },
+    {
+      "label": "S",
+      "chestMin": 33.5,
+      "chestMax": 34.5,
+      "waistMin": 26,
+      "waistMax": 27
+    },
+    {
+      "label": "M",
+      "chestMin": 35.5,
+      "chestMax": 36.5,
+      "waistMin": 28,
+      "waistMax": 29
+    },
+    {
+      "label": "L",
+      "chestMin": 37.75,
+      "chestMax": 39.25,
+      "waistMin": 30.25,
+      "waistMax": 31.75
+    },
+    {
+      "label": "XL",
+      "chestMin": 40.75,
+      "chestMax": 42.75,
+      "waistMin": 33.25,
+      "waistMax": 35.5
+    },
+    {
+      "label": "XXL",
+      "chestMin": 44.75,
+      "chestMax": 46.75,
+      "waistMin": 38,
+      "waistMax": 40
+    },
+    {
+      "label": "XXXL",
+      "chestMin": 46.75,
+      "chestMax": 48.75,
+      "waistMin": 40,
+      "waistMax": 42
+    }
+  ]
+}

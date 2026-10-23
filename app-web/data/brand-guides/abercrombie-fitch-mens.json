@@ -1,0 +1,55 @@
+{
+  "brand": "Abercrombie & Fitch",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.abercrombie.com/shop/us/p/a-and-f-essential-crew-sweater-63845823?categoryId=12206&faceout=life&seq=02&afsource=social+proofing&gridProductPosition=4",
+  "kindEvidence": "Sizes are designed to fit the following body measurements.",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/abercrombie-fitch-mens.png",
+  "note": "General Tops body chart, USA/IN. Regular; Tall length guidance is present but excluded. Product-specific M garment length excluded. Printed 3XL retained.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "XXS",
+      "chestMin": 28.5,
+      "chestMax": 31.5
+    },
+    {
+      "label": "XS",
+      "chestMin": 31.5,
+      "chestMax": 34.5
+    },
+    {
+      "label": "S",
+      "chestMin": 34.5,
+      "chestMax": 37.5
+    },
+    {
+      "label": "M",
+      "chestMin": 37.5,
+      "chestMax": 40.5
+    },
+    {
+      "label": "L",
+      "chestMin": 40.5,
+      "chestMax": 43.5
+    },
+    {
+      "label": "XL",
+      "chestMin": 43.5,
+      "chestMax": 46.5
+    },
+    {
+      "label": "XXL",
+      "chestMin": 46.5,
+      "chestMax": 49.5
+    },
+    {
+      "label": "3XL",
+      "chestMin": 49.5,
+      "chestMax": 52.5
+    }
+  ]
+}

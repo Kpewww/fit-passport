@@ -1,0 +1,85 @@
+{
+  "brand": "Ralph Lauren",
+  "line": "womens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.ralphlauren.com/women-clothing-shirts-blouses/tie-bow-organdy-shirt/100105584.html?dwvar100105584_colorname=White&cgid=women-clothing-shirts-blouses#ab=NA_WLP_Slot_2_S1_L1_SHOP&start=1&cgid=women-clothing-shirts-blouses",
+  "kindEvidence": "These measurements reflect body size. Select the “Product” chart for product measurements when available.",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/ralph-lauren-womens.png",
+  "note": "General Polo Ralph Lauren Clothing BODY table. XXS=000,00; XS=0,2; S=4,6; M=8,10; L=12,14; XL=16,18; XXL=20,22. Printed singleton inches. Brand notes a slim modern fit; no separate special-fit chart copied.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "000",
+      "chest": 30.5,
+      "waist": 23.5
+    },
+    {
+      "label": "00",
+      "chest": 31.5,
+      "waist": 24.5
+    },
+    {
+      "label": "0",
+      "chest": 32.5,
+      "waist": 25.5
+    },
+    {
+      "label": "2",
+      "chest": 33.5,
+      "waist": 26.5
+    },
+    {
+      "label": "4",
+      "chest": 34.5,
+      "waist": 27.5
+    },
+    {
+      "label": "6",
+      "chest": 35.5,
+      "waist": 28.5
+    },
+    {
+      "label": "8",
+      "chest": 36.5,
+      "waist": 29.5
+    },
+    {
+      "label": "10",
+      "chest": 37.5,
+      "waist": 30.5
+    },
+    {
+      "label": "12",
+      "chest": 39,
+      "waist": 32
+    },
+    {
+      "label": "14",
+      "chest": 40.5,
+      "waist": 33.5
+    },
+    {
+      "label": "16",
+      "chest": 42.5,
+      "waist": 35.5
+    },
+    {
+      "label": "18",
+      "chest": 44.5,
+      "waist": 37.5
+    },
+    {
+      "label": "20",
+      "chest": 46.5,
+      "waist": 39.5
+    },
+    {
+      "label": "22",
+      "chest": 48.5,
+      "waist": 41.5
+    }
+  ]
+}

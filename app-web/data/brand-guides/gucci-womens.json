@@ -1,0 +1,47 @@
+{
+  "brand": "Gucci",
+  "line": "womens",
+  "kind": "body",
+  "units": "cm",
+  "sourceUrl": "https://www.gucci.com/us/en/st/gucci-clothing-size-chart",
+  "kindEvidence": "To correctly measure your shirt size or take your chest measurements, pay special attention to the first three arrows, whereas for pant sizing, please refer to the fourth.",
+  "capturedAt": "2026-10-23",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/gucci-womens.png",
+  "note": "Dresses & tops; printed CM column copied. XXXS has US -; XXS=0; XS=2; S=4; M=6; L=8; XL=10; XXL=12. Single numbers, not ranges. Bottoms excluded. Body diagram/evidence: screenshots/gucci-measure-evidence.png.",
+  "verifiedBy": [],
+  "rows": [
+    {
+      "label": "XXXS",
+      "chest": 77
+    },
+    {
+      "label": "XXS",
+      "chest": 80
+    },
+    {
+      "label": "XS",
+      "chest": 83
+    },
+    {
+      "label": "S",
+      "chest": 86
+    },
+    {
+      "label": "M",
+      "chest": 89
+    },
+    {
+      "label": "L",
+      "chest": 93
+    },
+    {
+      "label": "XL",
+      "chest": 97
+    },
+    {
+      "label": "XXL",
+      "chest": 101
+    }
+  ]
+}
