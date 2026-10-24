@@ -20,6 +20,11 @@ project has already paid for that once: `src/lib/colors.ts`, invariant ㉛).
 When you finish a task, delete its file in the same commit as the work. An empty
 folder is a true statement; a file marked "done" is one more thing to keep in sync.
 
+## The product upgrade (approved 2026-10-24)
+
+`docs/plans/product-upgrade-2026-10-24.md`: wear calendar and "what fits today" during the pilot, then the
+sizing page, photo AI (cutout, try-on, hair, style profile), community modules, and full export/deletion.
+
 ## Right now, the shortest path
 
 **Start the pilot** (`docs/pilot-guide.md`). The code has nothing left blocking it, and only real

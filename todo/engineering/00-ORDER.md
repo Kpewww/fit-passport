@@ -11,3 +11,10 @@ visible table). What remains:
 | 12 | How far a seller's measurement can be off (`LISTING.flatNoiseCm`, assumed), and whether to read measuring photos | Listings with known garment measurements; a decision on photos |
 | 15 | Realistic heads for /body: MetaHuman chosen (Session 98h); converter built and self-tested (`tools/metahuman/`) | Six exported faces: `people/07-metahuman-faces.md` |
 | 16 | The popup says "no longer available" and "estimate" for a brand guide standing in | Nothing: next extension release (0.9.3) |
+
+## The product upgrade (approved 2026-10-24)
+
+Runs alongside the table above; the plan, its order and its boundaries are in
+`docs/plans/product-upgrade-2026-10-24.md`. Order: 1 wear calendar → 2 today's outfit + weather + PWA →
+3 sizing page and 4a/4b photo AI base and cutout → 4c try-on images → 6.1–6.3 community → 4d hair →
+4e style profile → 4c video → 6.4 → 5 export and deletion.
