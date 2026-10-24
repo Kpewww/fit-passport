@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PHOTO_ROUTE, dropPhotos, photoForClient, storePhoto } from "@/lib/photoStore";
+import { PHOTO_ROUTE, cutoutForClient, dropPhotos, photoForClient, storePhoto } from "@/lib/photoStore";
 import { track } from "@/lib/events";
 import { clientKey, rateLimit, tooMany } from "@/lib/rateLimit";
 import { z } from "zod";
@@ -122,6 +122,8 @@ const UpdateSchema = z
     photoFrom: z.enum(["own", "shop"]).optional().nullable(),
     color: z.string().max(40).optional().nullable(),
     seasons: SeasonsInput.optional(),
+    // Which picture the closet shows when an AI cut-out exists (Session 104).
+    photoView: z.enum(["original", "cutout"]).optional().nullable(),
     collectionId: z.string().optional().nullable(),
     // Taken from the product page's chart on the edit sheet (Session 98), with the
     // same bounds as when an item is added by URL (closetItemInput.ts).
@@ -205,8 +207,13 @@ export async function PATCH(req: Request) {
     patch.editHistory = JSON.stringify(hist.slice(-20)); // keep the last 20
   }
 
+  // A new photo makes the old AI cut-out wrong: it goes too (Session 104).
+  if (replacedPhoto !== null || (data.imageDataUrl === null && existing.cutoutPhoto)) {
+    patch.cutoutPhoto = null;
+    patch.photoView = null;
+  }
   const item = await prisma.knownGoodItem.update({ where: { id }, data: patch });
-  if (replacedPhoto) await dropPhotos([replacedPhoto]);
+  if (replacedPhoto || patch.cutoutPhoto === null) await dropPhotos([replacedPhoto, patch.cutoutPhoto === null ? existing.cutoutPhoto : null]);
   return NextResponse.json({ item: forClient(item) });
 }
 
@@ -220,13 +227,17 @@ export async function DELETE(req: Request) {
     .filter(Boolean)
     .slice(0, 200);
   if (ids.length === 0) return NextResponse.json({ error: "id required" }, { status: 400 });
-  const photos = await prisma.knownGoodItem.findMany({ where: { id: { in: ids }, userId: user.id }, select: { imageDataUrl: true } });
+  const photos = await prisma.knownGoodItem.findMany({ where: { id: { in: ids }, userId: user.id }, select: { imageDataUrl: true, cutoutPhoto: true } });
   const res = await prisma.knownGoodItem.deleteMany({ where: { id: { in: ids }, userId: user.id } });
-  await dropPhotos(photos.map((p) => p.imageDataUrl));
+  await dropPhotos(photos.flatMap((p) => [p.imageDataUrl, p.cutoutPhoto]));
   return NextResponse.json({ ok: true, deleted: res.count });
 }
 
 /** An item as its owner's browser sees it: a stored photo by our own address. */
-function forClient<T extends { id: string; imageDataUrl: string | null }>(item: T): T {
-  return { ...item, imageDataUrl: photoForClient(item.id, item.imageDataUrl) };
+function forClient<T extends { id: string; imageDataUrl: string | null; cutoutPhoto?: string | null }>(item: T): T {
+  return {
+    ...item,
+    imageDataUrl: photoForClient(item.id, item.imageDataUrl),
+    ...(item.cutoutPhoto !== undefined ? { cutoutPhoto: cutoutForClient(item.id, item.cutoutPhoto) } : {}),
+  };
 }

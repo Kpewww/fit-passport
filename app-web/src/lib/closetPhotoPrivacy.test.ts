@@ -32,6 +32,8 @@ const MAY_NAME_PHOTO = new Set([
   "lib/photoStore.ts", "app/api/admin/photos/route.ts",
   // The wear calendar (Session 104): the owner's own days, pieces shown by their photo.
   "app/api/wear/route.ts",
+  // AI photo jobs (Session 104): the owner's own photo sent, with consent, to a cut-out or try-on service.
+  "lib/aiMedia/service.ts",
 ]);
 
 const PUBLIC = ["app/api/view", "app/api/community", "app/api/leaderboard", "app/api/posts", "app/api/answers", "app/api/outfits", "lib/evidence.ts"];

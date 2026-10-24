@@ -90,6 +90,10 @@ export async function foldAccount(foldId: string, keepId: string): Promise<void>
     await tx.petProfile.updateMany(from);
     await tx.comfortCheck.updateMany(from);
     await tx.wearLog.updateMany(from);
+    // AI photos follow the person; a consent is not carried over, the staying account asks for its own.
+    await tx.aiPhoto.updateMany(from);
+    await tx.mediaJob.updateMany(from);
+    await tx.aiConsent.deleteMany({ where: { userId: foldId } });
     // A product saved in both stays saved once.
     const saved = await tx.savedItem.findMany({ where: { userId: keepId }, select: { urlKey: true } });
     await tx.savedItem.updateMany({ where: { userId: foldId, urlKey: { notIn: saved.map((s) => s.urlKey) } }, data: { userId: keepId } });

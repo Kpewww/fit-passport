@@ -49,6 +49,13 @@ export function photoForClient(itemId: string, stored: string | null): string | 
   return `${PHOTO_ROUTE}${itemId}?v=${v}`;
 }
 
+/** A closet piece's AI cut-out as the browser may see it (Session 104): same rule, its own address. */
+export function cutoutForClient(itemId: string, stored: string | null): string | null {
+  if (!isRef(stored)) return stored;
+  const v = createHash("sha256").update(stored).digest("hex").slice(0, 8);
+  return `${PHOTO_ROUTE}${itemId}?cut=1&v=${v}`;
+}
+
 /** The stored photo's bytes, for the route that serves it. */
 export async function readPhoto(stored: string | null): Promise<{ bytes: ArrayBuffer; type: string } | null> {
   if (!isRef(stored) || !photoStoreOn()) return null;

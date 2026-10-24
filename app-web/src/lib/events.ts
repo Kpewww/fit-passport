@@ -21,6 +21,7 @@ export const EVENT_NAMES = [
   "wear-logged",      // a day logged on the wear calendar; detail = "worn" | "planned" | "confirmed"
   "wear-fit",         // "does it still fit?" answered; detail = answered/asked, e.g. "2/3"
   "wear-undo",        // a logged day removed
+  "ai-job",           // an AI photo job finished; detail = "cutout:done" | "tryon:failed" …
 ] as const;
 export type EventName = (typeof EVENT_NAMES)[number];
 

@@ -112,6 +112,9 @@ model User {
   outfits     Outfit[]
   outfitLikes OutfitLike[]
   wearLogs    WearLog[]
+  aiConsents  AiConsent[]
+  aiPhotos    AiPhoto[]
+  mediaJobs   MediaJob[]
   following   Follow[] @relation("follower")
   followers   Follow[] @relation("followee")
   posts       Post[]
@@ -454,6 +457,10 @@ model KnownGoodItem {
   /// Seasons the wearer picked, comma-separated: "spring,summer,autumn,winter". Null = every season
   /// (Session 104, wear calendar). Used to draw today's outfit, never by the size engine.
   seasons      String?
+  /// The photo with its background removed by an AI service (Session 104, lib/aiMedia). The original
+  /// `imageDataUrl` is never changed; this is a second picture, shown only when `photoView` is "cutout".
+  cutoutPhoto  String?
+  photoView    String?
   sortIndex    Int         @default(0) // manual order within a collection
   // Variant grouping: items sharing a groupId are the SAME garment in different
   // sizes/colors, collapsed into one card in the UI. Null = standalone. The fit
@@ -803,4 +810,53 @@ model WearLogItem {
 
   @@unique([wearLogId, itemId])
   @@index([itemId])
+}
+
+/// A person's yes to one kind of AI photo processing (Session 104): "cutout" (closet photos sent to a
+/// background-removal service) or "tryon" (their own full-body photo sent to a try-on service). Asked once
+/// per kind before anything is sent; revoking deletes the row and stops further sends.
+model AiConsent {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind       String
+  /// Which wording they agreed to (lib/aiMedia/consent.ts CONSENT_VERSION).
+  version    String
+  acceptedAt DateTime @default(now())
+
+  @@unique([userId, kind])
+}
+
+/// A person's own full-body photo for AI try-on (Session 104). Private store, owner only, deletable.
+model AiPhoto {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo     String
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+/// One AI photo job (Session 104): a cutout or a try-on, what it cost, and where its result is kept.
+/// Failed jobs cost nothing and do not count against a person's daily allowance.
+model MediaJob {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind          String   // "cutout" | "tryon"
+  status        String   // "running" | "done" | "failed"
+  provider      String
+  providerJobId String?
+  itemId        String?
+  aiPhotoId     String?
+  /// The result picture, in the private store. Never read by the size engine.
+  result        String?
+  costUsd       Float    @default(0)
+  error         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
 }
