@@ -52,8 +52,10 @@ export async function loadObservations(): Promise<Observation[]> {
       obs.push({ brand: e.brand, url: e.sourceUrl, line: e.line, label: r.label, bodyChestMinCm: cm(r.chestMin), bodyChestMaxCm: cm(r.chestMax), official: true });
     }
   }
-  // Guides collected into the repo and verified by a person (brandGuides.ts).
-  for (const g of (guides as CompiledGuide[]).filter(isTopsChart)) {
+  // Guides collected into the repo and verified by a person (brandGuides.ts). Printed
+  // ranges only: bands derived from single numbers are ours, not the brand's, so they
+  // calibrate nothing (decision 07).
+  for (const g of (guides as CompiledGuide[]).filter((x) => isTopsChart(x) && !x.derived)) {
     const cm = (v: number) => (g.units === "in" ? Math.round(v * 2.54 * 10) / 10 : v);
     for (const r of g.rows) {
       if (r.chestMin == null || r.chestMax == null) continue;

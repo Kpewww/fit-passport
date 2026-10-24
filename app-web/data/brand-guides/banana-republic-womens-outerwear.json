@@ -12,7 +12,7 @@
   "appliesTo": [
     "jacket"
   ],
-  "reviewed": false,
+  "reviewed": true,
   "note": "Women / Blazers & Outerwear / regular inches. Different bust/waist and size extent from Tops & Sweaters. Printed numeric labels retained; alpha spans not turned into ranges. Petite and Tall excluded.",
   "rows": [
     {
@@ -70,5 +70,6 @@
       "chest": 41.5,
       "waist": 34.5
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

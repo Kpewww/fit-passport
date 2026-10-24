@@ -11061,3 +11061,28 @@ Founder's call on the last open evaluation case: estimate it, but say so plainly
   "no longer available". Queued as `todo/engineering/16` for 0.9.3 (no zip repack this session).
 - **Board:** people/10 now holds only the extension tests that still need a desktop (B, C); people/09 progress
   (15 brands in use, 0 luxury); new `decisions/07`: use charts that print one number per size?
+
+## Session 103y (2026-10-24) — decision 07: charts that print one number per size
+
+Founder approved decision 07 as recommended.
+
+- **Compile** (`brandGuides.ts`): a reviewed body guide whose every size prints one chest number becomes bands
+  reaching halfway to the neighbouring sizes (`halfwayBands`; the outer sizes mirror their one neighbour),
+  marked `derived`. Waist the same when every size prints one. Not when the numbers do not rise, a label is
+  printed twice (Madewell women's, Tommy women's), or the chart mixes ranges and single numbers (its printed
+  ranges alone count, as before).
+- **Use** (`evidenceEstimate.ts`): any printed range wins over a derived band (`pickGuide`). A derived guide only
+  fills the sizes the page itself lists — never its own labels in place of the page's (Tommy prints 24–50 where
+  its shirts sell S–XL), never a page nobody read. It stays `estimated` (0.5 cap), and the reason says how the
+  bands were made, with the guide's address.
+- **Calibration** (`brandOffsets.ts`): derived bands feed neither the US letter consensus nor brand calibration.
+- **Review of the agent's single-number charts:** 11 checked against their screenshots and approved (Banana
+  Republic women's outerwear and shirt popup, Burberry men's shirts and women's knitwear, Calvin Klein women's
+  activewear/outerwear/sweaters, Gucci women's popup, Ralph Lauren dress shirts, Saint Laurent men's RTW, Tommy
+  Jeans men's tops renamed to "Tommy Jeans"). Calvin Klein's sweater waist row was dropped: it repeats the skirt
+  waist and runs above the chest. Held: Tommy men's dress shirts (garment-sized numbers), Ralph Lauren sport
+  coats (tailoring).
+- **Result:** 59 guides counted (28 printed, 31 derived), 20 brands, 4 luxury (Burberry, Gucci, Saint Laurent,
+  Moncler). The US consensus is unchanged. All 9 replayed captures stay honest.
+- Next gap: charts whose letter sizes span two numeric columns need the letter-to-columns map recorded before
+  they help letter-sized products (people/09).

@@ -12,7 +12,7 @@
   "appliesTo": [
     "shirt"
   ],
-  "reviewed": false,
+  "reviewed": true,
   "note": "Regular Everyday Shirt product differs from general. Petite/Tall excluded. Wide-table right rows: screenshots/banana-republic-womens-product-right.jpg. Body evidence: docs/review/brand-audit-2026-10-24/banana-republic-womens-product-body-evidence.jpg.",
   "rows": [
     {
@@ -80,5 +80,6 @@
       "chest": 46.25,
       "waist": 39.5
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

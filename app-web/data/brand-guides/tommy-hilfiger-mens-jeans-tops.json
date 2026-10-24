@@ -1,5 +1,5 @@
 {
-  "brand": "Tommy Hilfiger",
+  "brand": "Tommy Jeans",
   "line": "mens",
   "kind": "body",
   "units": "in",
@@ -9,8 +9,8 @@
   "capturedBy": "Codex",
   "screenshot": "screenshots/tommy-hilfiger-mens-jeans-tops.jpg",
   "variant": "general",
-  "reviewed": false,
-  "note": "Tommy Jeans Tops, not the mainline numeric Tops chart. Page explicitly calls these body measurements; neck/sleeve omitted. Big & Tall excluded.",
+  "reviewed": true,
+  "note": "Tommy Jeans Tops (brand set to Tommy Jeans on review, so it never sizes mainline Tommy Hilfiger). Page calls these body measurements; neck/sleeve omitted. Big & Tall excluded.",
   "rows": [
     {
       "label": "XS",
@@ -36,5 +36,6 @@
       "label": "XXL",
       "chest": 45
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

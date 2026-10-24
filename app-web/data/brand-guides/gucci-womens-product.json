@@ -14,7 +14,7 @@
     "top",
     "jacket"
   ],
-  "reviewed": false,
+  "reviewed": true,
   "note": "Product TOPS shirt/jacket tables identical; match general XXXS–XXL but add XXXL and 4XL. CM values copied; printed inch rounding not converted. Bottoms excluded.",
   "rows": [
     {
@@ -57,5 +57,6 @@
       "label": "4XL",
       "chest": 109
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

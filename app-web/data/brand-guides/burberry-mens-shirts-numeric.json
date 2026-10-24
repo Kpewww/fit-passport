@@ -12,7 +12,7 @@
   "appliesTo": [
     "shirt"
   ],
-  "reviewed": false,
+  "reviewed": true,
   "note": "Classic shirt numeric UK/IT42–60 differs from alpha Knitwear/Shirts table. Alpha shirt values identical to burberry-mens.json, deduplicated. Printed inches retained; Slim excluded.",
   "rows": [
     {
@@ -65,5 +65,6 @@
       "chest": 48,
       "waist": 42.1
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

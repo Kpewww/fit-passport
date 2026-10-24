@@ -25,6 +25,7 @@
    - 页面写英寸就填 `"units": "in"`，写厘米就填 `"cm"`。
    - 范围（如 "38–40"）填成 `chestMin` 和 `chestMax`。
    - 每个尺码只印一个数字（如 "38"）的，填 `chest`（或 `waist`），**不要自己扩成范围**。
+     引擎会自己把它换算成"到相邻尺码的中点"，并标为估算（决策 07）；数据文件里只记印出来的数字。
    - 页面没有的数不要填。
 5. **尺码标签照抄**，如 `XS`、`2XL`、`46`、`0`。不要把 2XL 改成 XXL，也不要把 46 改成 M。
 6. **分清人体尺寸和成衣尺寸。**
@@ -134,8 +135,12 @@ Gucci · Prada · Burberry · Saint Laurent · Balenciaga · Moncler · Zegna（
 
 - **引擎在用 28 份表、15 个品牌**,都是美国品牌:A&F、Banana Republic、Calvin Klein、Columbia、Everlane、Gap、
   J.Crew、L.L.Bean、Levi's、Madewell、Nike、Ralph Lauren、Tommy Hilfiger、Tommy Jeans、Under Armour。美国品牌目标(10 个)已达到。
-- **奢侈品牌 0 个能用**:Burberry、Gucci、Saint Laurent、Moncler 的表每个尺码只印一个数字,按规则引擎不读。
-  要不要用,见 `decisions/07-single-number-charts.md`。
+- ~~奢侈品牌 0 个能用~~ **决策 07 已实施(Session 103y)**:只印一个数字的表,引擎换算成到相邻尺码中点的范围,
+  标为估算(置信度上限 0.5),不算品牌官方表,也不进美码共识。现在引擎用 59 份表、20 个品牌,
+  含 4 个奢侈品牌:Burberry、Gucci、Saint Laurent、Moncler(目标 5 个,还差 1 个:Prada / Balenciaga / Zegna)。
+- **字母码横跨两列数字码的表**(Banana Republic 女、J.Crew 女、Tommy、Madewell 女):商品页卖 S/M/L,表里只有数字码,
+  所以这些表对字母码商品还用不上。要用,需要在文件里记下"哪个字母对应哪几列"。
+- 审核时暂不通过的还有:Tommy 男正装衬衫(数字是衣服尺寸)、Ralph Lauren 西装(西装尺码)。
 - **还没收:** Old Navy、American Eagle、Carhartt(条款弹窗)、Brooks Brothers;Prada、Balenciaga、Zegna;
   Columbia 的分品类表(验证码,已跳过)。
 - **审核时暂不通过:** Tommy 男家居服、Tommy 西装(原因写在各自 note 里)。

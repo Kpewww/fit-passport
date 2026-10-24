@@ -12,7 +12,7 @@
   "appliesTo": [
     "shirt"
   ],
-  "reviewed": false,
+  "reviewed": true,
   "note": "Classic Fit French Cuff Tuxedo Shirt body table; neck-size labels copied exactly including jump18.5 to20. No missing rows interpolated. Distinct from generic clothing and sport coats.",
   "rows": [
     {
@@ -65,5 +65,6 @@
       "chest": 58,
       "waist": 52
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

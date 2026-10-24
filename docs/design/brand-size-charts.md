@@ -200,6 +200,10 @@ read what the page actually gives before deciding which fields to fill.
 - **Fit lines.** Patagonia publishes Regular and Slim; Nike publishes one chart
   per garment domain. The current shape has one chart per brand × domain × gender
   and no notion of a line, so a slim-cut style gets the regular numbers.
+- **One number per size** (decision 07, Session 103y): a reviewed guide that prints a single chest number per
+  size is compiled into bands reaching halfway to the neighbouring sizes (`brandGuides.halfwayBands`), marked
+  `derived`. Such a guide only fills in the sizes a page lists, is labelled an estimate (capped at 0.5), loses
+  to any printed range, and never feeds the US letter consensus or brand calibration.
 - **`BRAND_TABLE`'s ladder is never served** (decision 03, Session 103). The
   constants still build a placeholder ladder inside the extractor, but a ladder that
   survives the evidence estimate is refused on every page, however it was read

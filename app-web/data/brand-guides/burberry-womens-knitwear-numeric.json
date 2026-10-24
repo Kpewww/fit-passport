@@ -12,7 +12,7 @@
   "appliesTo": [
     "sweater"
   ],
-  "reviewed": false,
+  "reviewed": true,
   "note": "Women Knitwear numeric table, US column labels retained. Separate alpha table has different measurements even for matching CN labels; no equivalence inferred. Classic fit. Body quote: screenshots/burberry-womens-knitwear-body.jpg.",
   "rows": [
     {
@@ -65,5 +65,6 @@
       "chest": 42.1,
       "waist": 35.4
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

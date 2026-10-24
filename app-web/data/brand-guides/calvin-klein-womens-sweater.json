@@ -16,48 +16,41 @@
     "hoodie",
     "shirt"
   ],
-  "reviewed": false,
-  "note": "Mainline Sweaters; identical chest/waist/numeric rows in Jeans Tanks/T-Shirts/Sweatshirts and Shirts/Blouses, deduplicated. Mainline tees/shirts differ. Body quote: screenshots/calvin-klein-womens-body-evidence.jpg.",
+  "reviewed": true,
+  "note": "Waist omitted on review: the page's Sweaters waist row (29-37 in) repeats its Skirts waist and runs above the chest, so it cannot be a body waist. Chest as printed. Same rows in Jeans tees/shirts; mainline tees/shirts differ.",
   "rows": [
     {
       "label": "0",
-      "chest": 31,
-      "waist": 29
+      "chest": 31
     },
     {
       "label": "2",
-      "chest": 33,
-      "waist": 30
+      "chest": 33
     },
     {
       "label": "4",
-      "chest": 34,
-      "waist": 31
+      "chest": 34
     },
     {
       "label": "6",
-      "chest": 35,
-      "waist": 32
+      "chest": 35
     },
     {
       "label": "8",
-      "chest": 36,
-      "waist": 33
+      "chest": 36
     },
     {
       "label": "10",
-      "chest": 37,
-      "waist": 34
+      "chest": 37
     },
     {
       "label": "12",
-      "chest": 38.5,
-      "waist": 35.5
+      "chest": 38.5
     },
     {
       "label": "14",
-      "chest": 40,
-      "waist": 37
+      "chest": 40
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

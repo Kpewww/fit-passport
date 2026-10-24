@@ -59,12 +59,60 @@ export const GuideFile = z.object({
 
 export type GuideFileT = z.infer<typeof GuideFile>;
 
-/** What the engine reads: verified body guides only, and only their printed RANGES. */
+/** What the engine reads: verified body guides, their printed ranges, or bands derived from single numbers. */
 export type CompiledGuide = Pick<GuideFileT, "brand" | "line" | "units" | "sourceUrl" | "capturedAt"> & {
   appliesTo?: GuideFileT["appliesTo"];
   variant?: GuideFileT["variant"];
+  /**
+   * The chart prints one number per size, and these ranges are ours: each size
+   * reaches halfway to its neighbours (decision 07). An estimate, never credited
+   * as the brand's chart, and never used to calibrate other brands.
+   */
+  derived?: true;
   rows: Array<{ label: string; chestMin?: number; chestMax?: number; waistMin?: number; waistMax?: number }>;
 };
+
+const r2 = (x: number) => Math.round(x * 100) / 100;
+
+/**
+ * One printed number per size, as bands reaching halfway to the neighbouring sizes
+ * (decision 07, approved Session 103): S 37.0, M 38.6, L 40.2 gives M 37.8–39.4.
+ * The smallest and largest sizes mirror their one neighbour. The same rule the
+ * evaluation grades single-number truth by (eval/lib.ts acceptableSizes). Null
+ * unless the numbers rise size by size, since a band needs an order to sit in.
+ */
+export function halfwayBands(values: number[]): Array<[number, number]> | null {
+  if (values.length < 2) return null;
+  for (let i = 1; i < values.length; i++) if (!(values[i] > values[i - 1])) return null;
+  return values.map((v, i) => {
+    const below = i > 0 ? (values[i - 1] + v) / 2 : v - (values[1] - v) / 2;
+    const above = i < values.length - 1 ? (v + values[i + 1]) / 2 : v + (v - values[i - 1]) / 2;
+    return [r2(below), r2(above)];
+  });
+}
+
+function compileRows(f: GuideFileT): Pick<CompiledGuide, "rows" | "derived"> {
+  const printed = f.rows
+    .filter((r) => r.chestMin != null || r.waistMin != null)
+    .map(({ label, chestMin, chestMax, waistMin, waistMax }) => ({ label, chestMin, chestMax, waistMin, waistMax }));
+  if (printed.length > 0) return { rows: printed };
+  // Only when EVERY size prints a single chest number: a chart that mixes ranges
+  // and single numbers keeps its printed ranges alone (above).
+  if (!f.rows.every((r) => r.chest != null)) return { rows: [] };
+  // A label printed twice (Madewell's "0 / XS", Tommy's two 0s) leaves no way to say
+  // which band is which size.
+  if (new Set(f.rows.map((r) => r.label.trim().toLowerCase())).size !== f.rows.length) return { rows: [] };
+  const chest = halfwayBands(f.rows.map((r) => r.chest!));
+  if (!chest) return { rows: [] };
+  const waist = f.rows.every((r) => r.waist != null) ? halfwayBands(f.rows.map((r) => r.waist!)) : null;
+  return {
+    derived: true,
+    rows: f.rows.map((r, i) => ({
+      label: r.label, chestMin: chest[i][0], chestMax: chest[i][1],
+      ...(waist ? { waistMin: waist[i][0], waistMax: waist[i][1] } : {}),
+    })),
+  };
+}
 
 export function compile(files: GuideFileT[]): CompiledGuide[] {
   return files
@@ -73,9 +121,7 @@ export function compile(files: GuideFileT[]): CompiledGuide[] {
       brand: f.brand, line: f.line, units: f.units, sourceUrl: f.sourceUrl, capturedAt: f.capturedAt,
       ...(f.appliesTo ? { appliesTo: f.appliesTo } : {}),
       variant: f.variant,
-      rows: f.rows
-        .filter((r) => r.chestMin != null || r.waistMin != null)
-        .map(({ label, chestMin, chestMax, waistMin, waistMax }) => ({ label, chestMin, chestMax, waistMin, waistMax })),
+      ...compileRows(f),
     }))
     .filter((g) => g.rows.length > 0)
     .sort((a, b) => `${a.brand}|${a.line}`.localeCompare(`${b.brand}|${b.line}`));
@@ -90,12 +136,14 @@ export function isTopsChart(g: Pick<CompiledGuide, "appliesTo">): boolean {
 }
 
 /**
- * The best chart for a product of this brand and line: one printed for its garment
- * before one for every top, a product-page chart before the general guide. Null when
+ * The best chart for a product of this brand and line: printed ranges before derived
+ * bands, one printed for its garment before one for every top, a product-page chart
+ * before the general guide. Null when
  * the brand's only charts are for other garments.
  */
-export function pickGuide<G extends Pick<CompiledGuide, "appliesTo" | "variant">>(candidates: G[], engineCategory: string | null): G | null {
+export function pickGuide<G extends Pick<CompiledGuide, "appliesTo" | "variant" | "derived">>(candidates: G[], engineCategory: string | null): G | null {
   const fits = candidates.filter((g) => !g.appliesTo || (engineCategory != null && g.appliesTo.includes(engineCategory as never)));
-  const rank = (g: G) => (g.appliesTo ? 0 : 2) + (g.variant === "product" ? 0 : 1);
+  // Any printed range before any derived band (decision 07); then the garment's own chart, then a product chart.
+  const rank = (g: G) => (g.derived ? 4 : 0) + (g.appliesTo ? 0 : 2) + (g.variant === "product" ? 0 : 1);
   return fits.sort((a, b) => rank(a) - rank(b))[0] ?? null;
 }

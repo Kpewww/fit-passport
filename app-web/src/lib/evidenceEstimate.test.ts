@@ -104,6 +104,22 @@ describe("a chartless top is estimated from evidence (Session 103)", () => {
     expect(out.source.sizesFrom).toBe("brand-chart");
   });
 
+  it("a guide printing one number per size fills the page's own sizes as an estimate (decision 07)", async () => {
+    const lux: CompiledGuide = { brand: "Gucci", line: "mens", units: "cm", sourceUrl: "https://www.gucci.com/us/en/st/size-guide", capturedAt: "2026-10-23", derived: true,
+      rows: [{ label: "S", chestMin: 86, chestMax: 90 }, { label: "M", chestMin: 90, chestMax: 94 }, { label: "L", chestMin: 94, chestMax: 98 }] };
+    const out = await fillFromEvidence(product({ brand: "Gucci" }), { reports: async () => usReports, guides: [lux] });
+    expect(out.source.sizesFrom).toBe("estimated"); // never credited as the brand's chart
+    expect(out.source.estimate?.sources[0]).toMatch(/one chest number per size/);
+    expect(out.source.estimate?.sourcesZh[0]).toMatch(/中点/);
+    expect(out.sizes.find((s) => s.label === "M")).toMatchObject({ bodyChestMinCm: 90, bodyChestMaxCm: 94 });
+    expect(out.source.chart).toBeUndefined();
+    // Never its own labels in place of the page's, and never a page nobody read.
+    const ladder = await fillFromEvidence(product({ brand: "Gucci", source: { sizesSynthesized: true, url: "https://www.gucci.com/us/p" } }), { reports: async () => usReports, guides: [lux] });
+    expect(ladder.source.estimate?.sources[0] ?? "").not.toMatch(/one chest number/);
+    const unread = product({ brand: "Gucci", source: { fetch: "unreachable" } });
+    expect(await fillFromEvidence(unread, { reports: async () => usReports, guides: [lux] })).toBe(unread);
+  });
+
   it("finds a guide by brand whatever the punctuation", () => {
     expect(reviewedGuide("j crew", "mens", [guide])).toBe(guide);
     expect(reviewedGuide("J.Crew", "womens", [guide])).toBeNull();

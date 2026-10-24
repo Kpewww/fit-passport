@@ -10,6 +10,8 @@
 //      EN 13402-3, ASTM numbers, BS 3666);
 //   3. for US letters, which no standard defines, the brand's own US charts or the
 //      consensus of US brands (brandCalibration.ts usLetterChest).
+// A brand guide that prints one number per size gives bands reaching halfway to the
+// next size (decision 07): still step 1, but an estimate, never "brand-chart".
 // Steps 2 and 3 leave `sizesFrom: "estimated"` (capped at 0.5 confidence, as before)
 // and record what the estimate rests on in `source.estimate`, so the reason says so.
 // A page we never read keeps its refusal unless the brand's own guide applies: the
@@ -80,7 +82,11 @@ export async function fillFromEvidence(out: ExtractedProduct, deps: EstimateDeps
 
   // 1. The brand's own reviewed guide. The page's brand wins over the store's, so a
   // store that sells other labels never sizes them by its house chart.
-  const guide = reviewedGuide(brand, line, deps.guides, out.category ?? null);
+  const found = reviewedGuide(brand, line, deps.guides, out.category ?? null);
+  // Bands derived from single numbers (decision 07) only fill in the sizes the page
+  // itself lists: never a product nobody read, and never the guide's own labels
+  // instead of the page's (Tommy prints 24–50 where its shirts are sold S–XL).
+  const guide = found?.derived && (neverRead || src.sizesSynthesized) ? null : found;
   if (guide) {
     const rows = guideSizes(guide);
     const byLabel = new Map(rows.map((r) => [normLabel(r.label), r]));
@@ -91,7 +97,25 @@ export async function fillFromEvidence(out: ExtractedProduct, deps: EstimateDeps
           const m = byLabel.get(normLabel(s.label));
           return m ? { ...s, ...m, label: s.label } : s;
         });
-    if (sizes.filter((s) => s.bodyChestMinCm != null).length >= 2) {
+    if (guide.derived && sizes.filter((s) => s.bodyChestMinCm != null).length >= 2) {
+      // The brand printed one number per size; the bands are ours (decision 07). Its
+      // numbers beat a generic standard, but this is an estimate: capped as one, and
+      // the reason says how the bands were made.
+      const next = {
+        ...out,
+        sizes,
+        source: {
+          ...src, measurementKind: "body" as const,
+          estimate: {
+            sources: [`${guide.brand}'s size guide, which prints one chest number per size; each size here reaches halfway to the next (${guide.sourceUrl})`],
+            sourcesZh: [`${guide.brand} 的尺码表（每个尺码只印一个胸围数字，这里每个尺码取到与相邻尺码的中点；${guide.sourceUrl}）`],
+          },
+        },
+      };
+      delete next.source.sizesSynthesized;
+      return next;
+    }
+    if (!guide.derived && sizes.filter((s) => s.bodyChestMinCm != null).length >= 2) {
       const next = { ...out, sizes, source: { ...src, sizesFrom: "brand-chart" as const, chart: { sourceUrl: guide.sourceUrl, capturedAt: guide.capturedAt }, measurementKind: "body" as const, measurementKindFrom: "brand" as const, ...(neverRead ? {} : { noPageChart: true }) } };
       delete next.source.sizesSynthesized;
       return next;

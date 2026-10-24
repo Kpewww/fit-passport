@@ -13,7 +13,7 @@
     "jacket",
     "tshirt"
   ],
-  "reviewed": false,
+  "reviewed": true,
   "note": "Men Ready to Wear jacket and tee charts identical. Numeric YSL42–58 labels retained; inconsistent/blank alpha mappings not inferred. CM Body measurement table copied.",
   "rows": [
     {
@@ -61,5 +61,6 @@
       "chest": 114,
       "waist": 100
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

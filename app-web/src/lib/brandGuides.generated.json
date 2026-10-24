@@ -225,6 +225,626 @@
     ]
   },
   {
+    "brand": "Banana Republic",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://bananarepublic.gap.com/browse/info.do?cid=35404",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "jacket"
+    ],
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "000",
+        "chestMin": 29.5,
+        "chestMax": 30.5,
+        "waistMin": 22.5,
+        "waistMax": 23.5
+      },
+      {
+        "label": "00",
+        "chestMin": 30.5,
+        "chestMax": 31.5,
+        "waistMin": 23.5,
+        "waistMax": 24.5
+      },
+      {
+        "label": "0",
+        "chestMin": 31.5,
+        "chestMax": 32.5,
+        "waistMin": 24.5,
+        "waistMax": 25.5
+      },
+      {
+        "label": "2",
+        "chestMin": 32.5,
+        "chestMax": 33.5,
+        "waistMin": 25.5,
+        "waistMax": 26.5
+      },
+      {
+        "label": "4",
+        "chestMin": 33.5,
+        "chestMax": 34.5,
+        "waistMin": 26.5,
+        "waistMax": 27.5
+      },
+      {
+        "label": "6",
+        "chestMin": 34.5,
+        "chestMax": 35.5,
+        "waistMin": 27.5,
+        "waistMax": 28.5
+      },
+      {
+        "label": "8",
+        "chestMin": 35.5,
+        "chestMax": 36.5,
+        "waistMin": 28.5,
+        "waistMax": 29.5
+      },
+      {
+        "label": "10",
+        "chestMin": 36.5,
+        "chestMax": 37.75,
+        "waistMin": 29.5,
+        "waistMax": 30.75
+      },
+      {
+        "label": "12",
+        "chestMin": 37.75,
+        "chestMax": 39.25,
+        "waistMin": 30.75,
+        "waistMax": 32.25
+      },
+      {
+        "label": "14",
+        "chestMin": 39.25,
+        "chestMax": 40.75,
+        "waistMin": 32.25,
+        "waistMax": 33.75
+      },
+      {
+        "label": "16",
+        "chestMin": 40.75,
+        "chestMax": 42.25,
+        "waistMin": 33.75,
+        "waistMax": 35.25
+      }
+    ]
+  },
+  {
+    "brand": "Banana Republic",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://bananarepublic.gap.com/browse/product.do?pid=709387312",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "shirt"
+    ],
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "000",
+        "chestMin": 29.75,
+        "chestMax": 30.75,
+        "waistMin": 23,
+        "waistMax": 24
+      },
+      {
+        "label": "00",
+        "chestMin": 30.75,
+        "chestMax": 31.75,
+        "waistMin": 24,
+        "waistMax": 25
+      },
+      {
+        "label": "0",
+        "chestMin": 31.75,
+        "chestMax": 32.75,
+        "waistMin": 25,
+        "waistMax": 26
+      },
+      {
+        "label": "2",
+        "chestMin": 32.75,
+        "chestMax": 33.75,
+        "waistMin": 26,
+        "waistMax": 27
+      },
+      {
+        "label": "4",
+        "chestMin": 33.75,
+        "chestMax": 34.75,
+        "waistMin": 27,
+        "waistMax": 28
+      },
+      {
+        "label": "6",
+        "chestMin": 34.75,
+        "chestMax": 35.75,
+        "waistMin": 28,
+        "waistMax": 29
+      },
+      {
+        "label": "8",
+        "chestMin": 35.75,
+        "chestMax": 36.75,
+        "waistMin": 29,
+        "waistMax": 30
+      },
+      {
+        "label": "10",
+        "chestMin": 36.75,
+        "chestMax": 38,
+        "waistMin": 30,
+        "waistMax": 31.25
+      },
+      {
+        "label": "12",
+        "chestMin": 38,
+        "chestMax": 39.5,
+        "waistMin": 31.25,
+        "waistMax": 32.75
+      },
+      {
+        "label": "14",
+        "chestMin": 39.5,
+        "chestMax": 41.25,
+        "waistMin": 32.75,
+        "waistMax": 34.5
+      },
+      {
+        "label": "16",
+        "chestMin": 41.25,
+        "chestMax": 43.25,
+        "waistMin": 34.5,
+        "waistMax": 36.5
+      },
+      {
+        "label": "18",
+        "chestMin": 43.25,
+        "chestMax": 45.25,
+        "waistMin": 36.5,
+        "waistMax": 38.5
+      },
+      {
+        "label": "20",
+        "chestMin": 45.25,
+        "chestMax": 47.25,
+        "waistMin": 38.5,
+        "waistMax": 40.5
+      }
+    ]
+  },
+  {
+    "brand": "Banana Republic",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://bananarepublic.gap.com/browse/info.do?cid=35404",
+    "capturedAt": "2026-10-22",
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "000",
+        "chestMin": 30,
+        "chestMax": 31,
+        "waistMin": 23.5,
+        "waistMax": 24.5
+      },
+      {
+        "label": "00",
+        "chestMin": 31,
+        "chestMax": 32,
+        "waistMin": 24.5,
+        "waistMax": 25.5
+      },
+      {
+        "label": "0",
+        "chestMin": 32,
+        "chestMax": 33,
+        "waistMin": 25.5,
+        "waistMax": 26.5
+      },
+      {
+        "label": "2",
+        "chestMin": 33,
+        "chestMax": 34,
+        "waistMin": 26.5,
+        "waistMax": 27.5
+      },
+      {
+        "label": "4",
+        "chestMin": 34,
+        "chestMax": 35,
+        "waistMin": 27.5,
+        "waistMax": 28.5
+      },
+      {
+        "label": "6",
+        "chestMin": 35,
+        "chestMax": 36,
+        "waistMin": 28.5,
+        "waistMax": 29.5
+      },
+      {
+        "label": "8",
+        "chestMin": 36,
+        "chestMax": 37,
+        "waistMin": 29.5,
+        "waistMax": 30.5
+      },
+      {
+        "label": "10",
+        "chestMin": 37,
+        "chestMax": 38.25,
+        "waistMin": 30.5,
+        "waistMax": 31.75
+      },
+      {
+        "label": "12",
+        "chestMin": 38.25,
+        "chestMax": 39.75,
+        "waistMin": 31.75,
+        "waistMax": 33.25
+      },
+      {
+        "label": "14",
+        "chestMin": 39.75,
+        "chestMax": 41.5,
+        "waistMin": 33.25,
+        "waistMax": 35
+      },
+      {
+        "label": "16",
+        "chestMin": 41.5,
+        "chestMax": 43.5,
+        "waistMin": 35,
+        "waistMax": 37
+      },
+      {
+        "label": "18",
+        "chestMin": 43.5,
+        "chestMax": 46,
+        "waistMin": 37,
+        "waistMax": 39.5
+      },
+      {
+        "label": "20",
+        "chestMin": 46,
+        "chestMax": 49,
+        "waistMin": 39.5,
+        "waistMax": 42.5
+      }
+    ]
+  },
+  {
+    "brand": "Burberry",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://us.burberry.com/classic-fit-stretch-cotton-shirt-p80714651",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "shirt"
+    ],
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "42",
+        "chestMin": 33.15,
+        "chestMax": 34.65,
+        "waistMin": 27.25,
+        "waistMax": 28.75
+      },
+      {
+        "label": "44",
+        "chestMin": 34.65,
+        "chestMax": 36.2,
+        "waistMin": 28.75,
+        "waistMax": 30.3
+      },
+      {
+        "label": "46",
+        "chestMin": 36.2,
+        "chestMax": 37.8,
+        "waistMin": 30.3,
+        "waistMax": 31.9
+      },
+      {
+        "label": "48",
+        "chestMin": 37.8,
+        "chestMax": 39.4,
+        "waistMin": 31.9,
+        "waistMax": 33.5
+      },
+      {
+        "label": "50",
+        "chestMin": 39.4,
+        "chestMax": 40.95,
+        "waistMin": 33.5,
+        "waistMax": 35.05
+      },
+      {
+        "label": "52",
+        "chestMin": 40.95,
+        "chestMax": 42.5,
+        "waistMin": 35.05,
+        "waistMax": 36.6
+      },
+      {
+        "label": "54",
+        "chestMin": 42.5,
+        "chestMax": 44.1,
+        "waistMin": 36.6,
+        "waistMax": 38.2
+      },
+      {
+        "label": "56",
+        "chestMin": 44.1,
+        "chestMax": 45.7,
+        "waistMin": 38.2,
+        "waistMax": 39.8
+      },
+      {
+        "label": "58",
+        "chestMin": 45.7,
+        "chestMax": 47.25,
+        "waistMin": 39.8,
+        "waistMax": 41.35
+      },
+      {
+        "label": "60",
+        "chestMin": 47.25,
+        "chestMax": 48.75,
+        "waistMin": 41.35,
+        "waistMax": 42.85
+      }
+    ]
+  },
+  {
+    "brand": "Burberry",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://us.burberry.com/check-collar-cotton-polo-shirt-p81326081",
+    "capturedAt": "2026-10-23",
+    "appliesTo": [
+      "sweater"
+    ],
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "XXXS",
+        "chestMin": 27.9,
+        "chestMax": 30.3,
+        "waistMin": 22,
+        "waistMax": 24.4
+      },
+      {
+        "label": "XXS",
+        "chestMin": 30.3,
+        "chestMax": 32.7,
+        "waistMin": 24.4,
+        "waistMax": 26.8
+      },
+      {
+        "label": "XS",
+        "chestMin": 32.7,
+        "chestMax": 35.05,
+        "waistMin": 26.8,
+        "waistMax": 29.15
+      },
+      {
+        "label": "S",
+        "chestMin": 35.05,
+        "chestMax": 37.4,
+        "waistMin": 29.15,
+        "waistMax": 31.5
+      },
+      {
+        "label": "M",
+        "chestMin": 37.4,
+        "chestMax": 39.8,
+        "waistMin": 31.5,
+        "waistMax": 33.85
+      },
+      {
+        "label": "L",
+        "chestMin": 39.8,
+        "chestMax": 42.15,
+        "waistMin": 33.85,
+        "waistMax": 36.2
+      },
+      {
+        "label": "XL",
+        "chestMin": 42.15,
+        "chestMax": 44.5,
+        "waistMin": 36.2,
+        "waistMax": 38.6
+      },
+      {
+        "label": "XXL",
+        "chestMin": 44.5,
+        "chestMax": 46.85,
+        "waistMin": 38.6,
+        "waistMax": 40.95
+      },
+      {
+        "label": "XXXL",
+        "chestMin": 46.85,
+        "chestMax": 49.15,
+        "waistMin": 40.95,
+        "waistMax": 43.25
+      }
+    ]
+  },
+  {
+    "brand": "Burberry",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://us.burberry.com/birkhall-wool-sweater-p81327771",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "sweater"
+    ],
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "00",
+        "chestMin": 27.9,
+        "chestMax": 28.7,
+        "waistMin": 21.35,
+        "waistMax": 22.05
+      },
+      {
+        "label": "0",
+        "chestMin": 28.7,
+        "chestMax": 29.5,
+        "waistMin": 22.05,
+        "waistMax": 22.8
+      },
+      {
+        "label": "2",
+        "chestMin": 29.5,
+        "chestMax": 30.7,
+        "waistMin": 22.8,
+        "waistMax": 24
+      },
+      {
+        "label": "4",
+        "chestMin": 30.7,
+        "chestMax": 32.3,
+        "waistMin": 24,
+        "waistMax": 25.6
+      },
+      {
+        "label": "6",
+        "chestMin": 32.3,
+        "chestMax": 33.85,
+        "waistMin": 25.6,
+        "waistMax": 27.2
+      },
+      {
+        "label": "8",
+        "chestMin": 33.85,
+        "chestMax": 35.4,
+        "waistMin": 27.2,
+        "waistMax": 28.75
+      },
+      {
+        "label": "10",
+        "chestMin": 35.4,
+        "chestMax": 37.2,
+        "waistMin": 28.75,
+        "waistMax": 30.5
+      },
+      {
+        "label": "12",
+        "chestMin": 37.2,
+        "chestMax": 39.2,
+        "waistMin": 30.5,
+        "waistMax": 32.5
+      },
+      {
+        "label": "14",
+        "chestMin": 39.2,
+        "chestMax": 41.15,
+        "waistMin": 32.5,
+        "waistMax": 34.45
+      },
+      {
+        "label": "16",
+        "chestMin": 41.15,
+        "chestMax": 43.05,
+        "waistMin": 34.45,
+        "waistMax": 36.35
+      }
+    ]
+  },
+  {
+    "brand": "Burberry",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://us.burberry.com/birkhall-wool-sweater-p81327771",
+    "capturedAt": "2026-10-23",
+    "appliesTo": [
+      "sweater"
+    ],
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "XXXS",
+        "chestMin": 24.85,
+        "chestMax": 27.15,
+        "waistMin": 18.1,
+        "waistMax": 20.5
+      },
+      {
+        "label": "XXS",
+        "chestMin": 27.15,
+        "chestMax": 29.5,
+        "waistMin": 20.5,
+        "waistMax": 22.85
+      },
+      {
+        "label": "XS",
+        "chestMin": 29.5,
+        "chestMax": 31.9,
+        "waistMin": 22.85,
+        "waistMax": 25.2
+      },
+      {
+        "label": "S",
+        "chestMin": 31.9,
+        "chestMax": 34.25,
+        "waistMin": 25.2,
+        "waistMax": 27.55
+      },
+      {
+        "label": "M",
+        "chestMin": 34.25,
+        "chestMax": 36.6,
+        "waistMin": 27.55,
+        "waistMax": 29.9
+      },
+      {
+        "label": "L",
+        "chestMin": 36.6,
+        "chestMax": 39,
+        "waistMin": 29.9,
+        "waistMax": 32.3
+      },
+      {
+        "label": "XL",
+        "chestMin": 39,
+        "chestMax": 41.35,
+        "waistMin": 32.3,
+        "waistMax": 34.65
+      },
+      {
+        "label": "XXL",
+        "chestMin": 41.35,
+        "chestMax": 43.7,
+        "waistMin": 34.65,
+        "waistMax": 37
+      },
+      {
+        "label": "XXXL",
+        "chestMin": 43.7,
+        "chestMax": 46.1,
+        "waistMin": 37,
+        "waistMax": 39.4
+      }
+    ]
+  },
+  {
     "brand": "Calvin Klein",
     "line": "mens",
     "units": "in",
@@ -273,6 +893,225 @@
         "chestMax": 50,
         "waistMin": 40,
         "waistMax": 42
+      }
+    ]
+  },
+  {
+    "brand": "Calvin Klein",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.calvinklein.us/en/women-size-guide.html#wl-t-shirts",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "top"
+    ],
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "0",
+        "chestMin": 32,
+        "chestMax": 33,
+        "waistMin": 25,
+        "waistMax": 26
+      },
+      {
+        "label": "2",
+        "chestMin": 33,
+        "chestMax": 34,
+        "waistMin": 26,
+        "waistMax": 27
+      },
+      {
+        "label": "4",
+        "chestMin": 34,
+        "chestMax": 35,
+        "waistMin": 27,
+        "waistMax": 28
+      },
+      {
+        "label": "6",
+        "chestMin": 35,
+        "chestMax": 36,
+        "waistMin": 28,
+        "waistMax": 29
+      },
+      {
+        "label": "8",
+        "chestMin": 36,
+        "chestMax": 37,
+        "waistMin": 29,
+        "waistMax": 29.75
+      },
+      {
+        "label": "10",
+        "chestMin": 37,
+        "chestMax": 38.25,
+        "waistMin": 29.75,
+        "waistMax": 30.75
+      },
+      {
+        "label": "12",
+        "chestMin": 38.25,
+        "chestMax": 39.5,
+        "waistMin": 30.75,
+        "waistMax": 32
+      },
+      {
+        "label": "14",
+        "chestMin": 39.5,
+        "chestMax": 40.5,
+        "waistMin": 32,
+        "waistMax": 33
+      },
+      {
+        "label": "16",
+        "chestMin": 40.5,
+        "chestMax": 41.5,
+        "waistMin": 33,
+        "waistMax": 34
+      }
+    ]
+  },
+  {
+    "brand": "Calvin Klein",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.calvinklein.us/en/women-size-guide.html#wl-t-shirts",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "jacket"
+    ],
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "0",
+        "chestMin": 31.5,
+        "chestMax": 32.5,
+        "waistMin": 23.5,
+        "waistMax": 24.5
+      },
+      {
+        "label": "2",
+        "chestMin": 32.5,
+        "chestMax": 33.5,
+        "waistMin": 24.5,
+        "waistMax": 25.5
+      },
+      {
+        "label": "4",
+        "chestMin": 33.5,
+        "chestMax": 34.5,
+        "waistMin": 25.5,
+        "waistMax": 26.5
+      },
+      {
+        "label": "6",
+        "chestMin": 34.5,
+        "chestMax": 35.5,
+        "waistMin": 26.5,
+        "waistMax": 27.5
+      },
+      {
+        "label": "8",
+        "chestMin": 35.5,
+        "chestMax": 36.5,
+        "waistMin": 27.5,
+        "waistMax": 28.5
+      },
+      {
+        "label": "10",
+        "chestMin": 36.5,
+        "chestMax": 37.75,
+        "waistMin": 28.5,
+        "waistMax": 29.75
+      },
+      {
+        "label": "12",
+        "chestMin": 37.75,
+        "chestMax": 39.25,
+        "waistMin": 29.75,
+        "waistMax": 31.25
+      },
+      {
+        "label": "14",
+        "chestMin": 39.25,
+        "chestMax": 40.75,
+        "waistMin": 31.25,
+        "waistMax": 32.75
+      },
+      {
+        "label": "16",
+        "chestMin": 40.75,
+        "chestMax": 42.25,
+        "waistMin": 32.75,
+        "waistMax": 34.25
+      },
+      {
+        "label": "18",
+        "chestMin": 42.25,
+        "chestMax": 43.75,
+        "waistMin": 34.25,
+        "waistMax": 35.75
+      }
+    ]
+  },
+  {
+    "brand": "Calvin Klein",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.calvinklein.us/en/women-size-guide.html#wl-t-shirts",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "sweater",
+      "tshirt",
+      "top",
+      "hoodie",
+      "shirt"
+    ],
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "0",
+        "chestMin": 30,
+        "chestMax": 32
+      },
+      {
+        "label": "2",
+        "chestMin": 32,
+        "chestMax": 33.5
+      },
+      {
+        "label": "4",
+        "chestMin": 33.5,
+        "chestMax": 34.5
+      },
+      {
+        "label": "6",
+        "chestMin": 34.5,
+        "chestMax": 35.5
+      },
+      {
+        "label": "8",
+        "chestMin": 35.5,
+        "chestMax": 36.5
+      },
+      {
+        "label": "10",
+        "chestMin": 36.5,
+        "chestMax": 37.75
+      },
+      {
+        "label": "12",
+        "chestMin": 37.75,
+        "chestMax": 39.25
+      },
+      {
+        "label": "14",
+        "chestMin": 39.25,
+        "chestMax": 40.75
       }
     ]
   },
@@ -589,6 +1428,115 @@
     "sourceUrl": "https://www.gap.com/Asset_Archive/AllBrands/sizeChart/v3/chart.html?cid=2082&locale=en_US",
     "capturedAt": "2026-10-24",
     "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "000",
+        "chestMin": 29.75,
+        "chestMax": 30.75,
+        "waistMin": 23,
+        "waistMax": 24
+      },
+      {
+        "label": "00",
+        "chestMin": 30.75,
+        "chestMax": 31.75,
+        "waistMin": 24,
+        "waistMax": 25
+      },
+      {
+        "label": "0",
+        "chestMin": 31.75,
+        "chestMax": 32.75,
+        "waistMin": 25,
+        "waistMax": 26
+      },
+      {
+        "label": "2",
+        "chestMin": 32.75,
+        "chestMax": 33.75,
+        "waistMin": 26,
+        "waistMax": 27
+      },
+      {
+        "label": "4",
+        "chestMin": 33.75,
+        "chestMax": 34.75,
+        "waistMin": 27,
+        "waistMax": 28
+      },
+      {
+        "label": "6",
+        "chestMin": 34.75,
+        "chestMax": 35.75,
+        "waistMin": 28,
+        "waistMax": 29
+      },
+      {
+        "label": "8",
+        "chestMin": 35.75,
+        "chestMax": 36.75,
+        "waistMin": 29,
+        "waistMax": 30
+      },
+      {
+        "label": "10",
+        "chestMin": 36.75,
+        "chestMax": 38,
+        "waistMin": 30,
+        "waistMax": 31.25
+      },
+      {
+        "label": "12",
+        "chestMin": 38,
+        "chestMax": 39.5,
+        "waistMin": 31.25,
+        "waistMax": 32.75
+      },
+      {
+        "label": "14",
+        "chestMin": 39.5,
+        "chestMax": 41.13,
+        "waistMin": 32.75,
+        "waistMax": 34.5
+      },
+      {
+        "label": "16",
+        "chestMin": 41.13,
+        "chestMax": 42.88,
+        "waistMin": 34.5,
+        "waistMax": 36.5
+      },
+      {
+        "label": "18",
+        "chestMin": 42.88,
+        "chestMax": 44.75,
+        "waistMin": 36.5,
+        "waistMax": 38.5
+      },
+      {
+        "label": "20",
+        "chestMin": 44.75,
+        "chestMax": 46.75,
+        "waistMin": 38.5,
+        "waistMax": 40.5
+      },
+      {
+        "label": "22",
+        "chestMin": 46.75,
+        "chestMax": 48.75,
+        "waistMin": 40.5,
+        "waistMax": 42.5
+      }
+    ]
+  },
+  {
+    "brand": "Gap",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.gap.com/Asset_Archive/AllBrands/sizeChart/v3/chart.html?cid=2082&locale=en_US",
+    "capturedAt": "2026-10-24",
+    "variant": "product",
     "rows": [
       {
         "label": "S",
@@ -624,6 +1572,270 @@
         "chestMax": 47.75,
         "waistMin": 39.5,
         "waistMax": 41.5
+      }
+    ]
+  },
+  {
+    "brand": "Gap",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.gap.com/customer-service/size-charts?cid=2103",
+    "capturedAt": "2026-10-24",
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "0000",
+        "chestMin": 28.75,
+        "chestMax": 29.75
+      },
+      {
+        "label": "000",
+        "chestMin": 29.75,
+        "chestMax": 30.75
+      },
+      {
+        "label": "00",
+        "chestMin": 30.75,
+        "chestMax": 31.75
+      },
+      {
+        "label": "0",
+        "chestMin": 31.75,
+        "chestMax": 32.75
+      },
+      {
+        "label": "4",
+        "chestMin": 32.75,
+        "chestMax": 34.25
+      },
+      {
+        "label": "6",
+        "chestMin": 34.25,
+        "chestMax": 35.75
+      },
+      {
+        "label": "8",
+        "chestMin": 35.75,
+        "chestMax": 36.75
+      },
+      {
+        "label": "10",
+        "chestMin": 36.75,
+        "chestMax": 38
+      },
+      {
+        "label": "12",
+        "chestMin": 38,
+        "chestMax": 39.5
+      },
+      {
+        "label": "14",
+        "chestMin": 39.5,
+        "chestMax": 41.13
+      },
+      {
+        "label": "16",
+        "chestMin": 41.13,
+        "chestMax": 42.88
+      },
+      {
+        "label": "18",
+        "chestMin": 42.88,
+        "chestMax": 44.75
+      },
+      {
+        "label": "20",
+        "chestMin": 44.75,
+        "chestMax": 46.75
+      },
+      {
+        "label": "22",
+        "chestMin": 46.75,
+        "chestMax": 48.75
+      }
+    ]
+  },
+  {
+    "brand": "Gucci",
+    "line": "mens",
+    "units": "cm",
+    "sourceUrl": "https://www.gucci.com/us/en/st/gucci-clothing-size-chart",
+    "capturedAt": "2026-10-23",
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "30",
+        "chestMin": 80,
+        "chestMax": 84
+      },
+      {
+        "label": "32",
+        "chestMin": 84,
+        "chestMax": 88
+      },
+      {
+        "label": "34",
+        "chestMin": 88,
+        "chestMax": 92
+      },
+      {
+        "label": "36",
+        "chestMin": 92,
+        "chestMax": 96
+      },
+      {
+        "label": "38",
+        "chestMin": 96,
+        "chestMax": 100
+      },
+      {
+        "label": "40",
+        "chestMin": 100,
+        "chestMax": 104
+      },
+      {
+        "label": "42",
+        "chestMin": 104,
+        "chestMax": 108
+      },
+      {
+        "label": "44",
+        "chestMin": 108,
+        "chestMax": 112
+      },
+      {
+        "label": "46",
+        "chestMin": 112,
+        "chestMax": 116
+      },
+      {
+        "label": "48",
+        "chestMin": 116,
+        "chestMax": 120
+      },
+      {
+        "label": "50",
+        "chestMin": 120,
+        "chestMax": 124
+      }
+    ]
+  },
+  {
+    "brand": "Gucci",
+    "line": "womens",
+    "units": "cm",
+    "sourceUrl": "https://www.gucci.com/us/en/pr/women/ready-to-wear-for-women/tops-shirts-for-women/shirts-for-women/printed-silk-habotai-shirt-p-A008LVZAVW96513",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "shirt",
+      "top",
+      "jacket"
+    ],
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "XXXS",
+        "chestMin": 75.5,
+        "chestMax": 78.5
+      },
+      {
+        "label": "XXS",
+        "chestMin": 78.5,
+        "chestMax": 81.5
+      },
+      {
+        "label": "XS",
+        "chestMin": 81.5,
+        "chestMax": 84.5
+      },
+      {
+        "label": "S",
+        "chestMin": 84.5,
+        "chestMax": 87.5
+      },
+      {
+        "label": "M",
+        "chestMin": 87.5,
+        "chestMax": 91
+      },
+      {
+        "label": "L",
+        "chestMin": 91,
+        "chestMax": 95
+      },
+      {
+        "label": "XL",
+        "chestMin": 95,
+        "chestMax": 99
+      },
+      {
+        "label": "XXL",
+        "chestMin": 99,
+        "chestMax": 103
+      },
+      {
+        "label": "XXXL",
+        "chestMin": 103,
+        "chestMax": 107
+      },
+      {
+        "label": "4XL",
+        "chestMin": 107,
+        "chestMax": 111
+      }
+    ]
+  },
+  {
+    "brand": "Gucci",
+    "line": "womens",
+    "units": "cm",
+    "sourceUrl": "https://www.gucci.com/us/en/st/gucci-clothing-size-chart",
+    "capturedAt": "2026-10-23",
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "XXXS",
+        "chestMin": 75.5,
+        "chestMax": 78.5
+      },
+      {
+        "label": "XXS",
+        "chestMin": 78.5,
+        "chestMax": 81.5
+      },
+      {
+        "label": "XS",
+        "chestMin": 81.5,
+        "chestMax": 84.5
+      },
+      {
+        "label": "S",
+        "chestMin": 84.5,
+        "chestMax": 87.5
+      },
+      {
+        "label": "M",
+        "chestMin": 87.5,
+        "chestMax": 91
+      },
+      {
+        "label": "L",
+        "chestMin": 91,
+        "chestMax": 95
+      },
+      {
+        "label": "XL",
+        "chestMin": 95,
+        "chestMax": 99
+      },
+      {
+        "label": "XXL",
+        "chestMin": 99,
+        "chestMax": 103
       }
     ]
   },
@@ -738,6 +1950,122 @@
         "chestMax": 52,
         "waistMin": 44,
         "waistMax": 45
+      }
+    ]
+  },
+  {
+    "brand": "J.Crew",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.jcrew.com/r/size-charts",
+    "capturedAt": "2026-10-22",
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "000",
+        "chestMin": 30.5,
+        "chestMax": 31.5,
+        "waistMin": 22.5,
+        "waistMax": 23.5
+      },
+      {
+        "label": "00",
+        "chestMin": 31.5,
+        "chestMax": 32.5,
+        "waistMin": 23.5,
+        "waistMax": 24.5
+      },
+      {
+        "label": "0",
+        "chestMin": 32.5,
+        "chestMax": 33.5,
+        "waistMin": 24.5,
+        "waistMax": 25.5
+      },
+      {
+        "label": "2",
+        "chestMin": 33.5,
+        "chestMax": 34.5,
+        "waistMin": 25.5,
+        "waistMax": 26.5
+      },
+      {
+        "label": "4",
+        "chestMin": 34.5,
+        "chestMax": 35.5,
+        "waistMin": 26.5,
+        "waistMax": 27.5
+      },
+      {
+        "label": "6",
+        "chestMin": 35.5,
+        "chestMax": 36.5,
+        "waistMin": 27.5,
+        "waistMax": 28.5
+      },
+      {
+        "label": "8",
+        "chestMin": 36.5,
+        "chestMax": 37.5,
+        "waistMin": 28.5,
+        "waistMax": 29.5
+      },
+      {
+        "label": "10",
+        "chestMin": 37.5,
+        "chestMax": 38.75,
+        "waistMin": 29.5,
+        "waistMax": 30.75
+      },
+      {
+        "label": "12",
+        "chestMin": 38.75,
+        "chestMax": 40.25,
+        "waistMin": 30.75,
+        "waistMax": 32.25
+      },
+      {
+        "label": "14",
+        "chestMin": 40.25,
+        "chestMax": 42.25,
+        "waistMin": 32.25,
+        "waistMax": 34.25
+      },
+      {
+        "label": "16",
+        "chestMin": 42.25,
+        "chestMax": 44.75,
+        "waistMin": 34.25,
+        "waistMax": 36.75
+      },
+      {
+        "label": "18",
+        "chestMin": 44.75,
+        "chestMax": 47.25,
+        "waistMin": 36.75,
+        "waistMax": 39.25
+      },
+      {
+        "label": "20",
+        "chestMin": 47.25,
+        "chestMax": 49.75,
+        "waistMin": 39.25,
+        "waistMax": 41.75
+      },
+      {
+        "label": "22",
+        "chestMin": 49.75,
+        "chestMax": 52.25,
+        "waistMin": 41.75,
+        "waistMax": 44.25
+      },
+      {
+        "label": "24",
+        "chestMin": 52.25,
+        "chestMax": 54.75,
+        "waistMin": 44.25,
+        "waistMax": 46.75
       }
     ]
   },
@@ -1010,6 +2338,66 @@
     ]
   },
   {
+    "brand": "Levi's",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.levi.com/US/en_US/info/sizeguide",
+    "capturedAt": "2026-10-22",
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 30,
+        "chestMax": 32,
+        "waistMin": 23.25,
+        "waistMax": 25.25
+      },
+      {
+        "label": "XS",
+        "chestMin": 32,
+        "chestMax": 34,
+        "waistMin": 25.25,
+        "waistMax": 27.25
+      },
+      {
+        "label": "S",
+        "chestMin": 34,
+        "chestMax": 36,
+        "waistMin": 27.25,
+        "waistMax": 29.25
+      },
+      {
+        "label": "M",
+        "chestMin": 36,
+        "chestMax": 38.25,
+        "waistMin": 29.25,
+        "waistMax": 31.5
+      },
+      {
+        "label": "L",
+        "chestMin": 38.25,
+        "chestMax": 41,
+        "waistMin": 31.5,
+        "waistMax": 34.25
+      },
+      {
+        "label": "XL",
+        "chestMin": 41,
+        "chestMax": 44,
+        "waistMin": 34.25,
+        "waistMax": 37.25
+      },
+      {
+        "label": "XXL",
+        "chestMin": 44,
+        "chestMax": 47,
+        "waistMin": 37.25,
+        "waistMax": 40.25
+      }
+    ]
+  },
+  {
     "brand": "Madewell",
     "line": "mens",
     "units": "in",
@@ -1073,6 +2461,345 @@
         "chestMax": 52,
         "waistMin": 44,
         "waistMax": 46
+      }
+    ]
+  },
+  {
+    "brand": "Moncler",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.moncler.com/en-us/client-service/size_guide",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "jacket"
+    ],
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "00",
+        "chestMin": 32.28,
+        "chestMax": 33.86,
+        "waistMin": 27.57,
+        "waistMax": 29.14
+      },
+      {
+        "label": "0",
+        "chestMin": 33.86,
+        "chestMax": 35.44,
+        "waistMin": 29.14,
+        "waistMax": 30.71
+      },
+      {
+        "label": "1",
+        "chestMin": 35.44,
+        "chestMax": 37.01,
+        "waistMin": 30.71,
+        "waistMax": 32.28
+      },
+      {
+        "label": "2",
+        "chestMin": 37.01,
+        "chestMax": 38.58,
+        "waistMin": 32.28,
+        "waistMax": 33.86
+      },
+      {
+        "label": "3",
+        "chestMin": 38.58,
+        "chestMax": 40.55,
+        "waistMin": 33.86,
+        "waistMax": 35.83
+      },
+      {
+        "label": "4",
+        "chestMin": 40.55,
+        "chestMax": 42.91,
+        "waistMin": 35.83,
+        "waistMax": 38.19
+      },
+      {
+        "label": "5",
+        "chestMin": 42.91,
+        "chestMax": 45.28,
+        "waistMin": 38.19,
+        "waistMax": 40.4
+      },
+      {
+        "label": "6",
+        "chestMin": 45.28,
+        "chestMax": 47.64,
+        "waistMin": 40.4,
+        "waistMax": 42.76
+      },
+      {
+        "label": "7",
+        "chestMin": 47.64,
+        "chestMax": 49.61,
+        "waistMin": 42.76,
+        "waistMax": 44.88
+      },
+      {
+        "label": "8",
+        "chestMin": 49.61,
+        "chestMax": 51.18,
+        "waistMin": 44.88,
+        "waistMax": 46.44
+      }
+    ]
+  },
+  {
+    "brand": "Moncler",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.moncler.com/en-us/client-service/size_guide",
+    "capturedAt": "2026-10-23",
+    "appliesTo": [
+      "tshirt",
+      "top",
+      "shirt",
+      "sweater",
+      "hoodie",
+      "polo"
+    ],
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 32.28,
+        "chestMax": 33.86,
+        "waistMin": 27.57,
+        "waistMax": 29.14
+      },
+      {
+        "label": "XS",
+        "chestMin": 33.86,
+        "chestMax": 35.44,
+        "waistMin": 29.14,
+        "waistMax": 30.71
+      },
+      {
+        "label": "S",
+        "chestMin": 35.44,
+        "chestMax": 37.01,
+        "waistMin": 30.71,
+        "waistMax": 32.28
+      },
+      {
+        "label": "M",
+        "chestMin": 37.01,
+        "chestMax": 38.58,
+        "waistMin": 32.28,
+        "waistMax": 33.86
+      },
+      {
+        "label": "L",
+        "chestMin": 38.58,
+        "chestMax": 40.55,
+        "waistMin": 33.86,
+        "waistMax": 35.83
+      },
+      {
+        "label": "XL",
+        "chestMin": 40.55,
+        "chestMax": 42.91,
+        "waistMin": 35.83,
+        "waistMax": 38.19
+      },
+      {
+        "label": "XXL",
+        "chestMin": 42.91,
+        "chestMax": 45.28,
+        "waistMin": 38.19,
+        "waistMax": 40.4
+      },
+      {
+        "label": "3XL",
+        "chestMin": 45.28,
+        "chestMax": 47.64,
+        "waistMin": 40.4,
+        "waistMax": 42.76
+      },
+      {
+        "label": "4XL",
+        "chestMin": 47.64,
+        "chestMax": 50,
+        "waistMin": 42.76,
+        "waistMax": 45.42
+      }
+    ]
+  },
+  {
+    "brand": "Moncler",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.moncler.com/en-us/client-service/size_guide",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "jacket"
+    ],
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "000",
+        "chestMin": 29.91,
+        "chestMax": 31.49,
+        "waistMin": 22.43,
+        "waistMax": 24.01
+      },
+      {
+        "label": "00",
+        "chestMin": 31.49,
+        "chestMax": 33.07,
+        "waistMin": 24.01,
+        "waistMax": 25.59
+      },
+      {
+        "label": "0",
+        "chestMin": 33.07,
+        "chestMax": 34.64,
+        "waistMin": 25.59,
+        "waistMax": 27.17
+      },
+      {
+        "label": "1",
+        "chestMin": 34.64,
+        "chestMax": 36.22,
+        "waistMin": 27.17,
+        "waistMax": 28.74
+      },
+      {
+        "label": "2",
+        "chestMin": 36.22,
+        "chestMax": 37.8,
+        "waistMin": 28.74,
+        "waistMax": 30.32
+      },
+      {
+        "label": "3",
+        "chestMin": 37.8,
+        "chestMax": 39.37,
+        "waistMin": 30.32,
+        "waistMax": 31.89
+      },
+      {
+        "label": "4",
+        "chestMin": 39.37,
+        "chestMax": 41.34,
+        "waistMin": 31.89,
+        "waistMax": 33.86
+      },
+      {
+        "label": "5",
+        "chestMin": 41.34,
+        "chestMax": 43.7,
+        "waistMin": 33.86,
+        "waistMax": 36.22
+      },
+      {
+        "label": "6",
+        "chestMin": 43.7,
+        "chestMax": 45.67,
+        "waistMin": 36.22,
+        "waistMax": 38.19
+      },
+      {
+        "label": "7",
+        "chestMin": 45.67,
+        "chestMax": 47.25,
+        "waistMin": 38.19,
+        "waistMax": 39.77
+      }
+    ]
+  },
+  {
+    "brand": "Moncler",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.moncler.com/en-us/client-service/size_guide",
+    "capturedAt": "2026-10-23",
+    "appliesTo": [
+      "tshirt",
+      "top",
+      "shirt",
+      "sweater",
+      "hoodie",
+      "polo"
+    ],
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "3XS",
+        "chestMin": 30.51,
+        "chestMax": 31.69,
+        "waistMin": 23.03,
+        "waistMax": 24.21
+      },
+      {
+        "label": "XXS",
+        "chestMin": 31.69,
+        "chestMax": 33.07,
+        "waistMin": 24.21,
+        "waistMax": 25.59
+      },
+      {
+        "label": "XS",
+        "chestMin": 33.07,
+        "chestMax": 34.64,
+        "waistMin": 25.59,
+        "waistMax": 27.17
+      },
+      {
+        "label": "S",
+        "chestMin": 34.64,
+        "chestMax": 36.22,
+        "waistMin": 27.17,
+        "waistMax": 28.74
+      },
+      {
+        "label": "M",
+        "chestMin": 36.22,
+        "chestMax": 37.8,
+        "waistMin": 28.74,
+        "waistMax": 30.32
+      },
+      {
+        "label": "L",
+        "chestMin": 37.8,
+        "chestMax": 39.37,
+        "waistMin": 30.32,
+        "waistMax": 31.89
+      },
+      {
+        "label": "XL",
+        "chestMin": 39.37,
+        "chestMax": 41.34,
+        "waistMin": 31.89,
+        "waistMax": 33.86
+      },
+      {
+        "label": "XXL",
+        "chestMin": 41.34,
+        "chestMax": 43.7,
+        "waistMin": 33.86,
+        "waistMax": 36.22
+      },
+      {
+        "label": "3XL",
+        "chestMin": 43.7,
+        "chestMax": 45.67,
+        "waistMin": 36.22,
+        "waistMax": 38.19
+      },
+      {
+        "label": "4XL",
+        "chestMin": 45.67,
+        "chestMax": 47.25,
+        "waistMin": 38.19,
+        "waistMax": 39.77
       }
     ]
   },
@@ -1209,6 +2936,282 @@
     ]
   },
   {
+    "brand": "Patagonia",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.patagonia.com/product/mens-go-to-lightweight-button-down-shirt/52691.html?cgid=mens",
+    "capturedAt": "2026-10-24",
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "26",
+        "chestMin": 33,
+        "chestMax": 35,
+        "waistMin": 25,
+        "waistMax": 27
+      },
+      {
+        "label": "28",
+        "chestMin": 35,
+        "chestMax": 36.5,
+        "waistMin": 27,
+        "waistMax": 28.5
+      },
+      {
+        "label": "29",
+        "chestMin": 36.5,
+        "chestMax": 37.5,
+        "waistMin": 28.5,
+        "waistMax": 29.5
+      },
+      {
+        "label": "30",
+        "chestMin": 37.5,
+        "chestMax": 38.5,
+        "waistMin": 29.5,
+        "waistMax": 30.5
+      },
+      {
+        "label": "31",
+        "chestMin": 38.5,
+        "chestMax": 39.5,
+        "waistMin": 30.5,
+        "waistMax": 31.5
+      },
+      {
+        "label": "32",
+        "chestMin": 39.5,
+        "chestMax": 40.5,
+        "waistMin": 31.5,
+        "waistMax": 32.5
+      },
+      {
+        "label": "33",
+        "chestMin": 40.5,
+        "chestMax": 41.5,
+        "waistMin": 32.5,
+        "waistMax": 33.5
+      },
+      {
+        "label": "34",
+        "chestMin": 41.5,
+        "chestMax": 42.5,
+        "waistMin": 33.5,
+        "waistMax": 34.5
+      },
+      {
+        "label": "35",
+        "chestMin": 42.5,
+        "chestMax": 43.5,
+        "waistMin": 34.5,
+        "waistMax": 35.5
+      },
+      {
+        "label": "36",
+        "chestMin": 43.5,
+        "chestMax": 45,
+        "waistMin": 35.5,
+        "waistMax": 37
+      },
+      {
+        "label": "38",
+        "chestMin": 45,
+        "chestMax": 47,
+        "waistMin": 37,
+        "waistMax": 39
+      },
+      {
+        "label": "40",
+        "chestMin": 47,
+        "chestMax": 49,
+        "waistMin": 39,
+        "waistMax": 41
+      },
+      {
+        "label": "42",
+        "chestMin": 49,
+        "chestMax": 51,
+        "waistMin": 41,
+        "waistMax": 43
+      },
+      {
+        "label": "44",
+        "chestMin": 51,
+        "chestMax": 53,
+        "waistMin": 43,
+        "waistMax": 45
+      },
+      {
+        "label": "46",
+        "chestMin": 53,
+        "chestMax": 55,
+        "waistMin": 45,
+        "waistMax": 47
+      },
+      {
+        "label": "48",
+        "chestMin": 55,
+        "chestMax": 57,
+        "waistMin": 47,
+        "waistMax": 49
+      }
+    ]
+  },
+  {
+    "brand": "Patagonia",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.patagonia.com/guides/size-fit/mens/",
+    "capturedAt": "2026-10-24",
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 32,
+        "chestMax": 34
+      },
+      {
+        "label": "XS",
+        "chestMin": 34,
+        "chestMax": 36
+      },
+      {
+        "label": "S",
+        "chestMin": 36,
+        "chestMax": 38.5
+      },
+      {
+        "label": "M",
+        "chestMin": 38.5,
+        "chestMax": 42
+      },
+      {
+        "label": "L",
+        "chestMin": 42,
+        "chestMax": 45.5
+      },
+      {
+        "label": "XL",
+        "chestMin": 45.5,
+        "chestMax": 48.5
+      },
+      {
+        "label": "XXL",
+        "chestMin": 48.5,
+        "chestMax": 53
+      },
+      {
+        "label": "XXXL",
+        "chestMin": 53,
+        "chestMax": 59
+      }
+    ]
+  },
+  {
+    "brand": "Patagonia",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.patagonia.com/guides/size-fit/womens/",
+    "capturedAt": "2026-10-24",
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "00",
+        "chestMin": 31,
+        "chestMax": 32,
+        "waistMin": 24,
+        "waistMax": 25
+      },
+      {
+        "label": "0",
+        "chestMin": 32,
+        "chestMax": 33,
+        "waistMin": 25,
+        "waistMax": 26
+      },
+      {
+        "label": "2",
+        "chestMin": 33,
+        "chestMax": 34,
+        "waistMin": 26,
+        "waistMax": 27
+      },
+      {
+        "label": "4",
+        "chestMin": 34,
+        "chestMax": 35,
+        "waistMin": 27,
+        "waistMax": 28
+      },
+      {
+        "label": "6",
+        "chestMin": 35,
+        "chestMax": 36,
+        "waistMin": 28,
+        "waistMax": 29
+      },
+      {
+        "label": "8",
+        "chestMin": 36,
+        "chestMax": 37,
+        "waistMin": 29,
+        "waistMax": 30
+      },
+      {
+        "label": "10",
+        "chestMin": 37,
+        "chestMax": 38.25,
+        "waistMin": 30,
+        "waistMax": 31.25
+      },
+      {
+        "label": "12",
+        "chestMin": 38.25,
+        "chestMax": 40,
+        "waistMin": 31.25,
+        "waistMax": 33
+      },
+      {
+        "label": "14",
+        "chestMin": 40,
+        "chestMax": 42,
+        "waistMin": 33,
+        "waistMax": 35
+      },
+      {
+        "label": "16",
+        "chestMin": 42,
+        "chestMax": 44,
+        "waistMin": 35,
+        "waistMax": 37
+      },
+      {
+        "label": "18",
+        "chestMin": 44,
+        "chestMax": 46,
+        "waistMin": 37,
+        "waistMax": 39
+      },
+      {
+        "label": "20",
+        "chestMin": 46,
+        "chestMax": 48,
+        "waistMin": 39,
+        "waistMax": 41
+      },
+      {
+        "label": "22",
+        "chestMin": 48,
+        "chestMax": 50,
+        "waistMin": 41,
+        "waistMax": 43
+      }
+    ]
+  },
+  {
     "brand": "Ralph Lauren",
     "line": "mens",
     "units": "in",
@@ -1296,6 +3299,407 @@
     ]
   },
   {
+    "brand": "Ralph Lauren",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.ralphlauren.com/men-clothing-dress-shirts/classic-fit-french-cuff-tuxedo-shirt/100105491.html",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "shirt"
+    ],
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "14.5",
+        "chestMin": 35,
+        "chestMax": 37,
+        "waistMin": 29,
+        "waistMax": 31
+      },
+      {
+        "label": "15",
+        "chestMin": 37,
+        "chestMax": 39,
+        "waistMin": 31,
+        "waistMax": 33
+      },
+      {
+        "label": "15.5",
+        "chestMin": 39,
+        "chestMax": 41,
+        "waistMin": 33,
+        "waistMax": 35
+      },
+      {
+        "label": "16",
+        "chestMin": 41,
+        "chestMax": 43,
+        "waistMin": 35,
+        "waistMax": 37
+      },
+      {
+        "label": "16.5",
+        "chestMin": 43,
+        "chestMax": 45,
+        "waistMin": 37,
+        "waistMax": 39
+      },
+      {
+        "label": "17",
+        "chestMin": 45,
+        "chestMax": 47,
+        "waistMin": 39,
+        "waistMax": 41
+      },
+      {
+        "label": "17.5",
+        "chestMin": 47,
+        "chestMax": 49,
+        "waistMin": 41,
+        "waistMax": 43
+      },
+      {
+        "label": "18",
+        "chestMin": 49,
+        "chestMax": 51,
+        "waistMin": 43,
+        "waistMax": 45
+      },
+      {
+        "label": "18.5",
+        "chestMin": 51,
+        "chestMax": 55,
+        "waistMin": 45,
+        "waistMax": 49
+      },
+      {
+        "label": "20",
+        "chestMin": 55,
+        "chestMax": 61,
+        "waistMin": 49,
+        "waistMax": 55
+      }
+    ]
+  },
+  {
+    "brand": "Ralph Lauren",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.ralphlauren.com/women-clothing-shirts-blouses/tie-bow-organdy-shirt/100105584.html?dwvar100105584_colorname=White&cgid=women-clothing-shirts-blouses#ab=NA_WLP_Slot_2_S1_L1_SHOP&start=1&cgid=women-clothing-shirts-blouses",
+    "capturedAt": "2026-10-23",
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "000",
+        "chestMin": 30,
+        "chestMax": 31,
+        "waistMin": 23,
+        "waistMax": 24
+      },
+      {
+        "label": "00",
+        "chestMin": 31,
+        "chestMax": 32,
+        "waistMin": 24,
+        "waistMax": 25
+      },
+      {
+        "label": "0",
+        "chestMin": 32,
+        "chestMax": 33,
+        "waistMin": 25,
+        "waistMax": 26
+      },
+      {
+        "label": "2",
+        "chestMin": 33,
+        "chestMax": 34,
+        "waistMin": 26,
+        "waistMax": 27
+      },
+      {
+        "label": "4",
+        "chestMin": 34,
+        "chestMax": 35,
+        "waistMin": 27,
+        "waistMax": 28
+      },
+      {
+        "label": "6",
+        "chestMin": 35,
+        "chestMax": 36,
+        "waistMin": 28,
+        "waistMax": 29
+      },
+      {
+        "label": "8",
+        "chestMin": 36,
+        "chestMax": 37,
+        "waistMin": 29,
+        "waistMax": 30
+      },
+      {
+        "label": "10",
+        "chestMin": 37,
+        "chestMax": 38.25,
+        "waistMin": 30,
+        "waistMax": 31.25
+      },
+      {
+        "label": "12",
+        "chestMin": 38.25,
+        "chestMax": 39.75,
+        "waistMin": 31.25,
+        "waistMax": 32.75
+      },
+      {
+        "label": "14",
+        "chestMin": 39.75,
+        "chestMax": 41.5,
+        "waistMin": 32.75,
+        "waistMax": 34.5
+      },
+      {
+        "label": "16",
+        "chestMin": 41.5,
+        "chestMax": 43.5,
+        "waistMin": 34.5,
+        "waistMax": 36.5
+      },
+      {
+        "label": "18",
+        "chestMin": 43.5,
+        "chestMax": 45.5,
+        "waistMin": 36.5,
+        "waistMax": 38.5
+      },
+      {
+        "label": "20",
+        "chestMin": 45.5,
+        "chestMax": 47.5,
+        "waistMin": 38.5,
+        "waistMax": 40.5
+      },
+      {
+        "label": "22",
+        "chestMin": 47.5,
+        "chestMax": 49.5,
+        "waistMin": 40.5,
+        "waistMax": 42.5
+      }
+    ]
+  },
+  {
+    "brand": "Saint Laurent",
+    "line": "mens",
+    "units": "cm",
+    "sourceUrl": "https://www.ysl.com/en-us/pr/saint-laurent-jacket-in-cotton-A006TWY6J984003.html",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "jacket",
+      "tshirt"
+    ],
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "42",
+        "chestMin": 80,
+        "chestMax": 84,
+        "waistMin": 66,
+        "waistMax": 70
+      },
+      {
+        "label": "44",
+        "chestMin": 84,
+        "chestMax": 88,
+        "waistMin": 70,
+        "waistMax": 74
+      },
+      {
+        "label": "46",
+        "chestMin": 88,
+        "chestMax": 92,
+        "waistMin": 74,
+        "waistMax": 78
+      },
+      {
+        "label": "48",
+        "chestMin": 92,
+        "chestMax": 96,
+        "waistMin": 78,
+        "waistMax": 82
+      },
+      {
+        "label": "50",
+        "chestMin": 96,
+        "chestMax": 100,
+        "waistMin": 82,
+        "waistMax": 86
+      },
+      {
+        "label": "52",
+        "chestMin": 100,
+        "chestMax": 104,
+        "waistMin": 86,
+        "waistMax": 90
+      },
+      {
+        "label": "54",
+        "chestMin": 104,
+        "chestMax": 108,
+        "waistMin": 90,
+        "waistMax": 94
+      },
+      {
+        "label": "56",
+        "chestMin": 108,
+        "chestMax": 112,
+        "waistMin": 94,
+        "waistMax": 98
+      },
+      {
+        "label": "58",
+        "chestMin": 112,
+        "chestMax": 116,
+        "waistMin": 98,
+        "waistMax": 102
+      }
+    ]
+  },
+  {
+    "brand": "Saint Laurent",
+    "line": "mens",
+    "units": "cm",
+    "sourceUrl": "https://www.ysl.com/en-us/pr/cassandre-shirt-in-striped-cotton-poplin-A001QBY2O084272.html",
+    "capturedAt": "2026-10-23",
+    "appliesTo": [
+      "shirt"
+    ],
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "36",
+        "chestMin": 86,
+        "chestMax": 90,
+        "waistMin": 70,
+        "waistMax": 74
+      },
+      {
+        "label": "37",
+        "chestMin": 90,
+        "chestMax": 94,
+        "waistMin": 74,
+        "waistMax": 78
+      },
+      {
+        "label": "38",
+        "chestMin": 94,
+        "chestMax": 98,
+        "waistMin": 78,
+        "waistMax": 82
+      },
+      {
+        "label": "39",
+        "chestMin": 98,
+        "chestMax": 102,
+        "waistMin": 82,
+        "waistMax": 86
+      },
+      {
+        "label": "40",
+        "chestMin": 102,
+        "chestMax": 106,
+        "waistMin": 86,
+        "waistMax": 90
+      },
+      {
+        "label": "41",
+        "chestMin": 106,
+        "chestMax": 110,
+        "waistMin": 90,
+        "waistMax": 94
+      },
+      {
+        "label": "42",
+        "chestMin": 110,
+        "chestMax": 114,
+        "waistMin": 94,
+        "waistMax": 98
+      },
+      {
+        "label": "43",
+        "chestMin": 114,
+        "chestMax": 118,
+        "waistMin": 98,
+        "waistMax": 102
+      },
+      {
+        "label": "44",
+        "chestMin": 118,
+        "chestMax": 122,
+        "waistMin": 102,
+        "waistMax": 106
+      }
+    ]
+  },
+  {
+    "brand": "Saint Laurent",
+    "line": "womens",
+    "units": "cm",
+    "sourceUrl": "https://www.ysl.com/en-us/pr/lavalliere-shirt-in-cotton-poplin-870726Y1H489000.html",
+    "capturedAt": "2026-10-23",
+    "variant": "product",
+    "derived": true,
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 74.5,
+        "chestMax": 77.5,
+        "waistMin": 57,
+        "waistMax": 60
+      },
+      {
+        "label": "XS",
+        "chestMin": 77.5,
+        "chestMax": 80.5,
+        "waistMin": 60,
+        "waistMax": 63
+      },
+      {
+        "label": "S",
+        "chestMin": 80.5,
+        "chestMax": 84,
+        "waistMin": 63,
+        "waistMax": 66.5
+      },
+      {
+        "label": "M",
+        "chestMin": 84,
+        "chestMax": 88,
+        "waistMin": 66.5,
+        "waistMax": 70.5
+      },
+      {
+        "label": "L",
+        "chestMin": 88,
+        "chestMax": 92,
+        "waistMin": 70.5,
+        "waistMax": 74.5
+      },
+      {
+        "label": "XL",
+        "chestMin": 92,
+        "chestMax": 96,
+        "waistMin": 74.5,
+        "waistMax": 78.5
+      }
+    ]
+  },
+  {
     "brand": "Tommy Hilfiger",
     "line": "mens",
     "units": "in",
@@ -1354,6 +3758,198 @@
         "chestMax": 49.6,
         "waistMin": 43.7,
         "waistMax": 45.6
+      }
+    ]
+  },
+  {
+    "brand": "Tommy Hilfiger",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://usa.tommy.com/en/size-guide-men.html#MensTopsCS",
+    "capturedAt": "2026-10-22",
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "24",
+        "chestMin": 31,
+        "chestMax": 32,
+        "waistMin": 25,
+        "waistMax": 26
+      },
+      {
+        "label": "25",
+        "chestMin": 32,
+        "chestMax": 33,
+        "waistMin": 26,
+        "waistMax": 27
+      },
+      {
+        "label": "26",
+        "chestMin": 33,
+        "chestMax": 34,
+        "waistMin": 27,
+        "waistMax": 28
+      },
+      {
+        "label": "27",
+        "chestMin": 34,
+        "chestMax": 35,
+        "waistMin": 28,
+        "waistMax": 29
+      },
+      {
+        "label": "28",
+        "chestMin": 35,
+        "chestMax": 36,
+        "waistMin": 29,
+        "waistMax": 30
+      },
+      {
+        "label": "29",
+        "chestMin": 36,
+        "chestMax": 37,
+        "waistMin": 30,
+        "waistMax": 31
+      },
+      {
+        "label": "30",
+        "chestMin": 37,
+        "chestMax": 38,
+        "waistMin": 31,
+        "waistMax": 32
+      },
+      {
+        "label": "31",
+        "chestMin": 38,
+        "chestMax": 39,
+        "waistMin": 32,
+        "waistMax": 33
+      },
+      {
+        "label": "32",
+        "chestMin": 39,
+        "chestMax": 40,
+        "waistMin": 33,
+        "waistMax": 34
+      },
+      {
+        "label": "33",
+        "chestMin": 40,
+        "chestMax": 41,
+        "waistMin": 34,
+        "waistMax": 35
+      },
+      {
+        "label": "34",
+        "chestMin": 41,
+        "chestMax": 42,
+        "waistMin": 35,
+        "waistMax": 36
+      },
+      {
+        "label": "35",
+        "chestMin": 42,
+        "chestMax": 43,
+        "waistMin": 36,
+        "waistMax": 37
+      },
+      {
+        "label": "36",
+        "chestMin": 43,
+        "chestMax": 44.5,
+        "waistMin": 37,
+        "waistMax": 38.5
+      },
+      {
+        "label": "38",
+        "chestMin": 44.5,
+        "chestMax": 46.5,
+        "waistMin": 38.5,
+        "waistMax": 40.5
+      },
+      {
+        "label": "40",
+        "chestMin": 46.5,
+        "chestMax": 48.5,
+        "waistMin": 40.5,
+        "waistMax": 42.5
+      },
+      {
+        "label": "42",
+        "chestMin": 48.5,
+        "chestMax": 50.5,
+        "waistMin": 42.5,
+        "waistMax": 44.5
+      },
+      {
+        "label": "44",
+        "chestMin": 50.5,
+        "chestMax": 52.5,
+        "waistMin": 44.5,
+        "waistMax": 46.5
+      },
+      {
+        "label": "46",
+        "chestMin": 52.5,
+        "chestMax": 54.5,
+        "waistMin": 46.5,
+        "waistMax": 48.5
+      },
+      {
+        "label": "48",
+        "chestMin": 54.5,
+        "chestMax": 56.5,
+        "waistMin": 48.5,
+        "waistMax": 50.5
+      },
+      {
+        "label": "50",
+        "chestMin": 56.5,
+        "chestMax": 58.5,
+        "waistMin": 50.5,
+        "waistMax": 52.5
+      }
+    ]
+  },
+  {
+    "brand": "Tommy Jeans",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://usa.tommy.com/en/size-guide-men.html#MensTopsCS",
+    "capturedAt": "2026-10-24",
+    "variant": "general",
+    "derived": true,
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 36.25,
+        "chestMax": 37.75
+      },
+      {
+        "label": "S",
+        "chestMin": 37.75,
+        "chestMax": 39.25
+      },
+      {
+        "label": "M",
+        "chestMin": 39.25,
+        "chestMax": 40.88
+      },
+      {
+        "label": "L",
+        "chestMin": 40.88,
+        "chestMax": 42.5
+      },
+      {
+        "label": "XL",
+        "chestMin": 42.5,
+        "chestMax": 44.13
+      },
+      {
+        "label": "XXL",
+        "chestMin": 44.13,
+        "chestMax": 45.88
       }
     ]
   },

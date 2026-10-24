@@ -12,7 +12,7 @@
   "appliesTo": [
     "top"
   ],
-  "reviewed": false,
+  "reviewed": true,
   "note": "Regular Activewear, numeric labels retained; appliesTo top denotes activewear tops only. Plus excluded. Body quote: screenshots/calvin-klein-womens-body-evidence.jpg.",
   "rows": [
     {
@@ -60,5 +60,6 @@
       "chest": 41,
       "waist": 33.5
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

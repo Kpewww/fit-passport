@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { GuideFile, compile, type GuideFileT } from "./brandGuides";
+import { GuideFile, compile, halfwayBands, type GuideFileT } from "./brandGuides";
 import generated from "./brandGuides.generated.json";
 
 const dir = join(__dirname, "../../data/brand-guides");
@@ -36,11 +36,32 @@ describe("brand size guides in data/brand-guides (Session 103)", () => {
     expect(compile([GuideFile.parse({ ...base, kind: "body", reviewed: true })])).toHaveLength(1);
   });
 
-  it("single printed numbers are kept as printed but never counted as a range", () => {
-    const f = GuideFile.parse({ brand: "X", line: "mens", kind: "body", units: "in", sourceUrl: "https://x.com/size", kindEvidence: "Body measurements",
-      capturedAt: "2026-10-22", capturedBy: "agent", screenshot: "screenshots/x.png", reviewed: true,
-      rows: [{ label: "S", chest: 36 }, { label: "M", chest: 40 }] });
-    expect(compile([f])).toEqual([]);
+  it("single printed numbers become bands halfway to the next size, marked derived (decision 07)", () => {
+    const base = { brand: "X", line: "mens", kind: "body", units: "in", sourceUrl: "https://x.com/size", kindEvidence: "Body measurements",
+      capturedAt: "2026-10-22", capturedBy: "agent", screenshot: "screenshots/x.png", reviewed: true };
+    const f = GuideFile.parse({ ...base, rows: [{ label: "S", chest: 37 }, { label: "M", chest: 38.6 }, { label: "L", chest: 40.2 }] });
+    expect(compile([f])).toEqual([expect.objectContaining({
+      derived: true,
+      rows: [{ label: "S", chestMin: 36.2, chestMax: 37.8 }, { label: "M", chestMin: 37.8, chestMax: 39.4 }, { label: "L", chestMin: 39.4, chestMax: 41 }],
+    })]);
+    // Not when the numbers do not rise, a label is printed twice, or the chart mixes ranges and single numbers.
+    expect(compile([GuideFile.parse({ ...base, rows: [{ label: "S", chest: 38 }, { label: "M", chest: 38 }] })])).toEqual([]);
+    expect(compile([GuideFile.parse({ ...base, rows: [{ label: "0", chest: 32 }, { label: "0", chest: 33 }, { label: "2", chest: 34 }] })])).toEqual([]);
+    const mixed = compile([GuideFile.parse({ ...base, rows: [{ label: "XS", chest: 34 }, { label: "S", chestMin: 35, chestMax: 37 }, { label: "M", chestMin: 38, chestMax: 40 }] })]);
+    expect(mixed[0].derived).toBeUndefined();
+    expect(mixed[0].rows.map((r) => r.label)).toEqual(["S", "M"]);
+  });
+
+  it("halfway bands: the outer sizes mirror their one neighbour", () => {
+    expect(halfwayBands([80, 84, 88])).toEqual([[78, 82], [82, 86], [86, 90]]);
+    expect(halfwayBands([40])).toBeNull();
+  });
+
+  it("a printed range is chosen before a derived band", () => {
+    const printed = { variant: "general" as const };
+    const derived = { variant: "product" as const, appliesTo: ["tshirt" as const], derived: true as const };
+    expect(pickGuide([derived, printed], "tshirt")).toBe(printed);
+    expect(pickGuide([derived], "tshirt")).toBe(derived);
   });
 
   it("rejects the usual copying mistakes", () => {
