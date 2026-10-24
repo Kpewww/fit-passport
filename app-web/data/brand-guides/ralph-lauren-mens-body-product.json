@@ -16,7 +16,7 @@
     "polo",
     "top"
   ],
-  "reviewed": false,
+  "reviewed": true,
   "note": "Unisex apparel explicitly based on standard mens sizing; Mens column copied. Excludes dress shirts, suits, sport coats, bottoms per page. Distinct body table from existing mens polo garment chart. No women labels inferred.",
   "rows": [
     {
@@ -89,5 +89,6 @@
       "waistMin": 53,
       "waistMax": 54
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

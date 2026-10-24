@@ -104,6 +104,69 @@
     "line": "mens",
     "units": "in",
     "sourceUrl": "https://bananarepublic.gap.com/browse/info.do?cid=35404",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "shirt",
+      "sweater"
+    ],
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 32,
+        "chestMax": 33,
+        "waistMin": 25,
+        "waistMax": 26
+      },
+      {
+        "label": "XS",
+        "chestMin": 34,
+        "chestMax": 35,
+        "waistMin": 27,
+        "waistMax": 28
+      },
+      {
+        "label": "S",
+        "chestMin": 36,
+        "chestMax": 37,
+        "waistMin": 29,
+        "waistMax": 31
+      },
+      {
+        "label": "M",
+        "chestMin": 38,
+        "chestMax": 40,
+        "waistMin": 32,
+        "waistMax": 33
+      },
+      {
+        "label": "L",
+        "chestMin": 41,
+        "chestMax": 44,
+        "waistMin": 34,
+        "waistMax": 35
+      },
+      {
+        "label": "XL",
+        "chestMin": 45,
+        "chestMax": 48,
+        "waistMin": 36,
+        "waistMax": 37
+      },
+      {
+        "label": "XXL",
+        "chestMin": 49,
+        "chestMax": 52,
+        "waistMin": 38,
+        "waistMax": 39
+      }
+    ]
+  },
+  {
+    "brand": "Banana Republic",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://bananarepublic.gap.com/browse/info.do?cid=35404",
     "capturedAt": "2026-10-22",
     "appliesTo": [
       "jacket"
@@ -569,6 +632,61 @@
     "line": "mens",
     "units": "in",
     "sourceUrl": "https://www.jcrew.com/r/size-charts",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "jacket"
+    ],
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 32,
+        "chestMax": 34,
+        "waistMin": 26,
+        "waistMax": 28
+      },
+      {
+        "label": "S",
+        "chestMin": 35,
+        "chestMax": 37,
+        "waistMin": 29,
+        "waistMax": 31
+      },
+      {
+        "label": "M",
+        "chestMin": 38,
+        "chestMax": 40,
+        "waistMin": 32,
+        "waistMax": 34
+      },
+      {
+        "label": "L",
+        "chestMin": 41,
+        "chestMax": 43,
+        "waistMin": 35,
+        "waistMax": 37
+      },
+      {
+        "label": "XL",
+        "chestMin": 44,
+        "chestMax": 46,
+        "waistMin": 38,
+        "waistMax": 40
+      },
+      {
+        "label": "XXL",
+        "chestMin": 47,
+        "chestMax": 49,
+        "waistMin": 41,
+        "waistMax": 43
+      }
+    ]
+  },
+  {
+    "brand": "J.Crew",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.jcrew.com/r/size-charts",
     "capturedAt": "2026-10-22",
     "variant": "general",
     "rows": [
@@ -707,6 +825,81 @@
     "brand": "Levi's",
     "line": "mens",
     "units": "in",
+    "sourceUrl": "https://www.levi.com/US/en_US/clothing/men/shirts/classic-standard-western-chambray-shirt/p/857450155",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "tshirt",
+      "shirt",
+      "sweater",
+      "jacket",
+      "hoodie",
+      "polo",
+      "top"
+    ],
+    "variant": "product",
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 30,
+        "chestMax": 32,
+        "waistMin": 24,
+        "waistMax": 26
+      },
+      {
+        "label": "XS",
+        "chestMin": 32,
+        "chestMax": 34.5,
+        "waistMin": 26,
+        "waistMax": 28.5
+      },
+      {
+        "label": "S",
+        "chestMin": 34.5,
+        "chestMax": 37,
+        "waistMin": 28.5,
+        "waistMax": 31
+      },
+      {
+        "label": "M",
+        "chestMin": 37,
+        "chestMax": 40,
+        "waistMin": 31,
+        "waistMax": 34
+      },
+      {
+        "label": "L",
+        "chestMin": 40,
+        "chestMax": 44,
+        "waistMin": 34,
+        "waistMax": 38.25
+      },
+      {
+        "label": "XL",
+        "chestMin": 44,
+        "chestMax": 48,
+        "waistMin": 38.25,
+        "waistMax": 42.5
+      },
+      {
+        "label": "2XL",
+        "chestMin": 48,
+        "chestMax": 52,
+        "waistMin": 42.5,
+        "waistMax": 46.75
+      },
+      {
+        "label": "3XL",
+        "chestMin": 52,
+        "chestMax": 56,
+        "waistMin": 46.75,
+        "waistMax": 51
+      }
+    ]
+  },
+  {
+    "brand": "Levi's",
+    "line": "mens",
+    "units": "in",
     "sourceUrl": "https://www.levi.com/US/en_US/info/sizeguide",
     "capturedAt": "2026-10-22",
     "variant": "general",
@@ -745,6 +938,474 @@
         "chestMax": 46,
         "waistMin": 38,
         "waistMax": 40
+      }
+    ]
+  },
+  {
+    "brand": "Levi's",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.levi.com/US/en_US/clothing/women/shirts-blouses-tops/button-up-shirts/heritage-western-sawtooth-button-down-shirt/p/007WU0001",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "tshirt",
+      "shirt",
+      "sweater",
+      "jacket",
+      "hoodie",
+      "polo",
+      "top"
+    ],
+    "variant": "product",
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 30,
+        "chestMax": 31,
+        "waistMin": 24,
+        "waistMax": 25
+      },
+      {
+        "label": "XS",
+        "chestMin": 32,
+        "chestMax": 33,
+        "waistMin": 26,
+        "waistMax": 27
+      },
+      {
+        "label": "S",
+        "chestMin": 34,
+        "chestMax": 35,
+        "waistMin": 28,
+        "waistMax": 29
+      },
+      {
+        "label": "M",
+        "chestMin": 36,
+        "chestMax": 37.5,
+        "waistMin": 30,
+        "waistMax": 31
+      },
+      {
+        "label": "L",
+        "chestMin": 38.5,
+        "chestMax": 40,
+        "waistMin": 32,
+        "waistMax": 34
+      },
+      {
+        "label": "XL",
+        "chestMin": 41,
+        "chestMax": 43,
+        "waistMin": 35,
+        "waistMax": 37
+      },
+      {
+        "label": "XXL",
+        "chestMin": 44,
+        "chestMax": 46,
+        "waistMin": 38,
+        "waistMax": 40
+      }
+    ]
+  },
+  {
+    "brand": "Madewell",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.madewell.com/c/size-chart/#mtops",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "tshirt",
+      "shirt",
+      "sweater",
+      "hoodie",
+      "polo",
+      "top"
+    ],
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 32,
+        "chestMax": 34,
+        "waistMin": 26,
+        "waistMax": 28
+      },
+      {
+        "label": "S",
+        "chestMin": 35,
+        "chestMax": 37,
+        "waistMin": 29,
+        "waistMax": 31
+      },
+      {
+        "label": "M",
+        "chestMin": 38,
+        "chestMax": 40,
+        "waistMin": 32,
+        "waistMax": 34
+      },
+      {
+        "label": "L",
+        "chestMin": 41,
+        "chestMax": 43,
+        "waistMin": 35,
+        "waistMax": 37
+      },
+      {
+        "label": "XL",
+        "chestMin": 44,
+        "chestMax": 46,
+        "waistMin": 38,
+        "waistMax": 40
+      },
+      {
+        "label": "XXL",
+        "chestMin": 47,
+        "chestMax": 49,
+        "waistMin": 41,
+        "waistMax": 43
+      },
+      {
+        "label": "XXXL",
+        "chestMin": 50,
+        "chestMax": 52,
+        "waistMin": 44,
+        "waistMax": 46
+      }
+    ]
+  },
+  {
+    "brand": "Nike",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.nike.com/size-fit/mens_tops_alpha",
+    "capturedAt": "2026-10-24",
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 28.1,
+        "chestMax": 31.5,
+        "waistMin": 22.5,
+        "waistMax": 25.5
+      },
+      {
+        "label": "XS",
+        "chestMin": 31.5,
+        "chestMax": 35,
+        "waistMin": 25.5,
+        "waistMax": 29
+      },
+      {
+        "label": "S",
+        "chestMin": 35,
+        "chestMax": 37.5,
+        "waistMin": 29,
+        "waistMax": 32
+      },
+      {
+        "label": "M",
+        "chestMin": 37.5,
+        "chestMax": 41,
+        "waistMin": 32,
+        "waistMax": 35
+      },
+      {
+        "label": "L",
+        "chestMin": 41,
+        "chestMax": 44,
+        "waistMin": 35,
+        "waistMax": 38
+      },
+      {
+        "label": "XL",
+        "chestMin": 44,
+        "chestMax": 48.5,
+        "waistMin": 38,
+        "waistMax": 43
+      },
+      {
+        "label": "XXL",
+        "chestMin": 48.5,
+        "chestMax": 53.5,
+        "waistMin": 43,
+        "waistMax": 47.5
+      },
+      {
+        "label": "3XL",
+        "chestMin": 53.5,
+        "chestMax": 58,
+        "waistMin": 47.5,
+        "waistMax": 52.5
+      },
+      {
+        "label": "4XL",
+        "chestMin": 58,
+        "chestMax": 63,
+        "waistMin": 52.5,
+        "waistMax": 57
+      }
+    ]
+  },
+  {
+    "brand": "Nike",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.nike.com/size-fit/womens-tops-alpha",
+    "capturedAt": "2026-10-24",
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 27.5,
+        "chestMax": 29.5,
+        "waistMin": 21.25,
+        "waistMax": 23.5
+      },
+      {
+        "label": "XS",
+        "chestMin": 29.5,
+        "chestMax": 32.5,
+        "waistMin": 23.5,
+        "waistMax": 26
+      },
+      {
+        "label": "S",
+        "chestMin": 32.5,
+        "chestMax": 35.5,
+        "waistMin": 26,
+        "waistMax": 29
+      },
+      {
+        "label": "M",
+        "chestMin": 35.5,
+        "chestMax": 38,
+        "waistMin": 29,
+        "waistMax": 31.5
+      },
+      {
+        "label": "L",
+        "chestMin": 38,
+        "chestMax": 41,
+        "waistMin": 31.5,
+        "waistMax": 34.5
+      },
+      {
+        "label": "XL",
+        "chestMin": 41,
+        "chestMax": 44.5,
+        "waistMin": 34.5,
+        "waistMax": 38.5
+      },
+      {
+        "label": "XXL",
+        "chestMin": 44.5,
+        "chestMax": 48.5,
+        "waistMin": 38.5,
+        "waistMax": 42.5
+      }
+    ]
+  },
+  {
+    "brand": "Ralph Lauren",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.ralphlauren.com/men-clothing-sweaters/the-iconic-cable-knit-cashmere-sweater/625238.html",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "sweater",
+      "tshirt",
+      "hoodie",
+      "polo",
+      "top"
+    ],
+    "variant": "product",
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 30,
+        "chestMax": 31,
+        "waistMin": 24,
+        "waistMax": 26
+      },
+      {
+        "label": "XS",
+        "chestMin": 31,
+        "chestMax": 34,
+        "waistMin": 26,
+        "waistMax": 28
+      },
+      {
+        "label": "S",
+        "chestMin": 35,
+        "chestMax": 37,
+        "waistMin": 28,
+        "waistMax": 30
+      },
+      {
+        "label": "M",
+        "chestMin": 38,
+        "chestMax": 40,
+        "waistMin": 31,
+        "waistMax": 34
+      },
+      {
+        "label": "L",
+        "chestMin": 42,
+        "chestMax": 45,
+        "waistMin": 35,
+        "waistMax": 38
+      },
+      {
+        "label": "XL",
+        "chestMin": 46,
+        "chestMax": 48,
+        "waistMin": 40,
+        "waistMax": 42
+      },
+      {
+        "label": "XXL",
+        "chestMin": 49,
+        "chestMax": 52,
+        "waistMin": 43,
+        "waistMax": 45
+      },
+      {
+        "label": "3XL",
+        "chestMin": 53,
+        "chestMax": 56,
+        "waistMin": 47,
+        "waistMax": 49
+      },
+      {
+        "label": "4XL",
+        "chestMin": 57,
+        "chestMax": 61,
+        "waistMin": 50,
+        "waistMax": 52
+      },
+      {
+        "label": "5XL",
+        "chestMin": 62,
+        "chestMax": 65,
+        "waistMin": 53,
+        "waistMax": 54
+      }
+    ]
+  },
+  {
+    "brand": "Tommy Hilfiger",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://usa.tommy.com/en/size-guide-men.html#MensTopsCS",
+    "capturedAt": "2026-10-24",
+    "appliesTo": [
+      "jacket"
+    ],
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 34.6,
+        "chestMax": 36.2,
+        "waistMin": 30.7,
+        "waistMax": 32.2
+      },
+      {
+        "label": "S",
+        "chestMin": 36.6,
+        "chestMax": 38.1,
+        "waistMin": 32.6,
+        "waistMax": 34.2
+      },
+      {
+        "label": "M",
+        "chestMin": 38.5,
+        "chestMax": 40.1,
+        "waistMin": 34.6,
+        "waistMax": 36.2
+      },
+      {
+        "label": "L",
+        "chestMin": 40.5,
+        "chestMax": 42.5,
+        "waistMin": 36.6,
+        "waistMax": 38.5
+      },
+      {
+        "label": "XL",
+        "chestMin": 42.9,
+        "chestMax": 44.8,
+        "waistMin": 38.9,
+        "waistMax": 40.9
+      },
+      {
+        "label": "XXL",
+        "chestMin": 45.2,
+        "chestMax": 47.2,
+        "waistMin": 41.3,
+        "waistMax": 43.3
+      },
+      {
+        "label": "3XL",
+        "chestMin": 47.6,
+        "chestMax": 49.6,
+        "waistMin": 43.7,
+        "waistMax": 45.6
+      }
+    ]
+  },
+  {
+    "brand": "Tommy Jeans",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://usa.tommy.com/en/size-guide-women.html#WomensDressesTopsandOuterwearCS",
+    "capturedAt": "2026-10-24",
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 30,
+        "chestMax": 31,
+        "waistMin": 22.8,
+        "waistMax": 23.8
+      },
+      {
+        "label": "XS",
+        "chestMin": 31,
+        "chestMax": 32.8,
+        "waistMin": 23.8,
+        "waistMax": 25.8
+      },
+      {
+        "label": "S",
+        "chestMin": 32.8,
+        "chestMax": 34.8,
+        "waistMin": 25.8,
+        "waistMax": 27.8
+      },
+      {
+        "label": "M",
+        "chestMin": 34.8,
+        "chestMax": 36.8,
+        "waistMin": 27.8,
+        "waistMax": 29.7
+      },
+      {
+        "label": "L",
+        "chestMin": 36.8,
+        "chestMax": 38.8,
+        "waistMin": 29.7,
+        "waistMax": 31.7
+      },
+      {
+        "label": "XL",
+        "chestMin": 38.8,
+        "chestMax": 40.8,
+        "waistMin": 31.7,
+        "waistMax": 33.7
       }
     ]
   },

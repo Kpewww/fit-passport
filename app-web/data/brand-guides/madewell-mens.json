@@ -18,7 +18,7 @@
     "polo",
     "top"
   ],
-  "reviewed": false,
+  "reviewed": true,
   "rows": [
     {
       "label": "XS",
@@ -69,5 +69,6 @@
       "waistMin": 44,
       "waistMax": 46
     }
-  ]
+  ],
+  "reviewedBy": "claude"
 }

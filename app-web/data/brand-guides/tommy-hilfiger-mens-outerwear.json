@@ -9,7 +9,7 @@
   "capturedBy": "Codex",
   "screenshot": "screenshots/tommy-hilfiger-mens-outerwear.jpg",
   "variant": "general",
-  "reviewed": false,
+  "reviewed": true,
   "note": "Mainline Outerwear; Big & Tall separate and excluded. Printed 4XL/5XL singleton chest 59.8/61.8 and waist 57.09/59.06 preserved despite jump; human review needed. No conversions or corrections.",
   "rows": [
     {
@@ -74,5 +74,6 @@
   ],
   "appliesTo": [
     "jacket"
-  ]
+  ],
+  "reviewedBy": "claude"
 }

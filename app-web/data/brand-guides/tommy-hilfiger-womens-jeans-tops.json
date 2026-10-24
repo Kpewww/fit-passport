@@ -1,5 +1,5 @@
 {
-  "brand": "Tommy Hilfiger",
+  "brand": "Tommy Jeans",
   "line": "womens",
   "kind": "body",
   "units": "in",
@@ -9,14 +9,51 @@
   "capturedBy": "Codex",
   "screenshot": "screenshots/tommy-hilfiger-womens-jeans-tops.jpg",
   "variant": "general",
-  "reviewed": false,
-  "note": "Tommy Jeans Women's Tops. Same bust/waist/alpha rows as Tommy Jeans Women's Dresses & Outerwear on this page; deduplicated. Mainline chart differs. Curve/Plus excluded. Alpha labels retained; no US/EU conversion performed.",
+  "reviewed": true,
+  "note": "Tommy Jeans Women's Tops (brand set to Tommy Jeans on review, so it never sizes mainline Tommy Hilfiger). Same rows as Tommy Jeans Dresses & Outerwear; deduplicated. Curve/Plus excluded.",
   "rows": [
-    {"label":"XXS","chestMin":30,"chestMax":31,"waistMin":22.8,"waistMax":23.8},
-    {"label":"XS","chestMin":31,"chestMax":32.8,"waistMin":23.8,"waistMax":25.8},
-    {"label":"S","chestMin":32.8,"chestMax":34.8,"waistMin":25.8,"waistMax":27.8},
-    {"label":"M","chestMin":34.8,"chestMax":36.8,"waistMin":27.8,"waistMax":29.7},
-    {"label":"L","chestMin":36.8,"chestMax":38.8,"waistMin":29.7,"waistMax":31.7},
-    {"label":"XL","chestMin":38.8,"chestMax":40.8,"waistMin":31.7,"waistMax":33.7}
-  ]
+    {
+      "label": "XXS",
+      "chestMin": 30,
+      "chestMax": 31,
+      "waistMin": 22.8,
+      "waistMax": 23.8
+    },
+    {
+      "label": "XS",
+      "chestMin": 31,
+      "chestMax": 32.8,
+      "waistMin": 23.8,
+      "waistMax": 25.8
+    },
+    {
+      "label": "S",
+      "chestMin": 32.8,
+      "chestMax": 34.8,
+      "waistMin": 25.8,
+      "waistMax": 27.8
+    },
+    {
+      "label": "M",
+      "chestMin": 34.8,
+      "chestMax": 36.8,
+      "waistMin": 27.8,
+      "waistMax": 29.7
+    },
+    {
+      "label": "L",
+      "chestMin": 36.8,
+      "chestMax": 38.8,
+      "waistMin": 29.7,
+      "waistMax": 31.7
+    },
+    {
+      "label": "XL",
+      "chestMin": 38.8,
+      "chestMax": 40.8,
+      "waistMin": 31.7,
+      "waistMax": 33.7
+    }
+  ],
+  "reviewedBy": "claude"
 }

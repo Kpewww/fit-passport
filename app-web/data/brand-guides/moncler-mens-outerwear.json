@@ -1,21 +1,70 @@
 {
-  "brand": "Moncler", "line": "mens", "kind": "body", "units": "in",
+  "brand": "Moncler",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
   "sourceUrl": "https://www.moncler.com/en-us/client-service/size_guide",
   "kindEvidence": "Measure around the chest, passing the tape measure under the arms.",
-  "capturedAt": "2026-10-24", "capturedBy": "Codex",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
   "screenshot": "screenshots/moncler-mens-outerwear.jpg",
-  "appliesTo": ["jacket"], "variant": "general", "reviewed": false,
+  "appliesTo": [
+    "jacket"
+  ],
+  "variant": "general",
+  "reviewed": true,
   "note": "Outerwear, separate from Tops. Native MONCLER numeric labels retained; US conversion labels remain in screenshot. Printed inch decimal commas represented as decimal points; no conversion. No Tall/Slim/Petite/Big selection offered here. Product-popup equivalence is unverified.",
   "rows": [
-    {"label":"00","chest":33.07,"waist":28.35},
-    {"label":"0","chest":34.65,"waist":29.92},
-    {"label":"1","chest":36.22,"waist":31.50},
-    {"label":"2","chest":37.80,"waist":33.07},
-    {"label":"3","chest":39.37,"waist":34.65},
-    {"label":"4","chest":41.73,"waist":37.01},
-    {"label":"5","chest":44.09,"waist":39.37},
-    {"label":"6","chest":46.46,"waist":41.43},
-    {"label":"7","chest":48.82,"waist":44.09},
-    {"label":"8","chest":50.39,"waist":45.66}
-  ]
+    {
+      "label": "00",
+      "chest": 33.07,
+      "waist": 28.35
+    },
+    {
+      "label": "0",
+      "chest": 34.65,
+      "waist": 29.92
+    },
+    {
+      "label": "1",
+      "chest": 36.22,
+      "waist": 31.5
+    },
+    {
+      "label": "2",
+      "chest": 37.8,
+      "waist": 33.07
+    },
+    {
+      "label": "3",
+      "chest": 39.37,
+      "waist": 34.65
+    },
+    {
+      "label": "4",
+      "chest": 41.73,
+      "waist": 37.01
+    },
+    {
+      "label": "5",
+      "chest": 44.09,
+      "waist": 39.37
+    },
+    {
+      "label": "6",
+      "chest": 46.46,
+      "waist": 41.43
+    },
+    {
+      "label": "7",
+      "chest": 48.82,
+      "waist": 44.09
+    },
+    {
+      "label": "8",
+      "chest": 50.39,
+      "waist": 45.66
+    }
+  ],
+  "reviewedBy": "claude"
 }
