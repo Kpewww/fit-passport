@@ -1,0 +1,54 @@
+{
+  "brand": "Tommy Hilfiger",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://usa.tommy.com/en/size-guide-men.html#MensUnderwearLoungewearCS",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "kindEvidence": "All body measurements are in inches.",
+  "screenshot": "screenshots/tommy-hilfiger-mens-loungewear.jpg",
+  "note": "Men’s Underwear & Loungewear body chart, retained for loungewear tops only. Distinct from mainline Tops. Do not use for outerwear or infer other product categories. Hips omitted.",
+  "variant": "general",
+  "appliesTo": [
+    "top"
+  ],
+  "reviewed": false,
+  "rows": [
+    {
+      "label": "S",
+      "chestMin": 34,
+      "chestMax": 36,
+      "waistMin": 28,
+      "waistMax": 30
+    },
+    {
+      "label": "M",
+      "chestMin": 38,
+      "chestMax": 40,
+      "waistMin": 32,
+      "waistMax": 34
+    },
+    {
+      "label": "L",
+      "chestMin": 42,
+      "chestMax": 44,
+      "waistMin": 36,
+      "waistMax": 38
+    },
+    {
+      "label": "XL",
+      "chestMin": 46,
+      "chestMax": 48,
+      "waistMin": 40,
+      "waistMax": 42
+    },
+    {
+      "label": "XXL",
+      "chestMin": 50,
+      "chestMax": 52,
+      "waistMin": 44,
+      "waistMax": 46
+    }
+  ]
+}

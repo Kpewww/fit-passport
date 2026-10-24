@@ -1,0 +1,69 @@
+{
+  "brand": "Ralph Lauren",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.ralphlauren.com/men-clothing-dress-shirts/classic-fit-french-cuff-tuxedo-shirt/100105491.html",
+  "kindEvidence": "These measurements reflect body size.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/ralph-lauren-mens-dress-shirt.jpg",
+  "variant": "product",
+  "appliesTo": [
+    "shirt"
+  ],
+  "reviewed": false,
+  "note": "Classic Fit French Cuff Tuxedo Shirt body table; neck-size labels copied exactly including jump18.5 to20. No missing rows interpolated. Distinct from generic clothing and sport coats.",
+  "rows": [
+    {
+      "label": "14.5",
+      "chest": 36,
+      "waist": 30
+    },
+    {
+      "label": "15",
+      "chest": 38,
+      "waist": 32
+    },
+    {
+      "label": "15.5",
+      "chest": 40,
+      "waist": 34
+    },
+    {
+      "label": "16",
+      "chest": 42,
+      "waist": 36
+    },
+    {
+      "label": "16.5",
+      "chest": 44,
+      "waist": 38
+    },
+    {
+      "label": "17",
+      "chest": 46,
+      "waist": 40
+    },
+    {
+      "label": "17.5",
+      "chest": 48,
+      "waist": 42
+    },
+    {
+      "label": "18",
+      "chest": 50,
+      "waist": 44
+    },
+    {
+      "label": "18.5",
+      "chest": 52,
+      "waist": 46
+    },
+    {
+      "label": "20",
+      "chest": 58,
+      "waist": 52
+    }
+  ]
+}

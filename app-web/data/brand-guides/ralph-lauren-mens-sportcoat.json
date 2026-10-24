@@ -1,0 +1,47 @@
+{
+  "brand": "Ralph Lauren",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.ralphlauren.com/men-clothing-sportcoats/the-iconic-doeskin-two-button-blazer/264003.html",
+  "kindEvidence": "These measurements reflect body size.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/ralph-lauren-mens-sportcoat.jpg",
+  "variant": "product",
+  "appliesTo": [
+    "jacket"
+  ],
+  "reviewed": false,
+  "note": "Suit & Sport Coat table. Numeric sizes each explicitly include r (Regular); s/l length alternatives not separately imported. Pant Waist omitted because it is not a top body-waist field. Distinct from generic clothing.",
+  "rows": [
+    {
+      "label": "36",
+      "chest": 36
+    },
+    {
+      "label": "38",
+      "chest": 38
+    },
+    {
+      "label": "40",
+      "chest": 40
+    },
+    {
+      "label": "42",
+      "chest": 42
+    },
+    {
+      "label": "44",
+      "chest": 44
+    },
+    {
+      "label": "46",
+      "chest": 46
+    },
+    {
+      "label": "48",
+      "chest": 48
+    }
+  ]
+}

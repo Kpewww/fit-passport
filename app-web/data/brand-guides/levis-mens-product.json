@@ -1,0 +1,81 @@
+{
+  "brand": "Levi's",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.levi.com/US/en_US/clothing/men/shirts/classic-standard-western-chambray-shirt/p/857450155",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "kindEvidence": "Using a measuring tape, measure the widest part of your chest.",
+  "line": "mens",
+  "screenshot": "screenshots/levis-mens-product.jpg",
+  "note": "Product popup Men’s Tops & Outerwear, Global sizing. Differs from general guide: M chest 37–40 vs 38–40; larger extent XXS–3XL. Big/Tall excluded. Neck/hip omitted.",
+  "variant": "product",
+  "appliesTo": [
+    "tshirt",
+    "shirt",
+    "sweater",
+    "jacket",
+    "hoodie",
+    "polo",
+    "top"
+  ],
+  "reviewed": false,
+  "rows": [
+    {
+      "label": "XXS",
+      "chestMin": 30,
+      "chestMax": 32,
+      "waistMin": 24,
+      "waistMax": 26
+    },
+    {
+      "label": "XS",
+      "chestMin": 32,
+      "chestMax": 34.5,
+      "waistMin": 26,
+      "waistMax": 28.5
+    },
+    {
+      "label": "S",
+      "chestMin": 34.5,
+      "chestMax": 37,
+      "waistMin": 28.5,
+      "waistMax": 31
+    },
+    {
+      "label": "M",
+      "chestMin": 37,
+      "chestMax": 40,
+      "waistMin": 31,
+      "waistMax": 34
+    },
+    {
+      "label": "L",
+      "chestMin": 40,
+      "chestMax": 44,
+      "waistMin": 34,
+      "waistMax": 38.25
+    },
+    {
+      "label": "XL",
+      "chestMin": 44,
+      "chestMax": 48,
+      "waistMin": 38.25,
+      "waistMax": 42.5
+    },
+    {
+      "label": "2XL",
+      "chestMin": 48,
+      "chestMax": 52,
+      "waistMin": 42.5,
+      "waistMax": 46.75
+    },
+    {
+      "label": "3XL",
+      "chestMin": 52,
+      "chestMax": 56,
+      "waistMin": 46.75,
+      "waistMax": 51
+    }
+  ]
+}

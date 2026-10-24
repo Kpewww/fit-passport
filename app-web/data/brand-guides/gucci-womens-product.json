@@ -1,0 +1,61 @@
+{
+  "brand": "Gucci",
+  "line": "womens",
+  "kind": "body",
+  "units": "cm",
+  "sourceUrl": "https://www.gucci.com/us/en/pr/women/ready-to-wear-for-women/tops-shirts-for-women/shirts-for-women/printed-silk-habotai-shirt-p-A008LVZAVW96513",
+  "kindEvidence": "The size charts display sizes based on body measurements.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/gucci-womens-product-chest.jpg",
+  "variant": "product",
+  "appliesTo": [
+    "shirt",
+    "top",
+    "jacket"
+  ],
+  "reviewed": false,
+  "note": "Product TOPS shirt/jacket tables identical; match general XXXS–XXL but add XXXL and 4XL. CM values copied; printed inch rounding not converted. Bottoms excluded.",
+  "rows": [
+    {
+      "label": "XXXS",
+      "chest": 77
+    },
+    {
+      "label": "XXS",
+      "chest": 80
+    },
+    {
+      "label": "XS",
+      "chest": 83
+    },
+    {
+      "label": "S",
+      "chest": 86
+    },
+    {
+      "label": "M",
+      "chest": 89
+    },
+    {
+      "label": "L",
+      "chest": 93
+    },
+    {
+      "label": "XL",
+      "chest": 97
+    },
+    {
+      "label": "XXL",
+      "chest": 101
+    },
+    {
+      "label": "XXXL",
+      "chest": 105
+    },
+    {
+      "label": "4XL",
+      "chest": 109
+    }
+  ]
+}
