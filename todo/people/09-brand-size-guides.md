@@ -123,6 +123,7 @@ Gucci · Prada · Burberry · Saint Laurent · Balenciaga · Moncler · Zegna（
 
 ### 待重新采集(2026-10-24)
 
-- **Patagonia 男/女**:代码里存的 Patagonia 表(`brandCharts.ts`)写 S=37、M=40 英寸,官网 10-23 印的是
-  S=38/39、M=40/41,可能改过。请按本文件的流程重新采一份,放进 `data/brand-guides/`。
-- **Gap(全部上衣表,男/女)**:创始人能在自己的浏览器里打开 Gap 的尺码表。请完整采集,不只一张。
+- ~~Patagonia 男/女~~ **已采集(PR #4)。更正**:旧表没有过时。Patagonia 同时有两张表:
+  通用尺码页(XS 35 / S 37 / M 40,和 `brandCharts.ts` 一致)和商品页弹窗里的数字尺码表
+  (S=38/39、M=40/41)。两张都保留,各自标明来源。
+- ~~Gap(全部上衣表,男/女)~~ **已采集(PR #4)**:5 张表。男装表和评测里 Gap 那题的数字一致。
