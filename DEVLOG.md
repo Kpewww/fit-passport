@@ -10914,3 +10914,9 @@ Also: compiled guides carry `capturedAt`, so the reason line shows the date the 
 - **Dry run** (all 11 flipped to reviewed in a scratch copy, results deleted): scoring works. It also showed
   that the curated Patagonia chart (S 37, M 40) differs from the page today (S 38/39, M 40/41).
   Re-collection is queued in `todo/people/09`, together with Gap's full set.
+
+## Session 103o (2026-10-24) — evaluation truth approved
+
+The founder approved the eleven truth files ("评测审核通过"). All are `reviewed: true`, so the evaluation
+now grades every case: 8 answers, 3 refusals. The full run needs the captures, which live on the
+founder's machine (git-ignored): `npm run eval` there.
