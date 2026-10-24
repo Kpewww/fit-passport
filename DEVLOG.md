@@ -11113,3 +11113,28 @@ The founder approved `docs/plans/product-upgrade-2026-10-24.md` from the agent's
 - Checked end to end on a production build at phone width (zh): log a day, answer fit (the piece's direction
   moved to −5 in the closet), wear counts and season filter on the closet, the home card.
 - Not yet: a photo for the day (the column exists), today's outfit draw, weather and PWA (phase 2).
+
+## Session 104b (2026-10-24) — AI cut-out and AI try-on (plan phase 4a–4c), off until switched on
+
+The founder moved cut-out and try-on ahead of phase 2.
+
+- **Base** (`lib/aiMedia/`, migration `20261024180000_ai_media`): `AiConsent` (one yes per kind, versioned
+  wording), `AiPhoto` (the person's own full-body photos, at most 3), `MediaJob` (kind, status, provider, cost,
+  private result), `KnownGoodItem.cutoutPhoto` + `photoView`. Off unless `AI_MONTHLY_BUDGET_USD` > 0 and the
+  provider key is set; monthly cap and per-person daily allowance (running jobs counted, failures not);
+  claimed accounts only (an anonymous session is free to mint).
+- **Providers**: BRIA v2 background removal (sync, base64 in) and FASHN tryon-v1.6 (run then poll,
+  `return_base64`), both behind small adapters with mocked tests. Results are copied into the private photo
+  store; only our copy is kept. Downloads never use Brotli.
+- **Boundaries, tested**: nothing is sent without consent; the original closet photo is never changed; a
+  failed job costs 0; "delete all my AI photos" drops body photos, results and cut-outs; account erase and
+  merge cover them; AI pictures are named nowhere a size is reasoned about (`notSizeEvidence.test.ts`).
+- **UI**: consent sheet per kind (who receives it, retention, no training by us, how to delete); closet
+  detail: "Remove background (AI)", original / cut-out switch, redo, delete; the gallery shows the chosen one.
+  `/tryon`: body photo (consent first), a closet piece with a photo, job polling, results labelled "AI
+  preview: not a size or fit guarantee", delete one / all, withdraw consent; linked from each closet piece.
+- Checked end to end against a local mock provider at phone width (zh): consent, cut-out stored with the
+  original kept, try-on job finishing, allowance 10 → 8, delete-all leaving the original.
+- **Before switching on** (founder): BRIA's API host and current data terms (not reachable from here), a
+  FASHN key, and the budget. Env vars in `docs/DEPLOYMENT.md`.
+- Next: try-on from a product page (/check and the extension), try-on video, then phase 2.

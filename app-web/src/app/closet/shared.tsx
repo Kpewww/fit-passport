@@ -44,7 +44,15 @@ export type Item = {
   seasons?: string | null;
   wornCount?: number;
   lastWorn?: string | null;
+  // An AI cut-out of the photo, and which of the two to show (Session 104).
+  cutoutPhoto?: string | null;
+  photoView?: string | null;
 };
+
+/** The picture the closet shows: the AI cut-out when chosen and present, else the original. */
+export function shownPhoto(it: Pick<Item, "imageDataUrl" | "cutoutPhoto" | "photoView">): string | null {
+  return it.photoView === "cutout" && it.cutoutPhoto ? it.cutoutPhoto : it.imageDataUrl;
+}
 
 export type Collection = { id: string; name: string; sortIndex: number; itemCount: number; color?: string | null };
 

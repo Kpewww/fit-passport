@@ -6,7 +6,7 @@
 
 import { ProviderError } from "./bria";
 
-const BASE = "https://api.fashn.ai/v1";
+const base = () => (process.env.FASHN_API_BASE ?? "https://api.fashn.ai/v1").replace(/\/$/, "");
 
 export type TryonCategory = "tops" | "bottoms" | "one-pieces" | "auto";
 
@@ -20,7 +20,7 @@ export async function startTryon(
   input: { personDataUrl: string; garmentDataUrl: string; category: TryonCategory },
   fetcher: typeof fetch = fetch,
 ): Promise<string> {
-  const r = await fetcher(`${BASE}/run`, {
+  const r = await fetcher(`${base()}/run`, {
     method: "POST",
     headers: { "content-type": "application/json", authorization: `Bearer ${key()}` },
     body: JSON.stringify({
@@ -46,7 +46,7 @@ export type TryonState =
   | { status: "failed"; error: string };
 
 export async function pollTryon(id: string, fetcher: typeof fetch = fetch): Promise<TryonState> {
-  const r = await fetcher(`${BASE}/status/${encodeURIComponent(id)}`, { headers: { authorization: `Bearer ${key()}` } });
+  const r = await fetcher(`${base()}/status/${encodeURIComponent(id)}`, { headers: { authorization: `Bearer ${key()}` } });
   if (!r.ok) throw new ProviderError(`FASHN status ${r.status}`, true);
   const body = (await r.json()) as { status?: string; output?: string[]; error?: { name?: string; message?: string } | null };
   if (body.status === "completed" && body.output?.[0]) return { status: "done", output: body.output[0] };

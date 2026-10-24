@@ -14,7 +14,7 @@ import dynamic from "next/dynamic";
 import { pluralKey } from "@/i18n/format";
 import { SEASONS, inSeason, type Season } from "@/lib/seasons";
 import { dayDiff, localDay } from "@/lib/localDay";
-import { Item, Collection, Group, GenderBadge, ColorDot, safeNotes, ItemThumb, itemName, GarmentMeasurements, ConfirmDelete, MoveMenu } from "./shared";
+import { Item, Collection, Group, shownPhoto, GenderBadge, ColorDot, safeNotes, ItemThumb, itemName, GarmentMeasurements, ConfirmDelete, MoveMenu } from "./shared";
 
 // Parts that appear only once opened load on demand (Session 100: /closet was over its
 // JavaScript budget). Each brings its own inputs: brand and size boxes, the type
@@ -852,7 +852,7 @@ function GalleryCard({
   const head = group.items[0];
   const [busy, setBusy] = useState(false);
   const [failed, setFailed] = useState(false);
-  const photo = head.imageDataUrl;
+  const photo = shownPhoto(head);
   const selectable = selectMode && !group.isVariant;
   const isSel = selectable && selected;
   const sub = head.displayName || g.label(head.category);

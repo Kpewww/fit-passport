@@ -8,7 +8,8 @@ import { PhotoSource } from "@/components/PhotoSource";
 import { colorHex, iconToneOn } from "@/lib/colors";
 import { useT } from "@/i18n/client";
 import { useGarmentText } from "@/i18n/garment";
-import { Item, Collection, Group, ColorDot, safeNotes, itemName, fmtWhen, GarmentMeasurements, ConfirmDelete, MoveMenu } from "./shared";
+import { CutoutControls, TryonLink } from "./CutoutControls";
+import { Item, Collection, Group, shownPhoto, ColorDot, safeNotes, itemName, fmtWhen, GarmentMeasurements, ConfirmDelete, MoveMenu } from "./shared";
 import { EditRow } from "./EditRow";
 
 export function DetailSheet({
@@ -112,7 +113,7 @@ export function DetailSheet({
               >
                 {head.imageDataUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={head.imageDataUrl} alt={t("yourPhotoAlt", { name })} className="h-full w-full object-cover" />
+                  <img src={shownPhoto(head)!} alt={t("yourPhotoAlt", { name })} className={`h-full w-full ${shownPhoto(head) === head.imageDataUrl ? "object-cover" : "object-contain p-4"}`} />
                 ) : (
                   <GarmentIcon category={head.category} size={80} className={iconToneOn(hex) === "light" ? "text-white/80" : "text-ink/45"} />
                 )}
@@ -133,6 +134,12 @@ export function DetailSheet({
               <p className="mt-2 text-xs text-ink-faint">
                 {failed ? <span className="text-bad">{t("photoFileFailed")}</span> : t("photoNote")}
               </p>
+              {!editId && !group.isVariant && (
+                <>
+                  <CutoutControls item={head} onChanged={onReload} onPatch={onPatch} />
+                  <div className="mt-2"><TryonLink item={head} /></div>
+                </>
+              )}
             </div>
 
             <div className="flex items-start gap-4 px-5 py-5">

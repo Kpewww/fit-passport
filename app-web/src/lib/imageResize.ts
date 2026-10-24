@@ -86,3 +86,8 @@ export function resizeGarmentPhoto(file: Blob): Promise<string> {
   const p = GARMENT_PHOTO;
   return resizeImageToCover(file, p.width, p.height, p.quality, p.budgetBytes);
 }
+
+/** A full-body photo for AI try-on (Session 104): 2:3, 768×1152, under ~700 KB. */
+export function resizeBodyPhoto(file: Blob): Promise<string> {
+  return resizeImageToCover(file, 768, 1152, 0.86, 700_000);
+}

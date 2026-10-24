@@ -186,6 +186,10 @@ Everything below degrades gracefully when unset — the app stays fully usable.
 | `REPLICATE_API_TOKEN` | photoreal try-on (FLUX schnell) | ~$0.003/image; coarse body descriptor only |
 | `RESEND_API_KEY` + `EMAIL_FROM` | password-reset emails | without it, `/recover` shows the link on screen |
 | `TRYON_API_URL` / `TRYON_API_KEY` | generic image provider | alternative to Replicate |
+| `AI_MONTHLY_BUDGET_USD` | **Turns on AI photo tools** (closet cut-out, AI try-on; Session 104, `lib/aiMedia`) | Site-wide monthly cap in USD. **0 or unset = off**, nothing is sent anywhere. Suggested for the pilot: 50. |
+| `AI_USER_DAILY_LIMIT` | Jobs one person may start per day | Default 10; failed jobs do not count. Only claimed accounts can use AI photo tools. |
+| `BRIA_API_TOKEN` (+ optional `BRIA_API_BASE`) | Closet cut-out (BRIA background removal, v2) | $0.018/image. `BRIA_API_BASE` defaults to `https://engine.prod.bria-api.com`; **confirm the host on BRIA's account page** (not verifiable from this environment) and read its current terms before switching on. |
+| `FASHN_API_KEY` | AI try-on (FASHN tryon-v1.6) | $0.075/image; failed predictions are free. Photos are sent as base64 and returned as base64. |
 
 See `app-web/.env.example` for the full annotated list.
 
