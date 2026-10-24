@@ -3,7 +3,6 @@
   "units": "in",
   "capturedAt": "2026-10-24",
   "capturedBy": "GPT agent",
-  "reviewed": false,
   "verifiedBy": [],
   "brand": "Gap",
   "line": "womens",
@@ -12,6 +11,8 @@
   "screenshot": "screenshots/gap-womens.png",
   "note": "Customer-service Tops, Outerwear & Dresses; numeric US labels, BUST=chest. XXXS=0000;XXS=000/00;XS=0/4;S=6;M=8/10;L=12/14;XL=16/18;XXL=20/22. Printed US 4/Bust 33.25 (Japan 2) retained; differs from product chart. Petite/Tall excluded; hip/sleeve in screenshot.",
   "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "founder",
   "rows": [
     {
       "label": "0000",

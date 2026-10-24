@@ -3,7 +3,6 @@
   "units": "in",
   "capturedAt": "2026-10-24",
   "capturedBy": "GPT agent",
-  "reviewed": false,
   "verifiedBy": [],
   "brand": "Gap",
   "line": "womens",
@@ -12,6 +11,8 @@
   "screenshot": "screenshots/gap-womens-tops-regular.png",
   "note": "Regular product chart; numeric labels, Bust=chest. XXS=000/00;XS=0/2;S=4/6;M=8/10;L=12/14;XL=16/18;XXL=20/22. Paired columns are points, not ranges. Petite/Tall excluded. gap-womens-tops-regular-2.png: measurement wording; -3.png: rightmost size 22.",
   "variant": "product",
+  "reviewed": true,
+  "reviewedBy": "founder",
   "rows": [
     {
       "label": "000",

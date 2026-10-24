@@ -50,6 +50,118 @@
     ]
   },
   {
+    "brand": "Abercrombie & Fitch",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.abercrombie.com/shop/us/p/new-york-giants-graphic-oversized-sunday-crew-57527613",
+    "capturedAt": "2026-10-23",
+    "variant": "product",
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 29.5,
+        "chestMax": 31.5
+      },
+      {
+        "label": "XS",
+        "chestMin": 31.5,
+        "chestMax": 33.5
+      },
+      {
+        "label": "S",
+        "chestMin": 33.5,
+        "chestMax": 35.5
+      },
+      {
+        "label": "M",
+        "chestMin": 35.5,
+        "chestMax": 38
+      },
+      {
+        "label": "L",
+        "chestMin": 38,
+        "chestMax": 41
+      },
+      {
+        "label": "XL",
+        "chestMin": 41,
+        "chestMax": 45
+      },
+      {
+        "label": "XXL",
+        "chestMin": 45,
+        "chestMax": 49
+      },
+      {
+        "label": "XXXL",
+        "chestMin": 49,
+        "chestMax": 53
+      }
+    ]
+  },
+  {
+    "brand": "Banana Republic",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://bananarepublic.gap.com/browse/info.do?cid=35404",
+    "capturedAt": "2026-10-22",
+    "appliesTo": [
+      "jacket"
+    ],
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 32,
+        "chestMax": 33,
+        "waistMin": 25,
+        "waistMax": 26
+      },
+      {
+        "label": "XS",
+        "chestMin": 34,
+        "chestMax": 35,
+        "waistMin": 27,
+        "waistMax": 28
+      },
+      {
+        "label": "S",
+        "chestMin": 36,
+        "chestMax": 37,
+        "waistMin": 29,
+        "waistMax": 31
+      },
+      {
+        "label": "M",
+        "chestMin": 38,
+        "chestMax": 40,
+        "waistMin": 32,
+        "waistMax": 34
+      },
+      {
+        "label": "L",
+        "chestMin": 41,
+        "chestMax": 44,
+        "waistMin": 36,
+        "waistMax": 38
+      },
+      {
+        "label": "XL",
+        "chestMin": 45,
+        "chestMax": 48,
+        "waistMin": 40,
+        "waistMax": 42
+      },
+      {
+        "label": "XXL",
+        "chestMin": 49,
+        "chestMax": 52,
+        "waistMin": 44,
+        "waistMax": 46
+      }
+    ]
+  },
+  {
     "brand": "Calvin Klein",
     "line": "mens",
     "units": "in",
@@ -102,6 +214,42 @@
     ]
   },
   {
+    "brand": "Calvin Klein",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.calvinklein.us/en/women-size-guide.html#wl-t-shirts",
+    "capturedAt": "2026-10-22",
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 33,
+        "chestMax": 34,
+        "waistMin": 25.5,
+        "waistMax": 26.5
+      },
+      {
+        "label": "S",
+        "chestMin": 35,
+        "chestMax": 36,
+        "waistMin": 27.5,
+        "waistMax": 28.5
+      },
+      {
+        "label": "M",
+        "chestMin": 37,
+        "chestMax": 38
+      },
+      {
+        "label": "L",
+        "chestMin": 39,
+        "chestMax": 40,
+        "waistMin": 31.5,
+        "waistMax": 32.5
+      }
+    ]
+  },
+  {
     "brand": "Columbia",
     "line": "mens",
     "units": "in",
@@ -143,6 +291,276 @@
         "chestMax": 52,
         "waistMin": 44,
         "waistMax": 46
+      }
+    ]
+  },
+  {
+    "brand": "Columbia",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.columbia.com/t/size-fit/",
+    "capturedAt": "2026-10-22",
+    "variant": "general",
+    "rows": [
+      {
+        "label": "S",
+        "chestMin": 34.5,
+        "chestMax": 35.5,
+        "waistMin": 28,
+        "waistMax": 29
+      },
+      {
+        "label": "M",
+        "chestMin": 36.5,
+        "chestMax": 37.5,
+        "waistMin": 30,
+        "waistMax": 31
+      },
+      {
+        "label": "L",
+        "chestMin": 39,
+        "chestMax": 40.5,
+        "waistMin": 32.5,
+        "waistMax": 34
+      },
+      {
+        "label": "XL",
+        "chestMin": 42,
+        "chestMax": 43.5,
+        "waistMin": 35.5,
+        "waistMax": 37.5
+      },
+      {
+        "label": "XXL",
+        "chestMin": 44,
+        "chestMax": 46,
+        "waistMin": 38,
+        "waistMax": 41
+      }
+    ]
+  },
+  {
+    "brand": "Everlane",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.everlane.com/products/m-t-fvj-prm-ls-nvystpe",
+    "capturedAt": "2026-10-23",
+    "appliesTo": [
+      "tshirt"
+    ],
+    "variant": "product",
+    "rows": [
+      {
+        "label": "S",
+        "chestMin": 35,
+        "chestMax": 37
+      },
+      {
+        "label": "M",
+        "chestMin": 38,
+        "chestMax": 40
+      },
+      {
+        "label": "L",
+        "chestMin": 41,
+        "chestMax": 43
+      },
+      {
+        "label": "XL",
+        "chestMin": 44,
+        "chestMax": 46
+      },
+      {
+        "label": "XXL",
+        "chestMin": 47,
+        "chestMax": 49
+      }
+    ]
+  },
+  {
+    "brand": "Everlane",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.everlane.com/products/womens-organic-cotton-box-cut-tee-green-lily",
+    "capturedAt": "2026-10-23",
+    "appliesTo": [
+      "tshirt"
+    ],
+    "variant": "product",
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 31.5,
+        "chestMax": 32.5,
+        "waistMin": 24,
+        "waistMax": 25
+      },
+      {
+        "label": "S",
+        "chestMin": 33.5,
+        "chestMax": 34.5,
+        "waistMin": 26,
+        "waistMax": 27
+      },
+      {
+        "label": "M",
+        "chestMin": 35.5,
+        "chestMax": 36.5,
+        "waistMin": 28,
+        "waistMax": 29
+      },
+      {
+        "label": "L",
+        "chestMin": 37.75,
+        "chestMax": 39.25,
+        "waistMin": 30.25,
+        "waistMax": 31.75
+      },
+      {
+        "label": "XL",
+        "chestMin": 40.75,
+        "chestMax": 42.75,
+        "waistMin": 33.25,
+        "waistMax": 35.5
+      },
+      {
+        "label": "XXL",
+        "chestMin": 44.75,
+        "chestMax": 46.75,
+        "waistMin": 38,
+        "waistMax": 40
+      },
+      {
+        "label": "XXXL",
+        "chestMin": 46.75,
+        "chestMax": 48.75,
+        "waistMin": 40,
+        "waistMax": 42
+      }
+    ]
+  },
+  {
+    "brand": "Gap",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.gap.com/Asset_Archive/AllBrands/sizeChart/v3/chart.html?cid=2094&locale=en_US",
+    "capturedAt": "2026-10-24",
+    "variant": "product",
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 35,
+        "chestMax": 36
+      },
+      {
+        "label": "S",
+        "chestMin": 37,
+        "chestMax": 38
+      },
+      {
+        "label": "M",
+        "chestMin": 39,
+        "chestMax": 41
+      },
+      {
+        "label": "L",
+        "chestMin": 42,
+        "chestMax": 44
+      },
+      {
+        "label": "XL",
+        "chestMin": 45,
+        "chestMax": 48
+      },
+      {
+        "label": "XXL",
+        "chestMin": 49,
+        "chestMax": 52
+      }
+    ]
+  },
+  {
+    "brand": "Gap",
+    "line": "mens",
+    "units": "in",
+    "sourceUrl": "https://www.gap.com/customer-service/size-charts?cid=2103",
+    "capturedAt": "2026-10-24",
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XS",
+        "chestMin": 35,
+        "chestMax": 36
+      },
+      {
+        "label": "S",
+        "chestMin": 37,
+        "chestMax": 38
+      },
+      {
+        "label": "M",
+        "chestMin": 39,
+        "chestMax": 41
+      },
+      {
+        "label": "L",
+        "chestMin": 42,
+        "chestMax": 44
+      },
+      {
+        "label": "XL",
+        "chestMin": 45,
+        "chestMax": 48
+      },
+      {
+        "label": "XXL",
+        "chestMin": 49,
+        "chestMax": 52
+      }
+    ]
+  },
+  {
+    "brand": "Gap",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.gap.com/Asset_Archive/AllBrands/sizeChart/v3/chart.html?cid=2082&locale=en_US",
+    "capturedAt": "2026-10-24",
+    "variant": "product",
+    "rows": [
+      {
+        "label": "S",
+        "chestMin": 34.25,
+        "chestMax": 35.25,
+        "waistMin": 27.5,
+        "waistMax": 28.5
+      },
+      {
+        "label": "M",
+        "chestMin": 36.25,
+        "chestMax": 37.25,
+        "waistMin": 29.5,
+        "waistMax": 30.5
+      },
+      {
+        "label": "L",
+        "chestMin": 38.75,
+        "chestMax": 40.25,
+        "waistMin": 32,
+        "waistMax": 33.5
+      },
+      {
+        "label": "XL",
+        "chestMin": 42,
+        "chestMax": 43.75,
+        "waistMin": 35.5,
+        "waistMax": 37.5
+      },
+      {
+        "label": "XXL",
+        "chestMin": 45.75,
+        "chestMax": 47.75,
+        "waistMin": 39.5,
+        "waistMax": 41.5
       }
     ]
   },
@@ -242,6 +660,46 @@
         "label": "XXX-Large",
         "chestMin": 54,
         "chestMax": 56
+      }
+    ]
+  },
+  {
+    "brand": "L.L.Bean",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.llbean.com/llb/shop/518113?page=sizing-charts",
+    "capturedAt": "2026-10-22",
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XX-Small (00-0)",
+        "chestMin": 31,
+        "chestMax": 32
+      },
+      {
+        "label": "X-Small (2-4)",
+        "chestMin": 33,
+        "chestMax": 34
+      },
+      {
+        "label": "Small (6-8)",
+        "chestMin": 35,
+        "chestMax": 36
+      },
+      {
+        "label": "Medium (10-12)",
+        "chestMin": 37,
+        "chestMax": 38.5
+      },
+      {
+        "label": "Large (14-16)",
+        "chestMin": 40,
+        "chestMax": 41.5
+      },
+      {
+        "label": "X-Large (18-20)",
+        "chestMin": 43.5,
+        "chestMax": 45.5
       }
     ]
   },
@@ -360,6 +818,72 @@
         "chestMax": 64,
         "waistMin": 54.5,
         "waistMax": 59
+      }
+    ]
+  },
+  {
+    "brand": "Under Armour",
+    "line": "womens",
+    "units": "in",
+    "sourceUrl": "https://www.underarmour.com/en-us/t/size-guide/womens-tops/",
+    "capturedAt": "2026-10-22",
+    "variant": "general",
+    "rows": [
+      {
+        "label": "XXS",
+        "chestMin": 31,
+        "chestMax": 32.5,
+        "waistMin": 24.5,
+        "waistMax": 25.5
+      },
+      {
+        "label": "XS",
+        "chestMin": 32.5,
+        "chestMax": 33.5,
+        "waistMin": 25.5,
+        "waistMax": 27
+      },
+      {
+        "label": "SM",
+        "chestMin": 33.5,
+        "chestMax": 36,
+        "waistMin": 27,
+        "waistMax": 29
+      },
+      {
+        "label": "MD",
+        "chestMin": 36,
+        "chestMax": 38,
+        "waistMin": 29,
+        "waistMax": 31
+      },
+      {
+        "label": "LG",
+        "chestMin": 38,
+        "chestMax": 41,
+        "waistMin": 31,
+        "waistMax": 34
+      },
+      {
+        "label": "XL",
+        "chestMin": 41,
+        "chestMax": 44,
+        "waistMin": 34,
+        "waistMax": 37
+      },
+      {
+        "label": "XXL",
+        "chestMin": 44,
+        "chestMax": 47,
+        "waistMin": 37,
+        "waistMax": 40
+      },
+      {
+        "label": "3XL",
+        "chestMin": 47,
+        "chestMax": 50,
+        "waistMin": 40,
+        "waistMax": 43
       }
     ]
   }

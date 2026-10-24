@@ -10948,3 +10948,14 @@ founder's machine (git-ignored): `npm run eval` there.
   is shirts; Ralph Lauren men's is polos. Gap, Patagonia and A&F charts are marked general or product.
 - Tests: an outerwear chart never sizes a T-shirt; the preference order; calibration excludes
   outerwear-only charts. `engineering/17` done and deleted.
+
+## Session 103r (2026-10-24) — every collected guide reviewed; women's consensus forms
+
+- **Reviewed by the founder (12):** the Gap set (5) and the earlier seven men's.
+- **Reviewed by Claude (27),** on the founder's delegation ("其他你接着审核"). Each was read number by number
+  against its screenshot; all matched.
+- Recorded in a new `reviewedBy` field. `npm run guides`: 39 reviewed, 18 counted (those printing ranges).
+- **US letter consensus:**
+  - men's: XS–3XL from up to 11 brands, e.g. M = 96.5–104.1 cm;
+  - women's (new): XS–3XL from up to 7 brands, e.g. M = 92.1–95.3 cm.
+- **Side note:** Ralph Lauren's women's page says the brand cuts slim and suggests sizing up for a relaxed fit.

@@ -3,7 +3,6 @@
   "units": "in",
   "capturedAt": "2026-10-24",
   "capturedBy": "GPT agent",
-  "reviewed": false,
   "verifiedBy": [],
   "brand": "Patagonia",
   "line": "mens",
@@ -12,6 +11,8 @@
   "screenshot": "screenshots/patagonia-mens-product-tops-1.png",
   "note": "Men's Tops & Bottoms product modal. Numeric labels; XXS=26;XS=28/29;S=30/31;M=32/33;L=34/35/36;XL=38/40;XXL=42/44;3XL=46/48. Points, not ranges. Same table on Durable Down Hoody. Lower rows: -2.png; body evidence: -3.png. Differs from general alpha guide; no garment chart.",
   "variant": "product",
+  "reviewed": true,
+  "reviewedBy": "claude",
   "rows": [
     {
       "label": "26",

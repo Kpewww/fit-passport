@@ -5,12 +5,13 @@
   "sourceUrl": "https://www.levi.com/US/en_US/info/sizeguide",
   "capturedAt": "2026-10-22",
   "capturedBy": "Codex",
-  "reviewed": false,
   "kindEvidence": "Measure the widest part of your chest. Make sure to keep the tape horizontal.",
   "line": "womens",
   "screenshot": "screenshots/levis-womens.png",
   "note": "Standard Women's Tops table; Plus Tops omitted. Single chest and waist values copied unchanged, no ranges inferred.",
   "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "claude",
   "rows": [
     {
       "label": "XXS",

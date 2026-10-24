@@ -5,12 +5,13 @@
   "sourceUrl": "https://www.jcrew.com/r/size-charts",
   "capturedAt": "2026-10-22",
   "capturedBy": "Codex",
-  "reviewed": true,
   "line": "mens",
   "kindEvidence": "Measure under your arms around the fullest part of your chest.",
   "screenshot": "screenshots/jcrew-mens.png",
   "note": "Regular Tops only. Slim and Tall are separate options, not copied. Neck and arm length are omitted because the guide schema accepts chest and waist.",
   "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "founder",
   "rows": [
     {
       "label": "XS",

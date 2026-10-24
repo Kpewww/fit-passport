@@ -52,7 +52,8 @@
   "units": "in",
   "capturedBy": "Codex",
   "brand": "Calvin Klein",
-  "reviewed": true,
   "note": "Shirts, Dress Shirts, Jackets + Blazers, Suit Separates table. Only body chest and waist copied; garment neck and sleeve columns omitted.",
-  "variant": "general"
+  "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "founder"
 }

@@ -5,12 +5,13 @@
   "sourceUrl": "https://www.levi.com/US/en_US/info/sizeguide",
   "capturedAt": "2026-10-22",
   "capturedBy": "Codex",
-  "reviewed": true,
   "kindEvidence": "Measure the widest part of your chest. Make sure to keep the tape horizontal.",
   "line": "mens",
   "screenshot": "screenshots/levis-mens.png",
   "note": "Standard Men's Tops table only. Big & Tall not copied. LMC sizes, neck and seat are present in screenshot but omitted from schema.",
   "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "founder",
   "rows": [
     {
       "label": "XS",

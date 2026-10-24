@@ -10,7 +10,8 @@
   "screenshot": "screenshots/saint-laurent-womens.png",
   "note": "General WOMEN READY TO WEAR chart, CM selected. YSL alpha/numeric: XXS=32; XS=34; S=36; M=38; L=40; XL=42. US: 0,2,4,6,8,10 respectively. All singleton values. Product oversized cut is not used as garment measurements.",
   "variant": "product",
-  "reviewed": false,
+  "reviewed": true,
+  "reviewedBy": "claude",
   "rows": [
     {
       "label": "XXS",

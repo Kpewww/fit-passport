@@ -5,12 +5,13 @@
   "kindEvidence": "All body measurements are in inches.",
   "capturedAt": "2026-10-22",
   "capturedBy": "Codex",
-  "reviewed": false,
   "line": "mens",
   "sourceUrl": "https://usa.tommy.com/en/size-guide-men.html#MensTopsCS",
   "screenshot": "screenshots/tommy-hilfiger-mens.png",
   "note": "Men's Tops. Header: XXXS=25,26; XXS=27,28; XS=29,30; S=31,32; M=33,34; L=35,36; XL=38,40; XXL=42,44; XXXL=46,48; XXXXL=50. No letter visible above 24. Numeric labels and single values retained; no ranges inferred. Big & Tall and Tommy Jeans excluded.",
   "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "claude",
   "rows": [
     {
       "label": "24",

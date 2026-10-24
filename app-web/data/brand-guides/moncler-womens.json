@@ -18,7 +18,8 @@
     "polo"
   ],
   "variant": "general",
-  "reviewed": false,
+  "reviewed": true,
+  "reviewedBy": "claude",
   "rows": [
     {
       "label": "3XS",

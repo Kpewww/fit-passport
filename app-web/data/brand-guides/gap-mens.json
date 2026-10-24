@@ -3,7 +3,6 @@
   "units": "in",
   "capturedAt": "2026-10-24",
   "capturedBy": "GPT agent",
-  "reviewed": false,
   "verifiedBy": [],
   "brand": "Gap",
   "line": "mens",
@@ -12,6 +11,8 @@
   "screenshot": "screenshots/gap-mens.png",
   "note": "Customer-service Men > Tops & Outerwear > MEN'S SIZE CHART. Tall excluded. US numeric mappings XS=36,S=38,M=40,L=43,XL=47,XXL=51,XXXL=55. XXXL prints one chest value; current product-linked chart stops at XXL. Neck/sleeve preserved in screenshot.",
   "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "founder",
   "rows": [
     {
       "label": "XS",

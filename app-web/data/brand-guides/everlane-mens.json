@@ -13,7 +13,8 @@
     "tshirt"
   ],
   "variant": "product",
-  "reviewed": false,
+  "reviewed": true,
+  "reviewedBy": "claude",
   "rows": [
     {
       "label": "XS",

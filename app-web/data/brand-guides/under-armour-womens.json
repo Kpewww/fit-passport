@@ -4,10 +4,11 @@
   "kindEvidence": "Place tape measure under your arms at the fullest part of your chest, wrap around your body until your fingers meet and mark the measurement.",
   "units": "in",
   "line": "womens",
-  "reviewed": false,
   "kind": "body",
   "note": "Regular chart only; Tall/Short not copied. Womens 1X-3X extended-size rows excluded. Printed SM/MD/LG labels retained; half-inch fractions represented exactly as .5.",
   "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "claude",
   "rows": [
     {
       "label": "XXS",

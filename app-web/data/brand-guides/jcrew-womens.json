@@ -5,12 +5,13 @@
   "sourceUrl": "https://www.jcrew.com/r/size-charts",
   "capturedAt": "2026-10-22",
   "capturedBy": "Codex",
-  "reviewed": false,
   "line": "womens",
   "kindEvidence": "Measure under your arms, around the fullest part of your chest.",
   "screenshot": "screenshots/jcrew-womens.png",
   "note": "Regular Tops only; Petite and Tall not copied. Labels use the printed Numeric Size (US) column; alpha labels remain in screenshot. Bust is recorded as chest. Single printed numbers are not widened into ranges.",
   "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "claude",
   "rows": [
     {
       "label": "000",

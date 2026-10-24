@@ -4,10 +4,11 @@
   "kindEvidence": "Place the tape measure under your arms at the fullest part of your chest, wrap around your body until your fingers meet and mark the measurement.",
   "units": "in",
   "line": "mens",
-  "reviewed": true,
   "kind": "body",
   "note": "Regular men's tops; Tall length guidance separate. Printed SM/MD/LG and exact .5 fractions retained. Second pass 2026-10-23: removed unrelated women's 1X-3X/Short wording because this is the men's guide. All numbers unchanged.",
   "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "founder",
   "rows": [
     {
       "label": "XS",

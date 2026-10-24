@@ -36,10 +36,11 @@
   "screenshot": "screenshots/llbean-mens.png",
   "capturedAt": "2026-10-22",
   "units": "in",
-  "reviewed": true,
   "line": "mens",
   "note": "Regular tops only. Tall excluded. No waist printed in the tops table; pants measurements not combined.",
   "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "founder",
   "sourceUrl": "https://www.llbean.com/llb/shop/518113?page=sizing-charts",
   "capturedBy": "Codex",
   "kind": "body"

@@ -3,6 +3,8 @@
   "kind": "body",
   "note": "Regular tops only. Full labels copied including numeric equivalents. Petite, Plus, Medium Tall and Tall excluded. No waist printed in tops table. Recorded from saved 2026-10-22 screenshot; not revisited on 2026-10-23.",
   "variant": "general",
+  "reviewed": true,
+  "reviewedBy": "claude",
   "capturedBy": "Codex",
   "sourceUrl": "https://www.llbean.com/llb/shop/518113?page=sizing-charts",
   "rows": [
@@ -39,7 +41,6 @@
   ],
   "brand": "L.L.Bean",
   "units": "in",
-  "reviewed": false,
   "capturedAt": "2026-10-22",
   "screenshot": "screenshots/llbean-womens.png",
   "line": "womens"

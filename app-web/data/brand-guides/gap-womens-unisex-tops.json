@@ -3,7 +3,6 @@
   "units": "in",
   "capturedAt": "2026-10-24",
   "capturedBy": "GPT agent",
-  "reviewed": false,
   "verifiedBy": [],
   "brand": "Gap",
   "line": "womens",
@@ -12,6 +11,8 @@
   "screenshot": "screenshots/gap-womens-unisex-tops.png",
   "note": "Unisex tab: labels are Women's Size; explicit printed Bust/Waist ranges. S=4-6/Men XS;M=8-10/Men S;L=12-14/Men M;XL=16-18/Men L;XXL=20-22/Men XL. Separate from regular numeric point table. Measurement wording in gap-womens-tops-regular-2.png.",
   "variant": "product",
+  "reviewed": true,
+  "reviewedBy": "founder",
   "rows": [
     {
       "label": "S",
