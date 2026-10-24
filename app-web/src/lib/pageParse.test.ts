@@ -714,6 +714,6 @@ describe("a page's mission copy does not decide men's or women's (Session 103, G
   });
   it("the product's name outranks the page's prose", () => {
     const html = `<html><head><title>Men's Classic Tee | Gap</title></head><body><h1>Men's Classic Tee</h1><p>Supporting women and girls through RISE. Women's empowerment matters.</p></body></html>`;
-    expect(parsePage(html, "https://www.gap.com/p").gender).toBe("mens");
+    expect(parsePage(html).gender).toBe("mens");
   });
 });

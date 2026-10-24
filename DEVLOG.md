@@ -11006,3 +11006,23 @@ The real captures are on the founder's machine; the agent task packs them in.
   - 8 of 9 honest.
   - The one left is Everlane: a discontinued page whose truth is "refuse", now estimated from Everlane's
     own guide. That is for the founder to decide.
+
+## Session 103v (2026-10-24) — decision 03: the invented ladder is never served
+
+Founder approved decision 03: find the brand as hard as we can; if there is still nothing to go on, ask
+the user for the size chart; otherwise say we can't.
+
+- **Find the brand harder** (`evidenceEstimate.ts`): the page's brand, then the store's own name (from its
+  domain), so a gap.com page with no brand on it still finds Gap. The page's brand always wins, so a store
+  that sells other labels never sizes them with its house chart. The market falls back to the store's
+  country when the brand's is unknown. Unisex tops read the men's chart (they are cut on the men's block).
+- **Refuse everywhere else** (`checkPolicy.refusalFor`): an invented ladder that survives the estimate is
+  refused on every page, server-read included (before, only extension pages and pages named by their own
+  text). The pinned scope test now pins the new rule.
+- **Ask for the chart** (`engineText.ts`, en/zh): both no-chart messages now say we don't know the brand
+  well enough to estimate and ask for a screenshot of the size chart (or the garment's measurements). /check
+  and the popup already show the upload and measurement buttons for this refusal.
+- Replay of the agent's 9 real pages (not yet merged): unchanged, 8 of 9 honest; Everlane is still the open
+  question for the founder.
+- Fixed a type error in a pageParse test from 103u (`parsePage` takes no URL).
+- `todo/decisions/03` removed.
