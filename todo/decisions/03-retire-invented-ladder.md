@@ -2,6 +2,12 @@
 
 **Recommended: decide after the benchmark counts how many cases it affects.**
 
+**Status, Session 103:** mostly overtaken. A chartless top whose brand and line are known is now
+estimated from evidence (the brand's reviewed guide, its market's standard, or the US letter consensus;
+`evidenceEstimate.ts`) instead of the ladder. What is left is the ladder on a server-read page whose brand
+has no country we know, or whose line is unknown. Recommended now: refuse there too, so no invented number
+is ever served.
+
 ## Where it stands
 
 `BRAND_TABLE` in `extractor.ts` holds two invented constants per brand —

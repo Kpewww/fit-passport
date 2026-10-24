@@ -22,7 +22,8 @@ folder is a true statement; a file marked "done" is one more thing to keep in sy
 
 ## Right now, the shortest path
 
-**`people/01-ground-truth.md` unblocks more than everything else combined.** The
-Sprint 5 evaluation runs on 11 real pages and has **ground truth for none of them**,
-so it can measure what the system *did* and not whether it was *right*. Two people
-typing for an afternoon turn the whole benchmark on.
+**Start the pilot** (`docs/pilot-guide.md`). The code has nothing left blocking it, and only real
+purchases measure whether the recommended size was right (/admin, "Was the recommended size right?").
+
+**What goes on this board:** long-lived targets and concrete to-dos only. Coursework (sprint scope,
+reports) lives in `coursework/`.
