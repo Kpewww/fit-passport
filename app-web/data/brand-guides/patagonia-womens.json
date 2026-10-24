@@ -1,0 +1,81 @@
+{
+  "kind": "body",
+  "units": "in",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "GPT agent",
+  "reviewed": false,
+  "verifiedBy": [],
+  "brand": "Patagonia",
+  "line": "womens",
+  "sourceUrl": "https://www.patagonia.com/guides/size-fit/womens/",
+  "kindEvidence": "Find your exact size using the body measurements below.",
+  "screenshot": "screenshots/patagonia-womens.png",
+  "note": "Tops and Bottoms numeric rows: XXS=00;XS=0/2;S=4/6;M=8/10;L=12/14;XL=16/18;XXL=20/22. Single points retained, not alpha ranges. Same numbers in Nano Puff Jacket modal (patagonia-womens-2.png). Values match old guide endpoints; fit descriptions do not provide separate numeric charts.",
+  "rows": [
+    {
+      "label": "00",
+      "chest": 31.5,
+      "waist": 24.5
+    },
+    {
+      "label": "0",
+      "chest": 32.5,
+      "waist": 25.5
+    },
+    {
+      "label": "2",
+      "chest": 33.5,
+      "waist": 26.5
+    },
+    {
+      "label": "4",
+      "chest": 34.5,
+      "waist": 27.5
+    },
+    {
+      "label": "6",
+      "chest": 35.5,
+      "waist": 28.5
+    },
+    {
+      "label": "8",
+      "chest": 36.5,
+      "waist": 29.5
+    },
+    {
+      "label": "10",
+      "chest": 37.5,
+      "waist": 30.5
+    },
+    {
+      "label": "12",
+      "chest": 39,
+      "waist": 32
+    },
+    {
+      "label": "14",
+      "chest": 41,
+      "waist": 34
+    },
+    {
+      "label": "16",
+      "chest": 43,
+      "waist": 36
+    },
+    {
+      "label": "18",
+      "chest": 45,
+      "waist": 38
+    },
+    {
+      "label": "20",
+      "chest": 47,
+      "waist": 40
+    },
+    {
+      "label": "22",
+      "chest": 49,
+      "waist": 42
+    }
+  ]
+}

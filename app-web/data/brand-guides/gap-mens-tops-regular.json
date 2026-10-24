@@ -1,0 +1,46 @@
+{
+  "kind": "body",
+  "units": "in",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "GPT agent",
+  "reviewed": false,
+  "verifiedBy": [],
+  "brand": "Gap",
+  "line": "mens",
+  "sourceUrl": "https://www.gap.com/Asset_Archive/AllBrands/sizeChart/v3/chart.html?cid=2094&locale=en_US",
+  "kindEvidence": "Lift your arms slightly and measure around your body (without a shirt is best), crossing over the fullest part of your chest.",
+  "screenshot": "screenshots/gap-mens-tops-regular.png",
+  "note": "Product-linked regular Tops chart; women's size crosswalk XS=S,S=M,M=L,L=XL,XL=XXL; XXL blank. Shirts, tees, polos, sweaters, hoodies and outerwear share this chart. Tall excluded. Measurement wording in gap-mens-tops-regular-2.png.",
+  "rows": [
+    {
+      "label": "XS",
+      "chestMin": 35,
+      "chestMax": 36
+    },
+    {
+      "label": "S",
+      "chestMin": 37,
+      "chestMax": 38
+    },
+    {
+      "label": "M",
+      "chestMin": 39,
+      "chestMax": 41
+    },
+    {
+      "label": "L",
+      "chestMin": 42,
+      "chestMax": 44
+    },
+    {
+      "label": "XL",
+      "chestMin": 45,
+      "chestMax": 48
+    },
+    {
+      "label": "XXL",
+      "chestMin": 49,
+      "chestMax": 52
+    }
+  ]
+}
