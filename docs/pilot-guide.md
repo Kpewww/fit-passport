@@ -15,7 +15,8 @@ Fewer people who actually buy beat many who only browse.
 > 1. 打开 https://www.fitpassport.fit ,填一下你的尺寸和平时喜欢的松紧(2 分钟),再加两三件你穿着合身的衣服。
 > 2. 在 Chrome 里装我们的插件:https://chromewebstore.google.com/detail/fit-passport/ciecejomnniicliemefagfegkmgfkgfe
 > 3. 网上看到想买的衣服时,点插件,看它推荐什么尺码、为什么。
-> 4. **最重要的一步:** 收到衣服试穿后,回到网站的"合身记录"(fitpassport.fit/history),选"留下 / 退货 / 换货",说一下是紧了还是松了。
+> 4. 每天花几秒,在"穿搭日历"(fitpassport.fit/calendar)记一下今天穿了衣橱里的哪几件,顺手点一下"偏紧 / 合身 / 偏松"。
+> 5. **最重要的一步:** 收到衣服试穿后,回到网站的"合身记录"(fitpassport.fit/history),选"留下 / 退货 / 换货",说一下是紧了还是松了。
 >
 > 不管推荐得对不对都请记录,推荐错的记录对我们最有用。有任何问题,点网站底部的"反馈"告诉我们。谢谢!
 
@@ -29,7 +30,9 @@ Fewer people who actually buy beat many who only browse.
 > 2. Install the Chrome extension:
 >    https://chromewebstore.google.com/detail/fit-passport/ciecejomnniicliemefagfegkmgfkgfe
 > 3. When you see clothes you want to buy online, click the extension. It recommends a size and says why.
-> 4. **The most important step:** once it arrives and you've tried it on, go to "Fit history"
+> 4. Each day, take a few seconds on the wear calendar (fitpassport.fit/calendar): tap what you wore from your
+>    closet, and whether it felt snug, just right or roomy.
+> 5. **The most important step:** once it arrives and you've tried it on, go to "Fit history"
 >    (fitpassport.fit/history). Choose kept / returned / exchanged, and say whether it was tight or loose.
 >
 > Please record every purchase, whether the size was right or wrong. A wrong one helps us most.

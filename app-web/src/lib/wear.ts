@@ -9,25 +9,7 @@ import { z } from "zod";
 import { prisma } from "./db";
 import { DIRECTION_MIN, DIRECTION_MAX, clampDirection } from "./fitDirection";
 
-export const SEASONS = ["spring", "summer", "autumn", "winter"] as const;
-export type Season = (typeof SEASONS)[number];
-
-/** "spring,winter" in a canonical order; null for none (= every season). */
-export function normaliseSeasons(v: string | string[] | null | undefined): string | null {
-  const list = (Array.isArray(v) ? v : (v ?? "").split(",")).map((s) => s.trim().toLowerCase());
-  const kept = SEASONS.filter((s) => list.includes(s));
-  return kept.length === 0 || kept.length === SEASONS.length ? null : kept.join(",");
-}
-
-export const SeasonsInput = z
-  .union([z.string().max(60), z.array(z.string().max(10)).max(4)])
-  .nullable()
-  .transform(normaliseSeasons);
-
-/** True when an item tagged with these seasons is meant for `season` (untagged = always). */
-export function inSeason(seasons: string | null | undefined, season: Season): boolean {
-  return !seasons || seasons.split(",").includes(season);
-}
+export { SEASONS, type Season, normaliseSeasons, SeasonsInput, inSeason } from "./seasons";
 
 const DAY_RE = /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/;
 export const DayInput = z.string().regex(DAY_RE, "a day is YYYY-MM-DD").refine((d) => !Number.isNaN(Date.parse(`${d}T00:00:00Z`)), "not a real day");

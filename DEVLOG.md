@@ -11086,3 +11086,30 @@ Founder approved decision 07 as recommended.
   Moncler). The US consensus is unchanged. All 9 replayed captures stay honest.
 - Next gap: charts whose letter sizes span two numeric columns need the letter-to-columns map recorded before
   they help letter-sized products (people/09).
+
+## Session 104 (2026-10-24) — the product upgrade begins: the wear calendar
+
+The founder approved `docs/plans/product-upgrade-2026-10-24.md` from the agent's research (branch
+`agent/research`). Phase 0 and phase 1 are done.
+
+- **Data** (additive migration `20261024120000_wear_log`): `WearLog` (the wearer's own day "YYYY-MM-DD",
+  status worn | planned, optional saved outfit and note) with `WearLogItem` rows naming closet pieces;
+  `KnownGoodItem.seasons`. Only worn days count; a plan becomes worn only when confirmed, never back.
+- **One writer for fit answers** (`lib/comfort.ts` `recordComfort`): the item's direction and rating plus a
+  ComfortCheck row, in one transaction. Fit Refresh now uses it; the calendar's "does it still fit?" uses it
+  with reason `worn`. The wear event itself is not fit evidence and the engine does not read it.
+- **API** `/api/wear`: GET a range (≤ 62 days), POST a day (own pieces and outfit only; a worn day not in the
+  future, one day of timezone slack; fit answers only for that day's pieces), PATCH to confirm a plan or answer
+  later, DELETE to undo. Events `wear-logged`, `wear-fit` (answered/asked), `wear-undo`.
+- **/calendar**: month grid with each day's pieces, a day panel to log from the closet or a saved outfit, then
+  one tap per piece: snug / just right / roomy / skip (text, not colour). Planned days dashed, with "I wore it".
+  Undo after delete.
+- **Closet**: "Worn 3 times · 12 days ago" on each card (`/api/closet` returns `wornCount`, `lastWorn`),
+  season chips that narrow every view (untagged = every season), seasons on the edit form.
+- **Home**: returning users with a closet get one daily action, "What did you wear today?" / "Today: N pieces
+  logged". Nav gains Calendar. **/admin** pilot panel: people who logged, days logged, fit answers (7 days),
+  counted from the tables.
+- Calendar and Shuffle icons added to `scripts/gen-icons.mjs`. Pilot invitation gains the daily step.
+- Checked end to end on a production build at phone width (zh): log a day, answer fit (the piece's direction
+  moved to −5 in the closet), wear counts and season filter on the closet, the home card.
+- Not yet: a photo for the day (the column exists), today's outfit draw, weather and PWA (phase 2).

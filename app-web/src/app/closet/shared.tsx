@@ -40,6 +40,10 @@ export type Item = {
   garmentLengthCm?: number | null;
   garmentMeasuredFrom?: string | null;
   productUrl?: string | null;
+  // The wear calendar (Session 104): seasons picked, and how often / when last worn.
+  seasons?: string | null;
+  wornCount?: number;
+  lastWorn?: string | null;
 };
 
 export type Collection = { id: string; name: string; sortIndex: number; itemCount: number; color?: string | null };

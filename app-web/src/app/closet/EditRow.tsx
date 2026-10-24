@@ -1,7 +1,8 @@
 "use client";
 
+import { SEASONS } from "@/lib/seasons";
 import { useState } from "react";
-import { Button, Card, Field, inputClass } from "@/components/ui";
+import { Button, Card, Chip, Field, inputClass } from "@/components/ui";
 import { BrandInput } from "@/components/BrandInput";
 import { RegimePicker } from "@/components/RegimePicker";
 import { SizeInput } from "@/components/SizeInput";
@@ -38,6 +39,7 @@ export function EditRow({
     imageDataUrl: item.imageDataUrl ?? "",
     productUrl: item.productUrl ?? "",
     region: item.region ?? "",
+    seasons: (item.seasons ?? "").split(",").filter(Boolean),
   });
   // Garment measurements taken from the product page's chart (ProductLinkCheck).
   const [garment, setGarment] = useState<GarmentFields | null>(null);
@@ -60,6 +62,7 @@ export function EditRow({
         imageDataUrl: f.imageDataUrl || null,
         areaNotesJson: f.areaNotes ? JSON.stringify({ notes: f.areaNotes }) : null,
         productUrl: validUrl(f.productUrl),
+        seasons: f.seasons,
         ...(garment ?? {}),
       }),
     });
@@ -134,6 +137,20 @@ export function EditRow({
         </div>
         <div className="sm:col-span-6">
           <Field as="div" label={t("color")}><ColorPicker value={f.color} onChange={(v) => setF({ ...f, color: v })} /></Field>
+        </div>
+        <div className="sm:col-span-6">
+          <Field as="div" label={t("seasonsLabel")} hint={t("seasonsHint")}>
+            <div className="flex flex-wrap gap-1.5">
+              {SEASONS.map((s) => {
+                const on = f.seasons.includes(s);
+                return (
+                  <Chip key={s} selected={on} onClick={() => setF({ ...f, seasons: on ? f.seasons.filter((x) => x !== s) : [...f.seasons, s] })}>
+                    {t(`season.${s}`)}
+                  </Chip>
+                );
+              })}
+            </div>
+          </Field>
         </div>
         <div className="sm:col-span-6">
           <Field as="div" label={t("productUrl")} hint={t("optional")}>

@@ -17,10 +17,11 @@ import {
   Question,
   Ruler,
   Shield,
+  Calendar,
   type IconProps,
 } from "@/components/Icon";
 
-type LinkKey = "check" | "extension" | "closet" | "passport" | "outfits" | "community" | "help" | "review";
+type LinkKey = "check" | "extension" | "closet" | "passport" | "outfits" | "calendar" | "community" | "help" | "review";
 type NavLink = { href: string; label: LinkKey; Icon: ComponentType<IconProps>; also?: string[] };
 
 // Order (founder, 2026-09-30): what you keep first — closet, passport, outfits,
@@ -30,6 +31,8 @@ const LINKS: NavLink[] = [
   { href: "/closet", label: "closet", Icon: Hanger },
   { href: "/passport", label: "passport", Icon: IdCard },
   { href: "/outfits", label: "outfits", Icon: Board },
+  // What you wore, day by day (Session 104): with the closet, before the tools.
+  { href: "/calendar", label: "calendar", Icon: Calendar },
   // Questions live inside /community, so they get no tab of their own. Thread
   // pages sit at /ask/[id] and don't share the prefix, hence `also`.
   { href: "/community", label: "community", Icon: People, also: ["/ask"] },

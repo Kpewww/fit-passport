@@ -5,7 +5,7 @@
 import { z } from "zod";
 import { isValidSize } from "./sizeSystems";
 import { DIRECTION_MIN, DIRECTION_MAX, clampDirection } from "./fitDirection";
-import { SeasonsInput } from "./wear";
+import { SeasonsInput } from "./seasons";
 
 export const ItemSchema = z
   .object({

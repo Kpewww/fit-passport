@@ -10,7 +10,8 @@ import { OutfitMannequin } from "@/components/OutfitMannequin";
 import { GarmentCover } from "@/components/GarmentCover";
 import { BadgeMedallion } from "@/components/BadgeMedallion";
 import { productLabel } from "@/lib/productLabel";
-import { ArrowRight, BrowserIcon, CaretRight, Check, Hanger, Ruler, Scales, Store } from "@/components/Icon";
+import { ArrowRight, BrowserIcon, Calendar, CaretRight, Check, Hanger, Ruler, Scales, Store } from "@/components/Icon";
+import { localDay } from "@/lib/localDay";
 import { EXTENSION_DISTRIBUTION } from "@/lib/extensionDistribution";
 import { useT } from "@/i18n/client";
 import { Headline } from "@/components/Headline";
@@ -615,6 +616,9 @@ function ReturningUserDashboard({ status }: { status: Status }) {
   const badgesToShow = (status.pinnedBadges?.length ? status.pinnedBadges : status.earnedBadgeIds) ?? [];
   return (
     <div className="space-y-5">
+      {/* One thing to do today (Session 104): say what you wore. */}
+      {status.closetCount > 0 && <TodayWearCard />}
+
       {/* Identity strip */}
       <Card className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <Link href="/passport" className="group flex items-center gap-3">
@@ -700,5 +704,37 @@ function ReturningUserDashboard({ status }: { status: Status }) {
         </Card>
       )}
     </div>
+  );
+}
+
+/**
+ * "What did you wear today?" — the day's one action on the dashboard (Session 104,
+ * research 2026-10-24: one main daily action beats a maze of features). Shows what
+ * is already logged for today, else a button straight to logging it.
+ */
+function TodayWearCard() {
+  const t = useT("home");
+  const today = localDay();
+  const [pieces, setPieces] = useState<number | null>(null);
+  useEffect(() => {
+    fetch(`/api/wear?from=${today}&to=${today}`)
+      .then((r) => (r.ok ? r.json() : { logs: [] }))
+      .then((d: { logs?: Array<{ status: string; items: unknown[] }> }) => setPieces((d.logs ?? []).filter((l) => l.status === "worn").reduce((n, l) => n + l.items.length, 0)))
+      .catch(() => setPieces(0));
+  }, [today]);
+  if (pieces === null) return null;
+  return (
+    <Card className="flex flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-3">
+        <span className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-paper-soft text-ink"><Calendar size={22} /></span>
+        <div>
+          <p className="font-medium text-ink">{pieces > 0 ? t.n("dashboard.wearDone", pieces) : t("dashboard.wearTitle")}</p>
+          <p className="text-xs text-ink-soft">{t("dashboard.wearBody")}</p>
+        </div>
+      </div>
+      <LinkButton href={`/calendar?day=${today}`} variant={pieces > 0 ? "secondary" : "primary"} arrow>
+        {pieces > 0 ? t("dashboard.wearOpen") : t("dashboard.wearLog")}
+      </LinkButton>
+    </Card>
   );
 }

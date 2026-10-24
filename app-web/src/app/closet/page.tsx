@@ -11,6 +11,9 @@ import { FitScaleProvider } from "@/components/FitDirectionInput";
 import { useT } from "@/i18n/client";
 import { useGarmentText } from "@/i18n/garment";
 import dynamic from "next/dynamic";
+import { pluralKey } from "@/i18n/format";
+import { SEASONS, inSeason, type Season } from "@/lib/seasons";
+import { dayDiff, localDay } from "@/lib/localDay";
 import { Item, Collection, Group, GenderBadge, ColorDot, safeNotes, ItemThumb, itemName, GarmentMeasurements, ConfirmDelete, MoveMenu } from "./shared";
 
 // Parts that appear only once opened load on demand (Session 100: /closet was over its
@@ -56,6 +59,8 @@ export default function ClosetPage() {
   }
   // Which collection the chips narrow to ("all", a collection id, or "__uncat__").
   const [filter, setFilter] = useState("all");
+  // Season (Session 104): narrows every view; untagged pieces are in every season.
+  const [season, setSeason] = useState<Season | "all">("all");
   // The piece just added — its card asks for a photo until it gets one. The
   // photo is never a step in the add flow (build-state ㉙); this is the nudge.
   const [nudgeId, setNudgeId] = useState<string | null>(null);
@@ -268,13 +273,14 @@ export default function ClosetPage() {
   const count = items.length;
   const goalMet = count >= 3;
 
-  // Bucket items by collection (plus an Uncategorized bucket).
-  const uncategorized = items.filter((it) => !it.collectionId);
+  // Bucket items by collection (plus an Uncategorized bucket), in the chosen season.
+  const seasonal = season === "all" ? items : items.filter((it) => inSeason(it.seasons, season));
+  const uncategorized = seasonal.filter((it) => !it.collectionId);
   const buckets = [
     ...collections
       .slice()
       .sort((a, b) => a.sortIndex - b.sortIndex)
-      .map((c, i) => ({ collection: c, items: itemsIn(items, c.id), seed: i })),
+      .map((c, i) => ({ collection: c, items: itemsIn(seasonal, c.id), seed: i })),
     ...(uncategorized.length > 0
       // "Uncategorized" is a key the folder names translate (useGarmentText).
       ? [{ collection: { id: "__uncat__", name: "Uncategorized", sortIndex: 999, itemCount: uncategorized.length }, items: uncategorized, seed: -1 }]
@@ -410,6 +416,15 @@ export default function ClosetPage() {
                   </Chip>
                 ))}
               </div>
+            </div>
+          )}
+
+          {count >= 3 && (
+            <div role="group" aria-label={t("seasonsLabel")} className="no-scrollbar -mx-1 mt-3 flex gap-2 overflow-x-auto px-1">
+              <Chip selected={season === "all"} onClick={() => setSeason("all")} className="flex-shrink-0">{t("seasonAll")}</Chip>
+              {SEASONS.map((s) => (
+                <Chip key={s} selected={season === s} onClick={() => setSeason(s)} className="flex-shrink-0">{t(`season.${s}`)}</Chip>
+              ))}
             </div>
           )}
 
@@ -928,6 +943,9 @@ function GalleryCard({
           </span>
           {!group.isVariant && <FitStars rating={head.fitRating} size={11} className="flex-shrink-0" />}
         </div>
+        {!group.isVariant && (head.wornCount ?? 0) > 0 && (
+          <p className="mt-1 text-[11px] text-ink-faint">{wornLine(t, head.wornCount ?? 0, head.lastWorn ?? null)}</p>
+        )}
         {lookalike && !selectMode && (
           <button type="button" onClick={() => onOpen(group)} className="mt-1 text-[11px] font-medium text-brand hover:underline">
             {t("nameToTell")}
@@ -1439,3 +1457,12 @@ function BucketPanel({
 // Each step's question and one line on what the answer buys (closet.step.*).
 // Asking for something without saying why is most of what makes a form feel
 // like homework.
+
+/** "Worn 3 times · 12 days ago" (Session 104, from the wear calendar). */
+function wornLine(t: ReturnType<typeof useT<"closet">>, n: number, last: string | null): string {
+  const count = t(pluralKey("wornTimes", n), { n });
+  if (!last) return count;
+  const ago = dayDiff(last, localDay());
+  const when = ago <= 0 ? t("wornToday") : ago === 1 ? t("wornYesterday") : t("wornDaysAgo", { n: ago });
+  return `${count} · ${when}`;
+}
