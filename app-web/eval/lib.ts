@@ -144,7 +144,7 @@ const NAME_NOISE = new Set(["mens", "men", "womens", "women", "the", "a", "in", 
 const nameTokens = (s: string, brand?: string) => {
   const b = new Set((brand ?? "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean));
   return new Set(
-    s.toLowerCase().replace(/['’]/g, "").replace(/t-shirt/g, "tshirt").split(/[^a-z0-9]+/)
+    s.toLowerCase().replace(/['’]/g, "").replace(/\bt[\s-]?shirts?\b|\btees?\b/g, "tshirt").split(/[^a-z0-9]+/)
       .filter((w) => w && !NAME_NOISE.has(w) && !b.has(w)),
   );
 };

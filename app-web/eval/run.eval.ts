@@ -210,8 +210,11 @@ describe("Sprint 5 evaluation", () => {
       if (live) runs.push(await runA(c, people));
       // A run that read a different product than the truth's is not scored against it.
       const standard = truth?.productName ?? c.productName;
+      // Only a run that READ the page knows its product name; a name guessed from the
+      // URL (system B, or a blocked fetch) says nothing about what the link shows now.
+      const readPage = (r: SystemRun) => r.source?.fetch === "ok" || r.source?.fetch === "extension";
       const productChanged = runs
-        .filter((r) => standard && r.productName && !sameProduct(standard, r.productName, c.retailer))
+        .filter((r) => standard && r.productName && readPage(r) && !sameProduct(standard, r.productName, c.retailer))
         .map((r) => ({ system: r.system, seen: r.productName! }));
       const scores = truth
         ? (Object.fromEntries(

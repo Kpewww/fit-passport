@@ -42,6 +42,8 @@ describe("is the link still the same product? (Session 103, by standard name)", 
     expect(sameProduct("AIRism Cotton T-Shirt", "Men's AIRism Cotton Crew Neck T-Shirt", "Uniqlo")).toBe(true);
     expect(sameProduct("AIRism Cotton T-Shirt", "UNIQLO AIRism Cotton T-shirt (Short Sleeve)", "Uniqlo")).toBe(true);
     expect(sameProduct("Better Sweater Fleece Jacket", "Men's Better Sweater® Fleece Jacket", "Patagonia")).toBe(true);
+    expect(sameProduct("Classic T-Shirt", "Classic Tee", "Gap")).toBe(true);
+    expect(sameProduct("Dri-FIT Legend Fitness T-Shirt", "Nike Dri-FIT Legend Men's Fitness T Shirt", "Nike")).toBe(true);
   });
 
   it("another product drops the case from scoring", () => {

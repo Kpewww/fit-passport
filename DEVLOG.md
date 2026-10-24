@@ -10920,3 +10920,18 @@ Also: compiled guides carry `capturedAt`, so the reason line shows the date the 
 The founder approved the eleven truth files ("评测审核通过"). All are `reviewed: true`, so the evaluation
 now grades every case: 8 answers, 3 refusals. The full run needs the captures, which live on the
 founder's machine (git-ignored): `npm run eval` there.
+
+## Session 103p (2026-10-24) — first graded evaluation (system B only); the same-product check fixed
+
+- **Fix:** the same-product check now compares only names a run READ from the page (`fetch` ok or
+  extension). System B never reads the page and guesses its name from the URL ("Gap Browse"), which had
+  wrongly dropped three cases as "product changed". "Tee", "T Shirt" and "T-Shirt" now count as one word.
+- **Run** (`results/2026-10-24`): 11 cases, all with reviewed truth. No captures in this environment
+  (they live on the founder's machine), so only B (curated brand chart, no page) ran; S5, the extension
+  path, did not.
+  - Outcomes: right answer 2, right refusal 3, wrong answer 1, wrong refusal 5. B refuses by design
+    wherever no curated chart exists.
+  - Where B answered, persona picks were right 8 of 9.
+  - The miss: Patagonia men's, chest 92 cm. B says S from Patagonia's general guide (XS 35 / S 37 in);
+    the truth, read from the product page's modal (XS 36–37 in), says XS. Patagonia publishes two charts
+    that disagree at this point (PR #4).
