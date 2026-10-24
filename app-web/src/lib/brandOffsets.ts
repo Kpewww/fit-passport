@@ -11,7 +11,7 @@ import { calibrate, type BrandReport, type Observation } from "./brandCalibratio
 import { lookupBrand } from "./brandRegistry";
 import type { Regime } from "./sizeRegimes";
 import { BRAND_CHARTS, chartToSizes } from "./brandCharts";
-import type { CompiledGuide } from "./brandGuides";
+import { isTopsChart, type CompiledGuide } from "./brandGuides";
 import guides from "./brandGuides.generated.json";
 
 const CACHE_MS = 10 * 60 * 1000;
@@ -53,7 +53,7 @@ export async function loadObservations(): Promise<Observation[]> {
     }
   }
   // Guides collected into the repo and verified by a person (brandGuides.ts).
-  for (const g of guides as CompiledGuide[]) {
+  for (const g of (guides as CompiledGuide[]).filter(isTopsChart)) {
     const cm = (v: number) => (g.units === "in" ? Math.round(v * 2.54 * 10) / 10 : v);
     for (const r of g.rows) {
       if (r.chestMin == null || r.chestMax == null) continue;

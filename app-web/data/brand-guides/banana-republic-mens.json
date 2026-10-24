@@ -10,6 +10,10 @@
   "kindEvidence": "Raise your arms slightly and measure around your body. Be sure to measure across your shoulder blades and the fullest part of your chest.",
   "screenshot": "screenshots/banana-republic-mens.png",
   "note": "Men's Outerwear regular chart. Tall and Japan exclusive charts not copied. Values follow the visible current page, not the older archive chart.",
+  "appliesTo": [
+    "jacket"
+  ],
+  "variant": "general",
   "rows": [
     {
       "label": "XXS",

@@ -53,3 +53,27 @@ describe("brand size guides in data/brand-guides (Session 103)", () => {
     expect(bad([{ label: "S", chestMin: 36, chestMax: 38 }, { label: "M", chestMin: 38, chestMax: 40 }], { sourceUrl: "http://x.com" })).toBe(false);
   });
 });
+
+import { isTopsChart, pickGuide } from "./brandGuides";
+
+describe("which chart a product gets (Session 103: a guide applies to its own garments)", () => {
+  const general = { id: "general", variant: "general" as const };
+  const product = { id: "product", variant: "product" as const };
+  const outerwear = { id: "outer", variant: "general" as const, appliesTo: ["jacket" as const] };
+  const knit = { id: "knit", variant: "product" as const, appliesTo: ["sweater" as const] };
+
+  it("an outerwear chart never sizes a T-shirt", () => {
+    expect(pickGuide([outerwear], "tshirt")).toBeNull();
+    expect(pickGuide([outerwear], "jacket")?.id).toBe("outer");
+  });
+  it("a chart for this garment first, then a product-page chart, then the general guide", () => {
+    expect(pickGuide([general, product, knit], "sweater")?.id).toBe("knit");
+    expect(pickGuide([general, product, knit], "tshirt")?.id).toBe("product");
+    expect(pickGuide([general], "tshirt")?.id).toBe("general");
+  });
+  it("an outerwear-only chart is left out of the brand's calibration", () => {
+    expect(isTopsChart(outerwear)).toBe(false);
+    expect(isTopsChart({ appliesTo: undefined })).toBe(true);
+    expect(isTopsChart(knit)).toBe(true);
+  });
+});

@@ -10,6 +10,7 @@
   "line": "womens",
   "screenshot": "screenshots/levis-womens.png",
   "note": "Standard Women's Tops table; Plus Tops omitted. Single chest and waist values copied unchanged, no ranges inferred.",
+  "variant": "general",
   "rows": [
     {
       "label": "XXS",

@@ -40,8 +40,18 @@ export const GuideFile = z.object({
   capturedBy: z.string().min(1).max(80),
   screenshot: z.string().regex(/^screenshots\/[\w.-]+\.(png|jpe?g)$/),
   note: z.string().max(300).optional().nullable(),
+  /**
+   * The garments this chart was printed for, as engine categories ("jacket", "sweater",
+   * "shirt", "tshirt", "polo", "hoodie", "top"). Absent = every top (Session 103):
+   * a brand's outerwear chart must not size its T-shirts.
+   */
+  appliesTo: z.array(z.enum(["tshirt", "top", "shirt", "sweater", "jacket", "hoodie", "polo"])).min(1).optional(),
+  /** The brand's general size guide, or the chart a product page shows (preferred when both exist). */
+  variant: z.enum(["general", "product"]).default("general"),
   /** A person reviewed every number against the page and approved it. False = not counted. */
   reviewed: z.boolean().default(false),
+  /** Who reviewed: "founder", or "claude" when the founder delegated the review (Session 103). */
+  reviewedBy: z.string().max(40).optional(),
   /** Older files named the reviewer instead (Session 103, before the founder chose a plain flag). */
   verifiedBy: z.array(z.string().min(1)).default([]),
   rows: z.array(GuideRow).min(2).max(20),
@@ -51,6 +61,8 @@ export type GuideFileT = z.infer<typeof GuideFile>;
 
 /** What the engine reads: verified body guides only, and only their printed RANGES. */
 export type CompiledGuide = Pick<GuideFileT, "brand" | "line" | "units" | "sourceUrl" | "capturedAt"> & {
+  appliesTo?: GuideFileT["appliesTo"];
+  variant?: GuideFileT["variant"];
   rows: Array<{ label: string; chestMin?: number; chestMax?: number; waistMin?: number; waistMax?: number }>;
 };
 
@@ -59,10 +71,31 @@ export function compile(files: GuideFileT[]): CompiledGuide[] {
     .filter((f) => f.kind === "body" && (f.reviewed || f.verifiedBy.length > 0))
     .map((f) => ({
       brand: f.brand, line: f.line, units: f.units, sourceUrl: f.sourceUrl, capturedAt: f.capturedAt,
+      ...(f.appliesTo ? { appliesTo: f.appliesTo } : {}),
+      variant: f.variant,
       rows: f.rows
         .filter((r) => r.chestMin != null || r.waistMin != null)
         .map(({ label, chestMin, chestMax, waistMin, waistMax }) => ({ label, chestMin, chestMax, waistMin, waistMax })),
     }))
     .filter((g) => g.rows.length > 0)
     .sort((a, b) => `${a.brand}|${a.line}`.localeCompare(`${b.brand}|${b.line}`));
+}
+
+/** Garments every chart of a brand is for: a chart limited to none of these (outerwear only) is not a tops chart. */
+export const CORE_TOPS = ["tshirt", "top", "shirt", "sweater", "hoodie", "polo"] as const;
+
+/** Whether a chart counts for the brand's calibration: tops charts, not outerwear-only ones. */
+export function isTopsChart(g: Pick<CompiledGuide, "appliesTo">): boolean {
+  return !g.appliesTo || g.appliesTo.some((c) => (CORE_TOPS as readonly string[]).includes(c));
+}
+
+/**
+ * The best chart for a product of this brand and line: one printed for its garment
+ * before one for every top, a product-page chart before the general guide. Null when
+ * the brand's only charts are for other garments.
+ */
+export function pickGuide<G extends Pick<CompiledGuide, "appliesTo" | "variant">>(candidates: G[], engineCategory: string | null): G | null {
+  const fits = candidates.filter((g) => !g.appliesTo || (engineCategory != null && g.appliesTo.includes(engineCategory as never)));
+  const rank = (g: G) => (g.appliesTo ? 0 : 2) + (g.variant === "product" ? 0 : 1);
+  return fits.sort((a, b) => rank(a) - rank(b))[0] ?? null;
 }

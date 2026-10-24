@@ -68,6 +68,14 @@ describe("a chartless top is estimated from evidence (Session 103)", () => {
     expect(withGuide.source.sizesFrom).toBe("brand-chart");
   });
 
+  it("a brand's outerwear chart does not size its T-shirt", async () => {
+    const outer: CompiledGuide = { ...guide, appliesTo: ["jacket"] };
+    const tee = await fillFromEvidence(product({ brand: "J.Crew", source: { url: "https://www.jcrew.com/p" } }), { reports: async () => usReports, guides: [outer] });
+    expect(tee.source.sizesFrom).toBe("estimated"); // fell through to the US consensus
+    const coat = await fillFromEvidence(product({ brand: "J.Crew", category: "jacket" }), { ...noReports, guides: [outer] });
+    expect(coat.source.sizesFrom).toBe("brand-chart");
+  });
+
   it("finds a guide by brand whatever the punctuation", () => {
     expect(reviewedGuide("j crew", "mens", [guide])).toBe(guide);
     expect(reviewedGuide("J.Crew", "womens", [guide])).toBeNull();

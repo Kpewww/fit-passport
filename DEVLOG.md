@@ -10935,3 +10935,16 @@ founder's machine (git-ignored): `npm run eval` there.
   - The miss: Patagonia men's, chest 92 cm. B says S from Patagonia's general guide (XS 35 / S 37 in);
     the truth, read from the product page's modal (XS 36–37 in), says XS. Patagonia publishes two charts
     that disagree at this point (PR #4).
+
+## Session 103q (2026-10-24) — a brand guide applies to the garments it was printed for
+
+- **Schema:** `GuideFile` gains `appliesTo` (engine categories; absent = every top), `variant` (general |
+  product) and `reviewedBy`.
+- **Choosing a chart:** `pickGuide` prefers a chart printed for this garment, then a product-page chart, then
+  the general guide, and never uses a chart limited to other garments.
+- **Calibration** (`brandOffsets`) leaves out outerwear-only charts.
+- **Classified all 39 files.** Banana Republic men's is the outerwear chart, now `["jacket"]` only. Burberry
+  is knitwear only; Moncler is tops without outerwear; Everlane is per-product T-shirts; Saint Laurent men's
+  is shirts; Ralph Lauren men's is polos. Gap, Patagonia and A&F charts are marked general or product.
+- Tests: an outerwear chart never sizes a T-shirt; the preference order; calibration excludes
+  outerwear-only charts. `engineering/17` done and deleted.

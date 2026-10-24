@@ -9,6 +9,10 @@
   "capturedBy": "Codex",
   "screenshot": "screenshots/burberry-womens.png",
   "note": "Womens Knitwear alphabetic table from Classic Fit sweater. Separate numeric table differs; no alpha-to-number mapping inferred. Printed inches and singleton values retained. Evidence: screenshots/burberry-womens-evidence.png.",
+  "appliesTo": [
+    "sweater"
+  ],
+  "variant": "product",
   "reviewed": false,
   "rows": [
     {

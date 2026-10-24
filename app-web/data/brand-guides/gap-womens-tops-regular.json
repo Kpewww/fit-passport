@@ -11,6 +11,7 @@
   "kindEvidence": "Lift your arms slightly and measure around the fullest part of your chest.",
   "screenshot": "screenshots/gap-womens-tops-regular.png",
   "note": "Regular product chart; numeric labels, Bust=chest. XXS=000/00;XS=0/2;S=4/6;M=8/10;L=12/14;XL=16/18;XXL=20/22. Paired columns are points, not ranges. Petite/Tall excluded. gap-womens-tops-regular-2.png: measurement wording; -3.png: rightmost size 22.",
+  "variant": "product",
   "rows": [
     {
       "label": "000",

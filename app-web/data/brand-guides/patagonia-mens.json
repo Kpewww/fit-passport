@@ -11,6 +11,7 @@
   "kindEvidence": "Find your exact size using the body measurements below.",
   "screenshot": "screenshots/patagonia-mens.png",
   "note": "General Men's Tops and Bottoms alpha chart; chest points as printed. Separate bottoms waist tables are not merged into tops. All chest values match stored 2026-09-08 general guide. Product modal has a different numeric/alpha table; recorded separately. Fit descriptions are not new size tables.",
+  "variant": "general",
   "rows": [
     {
       "label": "XXS",

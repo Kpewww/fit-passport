@@ -9,6 +9,15 @@
   "capturedBy": "Codex",
   "screenshot": "screenshots/moncler-mens.png",
   "note": "Tops. Printed inch decimal commas represented as JSON decimal points; no unit conversion or ranges. Printed waist 3XL=41,43 retained. Body evidence: screenshots/moncler-mens-evidence.png.",
+  "appliesTo": [
+    "tshirt",
+    "top",
+    "shirt",
+    "sweater",
+    "hoodie",
+    "polo"
+  ],
+  "variant": "general",
   "reviewed": false,
   "rows": [
     {

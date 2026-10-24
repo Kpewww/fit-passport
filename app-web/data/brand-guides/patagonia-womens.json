@@ -11,6 +11,7 @@
   "kindEvidence": "Find your exact size using the body measurements below.",
   "screenshot": "screenshots/patagonia-womens.png",
   "note": "Tops and Bottoms numeric rows: XXS=00;XS=0/2;S=4/6;M=8/10;L=12/14;XL=16/18;XXL=20/22. Single points retained, not alpha ranges. Same numbers in Nano Puff Jacket modal (patagonia-womens-2.png). Values match old guide endpoints; fit descriptions do not provide separate numeric charts.",
+  "variant": "general",
   "rows": [
     {
       "label": "00",

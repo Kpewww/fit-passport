@@ -9,6 +9,10 @@
   "capturedBy": "Codex",
   "screenshot": "screenshots/everlane-womens.png",
   "note": "Body Measurements selected, IN. Alpha-to-numeric: XXS=000; XS=00 - 0; S=2 - 4; M=6 - 8; L=10 - 12; XL=14 - 16; XXL=18 - 20; XXXL=20-22. XXS singletons preserved. Product garment toggle not collected.",
+  "appliesTo": [
+    "tshirt"
+  ],
+  "variant": "product",
   "reviewed": false,
   "rows": [
     {

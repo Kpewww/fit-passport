@@ -9,6 +9,10 @@
   "capturedBy": "Codex",
   "screenshot": "screenshots/ralph-lauren-mens.png",
   "note": "Garment classification per latest TODO09 review: BACK BODY and short SLEEVE columns are clothing dimensions. Page misleadingly selects BODY and says body size. Original screenshot preserved; chest singletons unchanged. Do not approve as body data. Classic only; Custom Slim/Slim excluded.",
+  "appliesTo": [
+    "polo"
+  ],
+  "variant": "product",
   "reviewed": false,
   "rows": [
     {

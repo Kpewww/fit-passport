@@ -9,6 +9,10 @@
   "capturedBy": "Codex",
   "screenshot": "screenshots/everlane-mens.png",
   "note": "US Alpha Size to US Numeric Size: XS=34; S=36; M=38 - 40; L=42; XL=44 - 46; XXL=48. XS singleton retained. How To Measure evidence in everlane-mens-evidence.png. Standard chart accessed through Archive Long-Sleeve Crew.",
+  "appliesTo": [
+    "tshirt"
+  ],
+  "variant": "product",
   "reviewed": false,
   "rows": [
     {

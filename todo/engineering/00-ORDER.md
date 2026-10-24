@@ -9,5 +9,4 @@ visible table). What remains:
 | 03 | Size charts that are not `<table>` | A real capture of such a chart (see the file) |
 | 10 | A size chart that is a picture inside a Taobao description | Picker built (Session 83); needs a real read and a real listing to check the 30-picture cap |
 | 12 | How far a seller's measurement can be off (`LISTING.flatNoiseCm`, assumed), and whether to read measuring photos | Listings with known garment measurements; a decision on photos |
-| 17 | A brand guide applies only to the garments it was printed for (`17-guide-applies-to.md`) | The founder's go-ahead |
 | 15 | Realistic heads for /body: MetaHuman chosen (Session 98h); converter built and self-tested (`tools/metahuman/`) | Six exported faces: `people/07-metahuman-faces.md` |

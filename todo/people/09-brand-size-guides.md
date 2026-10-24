@@ -40,6 +40,8 @@
 - 数据文件：`app-web/data/brand-guides/<品牌>-<mens|womens>.json`。品牌名用小写加连字符，如 `ralph-lauren-mens.json`。
 - 截图：`app-web/data/brand-guides/screenshots/<同名>.png`。要能看清整张表的每一个数字，一屏放不下就截多张，命名为 `-1.png`、`-2.png`。`screenshot` 字段填第一张。
 - 格式照 `app-web/data/brand-guides/_example.json`。字段规则在 `app-web/src/lib/brandGuides.ts`。
+- **适用品类 `appliesTo`**:这张表只印给某些衣服(比如只有外套)时,填品类:`jacket` / `sweater` / `shirt` / `tshirt` / `polo` / `hoodie` / `top`;适用于所有上衣就不填。
+- **`variant`**:品牌的通用尺码页填 `general`,商品页上弹出的表填 `product`。同一品牌两种都有,两张都收。
 - `brand` 写品牌自己的写法，如 `"Ralph Lauren"`、`"J.Crew"`、`"Levi's"`。
 - `sourceUrl` 写你截图的那一页的完整网址。**用品牌的美国站**：网址里带 `/us/` 或 `en-us`，或者本身就是 `.com` 美国站。
 - `capturedBy` 填你自己的名字（如 "GPT agent"），`capturedAt` 填今天的日期（YYYY-MM-DD）。

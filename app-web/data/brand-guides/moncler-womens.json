@@ -9,6 +9,15 @@
   "capturedBy": "Codex",
   "screenshot": "screenshots/moncler-womens.png",
   "note": "Tops & Bottoms, letter-labelled table. MONCLER-to-IT: 3XS=36; XXS=38; XS=40; S=42; M=44; L=46; XL=48; XXL=50; 3XL=52; 4XL=54. Printed inch decimal commas represented as JSON decimal points; no unit conversion/ranges. Evidence: screenshots/moncler-womens-evidence.png.",
+  "appliesTo": [
+    "tshirt",
+    "top",
+    "shirt",
+    "sweater",
+    "hoodie",
+    "polo"
+  ],
+  "variant": "general",
   "reviewed": false,
   "rows": [
     {

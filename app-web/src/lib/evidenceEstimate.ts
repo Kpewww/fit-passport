@@ -16,7 +16,8 @@
 // product is then still unknown, but the brand's numbers are real.
 
 import type { ExtractedProduct, ExtractedSize } from "./extractor";
-import type { CompiledGuide } from "./brandGuides";
+import { pickGuide, type CompiledGuide } from "./brandGuides";
+import { engineCategoryOf } from "./garmentTaxonomy";
 import guides from "./brandGuides.generated.json";
 import { bodyChestFor, regimeForCountry, type BodyRange } from "./sizeRegimes";
 import { marketOf, normLabel, usLetterChest, type BrandReport } from "./brandCalibration";
@@ -27,11 +28,16 @@ const CM = 2.54;
 const r1 = (x: number) => Math.round(x * 10) / 10;
 const brandKey = (b: string) => b.toLowerCase().replace(/[^a-z0-9]/g, "");
 
-/** A reviewed guide for this brand and line, or null. */
-export function reviewedGuide(brand: string, line: "mens" | "womens", list: CompiledGuide[] = guides as CompiledGuide[]): CompiledGuide | null {
+/** The reviewed guide for this brand, line and garment, or null (brandGuides.ts pickGuide). */
+export function reviewedGuide(
+  brand: string,
+  line: "mens" | "womens",
+  list: CompiledGuide[] = guides as CompiledGuide[],
+  category: string | null = null,
+): CompiledGuide | null {
   const k = brandKey(brand);
   if (!k) return null;
-  return list.find((g) => brandKey(g.brand) === k && g.line === line) ?? null;
+  return pickGuide(list.filter((g) => brandKey(g.brand) === k && g.line === line), category ? engineCategoryOf(category) : null);
 }
 
 function guideSizes(g: CompiledGuide): ExtractedSize[] {
@@ -66,7 +72,7 @@ export async function fillFromEvidence(out: ExtractedProduct, deps: EstimateDeps
   const neverRead = src.fetch === "unreachable" || src.fetch === "blocked";
 
   // 1. The brand's own reviewed guide.
-  const guide = reviewedGuide(out.brand, line, deps.guides);
+  const guide = reviewedGuide(out.brand, line, deps.guides, out.category ?? null);
   if (guide) {
     const rows = guideSizes(guide);
     const byLabel = new Map(rows.map((r) => [normLabel(r.label), r]));

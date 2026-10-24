@@ -10,6 +10,7 @@
   "kindEvidence": "Measure under your arms around the fullest part of your chest.",
   "screenshot": "screenshots/jcrew-mens.png",
   "note": "Regular Tops only. Slim and Tall are separate options, not copied. Neck and arm length are omitted because the guide schema accepts chest and waist.",
+  "variant": "general",
   "rows": [
     {
       "label": "XS",

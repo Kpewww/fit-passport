@@ -11,6 +11,7 @@
   "kindEvidence": "Lift your arms slightly and measure around your body (without a shirt is best), crossing over the fullest part of your chest.",
   "screenshot": "screenshots/gap-mens-tops-regular.png",
   "note": "Product-linked regular Tops chart; women's size crosswalk XS=S,S=M,M=L,L=XL,XL=XXL; XXL blank. Shirts, tees, polos, sweaters, hoodies and outerwear share this chart. Tall excluded. Measurement wording in gap-mens-tops-regular-2.png.",
+  "variant": "product",
   "rows": [
     {
       "label": "XS",
