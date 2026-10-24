@@ -6,6 +6,7 @@
 // and the scoring, so a number in the results is a number the product produces.
 
 import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { gunzipSync } from "node:zlib";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { extractSmart } from "../src/lib/extractorLLM";
@@ -123,8 +124,10 @@ export function loadCases(): Case[] {
     .map((f) => readJson<Case>(join(dir, f)));
 }
 
-/** Committed capture first, then the git-ignored local one. */
+/** Committed capture first (gzipped, Session 103, or plain), then the git-ignored local one. */
 export function loadCapture(id: string): { capture: Capture; committed: boolean } | null {
+  const gz = join(EVAL_DIR, "captures", `${id}.capture.json.gz`);
+  if (existsSync(gz)) return { capture: JSON.parse(gunzipSync(readFileSync(gz)).toString("utf8")) as Capture, committed: true };
   const committed = join(EVAL_DIR, "captures", `${id}.capture.json`);
   if (existsSync(committed)) return { capture: readJson<Capture>(committed), committed: true };
   const local = join(EVAL_DIR, "local", "captures", `${id}.capture.json`);

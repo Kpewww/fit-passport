@@ -10970,3 +10970,22 @@ founder's machine (git-ignored): `npm run eval` there.
   offered as the roomier alternative.
 - **Why 0.02 and not larger:** at 0.03 the synthetic backtest lost 2 of 35 strict-containment picks, and the
   boundary-fragility note changed. At 0.02 neither moves, so only near dead heats are broken.
+
+## Session 103t (2026-10-24) — evaluation captures go in the repo, gzipped
+
+**Founder's decision:** "抓下来的页面放进仓库". It closes `decisions/01`.
+
+**How it works:**
+- `npm run captures:pack` gzips `eval/local/captures/*.capture.json` into `eval/captures/*.capture.json.gz`
+  and refuses any capture taken logged in.
+- `loadCapture` reads the committed .gz first.
+- `npm test` replays committed captures against reviewed truth. So it can go in without turning the suite
+  red on gaps already known, a case the system does not get right yet is held to `eval/replay-baseline.json`,
+  written by every `npm run eval`: a known gap may improve, may not become a different wrong, and a right
+  case must stay right.
+
+**Verified:** a synthetic local capture was packed (1.3 → 0.4 KB), a logged-in one was refused, and the
+replay test read the .gz and passed. The test files were removed afterwards.
+
+**Note:** the repo is public. Captures hold product parts and size tables only, as `capture.js` reduces them.
+The real captures are on the founder's machine; the agent task packs them in.

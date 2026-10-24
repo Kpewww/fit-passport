@@ -18,7 +18,8 @@
     "vercel-build": "node scripts/vercel-build.mjs",
     "postinstall": "prisma generate",
     "icons": "node scripts/gen-icons.mjs",
-    "guides": "node scripts/build-brand-guides.mjs"
+    "guides": "node scripts/build-brand-guides.mjs",
+    "captures:pack": "node scripts/pack-captures.mjs"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",

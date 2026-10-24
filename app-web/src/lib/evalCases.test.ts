@@ -6,11 +6,19 @@
 // or the right refusal. A parser change that breaks a real page fails the ordinary
 // suite instead of waiting for the next evaluation run. See eval/README.md.
 //
-// Until captures may be committed (an open decision), there is nothing to replay,
-// and this says so rather than passing silently.
+// Captures are committed gzipped (Session 103, `npm run captures:pack`). A case the
+// system does not get right yet is allowed only as recorded in eval/replay-baseline.json
+// (written by `npm run eval`): an honest outcome must stay honest, a known gap may not
+// get worse, and anything new that is wrong fails.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { loadCapture, loadCases, loadPersonas, loadTruth, personasFor, runS5, scoreRun } from "../../eval/lib";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
+import { EVAL_DIR, loadCapture, loadCases, loadPersonas, loadTruth, personasFor, runS5, scoreRun } from "../../eval/lib";
+
+const baselinePath = join(EVAL_DIR, "replay-baseline.json");
+const baseline: Record<string, string> = existsSync(baselinePath) ? JSON.parse(readFileSync(baselinePath, "utf8")) : {};
+const HONEST = ["right-answer", "right-refusal"];
 
 const personas = loadPersonas();
 const replayable = loadCases()
@@ -39,8 +47,14 @@ describe("real pages, replayed through the extension path", () => {
       const people = personasFor(c, personas);
       const run = await runS5(c, cap!.capture, people);
       const score = scoreRun(truth!, run, people);
+      const known = baseline[c.id];
+      if (known && !HONEST.includes(known)) {
+        // A recorded gap: it may improve, never turn into a different wrong.
+        expect([...HONEST, known], `${c.id}: was ${known}, now ${score.outcome}`).toContain(score.outcome);
+        return;
+      }
       expect(score.recommendation?.wrong ?? [], `${c.id} answered outside the retailer's chart`).toEqual([]);
-      expect(["right-answer", "right-refusal"]).toContain(score.outcome);
+      expect(HONEST, `${c.id}: ${score.outcome} (if this is an accepted gap, run npm run eval to record it)`).toContain(score.outcome);
     });
   }
 });

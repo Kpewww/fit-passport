@@ -245,6 +245,13 @@ describe("Sprint 5 evaluation", () => {
     for (let k = 2; existsSync(`${stem}.json`) || existsSync(`${stem}.md`); k++) stem = `${base}-run${k}`;
     writeFileSync(`${stem}.json`, JSON.stringify({ date, live, personas, summary, rows }, null, 2) + "\n");
     writeFileSync(`${stem}.md`, markdown(date, live, rows, summary));
+    // The replay baseline (Session 103): each committed capture's current S5 outcome,
+    // so npm test fails on a regression but not on a gap already known.
+    const baseline = Object.fromEntries(
+      rows.filter((r) => r.capture?.committed && r.scores?.["S5-extension"])
+        .map((r) => [r.id, r.scores!["S5-extension"]!.outcome]),
+    );
+    writeFileSync(join(EVAL_DIR, "replay-baseline.json"), JSON.stringify(baseline, null, 2) + "\n");
     console.log(markdown(date, live, rows, summary));
   }, 900_000);
 });

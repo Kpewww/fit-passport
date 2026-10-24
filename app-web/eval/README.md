@@ -56,11 +56,16 @@ hand**:
 It is byte-for-byte what the extension would have sent.
 
 Where captures live:
-- `local/captures/<id>.capture.json` — **git-ignored**, the default.
-- `captures/<id>.capture.json` — committed, **only once the founder has decided**
-  that reduced captures of retailer pages may live in this repo (open decision #2
-  in the Session 75 next-steps). A capture is the allowlisted reduction — product
-  parts and measurement tables as text, no page layout, never a logged-in session.
+- `local/captures/<id>.capture.json`: **git-ignored**, where a capture lands first.
+- `captures/<id>.capture.json.gz`: **committed**. The founder decided (Session 103) that the reduced
+  captures go in the repo. `npm run captures:pack` gzips every local capture into here and refuses one
+  taken logged in. A capture is the allowlisted reduction: product parts and measurement tables as text,
+  no page layout, never a logged-in session. **The repo is public.**
+
+**Replay in `npm test`:** `src/lib/evalCases.test.ts` replays every committed capture that has reviewed
+truth through the extension path. A case the system does not get right yet is allowed only as recorded
+in `replay-baseline.json` (written by every `npm run eval`): a known gap may improve, never turn into a
+different wrong, and a right case must stay right.
 
 The harness reads the committed copy first, then the local one.
 
