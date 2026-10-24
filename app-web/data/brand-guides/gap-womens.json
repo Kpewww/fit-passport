@@ -1,0 +1,72 @@
+{
+  "kind": "body",
+  "units": "in",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "GPT agent",
+  "reviewed": false,
+  "verifiedBy": [],
+  "brand": "Gap",
+  "line": "womens",
+  "sourceUrl": "https://www.gap.com/customer-service/size-charts?cid=2103",
+  "kindEvidence": "Lift your arms slightly and measure around your body (without a shirt is best), crossing over the fullest part of your chest.",
+  "screenshot": "screenshots/gap-womens.png",
+  "note": "Customer-service Tops, Outerwear & Dresses; numeric US labels, BUST=chest. XXXS=0000;XXS=000/00;XS=0/4;S=6;M=8/10;L=12/14;XL=16/18;XXL=20/22. Printed US 4/Bust 33.25 (Japan 2) retained; differs from product chart. Petite/Tall excluded; hip/sleeve in screenshot.",
+  "rows": [
+    {
+      "label": "0000",
+      "chest": 29.25
+    },
+    {
+      "label": "000",
+      "chest": 30.25
+    },
+    {
+      "label": "00",
+      "chest": 31.25
+    },
+    {
+      "label": "0",
+      "chest": 32.25
+    },
+    {
+      "label": "4",
+      "chest": 33.25
+    },
+    {
+      "label": "6",
+      "chest": 35.25
+    },
+    {
+      "label": "8",
+      "chest": 36.25
+    },
+    {
+      "label": "10",
+      "chest": 37.25
+    },
+    {
+      "label": "12",
+      "chest": 38.75
+    },
+    {
+      "label": "14",
+      "chest": 40.25
+    },
+    {
+      "label": "16",
+      "chest": 42
+    },
+    {
+      "label": "18",
+      "chest": 43.75
+    },
+    {
+      "label": "20",
+      "chest": 45.75
+    },
+    {
+      "label": "22",
+      "chest": 47.75
+    }
+  ]
+}

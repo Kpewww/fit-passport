@@ -1,0 +1,51 @@
+{
+  "kind": "body",
+  "units": "in",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "GPT agent",
+  "reviewed": false,
+  "verifiedBy": [],
+  "brand": "Gap",
+  "line": "womens",
+  "sourceUrl": "https://www.gap.com/Asset_Archive/AllBrands/sizeChart/v3/chart.html?cid=2082&locale=en_US",
+  "kindEvidence": "Lift your arms slightly and measure around the fullest part of your chest.",
+  "screenshot": "screenshots/gap-womens-unisex-tops.png",
+  "note": "Unisex tab: labels are Women's Size; explicit printed Bust/Waist ranges. S=4-6/Men XS;M=8-10/Men S;L=12-14/Men M;XL=16-18/Men L;XXL=20-22/Men XL. Separate from regular numeric point table. Measurement wording in gap-womens-tops-regular-2.png.",
+  "rows": [
+    {
+      "label": "S",
+      "chestMin": 34.25,
+      "chestMax": 35.25,
+      "waistMin": 27.5,
+      "waistMax": 28.5
+    },
+    {
+      "label": "M",
+      "chestMin": 36.25,
+      "chestMax": 37.25,
+      "waistMin": 29.5,
+      "waistMax": 30.5
+    },
+    {
+      "label": "L",
+      "chestMin": 38.75,
+      "chestMax": 40.25,
+      "waistMin": 32,
+      "waistMax": 33.5
+    },
+    {
+      "label": "XL",
+      "chestMin": 42,
+      "chestMax": 43.75,
+      "waistMin": 35.5,
+      "waistMax": 37.5
+    },
+    {
+      "label": "XXL",
+      "chestMin": 45.75,
+      "chestMax": 47.75,
+      "waistMin": 39.5,
+      "waistMax": 41.5
+    }
+  ]
+}

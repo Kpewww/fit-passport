@@ -1,0 +1,96 @@
+{
+  "kind": "body",
+  "units": "in",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "GPT agent",
+  "reviewed": false,
+  "verifiedBy": [],
+  "brand": "Patagonia",
+  "line": "mens",
+  "sourceUrl": "https://www.patagonia.com/product/mens-go-to-lightweight-button-down-shirt/52691.html?cgid=mens",
+  "kindEvidence": "Relax your arms, then measure around the fullest part of your chest/bust.",
+  "screenshot": "screenshots/patagonia-mens-product-tops-1.png",
+  "note": "Men's Tops & Bottoms product modal. Numeric labels; XXS=26;XS=28/29;S=30/31;M=32/33;L=34/35/36;XL=38/40;XXL=42/44;3XL=46/48. Points, not ranges. Same table on Durable Down Hoody. Lower rows: -2.png; body evidence: -3.png. Differs from general alpha guide; no garment chart.",
+  "rows": [
+    {
+      "label": "26",
+      "chest": 34,
+      "waist": 26
+    },
+    {
+      "label": "28",
+      "chest": 36,
+      "waist": 28
+    },
+    {
+      "label": "29",
+      "chest": 37,
+      "waist": 29
+    },
+    {
+      "label": "30",
+      "chest": 38,
+      "waist": 30
+    },
+    {
+      "label": "31",
+      "chest": 39,
+      "waist": 31
+    },
+    {
+      "label": "32",
+      "chest": 40,
+      "waist": 32
+    },
+    {
+      "label": "33",
+      "chest": 41,
+      "waist": 33
+    },
+    {
+      "label": "34",
+      "chest": 42,
+      "waist": 34
+    },
+    {
+      "label": "35",
+      "chest": 43,
+      "waist": 35
+    },
+    {
+      "label": "36",
+      "chest": 44,
+      "waist": 36
+    },
+    {
+      "label": "38",
+      "chest": 46,
+      "waist": 38
+    },
+    {
+      "label": "40",
+      "chest": 48,
+      "waist": 40
+    },
+    {
+      "label": "42",
+      "chest": 50,
+      "waist": 42
+    },
+    {
+      "label": "44",
+      "chest": 52,
+      "waist": 44
+    },
+    {
+      "label": "46",
+      "chest": 54,
+      "waist": 46
+    },
+    {
+      "label": "48",
+      "chest": 56,
+      "waist": 48
+    }
+  ]
+}
