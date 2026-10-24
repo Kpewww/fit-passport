@@ -373,6 +373,8 @@ export const en = {
       brandGuide: "{brand}’s published size guide",
       brandGuideTitle: "These are the brand's own published size-guide measurements, not this product page's. We couldn't read the page itself, so we can't confirm which sizes this item comes in or whether it's a slim or relaxed cut.",
       estimated: "Sizes estimated — confirm the chart",
+      noPageChart: "This page has no size chart for the item, so these are {brand}'s general size guide: an estimate, not this product's own chart. Confidence is capped for that.",
+      productUnavailable: "This page says the item is no longer available, so we can't confirm which sizes or which cut it came in.",
       estimateFrom: "No size chart on this page, so the sizes are estimated from: {sources}. Confidence is capped for that.",
       estimatedTitle: "We couldn't find a real size chart on the page, so these measurements are estimated from the brand and category. Check them against the retailer's chart, or add the real numbers.",
       sizesRead: "Sizes read from the page",

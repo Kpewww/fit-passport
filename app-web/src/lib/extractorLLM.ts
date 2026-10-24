@@ -827,7 +827,7 @@ async function readProduct(url: string, opts: ExtractOpts): Promise<ExtractedPro
     material: parsed.material ?? deterministic.material,
     fitNotes: parsed.fitNotes ?? deterministic.fitNotes,
     sizes: deterministic.sizes,
-    source: { ...deterministic.source },
+    source: { ...deterministic.source, ...(parsed.unavailable ? { productUnavailable: true } : {}) },
   };
   // The garment, from everything we know — see `resolveCategory` for the two
   // faults this replaced (the page never asked; JSON-LD's category used raw).

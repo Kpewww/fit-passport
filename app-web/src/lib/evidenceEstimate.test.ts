@@ -26,6 +26,8 @@ describe("a chartless top is estimated from evidence (Session 103)", () => {
     expect(out.source.chart).toEqual({ sourceUrl: guide.sourceUrl, capturedAt: "2026-10-22" });
     expect(out.sizes.find((s) => s.label === "M")).toMatchObject({ bodyChestMinCm: 96.5, bodyChestMaxCm: 101.6 });
     expect(refusalFor(out)).toBeNull();
+    // The page was read and had no chart: said plainly as the brand's general guide.
+    expect(out.source.noPageChart).toBe(true);
   });
 
   it("replaces an invented ladder with the guide's own rows", async () => {
@@ -66,6 +68,7 @@ describe("a chartless top is estimated from evidence (Session 103)", () => {
     expect(await fillFromEvidence(unread, { reports: async () => usReports, guides: [] })).toBe(unread);
     const withGuide = await fillFromEvidence(product({ brand: "J.Crew", source: { fetch: "blocked" } }), { ...noReports, guides: [guide] });
     expect(withGuide.source.sizesFrom).toBe("brand-chart");
+    expect(withGuide.source.noPageChart).toBeUndefined(); // nothing was read, so nothing to say about the page
   });
 
   it("a brand's outerwear chart does not size its T-shirt", async () => {

@@ -189,6 +189,14 @@ export type ExtractedProduct = {
      * tight"), not a ranking, because there is nothing to rank it against.
      */
     listing?: boolean;
+    /** The page says the product itself is gone: discontinued, delisted (Session 103, Everlane). */
+    productUnavailable?: boolean;
+    /**
+     * The page was read and had no chart for the item, so the sizes are the brand's
+     * own general guide (evidenceEstimate.ts). Said plainly: an estimate, not this
+     * product's chart.
+     */
+    noPageChart?: boolean;
     /**
      * What the seller wrote about its measurements, as read — raw words, unit,
      * whether it was a flat width doubled, whether the unit was inferred — and

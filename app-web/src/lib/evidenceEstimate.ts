@@ -92,7 +92,7 @@ export async function fillFromEvidence(out: ExtractedProduct, deps: EstimateDeps
           return m ? { ...s, ...m, label: s.label } : s;
         });
     if (sizes.filter((s) => s.bodyChestMinCm != null).length >= 2) {
-      const next = { ...out, sizes, source: { ...src, sizesFrom: "brand-chart" as const, chart: { sourceUrl: guide.sourceUrl, capturedAt: guide.capturedAt }, measurementKind: "body" as const, measurementKindFrom: "brand" as const } };
+      const next = { ...out, sizes, source: { ...src, sizesFrom: "brand-chart" as const, chart: { sourceUrl: guide.sourceUrl, capturedAt: guide.capturedAt }, measurementKind: "body" as const, measurementKindFrom: "brand" as const, ...(neverRead ? {} : { noPageChart: true }) } };
       delete next.source.sizesSynthesized;
       return next;
     }

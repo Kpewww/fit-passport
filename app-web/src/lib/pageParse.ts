@@ -38,6 +38,8 @@ export type ParsedPage = {
   /** What those sizes measure, and on whose word (see `resolveMeasurementKind`). */
   measurementKind?: "body" | "garment";
   measurementKindFrom?: KindSource;
+  /** The page says the product itself is gone (discontinued, delisted), not just one size sold out. */
+  unavailable?: boolean;
 };
 
 // ---------------------------------------------------------------------------
@@ -271,6 +273,19 @@ function genderFromAttr(v: string | undefined): Gender | undefined {
  * and mission copy ("women's empowerment", "gender equality", "women-owned"). Removed
  * before the page's text is read for a department.
  */
+/**
+ * The page says the PRODUCT is gone: "Sorry, this item is no longer available"
+ * (Everlane, Session 103), "discontinued", 已下架. Not "sold out", which a page
+ * prints for one size while the rest are in stock.
+ */
+export function saysUnavailable(text: string): boolean {
+  return (
+    /\b(?:this|the) (?:item|product|style)(?: you(?:'|’)re looking for)? is no longer available\b/i.test(text) ||
+    /\b(?:this|the) (?:item|product|style) (?:is|has been) discontinued\b/i.test(text) ||
+    /(?:商品|宝贝)已下架|商品已失效|该商品已停售/.test(text)
+  );
+}
+
 export function withoutCauseWording(text: string): string {
   return text.replace(
     /\b(?:gender equality|(?:women|men)['’]?s? (?:empowerment|health|rights|history month)|empower(?:ing|s)? (?:women|girls)|(?:women|minority)[- ]owned|women and girls|women in (?:tech|business|leadership|the workforce)|support(?:s|ing)? women)\b/gi,
@@ -1202,6 +1217,8 @@ export function parsePage(html: string, kindFallback?: "body" | "garment"): Pars
       genderFromAttr(attr("适用性别", "性别", "适用对象")) ??
       inferGender(`${ld.productName ?? ""} ${og.productName ?? ""} ${productName ?? ""} ${headline ?? ""} ${ld.category ?? ""}`) ??
       inferGender(withoutCauseWording(text)),
+    // The page's words, or its structured data's own "Discontinued" (schema.org).
+    ...(saysUnavailable(text) || /schema\.org\/Discontinued\b/.test(html) ? { unavailable: true } : {}),
   };
 
   const chart = parseSizeChart(html, kindFallback);

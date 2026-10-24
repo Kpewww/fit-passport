@@ -3,16 +3,46 @@
   "reviewed": true,
   "productName": "The Organic Cotton Crew",
   "readOn": "2026-10-22",
-  "outcome": "refuse",
-  "refusal": "no-chart-on-page",
+  "outcome": "answer",
+  "refusal": null,
   "chart": {
-    "kindEvidence": "",
-    "kind": "unstated",
-    "sizes": [],
-    "where": "none",
-    "units": null
+    "where": "separate-page",
+    "kind": "body",
+    "kindEvidence": "Measure at the fullest part of your chest, keeping the tape parallel to the floor.",
+    "units": "in",
+    "sizes": [
+      {
+        "label": "XS",
+        "chest": 34
+      },
+      {
+        "label": "S",
+        "chestMin": 35,
+        "chestMax": 37
+      },
+      {
+        "label": "M",
+        "chestMin": 38,
+        "chestMax": 40
+      },
+      {
+        "label": "L",
+        "chestMin": 41,
+        "chestMax": 43
+      },
+      {
+        "label": "XL",
+        "chestMin": 44,
+        "chestMax": 46
+      },
+      {
+        "label": "XXL",
+        "chestMin": 47,
+        "chestMax": 49
+      }
+    ]
   },
-  "notes": "Current user-Chrome product page says Sorry, this item is no longer available. Product details and size guide absent on this current page. This is not an anti-bot refusal. Human verification required. Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page.",
+  "notes": "Current user-Chrome product page says Sorry, this item is no longer available. Product details and size guide absent on this current page. This is not an anti-bot refusal. Human verification required. Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page. Founder decision 2026-10-24: the page is gone, so an estimate from Everlane's own reviewed men's T-shirt guide (data/brand-guides/everlane-mens.json) is the right answer, provided the result says the item is no longer available and that the sizes are the brand's general guide, not this product's chart.",
   "screenshots": [
     "_drafts/screenshots/everlane-unavailable.jpg"
   ]

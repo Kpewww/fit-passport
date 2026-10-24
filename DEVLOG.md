@@ -11043,3 +11043,21 @@ number against its screenshot. All matched.
 - Other new single-number charts stay unreviewed; the engine does not read single numbers.
 - `npm run guides`: 66 files, 0 invalid, 28 counted. Replay of the 9 committed captures: 8 honest, Everlane
   still the open founder question.
+
+## Session 103x (2026-10-24) — Everlane: a gone product is estimated, and the page says so
+
+Founder's call on the last open evaluation case: estimate it, but say so plainly.
+
+- **Truth** (`eval/truth/everlane-organic-cotton-crew-mens.json`): outcome `answer`, acceptable sizes from
+  Everlane's own reviewed men's T-shirt guide; the replay baseline records it as right. All 9 committed
+  captures now give the honest outcome.
+- **Saying so** (`/check` SourceRow, en/zh):
+  - `source.productUnavailable`: the page says the product is gone ("this item is no longer available",
+    "discontinued", 已下架/已停售, or schema.org `Discontinued`; `pageParse.saysUnavailable`). Not "sold out",
+    which pages print for one size.
+  - `source.noPageChart`: the page was read and had no chart, so the brand's general guide stands in. Said as
+    an estimate, not this product's chart; the "we couldn't read the page" tooltip no longer shows there.
+- **Not yet in the extension:** its capture does not send page prose, so the Everlane capture cannot carry
+  "no longer available". Queued as `todo/engineering/16` for 0.9.3 (no zip repack this session).
+- **Board:** people/10 now holds only the extension tests that still need a desktop (B, C); people/09 progress
+  (15 brands in use, 0 luxury); new `decisions/07`: use charts that print one number per size?

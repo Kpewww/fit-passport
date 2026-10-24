@@ -129,3 +129,13 @@ Gucci · Prada · Burberry · Saint Laurent · Balenciaga · Moncler · Zegna（
   通用尺码页(XS 35 / S 37 / M 40,和 `brandCharts.ts` 一致)和商品页弹窗里的数字尺码表
   (S=38/39、M=40/41)。两张都保留,各自标明来源。
 - ~~Gap(全部上衣表,男/女)~~ **已采集(PR #4)**:5 张表。男装表和评测里 Gap 那题的数字一致。
+
+### 进度(2026-10-24,PR #5 合并后)
+
+- **引擎在用 28 份表、15 个品牌**,都是美国品牌:A&F、Banana Republic、Calvin Klein、Columbia、Everlane、Gap、
+  J.Crew、L.L.Bean、Levi's、Madewell、Nike、Ralph Lauren、Tommy Hilfiger、Tommy Jeans、Under Armour。美国品牌目标(10 个)已达到。
+- **奢侈品牌 0 个能用**:Burberry、Gucci、Saint Laurent、Moncler 的表每个尺码只印一个数字,按规则引擎不读。
+  要不要用,见 `decisions/07-single-number-charts.md`。
+- **还没收:** Old Navy、American Eagle、Carhartt(条款弹窗)、Brooks Brothers;Prada、Balenciaga、Zegna;
+  Columbia 的分品类表(验证码,已跳过)。
+- **审核时暂不通过:** Tommy 男家居服、Tommy 西装(原因写在各自 note 里)。

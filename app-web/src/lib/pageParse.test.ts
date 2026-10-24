@@ -717,3 +717,24 @@ describe("a page's mission copy does not decide men's or women's (Session 103, G
     expect(parsePage(html).gender).toBe("mens");
   });
 });
+
+import { saysUnavailable } from "./pageParse";
+
+describe("a page that says the product is gone (Session 103, Everlane)", () => {
+  it("reads discontinued and delisted pages", () => {
+    expect(saysUnavailable("Sorry, this item is no longer available. Shop similar styles.")).toBe(true);
+    expect(saysUnavailable("This product has been discontinued.")).toBe(true);
+    expect(saysUnavailable("很抱歉，该商品已停售")).toBe(true);
+    expect(saysUnavailable("宝贝已下架")).toBe(true);
+  });
+  it("one size sold out is not the product gone", () => {
+    expect(saysUnavailable("Size M — Sold out. Notify me when available.")).toBe(false);
+    expect(saysUnavailable("Free returns on items within 30 days.")).toBe(false);
+  });
+  it("is carried on the parsed page", () => {
+    expect(parsePage("<html><body><h1>The Organic Cotton Crew</h1><p>Sorry, this item is no longer available.</p></body></html>").unavailable).toBe(true);
+    expect(parsePage("<html><body><h1>Tee</h1></body></html>").unavailable).toBeUndefined();
+    const ld = `<script type="application/ld+json">{"@type":"Product","name":"Tee","offers":{"availability":"https://schema.org/Discontinued"}}</script>`;
+    expect(parsePage(`<html><head>${ld}</head><body><h1>Tee</h1></body></html>`).unavailable).toBe(true);
+  });
+});

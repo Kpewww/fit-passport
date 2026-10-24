@@ -52,6 +52,10 @@ export type Source = {
   /** What an estimate for a chartless page rests on (Session 103, evidenceEstimate.ts). */
   estimate?: { sources: string[]; sourcesZh: string[] };
   chart?: { sourceUrl: string; capturedAt: string };
+  /** The page says the product is no longer available (Session 103). */
+  productUnavailable?: boolean;
+  /** Read, no chart on the page: these are the brand's general guide, an estimate. */
+  noPageChart?: boolean;
   measurementKind?: "body" | "garment";
   measurementKindFrom?: "page" | "table" | "brand";
   /** "extension" = the page came from the user's own browser, not our fetch. */

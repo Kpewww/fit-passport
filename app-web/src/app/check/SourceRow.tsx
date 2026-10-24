@@ -52,7 +52,7 @@ export function SourceRow({ product, source }: { product: Product; source: Sourc
         ) : source.sizesFrom === "brand-chart" ? (
           <span
             className="inline-flex items-center gap-1.5"
-            title={t("source.brandGuideTitle")}
+            title={source.noPageChart ? undefined : t("source.brandGuideTitle")}
           >
             <Ruler size={16} className="text-ink-faint" />{t("source.brandGuide", { brand: product.brand ?? "" })}
           </span>
@@ -73,6 +73,14 @@ export function SourceRow({ product, source }: { product: Product; source: Sourc
       )}
       {/* The chart is checkable or it is not trustworthy — link the page the
           numbers came from, and date it, because a size guide goes stale. */}
+      {/* Said plainly (Session 103): a discontinued page, and a brand guide standing in
+          for a chart the page did not have. */}
+      {source.productUnavailable ? (
+        <p className="inline-flex items-start gap-1.5 font-medium text-warn"><Warning size={16} className="mt-px flex-shrink-0" />{t("source.productUnavailable")}</p>
+      ) : null}
+      {source.sizesFrom === "brand-chart" && source.noPageChart ? (
+        <p className="text-ink-soft">{t("source.noPageChart", { brand: product.brand ?? "" })}</p>
+      ) : null}
       {source.sizesFrom === "brand-chart" && source.chart ? (
         <p className="text-ink-faint">
           {source.measurementKind === "body" ? t("source.brandBody") : t("source.brandGarment")}{" "}
