@@ -1,0 +1,65 @@
+{
+  "brand": "Saint Laurent",
+  "line": "mens",
+  "kind": "body",
+  "units": "cm",
+  "sourceUrl": "https://www.ysl.com/en-us/pr/saint-laurent-jacket-in-cotton-A006TWY6J984003.html",
+  "kindEvidence": "Body measurement",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/saint-laurent-mens-ready-to-wear.jpg",
+  "variant": "product",
+  "appliesTo": [
+    "jacket",
+    "tshirt"
+  ],
+  "reviewed": false,
+  "note": "Men Ready to Wear jacket and tee charts identical. Numeric YSL42–58 labels retained; inconsistent/blank alpha mappings not inferred. CM Body measurement table copied.",
+  "rows": [
+    {
+      "label": "42",
+      "chest": 82,
+      "waist": 68
+    },
+    {
+      "label": "44",
+      "chest": 86,
+      "waist": 72
+    },
+    {
+      "label": "46",
+      "chest": 90,
+      "waist": 76
+    },
+    {
+      "label": "48",
+      "chest": 94,
+      "waist": 80
+    },
+    {
+      "label": "50",
+      "chest": 98,
+      "waist": 84
+    },
+    {
+      "label": "52",
+      "chest": 102,
+      "waist": 88
+    },
+    {
+      "label": "54",
+      "chest": 106,
+      "waist": 92
+    },
+    {
+      "label": "56",
+      "chest": 110,
+      "waist": 96
+    },
+    {
+      "label": "58",
+      "chest": 114,
+      "waist": 100
+    }
+  ]
+}

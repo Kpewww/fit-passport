@@ -1,0 +1,130 @@
+
+> app-web@0.1.0 build
+> next build
+
+   鈻?Next.js 15.5.28
+
+   Creating an optimized production build ...
+ 鉁?Compiled successfully in 3.3s
+   Linting and checking validity of types ...
+
+./src/app/outfits/page.tsx
+75:61  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+
+./src/app/passport/page.tsx
+1011:48  Warning: React Hook useEffect has a missing dependency: 'toDisplay'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+1054:48  Warning: React Hook useEffect has a missing dependency: 'toDisplay'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Evidence.tsx
+109:6  Warning: React Hook useMemo has a missing dependency: 'g'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+   Collecting page data ...
+   Generating static pages (0/86) ...
+   Generating static pages (21/86)
+   Generating static pages (42/86)
+   Generating static pages (64/86)
+ 鉁?Generating static pages (86/86)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                 Size  First Load JS
+鈹?茠 /                                    24.5 kB         192 kB
+鈹?茠 /_not-found                          1.01 kB         104 kB
+鈹?茠 /account                             3.87 kB         121 kB
+鈹?茠 /admin                                6.4 kB         118 kB
+鈹?茠 /api/account-name                      278 B         103 kB
+鈹?茠 /api/admin/accuracy                    278 B         103 kB
+鈹?茠 /api/admin/brand-charts                278 B         103 kB
+鈹?茠 /api/admin/calibration                 278 B         103 kB
+鈹?茠 /api/admin/photos                      278 B         103 kB
+鈹?茠 /api/admin/pilot                       278 B         103 kB
+鈹?茠 /api/admin/reports                     278 B         103 kB
+鈹?茠 /api/admin/users                       278 B         103 kB
+鈹?茠 /api/answers                           278 B         103 kB
+鈹?茠 /api/answers/vote                      278 B         103 kB
+鈹?茠 /api/auth/change-password              278 B         103 kB
+鈹?茠 /api/auth/claim                        278 B         103 kB
+鈹?茠 /api/auth/deactivate                   278 B         103 kB
+鈹?茠 /api/auth/delete                       278 B         103 kB
+鈹?茠 /api/auth/fold-browser                 278 B         103 kB
+鈹?茠 /api/auth/login                        278 B         103 kB
+鈹?茠 /api/auth/logout                       278 B         103 kB
+鈹?茠 /api/auth/me                           278 B         103 kB
+鈹?茠 /api/auth/recover                      278 B         103 kB
+鈹?茠 /api/auth/request-reset                278 B         103 kB
+鈹?茠 /api/auth/reset                        278 B         103 kB
+鈹?茠 /api/block                             278 B         103 kB
+鈹?茠 /api/brands                            278 B         103 kB
+鈹?茠 /api/check                             278 B         103 kB
+鈹?茠 /api/closet                            278 B         103 kB
+鈹?茠 /api/closet/extract                    278 B         103 kB
+鈹?茠 /api/closet/group                      278 B         103 kB
+鈹?茠 /api/closet/photo/[id]                 278 B         103 kB
+鈹?茠 /api/closet/refresh                    278 B         103 kB
+鈹?茠 /api/closet/reorder                    278 B         103 kB
+鈹?茠 /api/collections                       278 B         103 kB
+鈹?茠 /api/community                         278 B         103 kB
+鈹?茠 /api/demo                              278 B         103 kB
+鈹?茠 /api/event                             278 B         103 kB
+鈹?茠 /api/feedback                          278 B         103 kB
+鈹?茠 /api/follow                            278 B         103 kB
+鈹?茠 /api/leaderboard                       278 B         103 kB
+鈹?茠 /api/outcome                           278 B         103 kB
+鈹?茠 /api/outfits                           278 B         103 kB
+鈹?茠 /api/outfits/like                      278 B         103 kB
+鈹?茠 /api/posts                             278 B         103 kB
+鈹?茠 /api/posts/[id]                        278 B         103 kB
+鈹?茠 /api/products                          278 B         103 kB
+鈹?茠 /api/profile                           278 B         103 kB
+鈹?茠 /api/profile/estimate                  278 B         103 kB
+鈹?茠 /api/profile/prefs                     278 B         103 kB
+鈹?茠 /api/recommend                         278 B         103 kB
+鈹?茠 /api/report                            278 B         103 kB
+鈹?茠 /api/saved                             278 B         103 kB
+鈹?茠 /api/session/carry                     278 B         103 kB
+鈹?茠 /api/session/receive                   278 B         103 kB
+鈹?茠 /api/session/send                      278 B         103 kB
+鈹?茠 /api/status                            278 B         103 kB
+鈹?茠 /api/tryon                             278 B         103 kB
+鈹?茠 /api/view/[code]                       278 B         103 kB
+鈹?茠 /api/view/[code]/export                278 B         103 kB
+鈹?鈼?/apple-icon.png                          0 B            0 B
+鈹?茠 /ask                                   278 B         103 kB
+鈹?茠 /ask/[id]                            3.28 kB         134 kB
+鈹?茠 /badges                              2.44 kB         127 kB
+鈹?茠 /body                                7.54 kB         119 kB
+鈹?茠 /brand/reveal                        2.08 kB         142 kB
+鈹?茠 /check                                9.9 kB         127 kB
+鈹?茠 /closet                              16.4 kB         136 kB
+鈹?茠 /community                           7.12 kB         141 kB
+鈹?茠 /extension                            1.6 kB         108 kB
+鈹?茠 /extension/welcome                   2.76 kB         109 kB
+鈹?茠 /feedback                            1.04 kB         112 kB
+鈹?茠 /help                                 4.8 kB         129 kB
+鈹?茠 /history                             2.29 kB         116 kB
+鈹?鈼?/icon.svg                                0 B            0 B
+鈹?茠 /lab/body                            1.96 kB         105 kB
+鈹?茠 /login                               1.67 kB         119 kB
+鈹?茠 /onboarding                          6.78 kB         118 kB
+鈹?茠 /outfits                             12.1 kB         142 kB
+鈹?茠 /passport                            19.5 kB         148 kB
+鈹?茠 /privacy                               900 B         112 kB
+鈹?茠 /recover                             1.48 kB         113 kB
+鈹?茠 /refresh                              4.6 kB         124 kB
+鈹?茠 /reset                               1.19 kB         112 kB
+鈹?鈼?/robots.txt                            278 B         103 kB
+鈹?茠 /saved                               4.22 kB         115 kB
+鈹?鈼?/sitemap.xml                           278 B         103 kB
+鈹?茠 /terms                                 702 B         112 kB
+鈹?茠 /u/[code]                            6.05 kB         131 kB
++ First Load JS shared by all             103 kB
+  鈹?chunks/1255-60d8dc7c8c9309a1.js      46.3 kB
+  鈹?chunks/4bd1b696-100b9d70ed4e49c1.js  54.2 kB
+  鈹?other shared chunks (total)          2.58 kB
+
+
+茠 Middleware                             35.2 kB
+
+鈼? (Static)   prerendered as static content
+茠  (Dynamic)  server-rendered on demand

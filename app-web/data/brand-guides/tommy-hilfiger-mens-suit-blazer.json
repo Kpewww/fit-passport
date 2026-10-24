@@ -1,0 +1,61 @@
+{
+  "brand": "Tommy Hilfiger",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://usa.tommy.com/en/size-guide-men.html#MensTopsCS",
+  "kindEvidence": "All body measurements are in inches.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/tommy-hilfiger-mens-suit-blazer.jpg",
+  "variant": "general",
+  "reviewed": false,
+  "note": "Held on review: tailored suit sizing; as 'jacket' it would compete with the outerwear chart for every Tommy jacket. REGULAR FIT suit blazers; separate from outerwear chart. Printed alpha labels used; US/EU equivalents, arms and inseam omitted. Body wording retained verbatim.",
+  "rows": [
+    {
+      "label": "XS",
+      "waist": 30,
+      "chestMin": 38,
+      "chestMax": 39.5
+    },
+    {
+      "label": "S",
+      "waist": 32,
+      "chestMin": 40,
+      "chestMax": 41.5
+    },
+    {
+      "label": "M",
+      "waist": 33,
+      "chestMin": 42,
+      "chestMax": 43.5
+    },
+    {
+      "label": "L",
+      "waist": 34,
+      "chestMin": 44,
+      "chestMax": 45.5
+    },
+    {
+      "label": "XL",
+      "waist": 36,
+      "chestMin": 46,
+      "chestMax": 47.5
+    },
+    {
+      "label": "XXL",
+      "waist": 38,
+      "chestMin": 48,
+      "chestMax": 49.5
+    },
+    {
+      "label": "XXXL",
+      "waist": 40,
+      "chestMin": 50,
+      "chestMax": 51.5
+    }
+  ],
+  "appliesTo": [
+    "jacket"
+  ]
+}

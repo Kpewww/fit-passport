@@ -11026,3 +11026,20 @@ the user for the size chart; otherwise say we can't.
   question for the founder.
 - Fixed a type error in a pageParse test from 103u (`parsePage` takes no URL).
 - `todo/decisions/03` removed.
+
+## Session 103w (2026-10-24) — review of the agent's chart collection (PR #5)
+
+Main merged into `agent/extension-test`, then every new chart the engine would use was checked number by
+number against its screenshot. All matched.
+
+- **Reviewed (Claude, delegated):** Nike men's and women's tops; J.Crew men's outerwear; Banana Republic men's
+  shirts & sweaters; Levi's men's and women's product popups; Madewell men's tops; Ralph Lauren men's body
+  chart (product popup); Tommy Hilfiger men's outerwear; Moncler men's/women's outerwear (single numbers, so
+  not used by the engine).
+- **Tommy Jeans women's tops:** reviewed with `brand` set to "Tommy Jeans", so a sub-label's chart never
+  sizes mainline Tommy Hilfiger tops.
+- **Held:** Tommy Hilfiger men's loungewear (an underwear chart marked for every top would size tees and feed
+  the US consensus) and suit blazers (tailoring; would compete with outerwear for every jacket).
+- Other new single-number charts stay unreviewed; the engine does not read single numbers.
+- `npm run guides`: 66 files, 0 invalid, 28 counted. Replay of the 9 committed captures: 8 honest, Everlane
+  still the open founder question.

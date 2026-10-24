@@ -1,0 +1,62 @@
+{
+  "brand": "J.Crew",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.jcrew.com/r/size-charts",
+  "kindEvidence": "Measure under your arms around the fullest part of your chest.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/jcrew-mens-outerwear.jpg",
+  "appliesTo": [
+    "jacket"
+  ],
+  "variant": "general",
+  "reviewed": true,
+  "note": "Regular Outerwear; identical chest/waist/alpha rows in Men Suiting verified 2026-10-24, deduplicated. Tops additionally includes XXXL. Tall/Short/Long excluded. Body measuring quote verified on current page.",
+  "rows": [
+    {
+      "label": "XS",
+      "chestMin": 32,
+      "chestMax": 34,
+      "waistMin": 26,
+      "waistMax": 28
+    },
+    {
+      "label": "S",
+      "chestMin": 35,
+      "chestMax": 37,
+      "waistMin": 29,
+      "waistMax": 31
+    },
+    {
+      "label": "M",
+      "chestMin": 38,
+      "chestMax": 40,
+      "waistMin": 32,
+      "waistMax": 34
+    },
+    {
+      "label": "L",
+      "chestMin": 41,
+      "chestMax": 43,
+      "waistMin": 35,
+      "waistMax": 37
+    },
+    {
+      "label": "XL",
+      "chestMin": 44,
+      "chestMax": 46,
+      "waistMin": 38,
+      "waistMax": 40
+    },
+    {
+      "label": "XXL",
+      "chestMin": 47,
+      "chestMax": 49,
+      "waistMin": 41,
+      "waistMax": 43
+    }
+  ],
+  "reviewedBy": "claude"
+}

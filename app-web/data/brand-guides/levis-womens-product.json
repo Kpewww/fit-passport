@@ -1,0 +1,75 @@
+{
+  "brand": "Levi's",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.levi.com/US/en_US/clothing/women/shirts-blouses-tops/button-up-shirts/heritage-western-sawtooth-button-down-shirt/p/007WU0001",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "kindEvidence": "Using a measuring tape, measure the widest part of your chest.",
+  "line": "womens",
+  "screenshot": "screenshots/levis-womens-product.jpg",
+  "note": "Women’s Tops & Outerwear product popup, US/Canada sizing. Ranges differ from general guide singleton rows; M chest 36–37.5 vs general 37. Plus excluded. Hip omitted.",
+  "variant": "product",
+  "appliesTo": [
+    "tshirt",
+    "shirt",
+    "sweater",
+    "jacket",
+    "hoodie",
+    "polo",
+    "top"
+  ],
+  "reviewed": true,
+  "rows": [
+    {
+      "label": "XXS",
+      "chestMin": 30,
+      "chestMax": 31,
+      "waistMin": 24,
+      "waistMax": 25
+    },
+    {
+      "label": "XS",
+      "chestMin": 32,
+      "chestMax": 33,
+      "waistMin": 26,
+      "waistMax": 27
+    },
+    {
+      "label": "S",
+      "chestMin": 34,
+      "chestMax": 35,
+      "waistMin": 28,
+      "waistMax": 29
+    },
+    {
+      "label": "M",
+      "chestMin": 36,
+      "chestMax": 37.5,
+      "waistMin": 30,
+      "waistMax": 31
+    },
+    {
+      "label": "L",
+      "chestMin": 38.5,
+      "chestMax": 40,
+      "waistMin": 32,
+      "waistMax": 34
+    },
+    {
+      "label": "XL",
+      "chestMin": 41,
+      "chestMax": 43,
+      "waistMin": 35,
+      "waistMax": 37
+    },
+    {
+      "label": "XXL",
+      "chestMin": 44,
+      "chestMax": 46,
+      "waistMin": 38,
+      "waistMax": 40
+    }
+  ],
+  "reviewedBy": "claude"
+}

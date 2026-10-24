@@ -1,0 +1,66 @@
+{
+  "brand": "Nike",
+  "line": "womens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.nike.com/size-fit/womens-tops-alpha",
+  "kindEvidence": "The measurements on the size chart are body measurements.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/nike-womens.jpg",
+  "variant": "general",
+  "reviewed": true,
+  "note": "Regular women's tops XXS-XXL. Separate 0X-4X extended table and Tall length variants excluded. Bust copied as chest; hip and international conversion rows omitted. Product-popup equivalence unverified.",
+  "rows": [
+    {
+      "label": "XXS",
+      "chestMin": 27.5,
+      "chestMax": 29.5,
+      "waistMin": 21.25,
+      "waistMax": 23.5
+    },
+    {
+      "label": "XS",
+      "chestMin": 29.5,
+      "chestMax": 32.5,
+      "waistMin": 23.5,
+      "waistMax": 26
+    },
+    {
+      "label": "S",
+      "chestMin": 32.5,
+      "chestMax": 35.5,
+      "waistMin": 26,
+      "waistMax": 29
+    },
+    {
+      "label": "M",
+      "chestMin": 35.5,
+      "chestMax": 38,
+      "waistMin": 29,
+      "waistMax": 31.5
+    },
+    {
+      "label": "L",
+      "chestMin": 38,
+      "chestMax": 41,
+      "waistMin": 31.5,
+      "waistMax": 34.5
+    },
+    {
+      "label": "XL",
+      "chestMin": 41,
+      "chestMax": 44.5,
+      "waistMin": 34.5,
+      "waistMax": 38.5
+    },
+    {
+      "label": "XXL",
+      "chestMin": 44.5,
+      "chestMax": 48.5,
+      "waistMin": 38.5,
+      "waistMax": 42.5
+    }
+  ],
+  "reviewedBy": "claude"
+}

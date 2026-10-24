@@ -8,7 +8,7 @@
   "line": "womens",
   "kindEvidence": "Measure under your arms, around the fullest part of your chest.",
   "screenshot": "screenshots/jcrew-womens.png",
-  "note": "Regular Tops only; Petite and Tall not copied. Labels use the printed Numeric Size (US) column; alpha labels remain in screenshot. Bust is recorded as chest. Single printed numbers are not widened into ranges.",
+  "note": "Regular Tops; identical numeric/bust/waist rows in Women Outerwear & Blazers verified 2026-10-24, deduplicated. Petite/Tall excluded. Printed Numeric Size (US) labels retained; alpha spans not widened into ranges.",
   "variant": "general",
   "reviewed": true,
   "reviewedBy": "claude",

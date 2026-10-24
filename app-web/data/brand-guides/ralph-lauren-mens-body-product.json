@@ -1,0 +1,94 @@
+{
+  "brand": "Ralph Lauren",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.ralphlauren.com/men-clothing-sweaters/the-iconic-cable-knit-cashmere-sweater/625238.html",
+  "kindEvidence": "These measurements reflect body size.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/ralph-lauren-mens-body-product.jpg",
+  "variant": "product",
+  "appliesTo": [
+    "sweater",
+    "tshirt",
+    "hoodie",
+    "polo",
+    "top"
+  ],
+  "reviewed": true,
+  "note": "Unisex apparel explicitly based on standard mens sizing; Mens column copied. Excludes dress shirts, suits, sport coats, bottoms per page. Distinct body table from existing mens polo garment chart. No women labels inferred.",
+  "rows": [
+    {
+      "label": "XXS",
+      "chestMin": 30,
+      "chestMax": 31,
+      "waistMin": 24,
+      "waistMax": 26
+    },
+    {
+      "label": "XS",
+      "chestMin": 31,
+      "chestMax": 34,
+      "waistMin": 26,
+      "waistMax": 28
+    },
+    {
+      "label": "S",
+      "chestMin": 35,
+      "chestMax": 37,
+      "waistMin": 28,
+      "waistMax": 30
+    },
+    {
+      "label": "M",
+      "chestMin": 38,
+      "chestMax": 40,
+      "waistMin": 31,
+      "waistMax": 34
+    },
+    {
+      "label": "L",
+      "chestMin": 42,
+      "chestMax": 45,
+      "waistMin": 35,
+      "waistMax": 38
+    },
+    {
+      "label": "XL",
+      "chestMin": 46,
+      "chestMax": 48,
+      "waistMin": 40,
+      "waistMax": 42
+    },
+    {
+      "label": "XXL",
+      "chestMin": 49,
+      "chestMax": 52,
+      "waistMin": 43,
+      "waistMax": 45
+    },
+    {
+      "label": "3XL",
+      "chestMin": 53,
+      "chestMax": 56,
+      "waistMin": 47,
+      "waistMax": 49
+    },
+    {
+      "label": "4XL",
+      "chestMin": 57,
+      "chestMax": 61,
+      "waistMin": 50,
+      "waistMax": 52
+    },
+    {
+      "label": "5XL",
+      "chestMin": 62,
+      "chestMax": 65,
+      "waistMin": 53,
+      "waistMax": 54
+    }
+  ],
+  "reviewedBy": "claude"
+}

@@ -1,0 +1,79 @@
+{
+  "brand": "Tommy Hilfiger",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://usa.tommy.com/en/size-guide-men.html#MensTopsCS",
+  "kindEvidence": "All body measurements are in inches.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/tommy-hilfiger-mens-outerwear.jpg",
+  "variant": "general",
+  "reviewed": true,
+  "note": "Mainline Outerwear; Big & Tall separate and excluded. Printed 4XL/5XL singleton chest 59.8/61.8 and waist 57.09/59.06 preserved despite jump; human review needed. No conversions or corrections.",
+  "rows": [
+    {
+      "label": "XS",
+      "chestMin": 34.6,
+      "chestMax": 36.2,
+      "waistMin": 30.7,
+      "waistMax": 32.2
+    },
+    {
+      "label": "S",
+      "chestMin": 36.6,
+      "chestMax": 38.1,
+      "waistMin": 32.6,
+      "waistMax": 34.2
+    },
+    {
+      "label": "M",
+      "chestMin": 38.5,
+      "chestMax": 40.1,
+      "waistMin": 34.6,
+      "waistMax": 36.2
+    },
+    {
+      "label": "L",
+      "chestMin": 40.5,
+      "chestMax": 42.5,
+      "waistMin": 36.6,
+      "waistMax": 38.5
+    },
+    {
+      "label": "XL",
+      "chestMin": 42.9,
+      "chestMax": 44.8,
+      "waistMin": 38.9,
+      "waistMax": 40.9
+    },
+    {
+      "label": "XXL",
+      "chestMin": 45.2,
+      "chestMax": 47.2,
+      "waistMin": 41.3,
+      "waistMax": 43.3
+    },
+    {
+      "label": "3XL",
+      "chestMin": 47.6,
+      "chestMax": 49.6,
+      "waistMin": 43.7,
+      "waistMax": 45.6
+    },
+    {
+      "label": "4XL",
+      "chest": 59.8,
+      "waist": 57.09
+    },
+    {
+      "label": "5XL",
+      "chest": 61.8,
+      "waist": 59.06
+    }
+  ],
+  "appliesTo": [
+    "jacket"
+  ],
+  "reviewedBy": "claude"
+}

@@ -1,0 +1,69 @@
+{
+  "brand": "Burberry",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://us.burberry.com/classic-fit-stretch-cotton-shirt-p80714651",
+  "kindEvidence": "Measure across your back, under your arms and around the widest part of your chest.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/burberry-mens-shirts-numeric.jpg",
+  "variant": "product",
+  "appliesTo": [
+    "shirt"
+  ],
+  "reviewed": false,
+  "note": "Classic shirt numeric UK/IT42–60 differs from alpha Knitwear/Shirts table. Alpha shirt values identical to burberry-mens.json, deduplicated. Printed inches retained; Slim excluded.",
+  "rows": [
+    {
+      "label": "42",
+      "chest": 33.9,
+      "waist": 28
+    },
+    {
+      "label": "44",
+      "chest": 35.4,
+      "waist": 29.5
+    },
+    {
+      "label": "46",
+      "chest": 37,
+      "waist": 31.1
+    },
+    {
+      "label": "48",
+      "chest": 38.6,
+      "waist": 32.7
+    },
+    {
+      "label": "50",
+      "chest": 40.2,
+      "waist": 34.3
+    },
+    {
+      "label": "52",
+      "chest": 41.7,
+      "waist": 35.8
+    },
+    {
+      "label": "54",
+      "chest": 43.3,
+      "waist": 37.4
+    },
+    {
+      "label": "56",
+      "chest": 44.9,
+      "waist": 39
+    },
+    {
+      "label": "58",
+      "chest": 46.5,
+      "waist": 40.6
+    },
+    {
+      "label": "60",
+      "chest": 48,
+      "waist": 42.1
+    }
+  ]
+}

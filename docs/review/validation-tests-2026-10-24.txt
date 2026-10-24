@@ -1,0 +1,123 @@
+
+> app-web@0.1.0 test
+> vitest run
+
+The CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.
+
+ RUN  v1.6.1 C:/Users/Kpew/Documents/Codex/2026-10-23/task-5/fit-passport/app-web
+
+ 鉁?src/lib/schemaMigrations.test.ts  (9 tests) 3ms
+ 鉁?src/lib/badges.test.ts  (15 tests) 4ms
+ 鉁?src/lib/profileCompleteness.test.ts  (17 tests) 3ms
+ 鉁?src/lib/bodyMesh.test.ts  (31 tests) 5ms
+ 鉁?src/lib/sellerMeasurements.test.ts  (13 tests) 12ms
+ 鉁?src/lib/closetConsistency.test.ts  (9 tests) 4ms
+ 鉁?src/lib/bodyEstimate.test.ts  (10 tests) 5ms
+ 鉁?src/lib/fitDirection.test.ts  (20 tests) 7ms
+ 鉁?src/lib/bodyView.test.ts  (13 tests) 9ms
+ 鉁?src/lib/brandBias.test.ts  (19 tests) 6ms
+ 鉁?src/lib/brandCharts.test.ts  (30 tests) 9ms
+ 鉁?src/lib/brandGuides.test.ts  (50 tests) 48ms
+ 鉁?src/lib/pageParse.test.ts  (66 tests) 27ms
+ 鉁?src/lib/extractor.test.ts  (32 tests) 15ms
+ 鉁?src/lib/scoringConstants.test.ts  (8 tests) 11ms
+ 鉁?src/lib/closetExtract.test.ts  (9 tests) 9ms
+ 鉁?src/i18n/i18n.test.ts  (12 tests) 28ms
+ 鉁?src/lib/sessionCarry.test.ts  (22 tests) 17ms
+ 鉁?src/lib/sizeRegimes.test.ts  (9 tests) 19ms
+ 鉁?src/lib/personalEase.test.ts  (25 tests) 37ms
+ 鉁?src/lib/urlSafety.test.ts  (16 tests) 9ms
+ 鉁?src/lib/leaderboard.test.ts  (15 tests) 9ms
+ 鉁?src/lib/outfitColours.test.ts  (8 tests) 7ms
+ 鉁?src/lib/engineText.test.ts  (8 tests) 83ms
+ 鉁?src/lib/brandCalibration.test.ts  (11 tests) 9ms
+ 鉁?src/lib/evidenceEstimate.test.ts  (8 tests) 35ms
+ 鉁?src/lib/extensionZip.test.ts  (7 tests) 71ms
+ 鉁?src/lib/chartImage.test.ts  (10 tests) 29ms
+ 鉁?src/lib/stability.test.ts  (9 tests) 77ms
+ 鉁?src/lib/chartUpload.test.ts  (7 tests) 16ms
+ 鉁?src/lib/checkPolicy.test.ts  (27 tests) 72ms
+ 鉁?src/lib/categoryModel.test.ts  (5 tests) 12ms
+ 鉁?src/lib/fitEngine.test.ts  (91 tests) 297ms
+ 鉁?src/lib/categoryWords.test.ts  (29 tests) 16ms
+ 鉁?src/lib/annyBody.test.ts  (21 tests) 623ms
+ 鉁?src/lib/roughGuess.test.ts  (8 tests) 14ms
+ 鉁?src/lib/regimeBacktest.test.ts  (3 tests) 26ms
+ 鉁?src/lib/logoReveal.test.ts  (9 tests) 22ms
+ 鉁?src/lib/annyHead.test.ts  (14 tests) 442ms
+ 鉁?src/lib/estimateBacktest.test.ts  (1 test) 19ms
+ 鉁?src/lib/extractorLLM.test.ts  (33 tests) 194ms
+ 鉁?src/lib/listingJudgement.test.ts  (18 tests) 186ms
+ 鉁?src/i18n/untranslated.test.ts  (3 tests) 163ms
+ 鉁?src/lib/garmentTaxonomy.test.ts  (399 tests) 471ms
+ 鉁?src/lib/closetTie.test.ts  (6 tests) 51ms
+ 鉁?src/lib/savedInput.test.ts  (10 tests) 388ms
+ 鉁?src/lib/headline.test.tsx  (58 tests) 74ms
+ 鉁?src/lib/addFlow.test.ts  (10 tests) 5ms
+ 鉁?src/lib/pilotAccuracy.test.ts  (8 tests) 6ms
+ 鉁?src/lib/fitMapColours.test.ts  (7 tests) 4ms
+ 鉁?src/lib/sizeSystems.test.ts  (10 tests) 5ms
+ 鉁?src/lib/womensSizes.test.ts  (7 tests) 8ms
+ 鉁?src/lib/bodyEstimateService.test.ts  (5 tests) 30ms
+ 鉁?src/lib/logoAsset.test.ts  (4 tests) 8ms
+ 鉁?src/lib/closetPieces.test.ts  (6 tests) 18ms
+ 鉁?src/lib/onboardingFlow.test.ts  (6 tests) 7ms
+ 鉁?src/lib/onepiece.test.ts  (5 tests) 35ms
+ 鉁?src/lib/closetChest.test.ts  (7 tests) 31ms
+ 鉁?src/lib/safeFetch.test.ts  (6 tests) 257ms
+ 鉁?src/lib/posts.test.ts  (10 tests) 5ms
+ 鉁?src/lib/sizing.test.ts  (8 tests) 4ms
+ 鉁?src/lib/sizeConvert.test.ts  (9 tests) 6ms
+ 鉁?src/lib/closetPhotoPrivacy.test.ts  (2 tests) 166ms
+ 鉁?src/lib/photoStore.test.ts  (5 tests) 10ms
+ 鉁?src/lib/badgeText.test.ts  (3 tests) 5ms
+ 鉁?src/lib/feed.test.ts  (9 tests) 4ms
+ 鉁?src/lib/reports.test.ts  (8 tests) 5ms
+ 鉁?src/lib/bodyType.test.ts  (6 tests) 4ms
+ 鉁?src/lib/evalTruthRule.test.ts  (7 tests) 5ms
+ 鉁?src/lib/fitZones.test.ts  (4 tests) 12ms
+ 鉁?src/lib/units.test.ts  (4 tests) 4ms
+ 鉁?src/lib/imageResize.test.ts  (6 tests) 4ms
+ 鉁?src/lib/colors.test.ts  (8 tests) 4ms
+ 鉁?src/lib/foldOffer.test.ts  (3 tests) 4ms
+ 鉁?src/lib/engineInput.test.ts  (3 tests) 3ms
+ 鉁?src/lib/plausibility.test.ts  (3 tests) 9ms
+ 鉁?src/lib/normalizeUrl.test.ts  (5 tests) 4ms
+ 鉁?src/lib/apiText.test.ts  (3 tests) 125ms
+ 鉁?src/lib/productLabel.test.ts  (5 tests) 3ms
+ 鉁?src/lib/noGlyphArrows.test.ts  (2 tests) 334ms
+stdout | src/lib/evalCases.test.ts > real pages, replayed through the extension path > arcteryx-atom-hoody-mens gives the honest outcome
+prisma:error
+Invalid `prisma.sizeOption.findMany()` invocation in
+C:\Users\Kpew\Documents\Codex\2026-10-23\task-5\fit-passport\app-web\src\lib\brandOffsets.ts:26:40
+
+  23
+  24 /** Body-chart rows read by ordinary checks, plus the curated charts. Fetches nothing. */
+  25 export async function loadObservations(): Promise<Observation[]> {
+鈫?26   const rows = await prisma.sizeOption.findMany(
+error: Environment variable not found: DATABASE_URL.
+  -->  schema.prisma:13
+   |
+12 |   provider = "sqlite"
+13 |   url      = env("DATABASE_URL")
+   |
+
+Validation Error Count: 1
+
+ 鉁?src/lib/evalCases.test.ts  (9 tests) 215ms
+ 鉁?src/lib/demoFixtures.test.ts  (2 tests) 13ms
+ 鉁?src/lib/outcomeInput.test.ts  (4 tests) 9ms
+ 鉁?src/lib/analyticsRedact.test.ts  (3 tests) 2ms
+ 鉁?src/lib/populationPrior.test.ts  (3 tests) 3ms
+ 鉁?src/lib/runtimePatch.test.ts  (2 tests) 3ms
+ 鉁?src/lib/garmentIcon.test.ts  (3 tests) 6ms
+ 鉁?src/lib/roomierTie.test.ts  (2 tests) 10ms
+ 鉁?src/lib/noEmoji.test.ts  (1 test) 472ms
+ 鉁?src/lib/extensionI18n.test.ts  (7 tests) 6ms
+ 鉁?src/lib/marketplaceCapture.test.ts  (15 tests) 116ms
+ 鉁?src/lib/extensionCapture.test.ts  (33 tests) 4972ms
+
+ Test Files  92 passed (92)
+      Tests  1531 passed (1531)
+   Start at  19:18:09
+   Duration  8.81s (transform 8.06s, setup 7ms, collect 24.45s, tests 10.65s, environment 1.59s, prepare 34.59s)

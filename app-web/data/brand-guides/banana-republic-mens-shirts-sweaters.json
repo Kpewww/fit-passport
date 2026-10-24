@@ -1,0 +1,70 @@
+{
+  "brand": "Banana Republic",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://bananarepublic.gap.com/browse/info.do?cid=35404",
+  "kindEvidence": "Raise your arms slightly and measure around your body. Be sure to measure across your shoulder blades and the fullest part of your chest.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/banana-republic-mens-shirts-sweaters.jpg",
+  "variant": "general",
+  "appliesTo": [
+    "shirt",
+    "sweater"
+  ],
+  "reviewed": true,
+  "note": "Men / Shirts & Sweaters / inches / regular. Chest overlaps Outerwear, but waist differs from M upward, so retained separately. Tall excluded. Neck, sleeve and belt omitted.",
+  "rows": [
+    {
+      "label": "XXS",
+      "chestMin": 32,
+      "chestMax": 33,
+      "waistMin": 25,
+      "waistMax": 26
+    },
+    {
+      "label": "XS",
+      "chestMin": 34,
+      "chestMax": 35,
+      "waistMin": 27,
+      "waistMax": 28
+    },
+    {
+      "label": "S",
+      "chestMin": 36,
+      "chestMax": 37,
+      "waistMin": 29,
+      "waistMax": 31
+    },
+    {
+      "label": "M",
+      "chestMin": 38,
+      "chestMax": 40,
+      "waistMin": 32,
+      "waistMax": 33
+    },
+    {
+      "label": "L",
+      "chestMin": 41,
+      "chestMax": 44,
+      "waistMin": 34,
+      "waistMax": 35
+    },
+    {
+      "label": "XL",
+      "chestMin": 45,
+      "chestMax": 48,
+      "waistMin": 36,
+      "waistMax": 37
+    },
+    {
+      "label": "XXL",
+      "chestMin": 49,
+      "chestMax": 52,
+      "waistMin": 38,
+      "waistMax": 39
+    }
+  ],
+  "reviewedBy": "claude"
+}

@@ -1,0 +1,63 @@
+{
+  "brand": "Calvin Klein",
+  "line": "womens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.calvinklein.us/en/women-size-guide.html#wl-t-shirts",
+  "kindEvidence": "With arms relaxed at your side, measure the fullest part of your bust while keeping the measuring tape parallel to the ground.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/calvin-klein-womens-sweater.jpg",
+  "variant": "general",
+  "appliesTo": [
+    "sweater",
+    "tshirt",
+    "top",
+    "hoodie",
+    "shirt"
+  ],
+  "reviewed": false,
+  "note": "Mainline Sweaters; identical chest/waist/numeric rows in Jeans Tanks/T-Shirts/Sweatshirts and Shirts/Blouses, deduplicated. Mainline tees/shirts differ. Body quote: screenshots/calvin-klein-womens-body-evidence.jpg.",
+  "rows": [
+    {
+      "label": "0",
+      "chest": 31,
+      "waist": 29
+    },
+    {
+      "label": "2",
+      "chest": 33,
+      "waist": 30
+    },
+    {
+      "label": "4",
+      "chest": 34,
+      "waist": 31
+    },
+    {
+      "label": "6",
+      "chest": 35,
+      "waist": 32
+    },
+    {
+      "label": "8",
+      "chest": 36,
+      "waist": 33
+    },
+    {
+      "label": "10",
+      "chest": 37,
+      "waist": 34
+    },
+    {
+      "label": "12",
+      "chest": 38.5,
+      "waist": 35.5
+    },
+    {
+      "label": "14",
+      "chest": 40,
+      "waist": 37
+    }
+  ]
+}

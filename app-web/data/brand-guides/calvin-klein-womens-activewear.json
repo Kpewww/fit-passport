@@ -1,0 +1,64 @@
+{
+  "brand": "Calvin Klein",
+  "line": "womens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.calvinklein.us/en/women-size-guide.html#wl-t-shirts",
+  "kindEvidence": "With arms relaxed at your side, measure the fullest part of your bust while keeping the measuring tape parallel to the ground.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/calvin-klein-womens-activewear.jpg",
+  "variant": "general",
+  "appliesTo": [
+    "top"
+  ],
+  "reviewed": false,
+  "note": "Regular Activewear, numeric labels retained; appliesTo top denotes activewear tops only. Plus excluded. Body quote: screenshots/calvin-klein-womens-body-evidence.jpg.",
+  "rows": [
+    {
+      "label": "0",
+      "chest": 32.5,
+      "waist": 25.5
+    },
+    {
+      "label": "2",
+      "chest": 33.5,
+      "waist": 26.5
+    },
+    {
+      "label": "4",
+      "chest": 34.5,
+      "waist": 27.5
+    },
+    {
+      "label": "6",
+      "chest": 35.5,
+      "waist": 28.5
+    },
+    {
+      "label": "8",
+      "chest": 36.5,
+      "waist": 29.5
+    },
+    {
+      "label": "10",
+      "chest": 37.5,
+      "waist": 30
+    },
+    {
+      "label": "12",
+      "chest": 39,
+      "waist": 31.5
+    },
+    {
+      "label": "14",
+      "chest": 40,
+      "waist": 32.5
+    },
+    {
+      "label": "16",
+      "chest": 41,
+      "waist": 33.5
+    }
+  ]
+}
