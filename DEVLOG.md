@@ -10989,3 +10989,20 @@ replay test read the .gz and passed. The test files were removed afterwards.
 
 **Note:** the repo is public. Captures hold product parts and size tables only, as `capture.js` reduces them.
 The real captures are on the founder's machine; the agent task packs them in.
+
+## Session 103u (2026-10-24) — a page's mission copy no longer decides men's or women's
+
+- **Found by the first full S5 evaluation** (the agent's packed captures, PR in progress): Gap's men's Classic
+  T-Shirt was sized from Gap's WOMEN's unisex chart, one to two sizes large (92 cm → M).
+- **Cause:** `inferGender` read the whole page text, and the page says the factory "invests in gender
+  equality and women's empowerment".
+- **Fix (`pageParse.ts`):**
+  - the product's own names (JSON-LD/OG name, title, `<h1>`, JSON-LD category) decide first;
+  - the prose only when they say nothing, and only after `withoutCauseWording` removes mission and cause
+    phrases (empowerment, gender equality, women-owned, women and girls…).
+- **Replayed on the agent's 9 real captures:**
+  - Gap: XS/M/L, right (was a wrong answer);
+  - Arc'teryx: right answer from the evidence estimate (was a wrong refusal);
+  - 8 of 9 honest.
+  - The one left is Everlane: a discontinued page whose truth is "refuse", now estimated from Everlane's
+    own guide. That is for the founder to decide.
