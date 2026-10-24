@@ -1747,6 +1747,7 @@ export const en = {
       title: "Pilot",
       people: "{n} people did something this week.",
       event: "Event",
+      daily: "Daily use, 7 days: {people} people logged what they wore ({days} days); {fits} \"does it still fit?\" answers.",
       week: "7 days",
       month: "30 days",
       refusals: "Commonest refusals and errors (30 days)",

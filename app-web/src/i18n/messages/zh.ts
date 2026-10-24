@@ -1727,6 +1727,7 @@ export const zh: Messages = {
       title: "试点",
       people: "本周有 {n} 人有操作。",
       event: "事件",
+      daily: "日常使用（7 天）：{people} 人记录了穿搭（共 {days} 天），回答了 {fits} 次\u201c还合身吗\u201d。",
       week: "7 天",
       month: "30 天",
       refusals: "最常见的拒绝与错误（30 天）",

@@ -30,6 +30,8 @@ const MAY_NAME_PHOTO = new Set([
   "app/api/closet/photo/[id]/route.ts", "lib/accountDelete.ts",
   // Moving photos to the store, and counting them, on the server (Session 100g)
   "lib/photoStore.ts", "app/api/admin/photos/route.ts",
+  // The wear calendar (Session 104): the owner's own days, pieces shown by their photo.
+  "app/api/wear/route.ts",
 ]);
 
 const PUBLIC = ["app/api/view", "app/api/community", "app/api/leaderboard", "app/api/posts", "app/api/answers", "app/api/outfits", "lib/evidence.ts"];

@@ -111,6 +111,7 @@ model User {
   recs        FitRecommendation[]
   outfits     Outfit[]
   outfitLikes OutfitLike[]
+  wearLogs    WearLog[]
   following   Follow[] @relation("follower")
   followers   Follow[] @relation("followee")
   posts       Post[]
@@ -223,6 +224,7 @@ model Outfit {
 
   items OutfitItem[]
   likes OutfitLike[]
+  wearLogs WearLog[]
 
   @@index([userId])
   @@index([createdAt])
@@ -449,6 +451,9 @@ model KnownGoodItem {
   collectionId String? // which user folder it lives in (null = Uncategorized)
   collection   Collection? @relation(fields: [collectionId], references: [id], onDelete: SetNull)
   color        String? // free-text/hex-ish color tag, e.g. "navy", "#1a2b3c"
+  /// Seasons the wearer picked, comma-separated: "spring,summer,autumn,winter". Null = every season
+  /// (Session 104, wear calendar). Used to draw today's outfit, never by the size engine.
+  seasons      String?
   sortIndex    Int         @default(0) // manual order within a collection
   // Variant grouping: items sharing a groupId are the SAME garment in different
   // sizes/colors, collapsed into one card in the UI. Null = standalone. The fit
@@ -493,6 +498,7 @@ model KnownGoodItem {
   editHistory String?
 
   comfortChecks ComfortCheck[]
+  wearItems     WearLogItem[]
 
   @@index([userId])
   @@index([collectionId])
@@ -756,4 +762,45 @@ model BrandChartEntry {
   createdAt  DateTime @default(now())
 
   @@index([brand])
+}
+
+/// What a person actually wore on a day, or plans to (Session 104, wear calendar).
+///
+/// Separate from FitOutcome (a purchase) and from ComfortCheck (how a garment feels):
+/// a wear event says only "these pieces were worn on this day". When the wearer also
+/// answers "does it still fit?", that answer is written as a ComfortCheck with
+/// reason "worn" (lib/comfort.ts), so the engine reads one kind of fit evidence.
+/// Only status "worn" counts as worn; a "planned" day must be confirmed first.
+model WearLog {
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// The wearer's own calendar day, "YYYY-MM-DD" (their timezone, not the server's).
+  day    String
+  status String @default("worn") // "worn" | "planned"
+
+  outfitId String?
+  outfit   Outfit? @relation(fields: [outfitId], references: [id], onDelete: SetNull)
+  note     String?
+  /// A photo of the day, in the private store (lib/photoStore.ts). Optional.
+  photo    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items WearLogItem[]
+
+  @@index([userId, day])
+}
+
+model WearLogItem {
+  id        String        @id @default(cuid())
+  wearLogId String
+  wearLog   WearLog       @relation(fields: [wearLogId], references: [id], onDelete: Cascade)
+  itemId    String
+  item      KnownGoodItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([wearLogId, itemId])
+  @@index([itemId])
 }

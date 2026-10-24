@@ -5,6 +5,7 @@
 import { z } from "zod";
 import { isValidSize } from "./sizeSystems";
 import { DIRECTION_MIN, DIRECTION_MAX, clampDirection } from "./fitDirection";
+import { SeasonsInput } from "./wear";
 
 export const ItemSchema = z
   .object({
@@ -23,6 +24,8 @@ export const ItemSchema = z
     imageDataUrl: z.string().max(400_000).regex(/^data:image\/(png|jpeg|webp);base64,/, "must be a small image").optional().nullable(),
     photoFrom: z.enum(["own", "shop"]).optional().nullable(),
     color: z.string().max(40).optional().nullable(),
+    // Seasons the wearer picked (Session 104): ["summer"] or "spring,summer"; none = every season.
+    seasons: SeasonsInput.optional(),
     collectionId: z.string().optional().nullable(),
     groupId: z.string().optional().nullable(),
     groupName: z.string().max(80).optional().nullable(),

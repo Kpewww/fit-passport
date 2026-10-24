@@ -18,6 +18,9 @@ export const EVENT_NAMES = [
   "feedback",
   "client-error",     // detail = the error's message, cut short
   "outcome",          // a purchase reported; detail = decision, and ":from-saved" from the to-buy list
+  "wear-logged",      // a day logged on the wear calendar; detail = "worn" | "planned" | "confirmed"
+  "wear-fit",         // "does it still fit?" answered; detail = answered/asked, e.g. "2/3"
+  "wear-undo",        // a logged day removed
 ] as const;
 export type EventName = (typeof EVENT_NAMES)[number];
 

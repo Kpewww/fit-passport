@@ -20,7 +20,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { getCurrentUser } from "@/lib/session";
-import { DIRECTION_MIN, DIRECTION_MAX, ratingFromDirection, clampDirection } from "@/lib/fitDirection";
+import { DIRECTION_MIN, DIRECTION_MAX, clampDirection } from "@/lib/fitDirection";
+import { recordComfort } from "@/lib/comfort";
 
 export async function GET(req: Request) {
   const user = await getCurrentUser();
@@ -83,39 +84,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
   }
 
-  // Ownership check.
-  const owned = await prisma.knownGoodItem.findFirst({
-    where: { id: parsed.data.itemId, userId: user.id },
-    select: { id: true },
-  });
-  if (!owned) return NextResponse.json({ error: "item not found" }, { status: 404 });
-
-  // Skip → nothing recorded.
+  // Skip → nothing recorded (still only for the user's own items).
   if ("skip" in parsed.data) {
+    const owned = await prisma.knownGoodItem.findFirst({ where: { id: parsed.data.itemId, userId: user.id }, select: { id: true } });
+    if (!owned) return NextResponse.json({ error: "item not found" }, { status: 404 });
     return NextResponse.json({ ok: true, skipped: true });
   }
 
+  // The item's current state and a history row, atomically (lib/comfort.ts).
   const { itemId, direction, note, reason } = parsed.data;
-  // fitRating is DERIVED, never asked for twice — see lib/fitDirection.ts.
-  const rating = ratingFromDirection(direction);
-  // Update the item's current state AND append a history row atomically, so the
-  // two can never disagree about what was reported when.
-  await prisma.$transaction([
-    prisma.knownGoodItem.update({
-      where: { id: itemId },
-      data: { fitRating: rating, fitDirection: direction },
-    }),
-    prisma.comfortCheck.create({
-      data: {
-        itemId,
-        userId: user.id,
-        rating,
-        direction,
-        note: note ?? null,
-        reason: reason ?? "refresh",
-      },
-    }),
-  ]);
-
-  return NextResponse.json({ ok: true, rating, direction });
+  const done = await recordComfort(user.id, itemId, direction, reason ?? "refresh", note);
+  if (!done) return NextResponse.json({ error: "item not found" }, { status: 404 });
+  const { rating } = done;
+  return NextResponse.json({ ok: true, rating, direction: done.direction });
 }

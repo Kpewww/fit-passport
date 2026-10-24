@@ -89,6 +89,7 @@ export async function foldAccount(foldId: string, keepId: string): Promise<void>
     await tx.outfit.updateMany(from);
     await tx.petProfile.updateMany(from);
     await tx.comfortCheck.updateMany(from);
+    await tx.wearLog.updateMany(from);
     // A product saved in both stays saved once.
     const saved = await tx.savedItem.findMany({ where: { userId: keepId }, select: { urlKey: true } });
     await tx.savedItem.updateMany({ where: { userId: foldId, urlKey: { notIn: saved.map((s) => s.urlKey) } }, data: { userId: keepId } });

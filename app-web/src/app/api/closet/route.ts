@@ -12,14 +12,20 @@ import { collectionForGarment } from "@/lib/collections";
 import { isValidSize } from "@/lib/sizeSystems";
 import { DIRECTION_MIN, DIRECTION_MAX, clampDirection, ratingFromDirection } from "@/lib/fitDirection";
 import { ItemSchema } from "@/lib/closetItemInput";
+import { SeasonsInput, wearStats } from "@/lib/wear";
 
 export async function GET() {
   const user = await getCurrentUser();
-  const items = await prisma.knownGoodItem.findMany({
-    where: { userId: user.id },
-    orderBy: [{ sortIndex: "asc" }, { createdAt: "desc" }],
+  const [items, worn] = await Promise.all([
+    prisma.knownGoodItem.findMany({
+      where: { userId: user.id },
+      orderBy: [{ sortIndex: "asc" }, { createdAt: "desc" }],
+    }),
+    wearStats(user.id), // the wear calendar's counts (Session 104)
+  ]);
+  return NextResponse.json({
+    items: items.map((it) => ({ ...forClient(it), wornCount: worn.get(it.id)?.count ?? 0, lastWorn: worn.get(it.id)?.lastDay ?? null })),
   });
-  return NextResponse.json({ items: items.map(forClient) });
 }
 
 export async function POST(req: Request) {
@@ -115,6 +121,7 @@ const UpdateSchema = z
     imageDataUrl: z.string().max(400_000).regex(/^(data:image\/(png|jpeg|webp);base64,|\/api\/closet\/photo\/)/, "must be a small image").optional().nullable(),
     photoFrom: z.enum(["own", "shop"]).optional().nullable(),
     color: z.string().max(40).optional().nullable(),
+    seasons: SeasonsInput.optional(),
     collectionId: z.string().optional().nullable(),
     // Taken from the product page's chart on the edit sheet (Session 98), with the
     // same bounds as when an item is added by URL (closetItemInput.ts).

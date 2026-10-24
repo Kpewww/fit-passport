@@ -13,7 +13,7 @@ export async function GET() {
   if (!admin) return notAdmin();
   const since7 = new Date(Date.now() - 7 * DAY);
   const since30 = new Date(Date.now() - 30 * DAY);
-  const [week, month, refusals, people, feedback] = await Promise.all([
+  const [week, month, refusals, people, feedback, wearPeople, wearDays, fitAnswers] = await Promise.all([
     prisma.event.groupBy({ by: ["name"], where: { createdAt: { gte: since7 } }, _count: { _all: true } }),
     prisma.event.groupBy({ by: ["name"], where: { createdAt: { gte: since30 } }, _count: { _all: true } }),
     prisma.event.groupBy({
@@ -22,12 +22,18 @@ export async function GET() {
     }),
     prisma.event.groupBy({ by: ["userId"], where: { createdAt: { gte: since7 }, userId: { not: null } } }),
     prisma.feedback.findMany({ orderBy: { createdAt: "desc" }, take: 30 }),
+    // Daily use (Session 104, wear calendar): who logged what they wore, and how often
+    // they also said whether it still fits. Counted from the tables, not from events.
+    prisma.wearLog.groupBy({ by: ["userId"], where: { createdAt: { gte: since7 }, status: "worn" } }),
+    prisma.wearLog.count({ where: { createdAt: { gte: since7 }, status: "worn" } }),
+    prisma.comfortCheck.count({ where: { createdAt: { gte: since7 }, reason: "worn" } }),
   ]);
   const counts = (rows: Array<{ name: string; _count: { _all: number } }>) => Object.fromEntries(rows.map((r) => [r.name, r._count._all]));
   return NextResponse.json({
     week: counts(week),
     month: counts(month),
     peopleThisWeek: people.length,
+    daily: { wearPeople: wearPeople.length, wearDays, fitAnswers },
     node: { version: process.versions.node, patched: brotliPatched() },
     refusals: refusals.map((r) => ({ detail: r.detail, n: r._count._all })),
     feedback: feedback.map((f) => ({ id: f.id, message: f.message, contact: f.contact, path: f.path, locale: f.locale, at: f.createdAt })),
