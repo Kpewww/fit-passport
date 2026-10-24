@@ -443,6 +443,7 @@ number we have not yet earned; the test fails if one is missing here.
 | `AGREEMENT.twoPlusSteps` | 0.65 | assumed | signals telling different stories |
 | `TIE.epsilon` | 0.000001 | assumed | floating-point equality |
 | `TIE.alternativeWithin` | 0.08 | assumed | how close a runner-up must be to be offered as an alternative |
+| `TIE.preferRoomierWithin` | 0.02 | assumed | the founder's rule (Session 103): fit first, and on a near-tie the slightly roomier size. Set well inside alternativeWithin so it only breaks a near dead heat |
 | `EASE_CM.slim` | 6 | assumed | no source found; regular − 4 cm |
 | `EASE_CM.regular` | 10 | assumed | no source found for the value; used since Session 01 |
 | `EASE_CM.relaxed` | 16 | assumed | no source found |

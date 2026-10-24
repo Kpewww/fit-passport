@@ -45,6 +45,7 @@ const ARGS: Args = {
   largestSize: ["relaxed"],
   smallestSize: ["slim"],
   alternative: ["L", "bigger"],
+  roomierOnTie: ["M"],
   undeterminedHelp: null,
   closetTie: ["Uniqlo XL", "COS M"],
   bodyEstimate: [{ dim: "chest", lo: 104, hi: 112, evidence: ["Uniqlo XL（合身）", "因太小退掉的 COS L"], sources: ["JIS L 4004:2023 表 16"], ignored: ["COS S（合身）"] }],

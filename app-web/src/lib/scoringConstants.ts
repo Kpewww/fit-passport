@@ -182,7 +182,7 @@ export const STABILITY = {
 export const AGREEMENT = { oneStep: 0.8, twoPlusSteps: 0.65 } as const;
 
 /** Tie handling. */
-export const TIE = { epsilon: 1e-6, alternativeWithin: 0.08 } as const;
+export const TIE = { epsilon: 1e-6, alternativeWithin: 0.08, preferRoomierWithin: 0.02 } as const;
 
 /**
  * One-off listings (Session 80, listingJudgement.ts): a seller's tape measure, and

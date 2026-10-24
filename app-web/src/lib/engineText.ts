@@ -71,6 +71,8 @@ export interface EngineText {
   smallestSize(pref: FitPreference): string;
   /** The runner-up, worded by which way it lies from the pick; null when unknown. */
   alternative(label: string, direction: "bigger" | "smaller" | null): string;
+  /** Why the roomier of two near-equal sizes was picked (Session 103). */
+  roomierOnTie(smaller: string): string;
   undeterminedHelp: string;
   /** Two closet pieces pointing at different sizes with equal weight (Session 101). */
   closetTie(a: string | null, b: string | null): string;
@@ -213,6 +215,8 @@ export const EN_TEXT: EngineText = {
     direction == null
       ? `Alternative: ${label} is close.`
       : `Alternative: ${label} is close — consider it if you prefer ${direction === "bigger" ? "extra room" : "a snugger fit"}.`,
+  roomierOnTie: (smaller) =>
+    `Between this and ${smaller} it is nearly even, so we lean to the slightly roomier size.`,
   closetTie: (a, b) =>
     `${a && b ? `Your ${a} and your ${b}` : "Two pieces in your closet"} point to different sizes here, with equal weight, so there is no honest pick between them. ` +
     "Add your chest measurement, or mark which of them fits tight or loose.",
@@ -400,6 +404,8 @@ export const ZH_TEXT: EngineText = {
     direction == null
       ? `备选：${label} 也较接近。`
       : `备选：${label} 也较接近。若你希望${direction === "bigger" ? "更宽松一些" : "更贴身一些"}，可以考虑。`,
+  roomierOnTie: (smaller) =>
+    `这个尺码和 ${smaller} 几乎一样合适，所以默认选略宽松的这一个。`,
   closetTie: (a, b) =>
     `${a && b ? `你的 ${a} 和 ${b} ` : "你衣橱里的两件衣服"}在这里指向不同的尺码，分量相同，无法如实地二选一。请补充胸围，或标出其中哪件偏紧、哪件偏松。`,
   bodyEstimate: ({ dim, lo, hi, evidence, sources, ignored }) => zhSpaced(

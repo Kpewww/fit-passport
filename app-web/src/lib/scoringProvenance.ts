@@ -107,6 +107,7 @@ export const PROVENANCE: Record<string, ConstantSource> = {
   "AGREEMENT.twoPlusSteps": A("signals telling different stories"),
   "TIE.epsilon": A("floating-point equality"),
   "TIE.alternativeWithin": A("how close a runner-up must be to be offered as an alternative"),
+  "TIE.preferRoomierWithin": A("the founder's rule (Session 103): fit first, and on a near-tie the slightly roomier size. Set well inside alternativeWithin so it only breaks a near dead heat"),
 
   "EASE_CM.slim": A("no source found; regular − 4 cm"),
   "EASE_CM.regular": A("no source found for the value; used since Session 01"),

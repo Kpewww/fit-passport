@@ -10959,3 +10959,14 @@ founder's machine (git-ignored): `npm run eval` there.
   - men's: XS–3XL from up to 11 brands, e.g. M = 96.5–104.1 cm;
   - women's (new): XS–3XL from up to 7 brands, e.g. M = 92.1–95.3 cm.
 - **Side note:** Ralph Lauren's women's page says the brand cuts slim and suggests sizing up for a relaxed fit.
+
+## Session 103s (2026-10-24) — fit first; on a near-tie, the slightly roomier size
+
+- **Founder's default:** "默认略微宽松一点，优先合身" (slightly roomy by default, fit first).
+- **Rule:** when the two leading sizes score within `TIE.preferRoomierWithin` (0.02) and the runner-up is the
+  bigger one, the engine picks it. The reason says so ("nearly even, so we lean to the slightly roomier
+  size"), and the snugger size stays the alternative line.
+- **Measured with a 96–104 / 104–112 ladder:** 103.8 and 104 cm → L (was M); 103 cm → still M, with L
+  offered as the roomier alternative.
+- **Why 0.02 and not larger:** at 0.03 the synthetic backtest lost 2 of 35 strict-containment picks, and the
+  boundary-fragility note changed. At 0.02 neither moves, so only near dead heats are broken.

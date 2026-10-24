@@ -1184,6 +1184,20 @@ export function recommend(
     }
   }
 
+  // ---- Fit first; on a near-tie, the slightly roomier size (Session 103) ------
+  // The founder's default: a size that is a touch loose is the safer miss than one
+  // that is a touch tight. Only when the two leaders are nearly level, so a real
+  // signal is never overruled; the snugger one stays as the alternative line.
+  if (
+    !isUndetermined(ranked) && ranked[1] &&
+    ranked[0].score - ranked[1].score <= TIE.preferRoomierWithin &&
+    sizeDirection(ranked[0].label, ranked[1].label, sizes, product.gender) === "bigger"
+  ) {
+    const snugger = ranked[0];
+    [ranked[0], ranked[1]] = [ranked[1], ranked[0]];
+    ranked[0].reasons.push({ signal: "preference", weight: 0, message: M.roomierOnTie(snugger.label) });
+  }
+
   // Confidence should track how DECISIVE the pick is, not only how much data we
   // had: a pick that flips when the wearer's measurement moves by the error a tape
   // measure already carries is a coin-flip, and deserves lower confidence. This
