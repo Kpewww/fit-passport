@@ -1,0 +1,516 @@
+[
+  {
+    "file": "chuansha-1.webp",
+    "status": "downloaded",
+    "sha256": "257cc8f0b53f8589332d64629631373489b16b5b185fa19dff14642b2d395aff",
+    "bytes": 22772,
+    "downloaded_at": "2026-10-24T08:17:38.2146798Z",
+    "expected_match": null
+  },
+  {
+    "file": "chuansha-2.webp",
+    "status": "downloaded",
+    "sha256": "20f7b9c5b8bd20e49b337619700cdf23dff3221a4a7bc53f4ac1c5a215806258",
+    "bytes": 24080,
+    "downloaded_at": "2026-10-24T08:17:38.3102059Z",
+    "expected_match": null
+  },
+  {
+    "file": "chuansha-3.webp",
+    "status": "downloaded",
+    "sha256": "37c8c937809c5615c6a778cf0149a98703adec925090e64e660ff381431e5576",
+    "bytes": 28102,
+    "downloaded_at": "2026-10-24T08:17:38.4070397Z",
+    "expected_match": null
+  },
+  {
+    "file": "chuansha-4.webp",
+    "status": "downloaded",
+    "sha256": "186e997fdf15b0c02f8ce03e407966e2a5895e43cd8a7224df04aac559edf2d9",
+    "bytes": 22838,
+    "downloaded_at": "2026-10-24T08:17:38.4954066Z",
+    "expected_match": null
+  },
+  {
+    "file": "chuansha-5.webp",
+    "status": "downloaded",
+    "sha256": "237557626abf49a3115da229cc5be45dcb21cf00589c1d542483106fe0fe0d4f",
+    "bytes": 23520,
+    "downloaded_at": "2026-10-24T08:17:38.5674512Z",
+    "expected_match": null
+  },
+  {
+    "file": "chuansha-6.webp",
+    "status": "downloaded",
+    "sha256": "36be79c43d6cd6daa5230ccd0d34a4f9125eac5f1aac1e16e3cf8f532486ec91",
+    "bytes": 25744,
+    "downloaded_at": "2026-10-24T08:17:38.673809Z",
+    "expected_match": null
+  },
+  {
+    "file": "dada-1.webp",
+    "status": "downloaded",
+    "sha256": "331b10256dcaaf6e369c6824800daf09a490f01a6e0b7fdddadc1ccc73b83c1d",
+    "bytes": 13336,
+    "downloaded_at": "2026-10-24T08:17:38.7599611Z",
+    "expected_match": null
+  },
+  {
+    "file": "dada-2.webp",
+    "status": "downloaded",
+    "sha256": "4abe16fa5b7f14e984d978add3676ed4f41aa5235509bd94d52c19c94b27460c",
+    "bytes": 13512,
+    "downloaded_at": "2026-10-24T08:17:38.8303862Z",
+    "expected_match": null
+  },
+  {
+    "file": "dada-3.webp",
+    "status": "downloaded",
+    "sha256": "0af184966eeee539ce9af0b14b76982f6777db9de9dd7c371d5b5d37a38d158a",
+    "bytes": 15634,
+    "downloaded_at": "2026-10-24T08:17:38.9073631Z",
+    "expected_match": null
+  },
+  {
+    "file": "dada-4.webp",
+    "status": "downloaded",
+    "sha256": "c1d86f64db83640542c9fee551bf33d6a0cf68662ec8a9c5dee8fb20c969377c",
+    "bytes": 15476,
+    "downloaded_at": "2026-10-24T08:17:38.966673Z",
+    "expected_match": null
+  },
+  {
+    "file": "dada-5.webp",
+    "status": "downloaded",
+    "sha256": "7ea5158c83bcf8a91396a811ee70be89903d0ad1dfee2cedfd82f0a4a18bcdab",
+    "bytes": 14574,
+    "downloaded_at": "2026-10-24T08:17:39.032719Z",
+    "expected_match": null
+  },
+  {
+    "file": "dada-6.webp",
+    "status": "downloaded",
+    "sha256": "4ccd93e68859fe490b641224beb56b6d498f30a0c9fcb84ed78d19988325efa2",
+    "bytes": 17168,
+    "downloaded_at": "2026-10-24T08:17:39.1237629Z",
+    "expected_match": null
+  },
+  {
+    "file": "outfity-home.png",
+    "status": "downloaded",
+    "sha256": "9cb6f84695b93d9618eb97ddf321ab9af1f54c12c5d7debdbaa8fb99198e3790",
+    "bytes": 2328828,
+    "downloaded_at": "2026-10-24T08:17:44.8081359Z",
+    "expected_match": null
+  },
+  {
+    "file": "outfity-grid.png",
+    "status": "downloaded",
+    "sha256": "e7a3834d36ab1f793e442e3c7e2f2f6fdf3b9aab426a4c40487455d726300369",
+    "bytes": 1184446,
+    "downloaded_at": "2026-10-24T08:17:47.8023786Z",
+    "expected_match": null
+  },
+  {
+    "file": "wearwow-hero.png",
+    "status": "downloaded",
+    "sha256": "47dbaa418619e612b8f35dddb53806cdc49ef387dea4095da4a5b110a0762208",
+    "bytes": 1857858,
+    "downloaded_at": "2026-10-24T08:17:49.4953861Z",
+    "expected_match": null
+  },
+  {
+    "file": "wearwow-grid.png",
+    "status": "downloaded",
+    "sha256": "e78bfb07a5bd5b5d4a61b7c90d1773eb5f19f21d04c12553e50d892e2470c4d0",
+    "bytes": 200202,
+    "downloaded_at": "2026-10-24T08:17:50.579008Z",
+    "expected_match": null
+  },
+  {
+    "file": "wearwow-stats.png",
+    "status": "downloaded",
+    "sha256": "241e34bc7e774b47fc128750f528e42f7542567ef84ea577bb3f880338b9ff38",
+    "bytes": 128460,
+    "downloaded_at": "2026-10-24T08:17:51.7561002Z",
+    "expected_match": null
+  },
+  {
+    "file": "wearwow-outfit.png",
+    "status": "downloaded",
+    "sha256": "4014b88b07f92d094786b4ccbeabf0356310dcf88d72a116540fadb91bb933dd",
+    "bytes": 208383,
+    "downloaded_at": "2026-10-24T08:17:52.9726833Z",
+    "expected_match": null
+  },
+  {
+    "file": "mira-jiyu-extension.png",
+    "status": "downloaded",
+    "sha256": "1c1f76d0902ab15a2ecafbad4972f0f9d5b5878e9a020f777edf43bacd66a3d0",
+    "bytes": 736924,
+    "downloaded_at": "2026-10-24T08:17:53.1972958Z",
+    "expected_match": null
+  },
+  {
+    "file": "mira-shopify-1.png",
+    "status": "downloaded",
+    "sha256": "a79032a62cbf6ca772ea022e08b78284a64f45fbf1a76d8e8b408e687c0fa0be",
+    "bytes": 599401,
+    "downloaded_at": "2026-10-24T08:17:53.4068279Z",
+    "expected_match": null
+  },
+  {
+    "file": "mira-shopify-2.png",
+    "status": "downloaded",
+    "sha256": "809eaf2954af443f665d74725a149105907ea23f8903970a973919bc5c00dc2d",
+    "bytes": 295830,
+    "downloaded_at": "2026-10-24T08:17:53.8261311Z",
+    "expected_match": null
+  },
+  {
+    "file": "mira-shopify-3.png",
+    "status": "downloaded",
+    "sha256": "3ecb1f14ebc0c9db8b8a37d6f4b8413e759d6dbfc48ddeef415b323ead244fcd",
+    "bytes": 383292,
+    "downloaded_at": "2026-10-24T08:17:54.2261365Z",
+    "expected_match": null
+  },
+  {
+    "file": "doppl-launch.png",
+    "status": "downloaded",
+    "sha256": "6a8241b23d7d1cb12c70cb631c3eeb13aa77219a9e8c8740064ee7859e8d1613",
+    "bytes": 225441,
+    "downloaded_at": "2026-10-24T08:17:54.5488966Z",
+    "expected_match": null
+  },
+  {
+    "file": "doppl-feed.png",
+    "status": "downloaded",
+    "sha256": "2426f3fa463f83a658da9dd4da24fce4a617ee9fe080b9f96722a5dbcf54303e",
+    "bytes": 544607,
+    "downloaded_at": "2026-10-24T08:17:54.8368762Z",
+    "expected_match": null
+  },
+  {
+    "file": "google-selfie.jpg",
+    "status": "downloaded",
+    "sha256": "c02d1578fe1c9d9bf63e89ac56d31ae8067a0c176c612e5840dc30175c5d17b7",
+    "bytes": 94420,
+    "downloaded_at": "2026-10-24T08:17:55.0794845Z",
+    "expected_match": null
+  },
+  {
+    "file": "wardrowbe-history.png",
+    "status": "downloaded",
+    "sha256": "6d7310ac847f9757daa9fb663ef58f2a46731a676176238197590cc639c6758c",
+    "bytes": 140210,
+    "downloaded_at": "2026-10-24T08:17:55.3080451Z",
+    "expected_match": true
+  },
+  {
+    "file": "libre-calendar.webp",
+    "status": "downloaded",
+    "sha256": "838b43763ce3d8f381125b9e132213ec9c06b490d311ea8cbcb7a8fd6460d5b1",
+    "bytes": 112432,
+    "downloaded_at": "2026-10-24T08:17:55.5048438Z",
+    "expected_match": true
+  },
+  {
+    "file": "libre-builder.webp",
+    "status": "downloaded",
+    "sha256": "f18c18044a45122db8f1193cb204764fc151905ea1310d66eebebf6d62174287",
+    "bytes": 61778,
+    "downloaded_at": "2026-10-24T08:17:55.7143684Z",
+    "expected_match": true
+  },
+  {
+    "file": "ai-closet-canvas.png",
+    "status": "downloaded",
+    "sha256": "80121f5a1cdde7941a8dae1bb62ecce440395087547420c6f4669165984bbdcd",
+    "bytes": 2967722,
+    "downloaded_at": "2026-10-24T08:17:56.1186803Z",
+    "expected_match": true
+  },
+  {
+    "file": "wardrobe-gallery.png",
+    "status": "downloaded",
+    "sha256": "c367cbbe25be3bc0844db8dda5a7715a960e4bb352c9fae62d03935721c41687",
+    "bytes": 613284,
+    "downloaded_at": "2026-10-24T08:17:56.3424533Z",
+    "expected_match": true
+  },
+  {
+    "file": "stylecast-today.png",
+    "status": "downloaded",
+    "sha256": "816c3b00e2b8658efabfc01a858269859fca00fc4878df6a46ab2eca16ebfa02",
+    "bytes": 179283,
+    "downloaded_at": "2026-10-24T08:17:56.5655683Z",
+    "expected_match": true
+  },
+  {
+    "file": "acloset-00.webp",
+    "status": "downloaded",
+    "sha256": "0cf81f97e883d785696f2f39a184fee55d20cc62638bd0b66aa29e98123fd950",
+    "bytes": 34112,
+    "downloaded_at": "2026-10-24T08:21:32.0881431Z"
+  },
+  {
+    "file": "acloset-01.webp",
+    "status": "downloaded",
+    "sha256": "6034c07034d80e156890b1669e698cb96399c40f5d099f7cf3caab036a1fd510",
+    "bytes": 36618,
+    "downloaded_at": "2026-10-24T08:21:32.1729550Z"
+  },
+  {
+    "file": "acloset-02.webp",
+    "status": "downloaded",
+    "sha256": "4c846201bb45f82b5149f931f05407483ded3d7642946647e8fca38ceb40785b",
+    "bytes": 38706,
+    "downloaded_at": "2026-10-24T08:21:32.2278209Z"
+  },
+  {
+    "file": "acloset-03.webp",
+    "status": "downloaded",
+    "sha256": "4aed9756535de8e1ed2cd07564a84d063da99ee0a33b6b23691f04070fc83302",
+    "bytes": 26276,
+    "downloaded_at": "2026-10-24T08:21:32.3035521Z"
+  },
+  {
+    "file": "acloset-04.jpg",
+    "status": "downloaded",
+    "sha256": "e017c92779c81169935a070d074bc991d6d1dd71b466a0d9bc77bd7d12e5b445",
+    "bytes": 75254,
+    "downloaded_at": "2026-10-24T08:21:32.3907588Z"
+  },
+  {
+    "file": "acloset-05.jpg",
+    "status": "downloaded",
+    "sha256": "dc88364210046345f2ec4974ee2f819241a446b035304f9ab0af20d480590df6",
+    "bytes": 55528,
+    "downloaded_at": "2026-10-24T08:21:32.4633553Z"
+  },
+  {
+    "file": "acloset-06.webp",
+    "status": "downloaded",
+    "sha256": "b9f74b9c16cebc79808a84490a3f2adbc9ef987c4fc3cbbe31619921a39c9493",
+    "bytes": 31646,
+    "downloaded_at": "2026-10-24T08:21:32.5367647Z"
+  },
+  {
+    "file": "acloset-07.webp",
+    "status": "downloaded",
+    "sha256": "a0adfc46bdfec2d944209ae9dea96381072b9f5530e8fa92d130e2b87be3ae07",
+    "bytes": 52450,
+    "downloaded_at": "2026-10-24T08:21:32.6320126Z"
+  },
+  {
+    "file": "acloset-08.jpg",
+    "status": "downloaded",
+    "sha256": "cce84207f02eaf034926ee6e0c64be599aaa0d9ee944982e08090dd057b0d021",
+    "bytes": 47840,
+    "downloaded_at": "2026-10-24T08:21:32.6817976Z"
+  },
+  {
+    "file": "acloset-09.webp",
+    "status": "downloaded",
+    "sha256": "07f362e3c149f6d80606898b3ab698d5af46567156c5494ea2630f228537523a",
+    "bytes": 26556,
+    "downloaded_at": "2026-10-24T08:21:32.7415421Z"
+  },
+  {
+    "file": "acloset-10.webp",
+    "status": "downloaded",
+    "sha256": "029b77e9c8f79ff2b0fb07c79ceabe06f042a798a62c1c4f69093e9f1b0dffec",
+    "bytes": 56734,
+    "downloaded_at": "2026-10-24T08:21:32.8022045Z"
+  },
+  {
+    "file": "acloset-11.webp",
+    "status": "downloaded",
+    "sha256": "a0f175f846dcb4d1d18e0a22fc6dcd3fcebe2e6dc17d4ffee738b4e96edace9a",
+    "bytes": 22500,
+    "downloaded_at": "2026-10-24T08:21:32.8620584Z"
+  },
+  {
+    "file": "acloset-12.webp",
+    "status": "downloaded",
+    "sha256": "6c510485f3bc33e9f4483a764da22136b3154ed5321addc78ca4f37c70083349",
+    "bytes": 22692,
+    "downloaded_at": "2026-10-24T08:21:32.9215157Z"
+  },
+  {
+    "file": "indyx-store-00.webp",
+    "status": "downloaded",
+    "sha256": "fcad1bfeda77dcb3bcfbe66b774e19af16cd0add72b5ca79030748fc3021e921",
+    "bytes": 34568,
+    "downloaded_at": "2026-10-24T08:21:33.0225782Z"
+  },
+  {
+    "file": "indyx-store-01.webp",
+    "status": "downloaded",
+    "sha256": "a952491e6a9ca38936fe2b48e39707a8ae2df4552d4a4b0c91e95a00cbdb801b",
+    "bytes": 35528,
+    "downloaded_at": "2026-10-24T08:21:33.1060171Z"
+  },
+  {
+    "file": "indyx-store-02.webp",
+    "status": "downloaded",
+    "sha256": "fa2d3b5bb978c3673281b41e166e48d18fbe73779d25ac50120c20d8c6719f4f",
+    "bytes": 51968,
+    "downloaded_at": "2026-10-24T08:21:33.7704577Z"
+  },
+  {
+    "file": "indyx-store-03.webp",
+    "status": "downloaded",
+    "sha256": "42c2836e5d825e3efeadb9156f19aabf600c66355d37f70c116c277a1c3b5db6",
+    "bytes": 45508,
+    "downloaded_at": "2026-10-24T08:21:33.8706150Z"
+  },
+  {
+    "file": "indyx-store-04.webp",
+    "status": "downloaded",
+    "sha256": "d4676200da4568bd653d284f45c5322b257ef64dd24c8ee7b05ff508035c5d20",
+    "bytes": 31280,
+    "downloaded_at": "2026-10-24T08:21:33.9685720Z"
+  },
+  {
+    "file": "indyx-store-05.webp",
+    "status": "downloaded",
+    "sha256": "baa9a21777fa140313f29cc3e8420c6c9f9f08d66cca2b0a121dc35858629323",
+    "bytes": 28010,
+    "downloaded_at": "2026-10-24T08:21:34.0586407Z"
+  },
+  {
+    "file": "whering-store-06.webp",
+    "status": "downloaded",
+    "sha256": "6eda3e2f683f29334fce5ff8793743e98620ef3cf0893d1f91f12dc9010ca094",
+    "bytes": 46528,
+    "downloaded_at": "2026-10-24T08:21:34.1432176Z"
+  },
+  {
+    "file": "whering-store-07.webp",
+    "status": "downloaded",
+    "sha256": "5b55f8015b835de79ccc6e24add31bbe3f2679686e0655a7542971e6f3caf002",
+    "bytes": 36812,
+    "downloaded_at": "2026-10-24T08:21:34.2348002Z"
+  },
+  {
+    "file": "whering-store-08.webp",
+    "status": "downloaded",
+    "sha256": "9e38f028a52470979d36a4652478bcfc6ef541004d5157175b0b5dc5f6e598aa",
+    "bytes": 34608,
+    "downloaded_at": "2026-10-24T08:21:34.3200841Z"
+  },
+  {
+    "file": "whering-store-09.webp",
+    "status": "downloaded",
+    "sha256": "36c7b2a425811299a6d2bb6600168f5f09cb5bf1887411a21a7f97cd11a4f662",
+    "bytes": 41298,
+    "downloaded_at": "2026-10-24T08:21:34.3901606Z"
+  },
+  {
+    "file": "whering-store-10.webp",
+    "status": "downloaded",
+    "sha256": "eca4625ac67b35a655c32da06c11f5b5979d0d619dfa92d8485d995880a4dc2d",
+    "bytes": 39492,
+    "downloaded_at": "2026-10-24T08:21:34.4692479Z"
+  },
+  {
+    "file": "whering-store-11.webp",
+    "status": "downloaded",
+    "sha256": "f664a0c7dc015bbf13d0f41eee13bde7548d0b8c3bfd7d6cba0a7c9737f7083a",
+    "bytes": 32386,
+    "downloaded_at": "2026-10-24T08:21:34.5288399Z"
+  },
+  {
+    "file": "stylebook-store-00.webp",
+    "status": "downloaded",
+    "sha256": "36c6be39079aaf4aac6fb196c52698d622bf394c497c4273129cf28262100f1b",
+    "bytes": 22054,
+    "downloaded_at": "2026-10-24T08:21:34.5938538Z"
+  },
+  {
+    "file": "stylebook-store-01.webp",
+    "status": "downloaded",
+    "sha256": "cd97629184ceaa5a44c54a07fa89b1942adbefb6ebd2a6e4fe053cf3a1083ba4",
+    "bytes": 25124,
+    "downloaded_at": "2026-10-24T08:21:34.6671838Z"
+  },
+  {
+    "file": "stylebook-store-02.webp",
+    "status": "downloaded",
+    "sha256": "f46c7e3da2cb74d9c31fa19cc2dbb4490e6c8901a3a9e43f2d2c8545da478209",
+    "bytes": 30776,
+    "downloaded_at": "2026-10-24T08:21:34.7412704Z"
+  },
+  {
+    "file": "stylebook-store-03.webp",
+    "status": "downloaded",
+    "sha256": "69e034afa1a2a95d274e4ee9b170732ccd9b20946f48d14acc68366b34c7154f",
+    "bytes": 29870,
+    "downloaded_at": "2026-10-24T08:21:34.8119111Z"
+  },
+  {
+    "file": "stylebook-store-04.webp",
+    "status": "downloaded",
+    "sha256": "082273e0c00e5362d981536abaf1fc56871365f9f9623fde5a1959c5c0351694",
+    "bytes": 41694,
+    "downloaded_at": "2026-10-24T08:21:34.8981699Z"
+  },
+  {
+    "file": "stylebook-store-05.webp",
+    "status": "downloaded",
+    "sha256": "1262f9b67ba954e7d77bc97a8434e4ee94495fdd6394aad49d2316938ffe7a86",
+    "bytes": 35508,
+    "downloaded_at": "2026-10-24T08:21:34.9746249Z"
+  },
+  {
+    "file": "truefit-shopify-size-ui.png",
+    "status": "downloaded",
+    "sha256": "abbb62e597e670ca33c2aafd71d68efaf9e358016fc0e3e5420d5c10658525ea",
+    "bytes": 929801,
+    "downloaded_at": "2026-10-24T08:21:35.7327225Z"
+  },
+  {
+    "file": "truefit-shopify-features.png",
+    "status": "downloaded",
+    "sha256": "a684979976175f72964f7c9d1190f4421f9bae0bec011d6994ce30715e690919",
+    "bytes": 174998,
+    "downloaded_at": "2026-10-24T08:21:36.1995317Z"
+  },
+  {
+    "file": "truefit-recommendation-inputs.png",
+    "status": "downloaded",
+    "sha256": "504ffd842040ced71883defac2a28de584d679fdc6b4e9b6ecbddebe259835d6",
+    "bytes": 931531,
+    "downloaded_at": "2026-10-24T08:21:36.8529859Z"
+  },
+  {
+    "file": "fitanalytics-fitcue.png",
+    "status": "downloaded",
+    "sha256": "ae14fd04423a378f9a8a0e7c8a3b4930aaec2de3b8c87ea8dbc9b59f953eb698",
+    "bytes": 15136,
+    "downloaded_at": "2026-10-24T08:21:37.0126320Z"
+  },
+  {
+    "file": "boldmetrics-ssc-ui.png",
+    "status": "downloaded",
+    "sha256": "ef4c83b411f60e2fe242458d300f7eb2a4684ce0ff76307ca7065d55483a9705",
+    "bytes": 67246,
+    "downloaded_at": "2026-10-24T08:21:37.5200765Z"
+  },
+  {
+    "file": "boldmetrics-kids-ui.png",
+    "status": "downloaded",
+    "sha256": "a923a42f56df5117a73f880d95cd5e7a0cc688954c28f239855ec915b67aadf1",
+    "bytes": 2217926,
+    "downloaded_at": "2026-10-24T08:21:37.9980545Z"
+  },
+  {
+    "file": "3dlook-mobiletailor-hero.webp",
+    "status": "downloaded",
+    "sha256": "57c977f351d48f4e1707ec35c98f84349675a0b93a2b6b3ea67924ee8a4f6074",
+    "bytes": 112512,
+    "downloaded_at": "2026-10-24T08:21:38.2065485Z"
+  }
+]

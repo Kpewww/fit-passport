@@ -1,0 +1,2427 @@
+{
+  "checked_date": "2026-10-24",
+  "unique_source_count": 397,
+  "sources": [
+    {
+      "url": "https://3dlook.ai/",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://3dlook.ai/mobile-tailor/",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://3dlook.ai/pricing/?mt=",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://3dlook.ai/privacy-policy/",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://3dlook.ai/wp-content/uploads/2024/11/mt-hero-desktop.webp",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://3dlook.ai/yourfit/`重定向",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://api.met.no/doc/License",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://api.met.no/doc/TermsOfService",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/app/id1616484963",
+      "documents": [
+        "competitor-scan-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/be/app/wearwow-digital-wardrobe/id6748722716",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/ca/app/acloset-ai-fashion-assistant/id1542311809?see-all=reviews",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/cn/app/%E6%90%AD%E6%90%AD-ai%E6%99%BA%E8%83%BD%E7%94%B5%E5%AD%90%E8%A1%A3%E6%A9%B1/id1616484963",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/cn/app/%E6%90%AD%E6%90%AD-ai%E6%99%BA%E8%83%BD%E7%94%B5%E5%AD%90%E8%A1%A3%E6%A9%B1/id1616484963?platform=iphone&see-all=reviews",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/cn/app/%E7%A9%BF%E5%95%A5-ai%E7%A9%BF%E6%90%AD%E8%A1%A3%E6%A9%B1/id6764898167",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/cn/app/id1616484963",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/cn/app/id6745757612",
+      "documents": [
+        "competitor-scan-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/cn/app/id6748722716",
+      "documents": [
+        "competitor-scan-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/cn/app/id6764898167",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/cn/app/outfity-ai-%E6%99%BA%E8%83%BD%E8%A1%A3%E6%A9%B1%E4%B8%8E%E7%A9%BF%E6%90%AD/id6745757612?platform=iphone&see-all=reviews",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/cn/app/outfity-ai-wardrobe-stylist/id6745757612",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/cn/app/wearwow-ai%E7%94%B5%E5%AD%90%E8%A1%A3%E6%A9%B1/id6748722716?platform=iphone&see-all=reviews",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/gb/app/acloset-ai-fashion-assistant/id1542311809?platform=iphone&see-all=reviews",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/gb/app/indyx-wardrobe-outfit-app/id1599179405?platform=iphone&see-all=reviews",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/gb/app/whering-your-digital-wardrobe/id1519461680",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/in/app/indyx-wardrobe-outfit-app/id1599179405?platform=iphone&see-all=reviews",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/sg/app/%E6%90%AD%E6%90%AD-ai%E6%99%BA%E8%83%BD%E7%94%B5%E5%AD%90%E8%A1%A3%E6%A9%B1/id1616484963?platform=watch",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/us/app/acloset-ai-fashion-assistant/id1542311809?platform=ipad",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/us/app/acloset-ai-fashion-assistant/id1542311809?platform=ipad&see-all=reviews",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/us/app/id1519461680",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/us/app/id1599179405",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/us/app/id335709058",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/us/app/indyx-wardrobe-outfit-app/id1599179405",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/us/app/stylebook/id335709058?at=1001lEz",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/us/app/stylebook/id335709058?platform=iphone&see-all=reviews",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/us/app/true-fit/id6749843112",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.apple.com/us/app/whering-your-digital-closet/id1519461680",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.shopify.com/mira-virtual-try-on",
+      "documents": [
+        "mira-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://apps.shopify.com/truefit",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://apps.shopify.com/truefit/reviews",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.shopify.com/truefit/reviews?ratings%5B%5D=1",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://apps.shopify.com/truefit/reviews?ratings%5B%5D=2",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://appshunter.io/ios/app/doppl-google/id6741596720/reviews",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://appshunter.io/ios/app/wearwow-digital-wardrobe/id6748722716",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://arxiv.org/abs/2604.08526",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://awesome.ecosyste.ms/projects/github.com%2Fzebangeth%2Fai-closet",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/discover-new-outfits-try-them-on-and-shop-from-doppls-new-discovery-feed/",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/doppl/",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://blog.google/products-and-platforms/products/search/circle-to-search-february-2026/",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://blog.google/products-and-platforms/products/shopping/6-back-to-school-shopping-tricks-every-student-should-know/",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://blog.google/products-and-platforms/products/shopping/studio-quality-digital-try-on/",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://blog.google/products-and-platforms/products/shopping/virtual-try-on-shoes/",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://boldmetrics.com/",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://boldmetrics.com/for-shoppers",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://boldmetrics.com/hs-fs/hubfs/Monica%20and%20Andy%20Mockup.png?width=1563&height=1563&name=Monica%20and%20Andy%20Mockup.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://boldmetrics.com/hs-fs/hubfs/Square%20icons-2.png?width=500&height=500&name=Square%20icons-2.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://boldmetrics.com/privacy",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://boldmetrics.com/solutions/agentic-sizing-protocol",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://boldmetrics.com/solutions/apparel-insights",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://boldmetrics.com/solutions/smart-size-chart",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://boldmetrics.com/solutions/virtual-tailor",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://bria.ai/legal-lobby",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://bria.ai/pricing",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://cdn.shopify.com/app-store/listing_images/001c753d5eae98489f25e98f5a05a89b/desktop_screenshot/CI-k1rWMuo0DEAE%3D.png?height=360&width=640",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://cdn.shopify.com/app-store/listing_images/001c753d5eae98489f25e98f5a05a89b/desktop_screenshot/CKuL4LWMuo0DEAE%3D.png?height=720&width=1280",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://cdn.shopify.com/app-store/listing_images/001c753d5eae98489f25e98f5a05a89b/promotional_image/CPKFh-WPuo0DEAE%3D.png?height=720&width=1280",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://cdn.shopify.com/app-store/listing_images/81eb0525e6e361f4cdda89112e3d2285/desktop_screenshot/CIjq7_vem5cDEAE=.png?height=900&width=1600",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://cdn.shopify.com/app-store/listing_images/81eb0525e6e361f4cdda89112e3d2285/desktop_screenshot/CObh-fvem5cDEAE=.png?height=900&width=1600",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://cdn.shopify.com/app-store/listing_images/81eb0525e6e361f4cdda89112e3d2285/desktop_screenshot/COyD5fvem5cDEAE=.png?height=900&width=1600",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://chrome-stats.com/d/dfigeiehcmpaafjocmopmjpkaoikpmpp",
+      "documents": [
+        "mira-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://chrome-stats.com/d/njokbehokhenelmjcnfcngonekekjkip",
+      "documents": [
+        "mira-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://chromewebstore.google.com/detail/mira-virtual-try-on/njokbehokhenelmjcnfcngonekekjkip",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "mira-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://chuansha.xyz/",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://chuansha.xyz/privacy",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://dada.ren/",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://dada.ren/protocol/privacy.html",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://dev.qweather.com/docs/best-practices/cache/",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://dev.qweather.com/docs/features/global-deployment/",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://dev.qweather.com/docs/features/service-and-data/",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://dev.qweather.com/docs/finance/pricing/",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://dev.qweather.com/docs/terms/attribution/",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://dev.qweather.com/docs/terms/restriction/",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://docs.boldmetrics.io/",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://docs.boldmetrics.io/common-api-topics",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://docs.boldmetrics.io/smart-size-chart",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://docs.boldmetrics.io/virtual-sizer",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://docs.bria.ai/getting-started/asset-retention",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://docs.fashn.ai/api-overview/data-retention-privacy",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://docs.fashn.ai/api-reference/tryon-max",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://docs.fashn.ai/api-reference/tryon-v1-6",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://drive.google.com/file/d/1LLOEA5yhWlohQEGGEm-zGXM53_XZ6xNR/view?usp=sharing",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://drive.google.com/file/d/1WaqnqpRdfPqtJIwUnWS6kAl0UnrLUFLz/view?usp=sharing",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://dungeontools.duckdns.org/",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://fashn.ai/blog/comparing-the-top-4-open-source-virtual-try-on-viton-models",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://fashn.ai/legal/dpa",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://fashn.ai/legal/subprocessors",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://fashn.ai/legal/terms-of-service",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://fashn.ai/pricing",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://fitanalytics.com/",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://fitanalytics.com/ai-shopping-assistant",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://fitanalytics.com/fit-finder",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://fitanalytics.com/how-to-integrate",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://fitanalytics.com/our-technologies",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://framerusercontent.com/images/faax9P1CSMus3YfoWuY6EQWAKg.png?width=1308&height=674",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://framerusercontent.com/images/ogf6Mv34yoT9GOHebMYS5qYdJs.png?height=1570&width=2040",
+      "documents": [
+        "mira-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://franciszzj-leffa.hf.space",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Anyesh/wardrowbe",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Anyesh/wardrowbe/blob/main/LICENSE",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Anyesh/wardrowbe/blob/main/backend/app/models/item.py",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Anyesh/wardrowbe/blob/main/backend/app/services/background_removal.py",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Anyesh/wardrowbe/blob/main/backend/app/services/item_scorer.py",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Anyesh/wardrowbe/blob/main/screenshots/history.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Anyesh/wardrowbe/releases",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Anyesh/wardrowbe/tree/main/backend/tests",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Anyesh/wardrowbe/tree/main/screenshots",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Bria-AI/RMBG-2.0",
+      "documents": [
+        "competitor-scan-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Gurshaan-Deol/Hangar",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/HarryWang355/FIT-VTO",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/README.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/app-web/eval/README.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/app-web/prisma/schema.prisma",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md",
+        "summary-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/app-web/src/app/api/auth/change-password/route.ts",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/app-web/src/app/api/auth/deactivate/route.ts",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/app-web/src/app/api/view/%5Bcode%5D/export/route.ts",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/app-web/src/app/outfits/page.tsx",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md",
+        "summary-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/app-web/src/app/u/%5Bcode%5D/page.tsx",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/app-web/src/lib/bodyEstimate.ts",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md",
+        "summary-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/app-web/src/lib/tryonImage.ts",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md",
+        "summary-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/coursework/startup/product-design/information-architecture.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/docs/RESUME.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/docs/design/3d-body-and-tryon.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/docs/design/size-calibration.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/docs/memory/project-fit-passport-next-steps.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md",
+        "summary-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/docs/memory/project-fit-passport.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/docs/pilot-guide.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/docs/research/competitor-scan-2026-10-24.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/docs/review/extension-test-2026-10-24.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/docs/review/validation-2026-10-24.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/todo/decisions/06-mobile-app.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kpewww/fit-passport/blob/aa74c46a93034cfdf24c171d591963a002c9d765/todo/engineering/00-ORDER.md",
+      "documents": [
+        "fit-passport-baseline-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kunbyte-AI/OmniTry",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Kwai-Kolors/Kolors",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Lazztech/Libre-Closet",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Lazztech/Libre-Closet/blob/main/LICENSE",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Lazztech/Libre-Closet/blob/main/package.json",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Lazztech/Libre-Closet/blob/main/public/assets/screenshots/Screenshot_3.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Lazztech/Libre-Closet/blob/main/public/assets/screenshots/Screenshot_mobile_4.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Lazztech/Libre-Closet/blob/main/public/js/background-removal.js",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Lazztech/Libre-Closet/blob/main/src/dal/entity/garment.entity.ts",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Lazztech/Libre-Closet/blob/main/src/wardrobe/garment.service.ts",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Lazztech/Libre-Closet/blob/main/views/assets/src-sw.ts",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Lazztech/Libre-Closet/releases",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/Lazztech/Libre-Closet/tree/main/public/assets/screenshots",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/SRG-Cy/StyleCast",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/SRG-Cy/StyleCast/blob/main/docs/screenshots/today-rain.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://github.com/SRG-Cy/StyleCast/blob/main/js/outfit.js",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/SRG-Cy/StyleCast/blob/main/js/store.js",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/SRG-Cy/StyleCast/tree/main/tests",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/XQ0820/open-virtual-try-on-models",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/agiofit/agiofit",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/agiofit/agiofit/blob/main/LICENSING.md",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/agiofit/agiofit/blob/main/reference/agiofit/match.py",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/agiofit/agiofit/blob/main/reference/tests/test_match.py",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/agiofit/agiofit/blob/main/schemas/fit-profile.schema.json",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/aimagelab/dress-code",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/akleventis/toop-closet",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/bek-sam/wardrobe_ai",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/bek-sam/wardrobe_ai/blob/main/src/app/api/account/export/build-export.ts",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/danielgatis/rembg",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/facebookresearch/sam2",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/fashn-AI/fashn-vton-1.5/commits/main/",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/franciszzj/Leffa",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/franciszzj/Leffa/issues/46",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/franciszzj/Leffa/issues/58",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/franciszzj/Leffa/issues/63",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/franciszzj/Leffa/issues/65",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/kobo-labs-open-source/garment-measurements",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/open-meteo/open-meteo",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/tandpfun/wardrobe",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/tandpfun/wardrobe/blob/main/docs/screenshots/gallery.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://github.com/tandpfun/wardrobe/blob/main/package.json",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/tandpfun/wardrobe/blob/main/scripts/import-job-api.mjs",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/tandpfun/wardrobe/blob/main/vite.config.mjs",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/wardrobe-hq/wardrobe",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/wardrobe-hq/wardrobe/blob/main/LICENSE",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/xuebinqin/DIS",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/zebangeth/ai-closet",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/zebangeth/ai-closet/blob/main/LICENSE",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/zebangeth/ai-closet/blob/main/release_assets/outfit_canvas.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://github.com/zebangeth/ai-closet/blob/main/src/services/BackgroundRemoval.ts",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/zebangeth/ai-closet/blob/main/src/services/ClothingCategorization.ts",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/zebangeth/ai-closet/blob/main/src/services/VirtualTryOn.ts",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://github.com/zebangeth/ai-closet/tree/main/release_assets",
+      "documents": [
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://help.truefit.com/adjusting-recommendations",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://help.truefit.com/app-data-requirements",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://help.truefit.com/category-coverage",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/Kunbyte/OmniTry",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/Qwen/Qwen-Image-Edit-2509",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/ZhengPeng7/BiRefNet",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/black-forest-labs/FLUX.1-Fill-dev/blob/main/LICENSE.md",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/briaai/RMBG-2.0",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/datasets/Yuanhao-Harry-Wang/fitvto-100k",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/fashn-ai/fashn-human-parser",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/fashn-ai/fashn-vton-1.5",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/franciszzj/Leffa",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/levihsu/OOTDiffusion",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/spaces/Kwai-Kolors/Kolors-Virtual-Try-On/raw/main/app.py",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/spaces/franciszzj/Leffa",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/yisol/IDM-VTON",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://huggingface.co/zhengchong/CatVTON",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/0d/19/c5/0d19c5da-45f7-aa09-d8a6-b93f83b4ccd1/4.PNG/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/16/c4/a7/16c4a73b-298d-de2f-dcd2-29058f11b7db/_U5ba3_U4f203-1242x2688.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/1a/0c/d5/1a0cd52c-9b5f-12ae-9da5-4d3fddc5108c/_U5ba3_U4f207-1242x2688.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/2d/24/62/2d246250-6d1b-2cf0-35c6-d9d68d7f1caa/_U5ba3_U4f209-1242x2688.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/42/fa/34/42fa348b-2bb6-ad05-759a-01fe80808008/3.PNG/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/49/1f/5f/491f5f03-44ec-4d09-8f6a-d6b90ccd0581/56aa7951-1752-444f-8de6-b5bc0f7fb039_1242X2688_Uff086_Uff09_.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/6a/35/90/6a3590b9-0f17-4181-c50d-d23eef746e98/1242X2688_Uff083_Uff09.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/71/3b/d8/713bd85c-df79-947b-b7cd-93afa58d76de/6.PNG/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/78/56/2f/78562f6c-d4a5-3729-a512-77c458ef4b99/1.PNG/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/7e/c8/9a/7ec89a5c-772d-f1dc-b5c0-8c316d94bdcd/1.png/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/7f/b9/61/7fb96143-4513-d50b-60a1-5dd14e9333f3/4.png/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/b7/94/12/b79412d6-a293-7404-b01f-f061afaa0d9c/4e36d07a-d229-4943-969a-cf4c17731daf_1242X2688_Uff081_Uff09.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/d2/82/ba/d282ba1a-c3a8-aabf-d4b1-e9e475fcf1ce/Whering_AppStoreCreative_1242x2688_EN_03.jpg/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/d3/c7/8c/d3c78cce-7204-af0a-1a5c-663951b174dd/1242X2688_Uff082_Uff09.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/e2/fc/f6/e2fcf6bb-d37a-8b35-4a4e-9b7aaa433d80/5aadb0a5-7c29-4d27-84f6-fd24f4b8f672_1242X2688_Uff084_Uff09.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource211/v4/ea/66/ef/ea66ef2c-42c6-fd6a-74e2-f08ae8681ffd/Whering_AppStoreCreative_1242x2688_EN_05.jpg/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/00/10/e0/0010e0b4-cbcc-f430-6995-da5cbc2d1743/5.png/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/07/30/16/07301669-6a3b-0599-3fd1-21414b9b5679/Whering_AppStoreCreative_1242x2688_EN_06.jpg/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/14/3c/62/143c6274-10a6-b568-ea5c-4f949661974c/_U5ba3_U4f206-1242x2688.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/1c/ec/1e/1cec1edd-2284-ae65-3937-e12c75ba3b37/_U5ba3_U4f204-1242x2688.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/61/a6/4e/61a64ee9-6343-787a-472b-66aa0b046982/3.png/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/65/cb/6a/65cb6a1b-9819-78ef-0174-22e73d2d14c3/2.png/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/98/eb/b8/98ebb8c5-d8b7-ca95-fe44-cfbf151cb117/2.PNG/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/a5/d3/0e/a5d30e32-f765-8e7c-2104-1a0e817a538a/Whering_AppStoreCreative_1242x2688_EN_01.jpg/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/b4/4f/23/b44f2382-ea65-eb14-fb6a-ef647799fee7/6.png/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/d0/c8/5b/d0c85b02-95af-64fa-77e8-97dde4de53da/Whering_AppStoreCreative_1242x2688_EN_04.jpg/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/d0/ce/49/d0ce4922-2b6b-bb84-7175-2dfbb4e7dc99/_U5ba3_U4f208-1242x2688.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/e8/11/f2/e811f247-2630-8439-7320-900cf67bf76d/Whering_AppStoreCreative_1242x2688_EN_02.jpg/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/f1/50/a8/f150a86b-d4bf-77f2-971e-480ebd188ff3/1242X2688_Uff085_Uff09.png/300x650bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://is1-ssl.mzstatic.com/image/thumb/PurpleSource221/v4/fb/0b/f9/fb0bf90a-4236-6bf3-490a-036469d47fa7/5.PNG/600x1300bb.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://jiyukwagdesign.com/spreeai/spree-ai-ai-styling-assistant",
+      "documents": [
+        "mira-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://johannakarras.github.io/FIT/",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://m5.meitu.com/m5/static/wearWow/en/privacyPolicyDetail/index.html",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://m5.meitu.com/m5/static/wearWow/userServer/index.html",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://madiba.encs.concordia.ca/reports/OPC-2023/public/pdf/VR_OPC_Report.pdf",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/features/가상피팅_1200x616.jpg",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/features/뷰티파이_1200x564.jpg",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/features/스마트디텍터_1200x489.jpg",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/features/스타일통계1_en_540x1119.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/features/스타일통계2_en_540x1119.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/features/컬러진단2_en_540x976.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/main/app_ai_outfit_chat_en_540x1119.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/main/app_closet_view_en_540x1119.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/main/app_home_ai_stylist_en_540x1119.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/main/app_outfit_builder_en_540x1119.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/main/app_store_import_en_540x1119.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/main/app_style_calendar_en_540x1119.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.acloset.app/homepage/app/main/app_travel_packing_en_540x1118.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://media.fitanalytics.com/website/Press_Release-Fit_Analytics_Sizing_Solution_Company_Fit_Analytics_Thrives_as_Independent_Entity_after_Decoupling_from_Snap_Inc.pdf",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://media.fitanalytics.com/widget/documents/privacy_en.pdf",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://mira.ko-fit.app/privacy",
+      "documents": [
+        "mira-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://mwm.ai/apps/da-da-aizhi-neng-dian-zi-yi-chu/1616484963",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://open-meteo.com/en/pricing",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://open-meteo.com/en/terms",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://openweathermap.org/faq",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://openweathermap.org/price",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://openweathermap.org/storage/app/media/documents/License_explainer_25_Feb_25.pdf",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://outfity.online/",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://outfity.online/en/features/ai-wardrobe/",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://outfity.online/en/features/ootd-calendar/",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://outfity.online/en/how-it-works/",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://outfity.online/homepage/app-home-ai-look-en.PNG",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://outfity.online/homepage/wardrobe-grid-en.PNG",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://outfity.online/privacy/",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://parsayp.com/work/mira-virtual-try-on",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "mira-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://pro.meitu.com/apps/wearWow.html",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Anyesh/wardrowbe/main/screenshots/history.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Bria-AI/RMBG-2.0/dev/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/CMU-Perceptual-Computing-Lab/openpose/master/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/IDEA-Research/DWPose/main/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Kunbyte-AI/OmniTry/main/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Kwai-Kolors/Kolors/master/MODEL_LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Lazztech/Libre-Closet/main/public/assets/screenshots/Screenshot_3.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Lazztech/Libre-Closet/main/public/assets/screenshots/Screenshot_mobile_4.webp",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Megvii-BaseDetection/YOLOX/main/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/NVlabs/SegFormer/master/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/QwenLM/Qwen-Image/main/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/SRG-Cy/StyleCast/main/docs/screenshots/today-rain.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Zheng-Chong/CatVTON/edited/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/Zheng-Chong/CatVTON/edited/README.md",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ZhengPeng7/BiRefNet/main/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/ZhengPeng7/BiRefNet/main/README.md",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/aimagelab/dress-code/main/LICENCE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/danielgatis/rembg/main/LICENSE.txt",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/danielgatis/rembg/main/rembg/sessions/dis_general_use.py",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/danielgatis/rembg/main/rembg/sessions/u2net.py",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/facebookresearch/sam2/main/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/fashn-AI/fashn-human-parser/main/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/fashn-AI/fashn-human-parser/main/src/fashn_human_parser/parser.py",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/fashn-AI/fashn-vton-1.5/7c0f10af3f91ad4048fe9729c470a13ef905d25a/src/fashn_vton/pipeline.py",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/fashn-AI/fashn-vton-1.5/main/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/fashn-AI/fashn-vton-1.5/main/scripts/download_weights.py",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/fashn-AI/fashn-vton-1.5/main/src/fashn_vton/preprocessing/agnostic.py",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/franciszzj/Leffa/main/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/franciszzj/Leffa/main/app.py",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/franciszzj/Leffa/main/requirements.txt",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/imgly/background-removal-js/main/LICENSE.md",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/imgly/background-removal-js/main/packages/web/README.md",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/levihsu/OOTDiffusion/main/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/levihsu/OOTDiffusion/main/README.md",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/shadow2496/VITON-HD/main/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tandpfun/wardrobe/main/docs/screenshots/gallery.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/xuebinqin/DIS/main/LICENSE.md",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/xuebinqin/U-2-Net/master/LICENSE",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yisol/IDM-VTON/main/LICENSE.txt",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/yisol/IDM-VTON/main/README.md",
+      "documents": [
+        "virtual-tryon-and-cutout-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://raw.githubusercontent.com/zebangeth/ai-closet/main/release_assets/outfit_canvas.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://socket.dev/chrome/package/mpnjdjkdhhakflegopbbpamceenbjadp",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "mira-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://staticpages.qweather.com/legal/developers-eula.html?head=0",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Doppl-BlogHeader-1200x676.max-1440x810.png",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://storage.googleapis.com/gweb-uniblog-publish-prod/images/Doppl_-_YouTube_Thumbnail_-_1200x627.width-1300.png",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://storage.googleapis.com/gweb-uniblog-publish-prod/original_videos/wagtailvideo-m7tpwku1_thumb.jpg",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://stylebookapp.com/faq.html",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://stylebookapp.com/features.html",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://stylebookapp.com/privacy.html",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://support.google.com/chrome/answer/18507944?hl=en",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://support.google.com/googleshopping/answer/16253678?hl=en",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://support.google.com/labs/answer/16537062?hl=en",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://support.google.com/merchants/answer/14096369?hl=en",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://textilevaluechain.in/3dlook-bridges-the-gap-between-physical--digital-shopping-with-the-new-yourfit-20",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://watcha.cn/products/wearwow",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://watcha.cn/reply/10076",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://whering.co.uk/faq",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://whering.co.uk/faq/benefits-of-joining-supporter-club?language=en-GB",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://whering.co.uk/faq/change-uk-sizing?language=en-GB",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://whering.co.uk/faq/maximum-uploads?language=en-GB",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://whering.zendesk.com/hc/en-gb/articles/5446347364639-Is-there-a-desktop-version-of-Whering",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://whering.zendesk.com/hc/en-gb/articles/5473175648031-Is-it-possible-to-export-the-data-from-items-I-ve-uploaded",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://whering.zendesk.com/hc/en-gb/articles/5477573485727-How-many-daily-outfit-suggestions-can-I-get-from-W-Pick",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://whering.zendesk.com/hc/en-gb/articles/5800046039327-How-much-does-each-Virtual-Try-On-cost",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://whering.zendesk.com/hc/en-gb/articles/5800057877279-How-do-I-try-on-an-outfit-in-Dress-Me",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://whering.zendesk.com/hc/en-gb/articles/5800068111391-How-do-I-create-my-Virtual-Try-On-avatar",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://whering.zendesk.com/hc/en-gb/articles/5800209259551-How-does-weather-work-in-the-Planner",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.1point3acres.com/bbs/thread-1106256-1-1.html",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.acloset.app/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://www.acloset.app/privacy/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.acloset.app/support/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.acloset.app/terms/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.andpossiblydinosaurs.com/six-years-later-how-im-using-the-stylebook-app/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.cottoncashmerecathair.com/blog/2020/4/10/how-i-catalog-my-closet-and-track-what-i-wear-with-the-stylebook-app-review",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.featuredcustomers.com/vendor/fit-analytics",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.g2.com/products/3dlook/reviews",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.getapp.de/software/2037723/fit-analytics",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.loom.com/share/f8138567399842a59d2431d51e1220fa",
+      "documents": [
+        "mira-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.mumsnet.com/talk/style_and_beauty/4135177-Does-anyone-use-a-wardrobe-app",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.myhoppyhour.com/2026/04/05/who-what-wear-a-brief-review-of-stylebook/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.myindyx.com/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.myindyx.com/contact-us",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.myindyx.com/privacy-policy",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.myindyx.com/service-agreement",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.myindyx.com/terms-and-conditions",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.provenexpert.com/fit-analytics-innovation-gmbh/",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.prweb.com/releases/3dlook-launches-yourfit-the-first-and-only-integrated-solution-that-combines-virtual-try-on-with-size-and-fit-recommendations-879403683.html",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/Indyx/comments/1r32b6t/free_vs_paid/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/Indyx/comments/1r4rffl/is_the_membership_worth_it/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/Indyx/comments/1tyeqvh/indyx_feedback_thread/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/Indyx/comments/1uj61z8/introducing_virtual_selfies/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/TheGirlSurvivalGuide/comments/1mijomp/does_anyone_actually_use_the_digital_closet_apps/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/capsulewardrobe/comments/15jiu46/what_are_good_apps_for_clothing_and_styling/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/capsulewardrobe/comments/1byf9ax/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/capsulewardrobe/comments/1jd19pv/suggestions_for_a_closetwardrobe_tracking_app/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/capsulewardrobe/comments/myxlvj/anyone_use_stylebook_what_are_your_thoughts/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/femalefashionadvice/comments/1s242ng/digital_wardrobe_apps/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/stylebookclosetapp/comments/1x7hr9k/has_anyone_had_issues_with_the_app_losing_their/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/whering/comments/1ig2qol/one_month_whering_review_and_thoughts/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.reddit.com/r/whering/comments/1v64470/reviewing_the_app/",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.serchen.com/company/bold-metrics",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.softwaresuggest.com/bold-metrics",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.sourcepulse.org/projects/29145999",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "open-source-wardrobes-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.techradar.com/computing/artificial-intelligence/i-tried-googles-new-gemini-powered-clothing-app-heres-how-you-can-use-ai-to-find-the-perfect-outfit",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.tomsguide.com/ai/i-just-tested-googles-doppl-app-that-lets-you-try-on-clothes-with-ai-and-it-blew-me-away",
+      "documents": [
+        "google-virtual-tryon-doppl-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.truefit.com/",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.truefit.com/conversation-fit-agent",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.truefit.com/fit-intelligence-spec",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.truefit.com/privacy-policy-and-choices",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.truefit.com/resources/robots",
+      "documents": [
+        "enterprise-sizing-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.trymira.style/",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "mira-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.wearwow.com/",
+      "documents": [
+        "chinese-wardrobe-apps-2026-10-24.md",
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://www.wearwow.com/images/hero-app-screenshot.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://www.wearwow.com/images/outfit-feature.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://www.wearwow.com/images/statistics-feature.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://www.wearwow.com/images/wardrobe-feature.png",
+      "documents": [
+        "screenshots/README.md"
+      ]
+    },
+    {
+      "url": "https://www.weatherapi.com/pricing",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.weatherapi.com/terms",
+      "documents": [
+        "weather-commercial-licenses-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.whering.co/privacy-policy",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.whering.co/terms-conditions",
+      "documents": [
+        "global-wardrobe-apps-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.yourmira.io/",
+      "documents": [
+        "competitor-scan-2026-10-24.md",
+        "mira-2026-10-24.md"
+      ]
+    },
+    {
+      "url": "https://www.yourmira.io/privacy",
+      "documents": [
+        "mira-2026-10-24.md"
+      ]
+    }
+  ]
+}
