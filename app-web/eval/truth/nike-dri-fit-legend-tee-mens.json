@@ -1,0 +1,134 @@
+{
+  "id": "nike-dri-fit-legend-tee-mens",
+  "reviewed": false,
+  "productName": "Dri-FIT Legend Fitness T-Shirt",
+  "readOn": "2026-10-22",
+  "outcome": "answer",
+  "refusal": null,
+  "chart": {
+    "where": "separate-page",
+    "kind": "body",
+    "kindEvidence": "The measurements on the size chart are body measurements.",
+    "units": "in",
+    "sizes": [
+      {
+        "label": "XXS",
+        "chestMin": 28.1,
+        "chestMax": 31.5,
+        "waistMin": 22.5,
+        "waistMax": 25.5
+      },
+      {
+        "label": "XS",
+        "chestMin": 31.5,
+        "chestMax": 35,
+        "waistMin": 25.5,
+        "waistMax": 29
+      },
+      {
+        "label": "S",
+        "chestMin": 35,
+        "chestMax": 37.5,
+        "waistMin": 29,
+        "waistMax": 32
+      },
+      {
+        "label": "S Tall",
+        "chestMin": 35,
+        "chestMax": 37.5,
+        "waistMin": 29,
+        "waistMax": 32
+      },
+      {
+        "label": "M",
+        "chestMin": 37.5,
+        "chestMax": 41,
+        "waistMin": 32,
+        "waistMax": 35
+      },
+      {
+        "label": "M Tall",
+        "chestMin": 37.5,
+        "chestMax": 41,
+        "waistMin": 32,
+        "waistMax": 35
+      },
+      {
+        "label": "L",
+        "chestMin": 41,
+        "chestMax": 44,
+        "waistMin": 35,
+        "waistMax": 38
+      },
+      {
+        "label": "L Tall",
+        "chestMin": 41,
+        "chestMax": 44,
+        "waistMin": 35,
+        "waistMax": 38
+      },
+      {
+        "label": "XL",
+        "chestMin": 44,
+        "chestMax": 48.5,
+        "waistMin": 38,
+        "waistMax": 43
+      },
+      {
+        "label": "XL Tall",
+        "chestMin": 44,
+        "chestMax": 48.5,
+        "waistMin": 38,
+        "waistMax": 43
+      },
+      {
+        "label": "XXL",
+        "chestMin": 48.5,
+        "chestMax": 53.5,
+        "waistMin": 43,
+        "waistMax": 47.5
+      },
+      {
+        "label": "XXL Tall",
+        "chestMin": 48.5,
+        "chestMax": 53.5,
+        "waistMin": 43,
+        "waistMax": 47.5
+      },
+      {
+        "label": "3XL",
+        "chestMin": 53.5,
+        "chestMax": 58,
+        "waistMin": 47.5,
+        "waistMax": 52.5
+      },
+      {
+        "label": "3XL Tall",
+        "chestMin": 53.5,
+        "chestMax": 58,
+        "waistMin": 47.5,
+        "waistMax": 52.5
+      },
+      {
+        "label": "4XL",
+        "chestMin": 58,
+        "chestMax": 63,
+        "waistMin": 52.5,
+        "waistMax": 57
+      },
+      {
+        "label": "4XL Tall",
+        "chestMin": 58,
+        "chestMax": 63,
+        "waistMin": 52.5,
+        "waistMax": 57
+      }
+    ]
+  },
+  "notes": "Unverified assistant transcription from the retailer in user Chrome, isolated window 824150713. Human verification by two independent people is still required. Product Size Guide links to https://www.nike.com/size-fit/mens_tops_alpha. Chest and waist copied in inches, including Tall columns; no height conversion. Generic guide includes more sizes than this product may offer. Sign In visible. Screenshots: nike-tops-chart.jpg, nike-tops-chart-large.jpg. L Tall and XL columns are also captured in nike-tops-chart-middle-confirmed.jpg. Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page.",
+  "screenshots": [
+    "_drafts/screenshots/nike-tops-chart.jpg",
+    "_drafts/screenshots/nike-tops-chart-middle-confirmed.jpg",
+    "_drafts/screenshots/nike-tops-chart-large.jpg"
+  ]
+}

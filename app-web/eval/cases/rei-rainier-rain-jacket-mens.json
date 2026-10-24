@@ -4,5 +4,6 @@
   "retailer": "REI",
   "category": "jacket",
   "gender": "mens",
-  "capture": "Open \"Size chart\" if the page has one. Server-side fetch is 403 (Akamai)."
+  "capture": "Open \"Size chart\" if the page has one. Server-side fetch is 403 (Akamai).",
+  "productName": "Rainier Rain Jacket"
 }

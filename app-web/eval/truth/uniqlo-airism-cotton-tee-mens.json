@@ -1,0 +1,69 @@
+{
+  "id": "uniqlo-airism-cotton-tee-mens",
+  "reviewed": false,
+  "productName": "AIRism Cotton T-Shirt",
+  "readOn": "2026-10-22",
+  "outcome": "answer",
+  "refusal": null,
+  "chart": {
+    "where": "page-table",
+    "kind": "body",
+    "kindEvidence": "The dimensions shown below are body size measurements that correspond with a product's size.",
+    "units": "in",
+    "sizes": [
+      {
+        "label": "XS",
+        "chestMin": 31.5,
+        "chestMax": 34.75,
+        "waistMin": 26,
+        "waistMax": 28.25
+      },
+      {
+        "label": "S",
+        "chestMin": 34.75,
+        "chestMax": 37.75,
+        "waistMin": 26.75,
+        "waistMax": 30
+      },
+      {
+        "label": "M",
+        "chestMin": 37.75,
+        "chestMax": 41,
+        "waistMin": 30,
+        "waistMax": 33
+      },
+      {
+        "label": "L",
+        "chestMin": 41,
+        "chestMax": 44,
+        "waistMin": 33,
+        "waistMax": 36.25
+      },
+      {
+        "label": "XL",
+        "chestMin": 44,
+        "chestMax": 47.25,
+        "waistMin": 36.25,
+        "waistMax": 39.25
+      },
+      {
+        "label": "XXL",
+        "chestMin": 47.25,
+        "chestMax": 50.5,
+        "waistMin": 39.25,
+        "waistMax": 42.5
+      },
+      {
+        "label": "3XL",
+        "chestMin": 50.5,
+        "chestMax": 53.5,
+        "waistMin": 42.5,
+        "waistMax": 45.75
+      }
+    ]
+  },
+  "notes": "Unverified assistant transcription from the retailer in user Chrome, isolated window 824150713. Human verification by two independent people is still required. Body Size tab, IN selected. Exact printed fractions retained in _printedRows; numeric fields express the same inch values, without unit conversion. XS and S waist ranges overlap as printed; not corrected. Product URL E474244 currently displays Product ID 482524, requiring human review. Screenshot: uniqlo-body-chart.jpg. Membership link redirected to /us/auth/v1/login, indicating logged-out state; login-page content inspection timed out and no login action was performed. The case link now shows product ID 482524. Founder's rule (2026-10-23): judge by the standard product name; the page still names \"AIRism Cotton T-Shirt\", so the case stands. Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page.",
+  "screenshots": [
+    "_drafts/screenshots/uniqlo-body-chart.jpg"
+  ]
+}

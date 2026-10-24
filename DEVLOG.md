@@ -10892,3 +10892,25 @@ Steps 2–3 keep `sizesFrom: "estimated"` (capped at 0.5) and record their basis
 - Both were "undetermined" before.
 
 Also: compiled guides carry `capturedAt`, so the reason line shows the date the guide was read.
+
+## Session 103n (2026-10-24) — evaluation truth: review flag, same-product check, eleven files ready
+
+- **Truth needs approval:** `eval/truth/<id>.json` counts only with `reviewed: true` (or the older
+  `verifiedBy`). The founder chose a flag instead of signatures. 11 files were made from the drafts, all
+  `reviewed: false`, so nothing is scored until the founder approves them.
+  - **Gap:** keeps the chart read on 10-22. The founder can open it; the 10-23 second pass saw an empty iframe.
+  - **Uniqlo:** stands; see the same-product check below.
+- **Same-product check (founder's rule):** cases and truths carry a `productName`. A run whose page names
+  another product is not scored, and is listed under `productChanged`. Names count as the same when one's
+  words contain the other's, or ≥60% are shared. Brand, "men's"/"women's" and punctuation are ignored.
+  Tested on Uniqlo ("AIRism Cotton T-Shirt" vs "Men's AIRism Cotton Crew Neck T-Shirt": same).
+- **One-number-per-size rule, refined:**
+  - at a printed number (±0.5 cm): that size;
+  - between two sizes' numbers: either size is right, as in a gap between ranges;
+  - beyond the ends: the nearest end.
+
+  Prompted by a dry run: a 100 cm chest sits between Patagonia's S (39 in) and M (40 in), and the stricter
+  nearest-point rule scored M wrong by 0.5 cm. This matches the founder's "M, or S if you like it snugger".
+- **Dry run** (all 11 flipped to reviewed in a scratch copy, results deleted): scoring works. It also showed
+  that the curated Patagonia chart (S 37, M 40) differs from the page today (S 38/39, M 40/41).
+  Re-collection is queued in `todo/people/09`, together with Gap's full set.

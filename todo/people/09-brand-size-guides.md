@@ -120,3 +120,9 @@ Gucci · Prada · Burberry · Saint Laurent · Balenciaga · Moncler · Zegna（
 - **已审核通过(`reviewed: true`)**:J.Crew、Levi's、Calvin Klein、Columbia、Under Armour、L.L.Bean、A&F 男装。
   这 7 份已进入引擎,男装美码共识来自 9 个品牌。
 - **审核方式改了**:创始人决定不写名字,改成 `reviewed: true`。旧文件里的 `verifiedBy` 仍然被认可。
+
+### 待重新采集(2026-10-24)
+
+- **Patagonia 男/女**:代码里存的 Patagonia 表(`brandCharts.ts`)写 S=37、M=40 英寸,官网 10-23 印的是
+  S=38/39、M=40/41,可能改过。请按本文件的流程重新采一份,放进 `data/brand-guides/`。
+- **Gap(全部上衣表,男/女)**:创始人能在自己的浏览器里打开 Gap 的尺码表。请完整采集,不只一张。

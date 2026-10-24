@@ -23,6 +23,7 @@ import {
   runA,
   runB,
   runS5,
+  sameProduct,
   scoreRun,
   type CaseScore,
   type GuardrailResult,
@@ -35,7 +36,9 @@ type Row = {
   url: string;
   retailer: string;
   capture: { committed: boolean; capturedAt: string; stats: Record<string, number | string> } | null;
-  truth: { verifiedBy: string[]; readOn: string; outcome: string } | null;
+  truth: { reviewed: boolean; readOn: string; outcome: string; productName?: string } | null;
+  /** Systems whose page named a different product than the truth's (not scored). */
+  productChanged?: Array<{ system: SystemName; seen: string }>;
   runs: ReturnType<typeof summarise>[];
   scores: Partial<Record<SystemName, CaseScore>> | null;
   /** Needs no truth: behaviour on adversarial personas, per system. */
@@ -187,7 +190,7 @@ function markdown(date: string, live: boolean, rows: Row[], summary: Record<stri
   }
   lines.push(
     "",
-    "Brier and calibration need ground truth (`eval/truth/`); until two people have read each chart, they are `n = 0` by design — the harness never grades against its own output (invariant 66).",
+    "Brier and calibration need ground truth (`eval/truth/`); until a person has reviewed each chart, they are `n = 0` by design — the harness never grades against its own output (invariant 66).",
   );
   lines.push("", "## Summary", "", "```json", JSON.stringify(summary, null, 2), "```", "");
   return lines.join("\n");
@@ -205,15 +208,23 @@ describe("Sprint 5 evaluation", () => {
       const runs: SystemRun[] = [runB(c, people)];
       if (cap) runs.push(await runS5(c, cap.capture, people));
       if (live) runs.push(await runA(c, people));
+      // A run that read a different product than the truth's is not scored against it.
+      const standard = truth?.productName ?? c.productName;
+      const productChanged = runs
+        .filter((r) => standard && r.productName && !sameProduct(standard, r.productName, c.retailer))
+        .map((r) => ({ system: r.system, seen: r.productName! }));
       const scores = truth
-        ? (Object.fromEntries(runs.map((r) => [r.system, scoreRun(truth, r, people)])) as Partial<Record<SystemName, CaseScore>>)
+        ? (Object.fromEntries(
+            runs.filter((r) => !productChanged.some((p) => p.system === r.system)).map((r) => [r.system, scoreRun(truth, r, people)]),
+          ) as Partial<Record<SystemName, CaseScore>>)
         : null;
       rows.push({
         id: c.id,
         url: c.url,
         retailer: c.retailer,
         capture: cap ? { committed: cap.committed, capturedAt: cap.capture.capturedAt, stats: cap.capture.stats } : null,
-        truth: truth ? { verifiedBy: truth.verifiedBy, readOn: truth.readOn, outcome: truth.outcome } : null,
+        truth: truth ? { reviewed: true, readOn: truth.readOn, outcome: truth.outcome, productName: truth.productName } : null,
+        ...(productChanged.length ? { productChanged } : {}),
         runs: runs.map(summarise),
         scores,
         guardrails: Object.fromEntries(runs.map((r) => [r.system, guardrails(r, people)])),

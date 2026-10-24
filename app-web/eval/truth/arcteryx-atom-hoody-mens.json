@@ -1,0 +1,60 @@
+{
+  "id": "arcteryx-atom-hoody-mens",
+  "reviewed": false,
+  "productName": "Atom Hoody",
+  "readOn": "2026-10-22",
+  "outcome": "answer",
+  "refusal": null,
+  "chart": {
+    "kindEvidence": "Your body measurements in centimetres",
+    "kind": "body",
+    "sizes": [
+      {
+        "label": "XXS",
+        "waist": 69,
+        "chest": 84
+      },
+      {
+        "label": "XS",
+        "waist": 74,
+        "chest": 89
+      },
+      {
+        "label": "S",
+        "waist": 79,
+        "chest": 94
+      },
+      {
+        "label": "M",
+        "waist": 86,
+        "chest": 102
+      },
+      {
+        "label": "L",
+        "waist": 94,
+        "chest": 109
+      },
+      {
+        "label": "XL",
+        "waist": 104,
+        "chest": 119
+      },
+      {
+        "label": "XXL",
+        "waist": 114,
+        "chest": 129
+      },
+      {
+        "label": "XXXL",
+        "waist": 124,
+        "chest": 139
+      }
+    ],
+    "where": "page-table",
+    "units": "cm"
+  },
+  "notes": "Assistant draft from official product sizing iframe in user Chrome. Page says fit has been revised; chart includes XXS absent from product size options. Human verification required. One number per size: scored by the nearest printed point (founder's rule, 2026-10-23). Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page.",
+  "screenshots": [
+    "_drafts/screenshots/arcteryx-chart.jpg"
+  ]
+}

@@ -4,5 +4,6 @@
   "retailer": "Uniqlo",
   "category": "tshirt",
   "gender": "mens",
-  "capture": "Open \"Size Guide\", Size Chart tab (body measurements, inches with fractions). Server-side: soft block (200, Access Denied)."
+  "capture": "Open \"Size Guide\", Size Chart tab (body measurements, inches with fractions). Server-side: soft block (200, Access Denied).",
+  "productName": "AIRism Cotton T-Shirt"
 }

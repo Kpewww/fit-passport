@@ -1,0 +1,118 @@
+{
+  "id": "patagonia-better-sweater-mens",
+  "reviewed": false,
+  "productName": "Better Sweater Fleece Jacket",
+  "readOn": "2026-10-22",
+  "outcome": "answer",
+  "refusal": null,
+  "chart": {
+    "where": "page-table",
+    "kind": "body",
+    "kindEvidence": "Relax your arms, then measure around the fullest part of your chest/bust.",
+    "units": "in",
+    "sizes": [
+      {
+        "label": "XXS",
+        "numericSize": "26",
+        "chest": 34,
+        "waist": 26
+      },
+      {
+        "label": "XS",
+        "numericSize": "28",
+        "chest": 36,
+        "waist": 28
+      },
+      {
+        "label": "XS",
+        "numericSize": "29",
+        "chest": 37,
+        "waist": 29
+      },
+      {
+        "label": "S",
+        "numericSize": "30",
+        "chest": 38,
+        "waist": 30
+      },
+      {
+        "label": "S",
+        "numericSize": "31",
+        "chest": 39,
+        "waist": 31
+      },
+      {
+        "label": "M",
+        "numericSize": "32",
+        "chest": 40,
+        "waist": 32
+      },
+      {
+        "label": "M",
+        "numericSize": "33",
+        "chest": 41,
+        "waist": 33
+      },
+      {
+        "label": "L",
+        "numericSize": "34",
+        "chest": 42,
+        "waist": 34
+      },
+      {
+        "label": "L",
+        "numericSize": "35",
+        "chest": 43,
+        "waist": 35
+      },
+      {
+        "label": "L",
+        "numericSize": "36",
+        "chest": 44,
+        "waist": 36
+      },
+      {
+        "label": "XL",
+        "numericSize": "38",
+        "chest": 46,
+        "waist": 38
+      },
+      {
+        "label": "XL",
+        "numericSize": "40",
+        "chest": 48,
+        "waist": 40
+      },
+      {
+        "label": "XXL",
+        "numericSize": "42",
+        "chest": 50,
+        "waist": 42
+      },
+      {
+        "label": "XXL",
+        "numericSize": "44",
+        "chest": 52,
+        "waist": 44
+      },
+      {
+        "label": "3XL",
+        "numericSize": "46",
+        "chest": 54,
+        "waist": 46
+      },
+      {
+        "label": "3XL",
+        "numericSize": "48",
+        "chest": 56,
+        "waist": 48
+      }
+    ]
+  },
+  "notes": "Unverified assistant transcription from the retailer in user Chrome, isolated window 824150713. Human verification by two independent people is still required. Log in visible. Exact alpha/numeric rows retained, including repeated alpha labels. numericSize is an auxiliary draft field; no point measurements merged into inferred ranges. A human must decide how to represent this combined tops/bottoms chart in final truth. Chest and waist only; hip preserved in screenshot. Screenshots: patagonia-men-chart.jpg and matching -chart-lower.jpg / -evidence.jpg. One number per size, labels repeated: scored by the nearest printed point (founder's rule, 2026-10-23). Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page.",
+  "screenshots": [
+    "_drafts/screenshots/patagonia-men-chart.jpg",
+    "_drafts/screenshots/patagonia-men-chart-lower.jpg",
+    "_drafts/screenshots/patagonia-men-evidence.jpg"
+  ]
+}

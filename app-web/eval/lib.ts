@@ -65,6 +65,8 @@ export type Case = {
   gender: "mens" | "womens" | "unisex";
   capture: string;
   notes?: string;
+  /** The product's standard name, for the same-product check when a link starts pointing elsewhere. */
+  productName?: string;
 };
 
 export type TruthSize = {
@@ -77,7 +79,12 @@ export type TruthSize = {
 
 export type Truth = {
   id: string;
-  verifiedBy: string[];
+  /** A person reviewed and approved it (Session 103: a flag, not a signature). */
+  reviewed?: boolean;
+  /** Older files named the people who read it instead. */
+  verifiedBy?: string[];
+  /** The product the truth was read for; see sameProduct. */
+  productName?: string;
   readOn: string;
   outcome: "answer" | "refuse";
   refusal?: string | null;
@@ -125,9 +132,35 @@ export function loadCapture(id: string): { capture: Capture; committed: boolean 
   return null;
 }
 
+/** The truth for a case, only once a person approved it: an unreviewed file is not truth. */
 export function loadTruth(id: string): Truth | null {
   const p = join(EVAL_DIR, "truth", `${id}.json`);
-  return existsSync(p) ? readJson<Truth>(p) : null;
+  if (!existsSync(p)) return null;
+  const t = readJson<Truth>(p);
+  return t.reviewed === true || (t.verifiedBy?.length ?? 0) > 0 ? t : null;
+}
+
+const NAME_NOISE = new Set(["mens", "men", "womens", "women", "the", "a", "in", "for", "and", "with", "unisex"]);
+const nameTokens = (s: string, brand?: string) => {
+  const b = new Set((brand ?? "").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean));
+  return new Set(
+    s.toLowerCase().replace(/['’]/g, "").replace(/t-shirt/g, "tshirt").split(/[^a-z0-9]+/)
+      .filter((w) => w && !NAME_NOISE.has(w) && !b.has(w)),
+  );
+};
+
+/**
+ * Is the page still the product the truth was read for? (Session 103, founder's rule:
+ * when a link starts pointing elsewhere, go by the product's standard name, allowing
+ * small changes.) Same when one name's words contain the other's, or when most words
+ * are shared; brand, "men's"/"women's" and punctuation do not count.
+ */
+export function sameProduct(standard: string, seen: string, brand?: string): boolean {
+  const a = nameTokens(standard, brand), b = nameTokens(seen, brand);
+  if (!a.size || !b.size) return true; // nothing to compare: do not throw a case away
+  const shared = [...a].filter((w) => b.has(w)).length;
+  if (shared === a.size || shared === b.size) return true;
+  return shared / new Set([...a, ...b]).size >= 0.6;
 }
 
 // ---------------------------------------------------------------------------
@@ -151,6 +184,8 @@ export type Pick = {
 
 export type SystemRun = {
   system: SystemName;
+  /** The product name the system read, for the same-product check. */
+  productName?: string;
   outcome: "answer" | "refuse" | "error";
   refusal?: string;
   source?: Partial<ExtractedProduct["source"]>;
@@ -171,6 +206,7 @@ function decide(system: SystemName, extracted: ExtractedProduct, personas: Perso
   const refusal = refusalFor(extracted);
   const base = {
     system,
+    productName: extracted.productName,
     source: extracted.source,
     sizes: extracted.sizes,
     ms: Date.now() - started,
@@ -250,8 +286,8 @@ export async function runA(c: Case, personas: Persona[]): Promise<SystemRun> {
 const toCm = (v: number, units: "in" | "cm") => (units === "in" ? v * CM_PER_INCH : v);
 const labelKey = (l: string) => (normalizeToAlpha(l) ?? l.trim().toUpperCase());
 
-/** Two body points closer than this to the wearer count as a tie: both sizes are right. */
-export const NEAREST_TIE_CM = 0.5;
+/** A wearer this close to a printed point is AT that size, not between two. */
+export const ON_POINT_CM = 0.5;
 
 /**
  * The sizes the retailer's own chart says fit this wearer — body charts only.
@@ -259,9 +295,11 @@ export const NEAREST_TIE_CM = 0.5;
  * garment chart (no retailer rule; see README).
  *
  * A body chart that prints ONE number per size (Arc'teryx, Patagonia) states no
- * range. Rule decided by the founder (Session 103): the size whose printed point is
- * nearest the wearer's chest; within NEAREST_TIE_CM of a tie, both. A label printed
- * twice (Patagonia's two XS rows) is one size with two points.
+ * range. Founder's rule (Session 103): a wearer between two sizes' printed numbers
+ * may take either ("M, or S if you like it a little snugger"), exactly as in a gap
+ * between two ranges; at a printed number (within ON_POINT_CM), that size; beyond
+ * the ends, the nearest end. A label printed twice (Patagonia's two XS rows) is one
+ * size spanning both numbers.
  */
 export function acceptableSizes(truth: Truth, chestCm: number): string[] | null {
   const chart = truth.chart;
@@ -270,12 +308,23 @@ export function acceptableSizes(truth: Truth, chestCm: number): string[] | null 
     .filter((s) => s.chestMin != null && s.chestMax != null)
     .map((s) => ({ label: s.label, lo: toCm(s.chestMin!, chart.units), hi: toCm(s.chestMax!, chart.units) }));
   if (ranged.length < 2) {
-    const points = chart.sizes
-      .filter((s) => s.chest != null)
-      .map((s) => ({ label: s.label, d: Math.abs(toCm(s.chest!, chart.units) - chestCm) }));
-    if (points.length < 2) return null;
-    const best = Math.min(...points.map((p) => p.d));
-    return [...new Set(points.filter((p) => p.d <= best + NEAREST_TIE_CM).map((p) => p.label))];
+    // One span per size, from its smallest to its largest printed number.
+    const spans = new Map<string, { lo: number; hi: number }>();
+    for (const sz of chart.sizes) {
+      if (sz.chest == null) continue;
+      const v = toCm(sz.chest, chart.units);
+      const k = labelKey(sz.label);
+      const cur = spans.get(k);
+      spans.set(k, cur ? { lo: Math.min(cur.lo, v), hi: Math.max(cur.hi, v) } : { lo: v, hi: v });
+    }
+    const label = new Map(chart.sizes.map((sz) => [labelKey(sz.label), sz.label]));
+    const sizes = [...spans.entries()].map(([k, r]) => ({ label: label.get(k)!, ...r })).sort((a, b) => a.lo - b.lo);
+    if (sizes.length < 2) return null;
+    const at = sizes.filter((x) => chestCm >= x.lo - ON_POINT_CM && chestCm <= x.hi + ON_POINT_CM).map((x) => x.label);
+    if (at.length) return at;
+    const below = sizes.filter((x) => x.hi < chestCm).pop();
+    const above = sizes.find((x) => x.lo > chestCm);
+    return [below?.label, above?.label].filter((l): l is string => !!l);
   }
   const inside = ranged.filter((s) => chestCm >= s.lo - 0.05 && chestCm <= s.hi + 0.05).map((s) => s.label);
   if (inside.length) return inside;

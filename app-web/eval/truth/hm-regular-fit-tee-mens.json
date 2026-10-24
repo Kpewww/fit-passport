@@ -1,0 +1,72 @@
+{
+  "id": "hm-regular-fit-tee-mens",
+  "reviewed": false,
+  "productName": "Regular Fit T-shirt",
+  "readOn": "2026-10-22",
+  "outcome": "answer",
+  "refusal": null,
+  "chart": {
+    "sizes": [
+      {
+        "waistMin": 66,
+        "label": "XS",
+        "chestMin": 78,
+        "chestMax": 86,
+        "waistMax": 74
+      },
+      {
+        "waistMin": 74,
+        "label": "S",
+        "chestMin": 86,
+        "chestMax": 94,
+        "waistMax": 82
+      },
+      {
+        "waistMin": 82,
+        "label": "M",
+        "chestMin": 94,
+        "chestMax": 102,
+        "waistMax": 90
+      },
+      {
+        "waistMin": 90,
+        "label": "L",
+        "chestMin": 102,
+        "chestMax": 110,
+        "waistMax": 98.5
+      },
+      {
+        "waistMin": 98.5,
+        "label": "XL",
+        "chestMin": 110,
+        "chestMax": 118,
+        "waistMax": 107.5
+      },
+      {
+        "waistMin": 107.5,
+        "label": "XXL",
+        "chestMin": 118,
+        "chestMax": 126,
+        "waistMax": 116.5
+      },
+      {
+        "waistMin": 116.5,
+        "label": "3XL",
+        "chestMin": 126,
+        "chestMax": 134,
+        "waistMax": 125.5
+      }
+    ],
+    "where": "page-table",
+    "units": "cm",
+    "kind": "body",
+    "kindEvidence": "Measure your chest over the fullest part."
+  },
+  "notes": "Unverified assistant transcription from the logged-out retailer page in user Chrome. Regular tab only. cm values copied directly from the cm rows, not converted. Two independent human transcriptions still required. Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page.",
+  "screenshots": [
+    "_drafts/screenshots/hm-xs-m.jpg",
+    "_drafts/screenshots/hm-l-xxl.jpg",
+    "_drafts/screenshots/hm-3xl.jpg",
+    "_drafts/screenshots/hm-kind-evidence.jpg"
+  ]
+}

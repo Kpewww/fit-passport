@@ -1,0 +1,18 @@
+{
+  "id": "nike-size-help-page",
+  "reviewed": false,
+  "readOn": "2026-10-22",
+  "outcome": "refuse",
+  "refusal": "not-apparel",
+  "chart": {
+    "sizes": [],
+    "where": "none",
+    "units": null,
+    "kind": "unstated",
+    "kindEvidence": ""
+  },
+  "notes": "User Chrome page is a help article titled How Do I Find the Right Size and Fit?, with links to charts, not a garment. Sign In visible. Human verification required. Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page.",
+  "screenshots": [
+    "_drafts/screenshots/nike-help-page.jpg"
+  ]
+}

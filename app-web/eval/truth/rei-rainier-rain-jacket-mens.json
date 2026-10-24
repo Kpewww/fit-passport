@@ -1,0 +1,70 @@
+{
+  "id": "rei-rainier-rain-jacket-mens",
+  "reviewed": false,
+  "productName": "Rainier Rain Jacket",
+  "readOn": "2026-10-22",
+  "outcome": "answer",
+  "refusal": null,
+  "chart": {
+    "sizes": [
+      {
+        "label": "XS",
+        "waist": 27.5,
+        "chest": 35
+      },
+      {
+        "waistMin": 28,
+        "label": "S",
+        "chestMin": 36,
+        "chestMax": 38,
+        "waistMax": 30
+      },
+      {
+        "waistMin": 32,
+        "label": "M",
+        "chestMin": 39,
+        "chestMax": 41,
+        "waistMax": 34
+      },
+      {
+        "waistMin": 36,
+        "label": "L",
+        "chestMin": 42,
+        "chestMax": 45,
+        "waistMax": 38
+      },
+      {
+        "waistMin": 40,
+        "label": "XL",
+        "chestMin": 46,
+        "chestMax": 49,
+        "waistMax": 42
+      },
+      {
+        "waistMin": 44,
+        "label": "XXL",
+        "chestMin": 50,
+        "chestMax": 53,
+        "waistMax": 46
+      },
+      {
+        "waistMin": 48,
+        "label": "XXXL",
+        "chestMin": 54,
+        "chestMax": 57,
+        "waistMax": 50
+      }
+    ],
+    "where": "page-table",
+    "units": "in",
+    "kind": "body",
+    "kindEvidence": "Size chart values represent body measurements, not garment measurements."
+  },
+  "notes": "Unverified assistant transcription from user Chrome. Login link visible. Measurements are stated in inches unless otherwise indicated. Regular alpha sizes only; Tall adjustments and pants waist columns not transcribed. Human verification required. Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page.",
+  "screenshots": [
+    "_drafts/screenshots/rei-chart.jpg",
+    "_drafts/screenshots/rei-chart-middle.jpg",
+    "_drafts/screenshots/rei-chart-large.jpg",
+    "_drafts/screenshots/rei-chart-xxxl.jpg"
+  ]
+}

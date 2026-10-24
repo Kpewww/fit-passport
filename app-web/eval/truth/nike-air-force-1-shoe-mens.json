@@ -1,0 +1,19 @@
+{
+  "id": "nike-air-force-1-shoe-mens",
+  "reviewed": false,
+  "productName": "Air Force 1 Low",
+  "readOn": "2026-10-22",
+  "outcome": "refuse",
+  "refusal": "unsupported-category",
+  "chart": {
+    "where": "none",
+    "kind": "unstated",
+    "kindEvidence": "",
+    "units": null,
+    "sizes": []
+  },
+  "notes": "Unverified assistant transcription from the retailer in user Chrome, isolated window 824150713. Human verification by two independent people is still required. Product page explicitly says Men's Shoes. Shoes are outside the supported clothing evaluation category. This refusal does not claim there is no shoe chart. Sign In visible. Screenshot: nike-shoe.jpg. Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page.",
+  "screenshots": [
+    "_drafts/screenshots/nike-shoe.jpg"
+  ]
+}

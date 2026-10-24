@@ -1,0 +1,51 @@
+{
+  "id": "gap-classic-tee-mens",
+  "reviewed": false,
+  "productName": "Classic T-Shirt",
+  "readOn": "2026-10-22",
+  "outcome": "answer",
+  "refusal": null,
+  "chart": {
+    "where": "page-table",
+    "kind": "body",
+    "kindEvidence": "Lift your arms slightly and measure around your body (without a shirt is best), crossing over the fullest part of your chest.",
+    "units": "in",
+    "sizes": [
+      {
+        "label": "XS",
+        "chestMin": 35,
+        "chestMax": 36
+      },
+      {
+        "label": "S",
+        "chestMin": 37,
+        "chestMax": 38
+      },
+      {
+        "label": "M",
+        "chestMin": 39,
+        "chestMax": 41
+      },
+      {
+        "label": "L",
+        "chestMin": 42,
+        "chestMax": 44
+      },
+      {
+        "label": "XL",
+        "chestMin": 45,
+        "chestMax": 48
+      },
+      {
+        "label": "XXL",
+        "chestMin": 49,
+        "chestMax": 52
+      }
+    ]
+  },
+  "notes": "Unverified assistant transcription from the retailer in user Chrome, isolated window 824150713. Human verification by two independent people is still required. Regular IN chart; chest only. Product offers XXXL but chart ends at XXL; no XXXL value invented. Neck and sleeve remain in screenshot. Screenshots: gap-chart.jpg, gap-evidence.jpg. Founder (2026-10-23): keep the chart read on 2026-10-22; the founder can open Gap's size chart in their own browser (the 10-23 second pass saw an empty iframe). Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): could not verify (empty size-guide iframe).",
+  "screenshots": [
+    "_drafts/screenshots/gap-chart.jpg",
+    "_drafts/screenshots/gap-evidence.jpg"
+  ]
+}

@@ -1,0 +1,100 @@
+{
+  "id": "patagonia-better-sweater-womens",
+  "reviewed": false,
+  "productName": "Better Sweater Fleece Jacket",
+  "readOn": "2026-10-22",
+  "outcome": "answer",
+  "refusal": null,
+  "chart": {
+    "where": "page-table",
+    "kind": "body",
+    "kindEvidence": "Relax your arms, then measure around the fullest part of your chest/bust.",
+    "units": "in",
+    "sizes": [
+      {
+        "label": "XXS",
+        "numericSize": "00",
+        "chest": 31.5,
+        "waist": 24.5
+      },
+      {
+        "label": "XS",
+        "numericSize": "0",
+        "chest": 32.5,
+        "waist": 25.5
+      },
+      {
+        "label": "XS",
+        "numericSize": "2",
+        "chest": 33.5,
+        "waist": 26.5
+      },
+      {
+        "label": "S",
+        "numericSize": "4",
+        "chest": 34.5,
+        "waist": 27.5
+      },
+      {
+        "label": "S",
+        "numericSize": "6",
+        "chest": 35.5,
+        "waist": 28.5
+      },
+      {
+        "label": "M",
+        "numericSize": "8",
+        "chest": 36.5,
+        "waist": 29.5
+      },
+      {
+        "label": "M",
+        "numericSize": "10",
+        "chest": 37.5,
+        "waist": 30.5
+      },
+      {
+        "label": "L",
+        "numericSize": "12",
+        "chest": 39,
+        "waist": 32
+      },
+      {
+        "label": "L",
+        "numericSize": "14",
+        "chest": 41,
+        "waist": 34
+      },
+      {
+        "label": "XL",
+        "numericSize": "16",
+        "chest": 43,
+        "waist": 36
+      },
+      {
+        "label": "XL",
+        "numericSize": "18",
+        "chest": 45,
+        "waist": 38
+      },
+      {
+        "label": "XXL",
+        "numericSize": "20",
+        "chest": 47,
+        "waist": 40
+      },
+      {
+        "label": "XXL",
+        "numericSize": "22",
+        "chest": 49,
+        "waist": 42
+      }
+    ]
+  },
+  "notes": "Unverified assistant transcription from the retailer in user Chrome, isolated window 824150713. Human verification by two independent people is still required. Log in visible. Exact alpha/numeric rows retained, including repeated alpha labels. numericSize is an auxiliary draft field; no point measurements merged into inferred ranges. A human must decide how to represent this combined tops/bottoms chart in final truth. Chest and waist only; hip preserved in screenshot. Screenshots: patagonia-women-chart.jpg and matching -chart-lower.jpg / -evidence.jpg. One number per size, labels repeated: scored by the nearest printed point (founder's rule, 2026-10-23). Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page.",
+  "screenshots": [
+    "_drafts/screenshots/patagonia-women-chart.jpg",
+    "_drafts/screenshots/patagonia-women-chart-lower.jpg",
+    "_drafts/screenshots/patagonia-women-evidence.jpg"
+  ]
+}

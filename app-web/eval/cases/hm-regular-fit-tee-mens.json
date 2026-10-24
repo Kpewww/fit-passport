@@ -4,5 +4,6 @@
   "retailer": "H&M",
   "category": "tshirt",
   "gender": "mens",
-  "capture": "Open \"Size guide\" if the page has one. Server-side fetch is 403."
+  "capture": "Open \"Size guide\" if the page has one. Server-side fetch is 403.",
+  "productName": "Regular Fit T-shirt"
 }

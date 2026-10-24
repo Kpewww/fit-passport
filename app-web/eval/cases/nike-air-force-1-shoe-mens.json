@@ -4,5 +4,6 @@
   "retailer": "Nike",
   "category": "sneakers",
   "gender": "mens",
-  "capture": "REFUSAL CASE by design: footwear cannot be measured against a FitProfile. Expected: unsupported-category."
+  "capture": "REFUSAL CASE by design: footwear cannot be measured against a FitProfile. Expected: unsupported-category.",
+  "productName": "Air Force 1 Low"
 }

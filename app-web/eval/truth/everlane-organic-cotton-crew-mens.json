@@ -1,0 +1,19 @@
+{
+  "id": "everlane-organic-cotton-crew-mens",
+  "reviewed": false,
+  "productName": "The Organic Cotton Crew",
+  "readOn": "2026-10-22",
+  "outcome": "refuse",
+  "refusal": "no-chart-on-page",
+  "chart": {
+    "kindEvidence": "",
+    "kind": "unstated",
+    "sizes": [],
+    "where": "none",
+    "units": null
+  },
+  "notes": "Current user-Chrome product page says Sorry, this item is no longer available. Product details and size guide absent on this current page. This is not an anti-bot refusal. Human verification required. Second pass 2026-10-23 (docs/review/verify-2026-10-23.md): matches the page.",
+  "screenshots": [
+    "_drafts/screenshots/everlane-unavailable.jpg"
+  ]
+}
