@@ -85,4 +85,3 @@
 ## 开源资产许可层
 
 Wardrowbe、ai-closet、tandpfun、StyleCast上游代码MIT，Libre Closet AGPL-3.0；这不自动证明截图中的人物、商标、照片另获产品使用授权。6个文件与供稿hash一致，来源/日期详manifest。其余厂商素材也不因可公开下载而变成可自由商用资产。
-

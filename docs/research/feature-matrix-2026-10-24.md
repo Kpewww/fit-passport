@@ -220,4 +220,3 @@ Fit Passport B1–B6证据见[基线](fit-passport-baseline-2026-10-24.md)：B1 
 | 照片/身体处理边界 | S 低披露防反推；无vault | S 本地模型+weather/search外发 | S 本地server+OpenAI | M RLS/private未审计 | 部分：B1 改密码／软停用保留数据；删除未验 |
 | 平台/状态 | v0.1 schema/Python草案 | 静态PWA早期 | React/Vite本地开发服务 | Next/Supabase | 有：B1 Web/扩展；native未有 |
 | 价格/商用门槛 | Apache实现/CC BY spec | MIT；Gemma/API另审 | MIT+API | MIT+云/模型 | 部分：B1 gated集成；商用价未核 |
-
