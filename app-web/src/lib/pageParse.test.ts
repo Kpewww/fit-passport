@@ -702,3 +702,18 @@ describe("the two CMU swag charts, as their pictures print them (Session 100)", 
     expect(parseSizeGrid(g, "")!.sizes.map((s) => s.shoulderCm)).toEqual([43, 45, 47]);
   });
 });
+
+import { withoutCauseWording } from "./pageParse";
+
+describe("a page's mission copy does not decide men's or women's (Session 103, Gap)", () => {
+  it("drops cause wording before reading the prose", () => {
+    const gap = "Classic T-Shirt. This product was made in a factory that invests in gender equality and women’s empowerment.";
+    expect(inferGender(withoutCauseWording(gap))).toBeUndefined();
+    expect(inferGender(withoutCauseWording("A women-owned studio. Men's crewneck tee."))).toBe("mens");
+    expect(inferGender(withoutCauseWording("Women's relaxed shirt"))).toBe("womens");
+  });
+  it("the product's name outranks the page's prose", () => {
+    const html = `<html><head><title>Men's Classic Tee | Gap</title></head><body><h1>Men's Classic Tee</h1><p>Supporting women and girls through RISE. Women's empowerment matters.</p></body></html>`;
+    expect(parsePage(html).gender).toBe("mens");
+  });
+});

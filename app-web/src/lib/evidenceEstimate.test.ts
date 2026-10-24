@@ -76,6 +76,31 @@ describe("a chartless top is estimated from evidence (Session 103)", () => {
     expect(coat.source.sizesFrom).toBe("brand-chart");
   });
 
+  it("finds the brand from the store when the page names none (decision 03)", async () => {
+    const out = await fillFromEvidence(product({ brand: "", retailer: "J.Crew" }), { ...noReports, guides: [guide] });
+    expect(out.source.sizesFrom).toBe("brand-chart");
+    // The extractor's placeholder is not a brand.
+    const none = product({ brand: "", retailer: "Unknown retailer" });
+    expect(await fillFromEvidence(none, { reports: async () => usReports, guides: [guide] })).toBe(none);
+  });
+
+  it("the page's own brand wins over the store's house chart", async () => {
+    const other = product({ brand: "Nobody Knows Inc", retailer: "J.Crew" });
+    const out = await fillFromEvidence(other, { reports: async () => usReports, guides: [guide] });
+    expect(out.source.sizesFrom).not.toBe("brand-chart");
+  });
+
+  it("the store's country stands in for an unknown brand's market", async () => {
+    const out = await fillFromEvidence(product({ brand: "Nobody Knows Inc", retailer: "Gap", source: { url: "https://www.gap.com/p" } }), { reports: async () => usReports, guides: [] });
+    expect(out.source.sizesFrom).toBe("estimated");
+    expect(out.source.estimate?.sources[0]).toContain("US brands");
+  });
+
+  it("a unisex top reads the men's chart", async () => {
+    const out = await fillFromEvidence(product({ brand: "J.Crew", gender: "unisex" }), { ...noReports, guides: [guide] });
+    expect(out.source.sizesFrom).toBe("brand-chart");
+  });
+
   it("finds a guide by brand whatever the punctuation", () => {
     expect(reviewedGuide("j crew", "mens", [guide])).toBe(guide);
     expect(reviewedGuide("J.Crew", "womens", [guide])).toBeNull();

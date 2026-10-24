@@ -268,14 +268,16 @@ export const EN_TEXT: EngineText = {
     `need — so anything we told you here would be a guess dressed up as an answer. ` +
     `Tops and bottoms work today.`,
   refuseNoChartExtension:
-    "We didn't find a size chart on this page, so any sizes we showed you would be made up " +
-    "rather than the retailer's. If the page has a \"Size guide\" or \"Size chart\" link, " +
-    "open it and check again — the chart often only loads once it's opened.",
+    "We didn't find a size chart on this page, and we don't know this brand's sizes well " +
+    "enough to estimate, so we won't guess. If the page has a \"Size guide\" or \"Size chart\" " +
+    "link, open it and check again. Or send us a screenshot of the chart, or type the " +
+    "garment's measurements.",
   refuseNoChartServer:
-    "We found the garment on this page but no size chart we could read, so any sizes we " +
-    "showed you would be made up rather than the retailer's. Many stores only load the chart " +
-    "when you open their size guide — the Fit Passport browser extension can read it once " +
-    "it's open.",
+    "We found the garment on this page but no size chart we could read, and we don't know " +
+    "this brand's sizes well enough to estimate, so we won't guess. Upload or paste a " +
+    "screenshot of the store's size chart and we'll read it. Many stores only load the " +
+    "chart when you open their size guide; the Fit Passport browser extension can read it " +
+    "once it's open.",
   notConnected:
     "This browser isn't connected to your Fit Passport yet. Open Fit Passport once in this " +
     "browser (that's where your measurements and closet live), then check again. If you block " +
@@ -439,9 +441,9 @@ export const ZH_TEXT: EngineText = {
   refuseUnsupported: (domain) =>
     `目前支持上装和下装，暂不支持${ZH_DOMAIN[domain]}。推荐需要将身形数据与商品尺寸对应，而当前缺少这一品类所需的数据，因此无法给出可靠的推荐。`,
   refuseNoChartExtension:
-    "当前页面未找到尺码表，暂时无法依据商店数据推荐尺码。若页面有“尺码指南”或“尺码表”入口，请打开后重新查询。尺码表通常会在打开后才加载。",
+    "当前页面未找到尺码表，我们对这个品牌的尺码也了解不够，无法估算，所以不做猜测。若页面有“尺码指南”或“尺码表”入口，请打开后重新查询；也可以上传尺码表截图，或输入衣服的尺寸。",
   refuseNoChartServer:
-    "已找到服装商品，但没有可读取的尺码表，暂时无法依据商店数据推荐尺码。许多商店在打开尺码指南后才加载尺码表；使用 Fit Passport 浏览器插件，可在打开后读取。",
+    "已找到服装商品，但没有可读取的尺码表，我们对这个品牌的尺码也了解不够，无法估算，所以不做猜测。请上传或粘贴商店尺码表的截图，我们来读取。许多商店在打开尺码指南后才加载尺码表；使用 Fit Passport 浏览器插件，可在打开后读取。",
   notConnected:
     "当前浏览器尚未连接你的 Fit Passport。请在同一浏览器中打开一次 Fit Passport，让插件连接到你的身形数据和衣橱，再重新查询。若屏蔽了第三方 Cookie，插件将无法识别登录状态。",
   verdictName: (v) => ZH_VERDICT[v],

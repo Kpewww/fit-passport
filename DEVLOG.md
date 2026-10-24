@@ -10989,3 +10989,40 @@ replay test read the .gz and passed. The test files were removed afterwards.
 
 **Note:** the repo is public. Captures hold product parts and size tables only, as `capture.js` reduces them.
 The real captures are on the founder's machine; the agent task packs them in.
+
+## Session 103u (2026-10-24) — a page's mission copy no longer decides men's or women's
+
+- **Found by the first full S5 evaluation** (the agent's packed captures, PR in progress): Gap's men's Classic
+  T-Shirt was sized from Gap's WOMEN's unisex chart, one to two sizes large (92 cm → M).
+- **Cause:** `inferGender` read the whole page text, and the page says the factory "invests in gender
+  equality and women's empowerment".
+- **Fix (`pageParse.ts`):**
+  - the product's own names (JSON-LD/OG name, title, `<h1>`, JSON-LD category) decide first;
+  - the prose only when they say nothing, and only after `withoutCauseWording` removes mission and cause
+    phrases (empowerment, gender equality, women-owned, women and girls…).
+- **Replayed on the agent's 9 real captures:**
+  - Gap: XS/M/L, right (was a wrong answer);
+  - Arc'teryx: right answer from the evidence estimate (was a wrong refusal);
+  - 8 of 9 honest.
+  - The one left is Everlane: a discontinued page whose truth is "refuse", now estimated from Everlane's
+    own guide. That is for the founder to decide.
+
+## Session 103v (2026-10-24) — decision 03: the invented ladder is never served
+
+Founder approved decision 03: find the brand as hard as we can; if there is still nothing to go on, ask
+the user for the size chart; otherwise say we can't.
+
+- **Find the brand harder** (`evidenceEstimate.ts`): the page's brand, then the store's own name (from its
+  domain), so a gap.com page with no brand on it still finds Gap. The page's brand always wins, so a store
+  that sells other labels never sizes them with its house chart. The market falls back to the store's
+  country when the brand's is unknown. Unisex tops read the men's chart (they are cut on the men's block).
+- **Refuse everywhere else** (`checkPolicy.refusalFor`): an invented ladder that survives the estimate is
+  refused on every page, server-read included (before, only extension pages and pages named by their own
+  text). The pinned scope test now pins the new rule.
+- **Ask for the chart** (`engineText.ts`, en/zh): both no-chart messages now say we don't know the brand
+  well enough to estimate and ask for a screenshot of the size chart (or the garment's measurements). /check
+  and the popup already show the upload and measurement buttons for this refusal.
+- Replay of the agent's 9 real pages (not yet merged): unchanged, 8 of 9 honest; Everlane is still the open
+  question for the founder.
+- Fixed a type error in a pageParse test from 103u (`parsePage` takes no URL).
+- `todo/decisions/03` removed.

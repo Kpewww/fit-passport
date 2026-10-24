@@ -130,28 +130,16 @@ export function refusalFor(extracted: ExtractedProduct, M: EngineText = EN_TEXT)
     };
   }
 
-  if (source.fetch === "extension" && source.sizesSynthesized) {
+  // An invented ladder is refused wherever the page came from (decision 03,
+  // approved Session 103). By now evidenceEstimate.ts has already replaced the
+  // ladder with the brand's reviewed guide, its market's standard or the US letter
+  // consensus whenever any of those applies; a ladder still here means none did.
+  // `buildSizes()`'s two constants per brand are not evidence, so nothing is
+  // served: the user is asked for the chart itself (a screenshot) or the numbers.
+  if (source.sizesSynthesized) {
     return {
       error: "no-chart-on-page",
-      message: M.refuseNoChartExtension,
-    };
-  }
-
-  // Same situation on a page our SERVER read, when only the page — not the URL —
-  // named the garment.
-  //
-  // Those pages used to be refused as `not-apparel`, because category came from
-  // the URL alone, and the message told a user who HAD pasted a garment that they
-  // hadn't. Reading the product name fixes the category; it must not also start
-  // serving the invented ladder on these pages, which nobody decided. Whether the
-  // invented ladder should ever be served on a server-read page is the open
-  // BRAND_TABLE question (todo/decisions/03), and its current scope — URL-named
-  // garments only — is pinned by a test. This keeps that scope exactly where it
-  // was and only makes the reason true.
-  if (source.sizesSynthesized && source.categoryFrom && source.categoryFrom !== "url") {
-    return {
-      error: "no-chart-on-page",
-      message: M.refuseNoChartServer,
+      message: source.fetch === "extension" ? M.refuseNoChartExtension : M.refuseNoChartServer,
     };
   }
 

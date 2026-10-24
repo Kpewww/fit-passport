@@ -27,6 +27,9 @@ import { domainForCategory } from "./sizeSystems";
 const CM = 2.54;
 const r1 = (x: number) => Math.round(x * 10) / 10;
 const brandKey = (b: string) => b.toLowerCase().replace(/[^a-z0-9]/g, "");
+/** A name worth looking up: not empty, not the extractor's placeholder. */
+const known = (name: string | null | undefined): string | null =>
+  name && name.trim() && !/^unknown retailer$/i.test(name.trim()) ? name.trim() : null;
 
 /** The reviewed guide for this brand, line and garment, or null (brandGuides.ts pickGuide). */
 export function reviewedGuide(
@@ -67,12 +70,17 @@ export async function fillFromEvidence(out: ExtractedProduct, deps: EstimateDeps
   if (src.sizesFrom !== "estimated" || src.listing) return out;
   if (domainForCategory(out.category ?? "") !== "top") return out;
   if (src.categoryGuessed) return out; // not known to be clothing: the refusal stands
-  const line = out.gender === "womens" ? "womens" : out.gender === "mens" ? "mens" : null;
-  if (!line || !out.brand) return out;
+  // Unisex tops are cut on the men's block, so they read the men's chart (decision 03).
+  const line = out.gender === "womens" ? "womens" : out.gender === "mens" || out.gender === "unisex" ? "mens" : null;
+  // The brand as hard as we can find it (decision 03): the page's brand, then the
+  // store's own name (taken from its domain), so gap.com still finds Gap.
+  const brand = known(out.brand) ?? known(out.retailer);
+  if (!line || !brand) return out;
   const neverRead = src.fetch === "unreachable" || src.fetch === "blocked";
 
-  // 1. The brand's own reviewed guide.
-  const guide = reviewedGuide(out.brand, line, deps.guides, out.category ?? null);
+  // 1. The brand's own reviewed guide. The page's brand wins over the store's, so a
+  // store that sells other labels never sizes them by its house chart.
+  const guide = reviewedGuide(brand, line, deps.guides, out.category ?? null);
   if (guide) {
     const rows = guideSizes(guide);
     const byLabel = new Map(rows.map((r) => [normLabel(r.label), r]));
@@ -92,14 +100,17 @@ export async function fillFromEvidence(out: ExtractedProduct, deps: EstimateDeps
   if (neverRead) return out; // a standard says nothing about a product nobody read
 
   // 2 and 3. The market's standard, then the US letter consensus.
-  const regime = regimeForCountry(marketOf(src.url ?? "") ?? lookupBrand(out.brand)?.country ?? null);
+  // The market: the store's country site, then where the brand is from, then where the store is from.
+  const regime = regimeForCountry(
+    marketOf(src.url ?? "") ?? lookupBrand(brand)?.country ?? lookupBrand(known(out.retailer))?.country ?? null,
+  );
   if (!regime) return out;
   const reports = regime === "US" ? await deps.reports().catch(() => []) : [];
   const sources = new Set<string>();
   const sourcesZh = new Set<string>();
   const sizes = out.sizes.map((s) => {
     const r: BodyRange | null =
-      bodyChestFor(s.label, regime, line, "top") ?? (regime === "US" ? usLetterChest(reports, out.brand!, s.label, line) : null);
+      bodyChestFor(s.label, regime, line, "top") ?? (regime === "US" ? usLetterChest(reports, brand, s.label, line) : null);
     if (!r) return { label: s.label };
     sources.add(r.evidence.source);
     sourcesZh.add(r.evidence.sourceZh);

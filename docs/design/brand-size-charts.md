@@ -200,7 +200,9 @@ read what the page actually gives before deciding which fields to fill.
 - **Fit lines.** Patagonia publishes Regular and Slim; Nike publishes one chart
   per garment domain. The current shape has one chart per brand × domain × gender
   and no notion of a line, so a slim-cut style gets the regular numbers.
-- **`BRAND_TABLE` still exists** and still holds its invented constants for the
-  twelve brands with no curated chart. It should go once enough charts are real —
-  keeping a fabricated floor under two honest layers is how the Patagonia ladder
-  happened.
+- **`BRAND_TABLE`'s ladder is never served** (decision 03, Session 103). The
+  constants still build a placeholder ladder inside the extractor, but a ladder that
+  survives the evidence estimate is refused on every page, however it was read
+  (`checkPolicy.refusalFor`), and the user is asked for a screenshot of the chart or
+  the garment's measurements. Removing the constants outright is a clean-up, not a
+  behaviour change.

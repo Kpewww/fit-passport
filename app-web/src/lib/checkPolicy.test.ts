@@ -92,10 +92,13 @@ describe("refusalFor — an invented ladder on a page the browser handed us", ()
     expect(refusalFor(product({ fetch: "extension", sizesFrom: "brand-chart" }))).toBeNull();
   });
 
-  it("does not yet change the URL path: a readable page with no chart is a separate decision", () => {
-    // Recorded as an open decision for the founder (retiring BRAND_TABLE). This
-    // test pins today's scope so widening it is a deliberate change.
-    expect(refusalFor(product({ fetch: "ok", sizesFrom: "estimated", sizesSynthesized: true }))).toBeNull();
+  it("refuses the invented ladder on a page our server read too (decision 03)", () => {
+    // Founder decision 03 (Session 103): no invented number is ever served. A ladder
+    // that reaches here means the evidence estimate found nothing to go on.
+    const r = refusalFor(product({ fetch: "ok", sizesFrom: "estimated", sizesSynthesized: true }));
+    expect(r?.error).toBe("no-chart-on-page");
+    // It asks for the chart itself: /check and the popup offer the screenshot upload.
+    expect(r?.message).toMatch(/screenshot/i);
   });
 
   it("gives the more fundamental answer when several apply", () => {
@@ -278,9 +281,8 @@ describe("category from the page, not only the URL", () => {
     expect(refusalFor(out)?.error).toBe("no-chart-on-page");
   });
 
-  it("does not start serving an invented ladder on a server-read page named only by the page", async () => {
-    // The invented-ladder question on server-read pages is an open founder
-    // decision (todo/decisions/03). Fixing the category must not decide it.
+  it("does not serve an invented ladder on a server-read page named only by the page", async () => {
+    // Decision 03: the invented ladder is refused on every page, however it was read.
     vi.stubGlobal("fetch", vi.fn(async () => ({
       ok: true, status: 200,
       headers: { get: (k: string) => (k.toLowerCase() === "content-type" ? "text/html" : null) },

@@ -266,6 +266,18 @@ function genderFromAttr(v: string | undefined): Gender | undefined {
 // 3. Gender / category inference from visible text (fallback only)
 // ---------------------------------------------------------------------------
 
+/**
+ * Prose that names women or men without naming who the garment is for: sustainability
+ * and mission copy ("women's empowerment", "gender equality", "women-owned"). Removed
+ * before the page's text is read for a department.
+ */
+export function withoutCauseWording(text: string): string {
+  return text.replace(
+    /\b(?:gender equality|(?:women|men)['’]?s? (?:empowerment|health|rights|history month)|empower(?:ing|s)? (?:women|girls)|(?:women|minority)[- ]owned|women and girls|women in (?:tech|business|leadership|the workforce)|support(?:s|ing)? women)\b/gi,
+    " ",
+  );
+}
+
 export function inferGender(text: string): Gender | undefined {
   const t = text.toLowerCase();
   // Marketplace titles put the gender AFTER the garment ("短袖T恤男", "T恤女"),
@@ -1183,9 +1195,13 @@ export function parsePage(html: string, kindFallback?: "body" | "garment"): Pars
     category: ld.category,
     material: ld.material || attr("材质成分", "面料", "成分含量", "材质"),
     fitNotes: og.fitNotes,
+    // The product's own names first; the page's prose only when they say nothing,
+    // and never its mission statements (Session 103: Gap's men's tee was read as
+    // women's from "invests in gender equality and women's empowerment").
     gender:
       genderFromAttr(attr("适用性别", "性别", "适用对象")) ??
-      inferGender(`${ld.productName ?? ""} ${og.productName ?? ""} ${productName ?? ""} ${text}`),
+      inferGender(`${ld.productName ?? ""} ${og.productName ?? ""} ${productName ?? ""} ${headline ?? ""} ${ld.category ?? ""}`) ??
+      inferGender(withoutCauseWording(text)),
   };
 
   const chart = parseSizeChart(html, kindFallback);
