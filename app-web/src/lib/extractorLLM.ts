@@ -16,6 +16,7 @@
 // `extractFromUrl(url)`.
 
 import { safeFetch } from "./safeFetch";
+import { fillFromEvidence } from "./evidenceEstimate";
 import { z } from "zod";
 import { detectCategoryStrict, extractFromUrl, resolveCategory, type ExtractedProduct, type ExtractedSize } from "./extractor";
 import { classifyCategory } from "./categoryModel";
@@ -711,9 +712,22 @@ function listingFrom(out: ExtractedProduct, html: string, seller: SellerInput | 
   return next;
 }
 
-export async function extractSmart(
-  url: string,
-  opts: {
+/**
+ * Read a product: the page, its chart, its sizes. Then, when the page had no chart,
+ * estimate from evidence instead of refusing (evidenceEstimate.ts, Session 103).
+ */
+export async function extractSmart(url: string, opts: ExtractOpts = {}): Promise<ExtractedProduct> {
+  const out = await readProduct(url, opts);
+  if (opts.estimate === false) return out;
+  return fillFromEvidence(out, {
+    // Loaded only when a US estimate needs it: brandOffsets reads the database.
+    reports: async () => (await (await import("./brandOffsets")).brandReports()).reports,
+  });
+}
+
+type ExtractOpts = {
+    /** False skips the evidence estimate (callers that only want what the page says). */
+    estimate?: boolean;
     /**
      * The page's HTML, supplied by a caller that already has it — the browser
      * extension, reading the page the user is looking at.
@@ -749,8 +763,9 @@ export async function extractSmart(
     chartImage?: string;
     /** The cache behind `chartImage`; the database unless a test supplies one. */
     chartStore?: ChartImageStore;
-  } = {},
-): Promise<ExtractedProduct> {
+};
+
+async function readProduct(url: string, opts: ExtractOpts): Promise<ExtractedProduct> {
   const deterministic = extractFromUrl(url);
   const supplied = opts.html && opts.html.length >= 200 ? opts.html : null;
 

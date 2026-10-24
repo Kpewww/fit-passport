@@ -130,6 +130,13 @@ export type ExtractedProduct = {
      */
     chart?: { sourceUrl: string; capturedAt: string };
     /**
+     * Present when the page had no chart and the sizes' body ranges were filled in
+     * from evidence rather than refused (Session 103, evidenceEstimate.ts): a size
+     * standard of the brand's market, or the US letter consensus. `sizesFrom` stays
+     * "estimated"; this says what the estimate rests on, for the reason line.
+     */
+    estimate?: { sources: string[]; sourcesZh: string[] };
+    /**
      * Whether the numbers describe the WEARER or the GARMENT — invariant ㊿, the
      * distinction that decides whether the engine adds ease on top of them.
      *

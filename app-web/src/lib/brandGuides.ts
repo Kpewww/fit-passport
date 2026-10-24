@@ -50,7 +50,7 @@ export const GuideFile = z.object({
 export type GuideFileT = z.infer<typeof GuideFile>;
 
 /** What the engine reads: verified body guides only, and only their printed RANGES. */
-export type CompiledGuide = Pick<GuideFileT, "brand" | "line" | "units" | "sourceUrl"> & {
+export type CompiledGuide = Pick<GuideFileT, "brand" | "line" | "units" | "sourceUrl" | "capturedAt"> & {
   rows: Array<{ label: string; chestMin?: number; chestMax?: number; waistMin?: number; waistMax?: number }>;
 };
 
@@ -58,7 +58,7 @@ export function compile(files: GuideFileT[]): CompiledGuide[] {
   return files
     .filter((f) => f.kind === "body" && (f.reviewed || f.verifiedBy.length > 0))
     .map((f) => ({
-      brand: f.brand, line: f.line, units: f.units, sourceUrl: f.sourceUrl,
+      brand: f.brand, line: f.line, units: f.units, sourceUrl: f.sourceUrl, capturedAt: f.capturedAt,
       rows: f.rows
         .filter((r) => r.chestMin != null || r.waistMin != null)
         .map(({ label, chestMin, chestMax, waistMin, waistMax }) => ({ label, chestMin, chestMax, waistMin, waistMax })),

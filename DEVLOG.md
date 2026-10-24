@@ -10863,3 +10863,32 @@ An agent can now collect brands' own size guides, and people verify them through
   nearest printed point (ties within 0.5 cm: both; a repeated label is one size). Before, such charts were
   not scored at all. Implemented in `eval/lib.ts acceptableSizes` and pinned by `src/lib/evalTruthRule.test.ts`.
   This affects Arc'teryx and Patagonia men's and women's.
+
+## Session 103m (2026-10-24) — a chartless top is estimated from evidence, not refused
+
+**Founder's call:** "when we cannot be sure, give an estimate".
+
+**Before:** a page with no chart got one of two results:
+- only its labels: "undetermined";
+- not even labels: the invented ladder, refused (`no-chart-on-page`).
+
+**Now (`lib/evidenceEstimate.ts`, run at the end of `extractSmart`):** a top whose brand and line are known
+gets body ranges from, strongest first:
+1. **The brand's own reviewed guide** (`data/brand-guides`). Credited as `brand-chart`, with the guide's URL
+   and date. The page's labels are kept; an invented ladder is replaced by the guide's rows.
+2. **The market's size standard** (`sizeRegimes.ts`).
+3. **US letters:** the brand's own US charts, else the 9-brand consensus.
+
+Steps 2–3 keep `sizesFrom: "estimated"` (capped at 0.5) and record their basis in `source.estimate`.
+/check prints it ("No size chart on this page, so the sizes are estimated from: …").
+
+**Not estimated:**
+- a page nobody read: only a brand guide applies there, never a standard;
+- non-tops, an unknown line or brand, listings, or a page not known to be clothing.
+
+**Verified locally (extension-style `{html}`, no chart, S–XL offered):**
+- J.Crew: M from J.Crew's guide, with "Alternative: S is close — consider it if you prefer a snugger fit";
+- Old Navy: S at 0.49 from the 9-brand consensus, with M as the roomier alternative.
+- Both were "undetermined" before.
+
+Also: compiled guides carry `capturedAt`, so the reason line shows the date the guide was read.

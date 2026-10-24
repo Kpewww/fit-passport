@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowUpRight, BrowserIcon, CaretDown, Globe, Info, LinkIcon, Robot, Ruler, Warning } from "@/components/Icon";
-import { useT } from "@/i18n/client";
+import { useLocale, useT } from "@/i18n/client";
 import type { Product, Source } from "./types";
 
 /**
@@ -12,6 +12,7 @@ import type { Product, Source } from "./types";
  */
 export function SourceRow({ product, source }: { product: Product; source: Source }) {
   const t = useT("check");
+  const locale = useLocale();
   const reader =
     source.extractedBy === "llm-text" ? t("source.sizesAiText")
       : source.extractedBy === "llm-vision" ? t("source.sizesAiImage")
@@ -79,6 +80,12 @@ export function SourceRow({ product, source }: { product: Product; source: Sourc
             {t("source.checkGuide")}
           </a>{" "}
           {t("source.readOn", { date: source.chart.capturedAt })}
+        </p>
+      ) : null}
+      {/* A chartless page estimated from evidence, not refused (Session 103): say what on. */}
+      {source.sizesFrom === "estimated" && source.estimate?.sources.length ? (
+        <p className="text-ink-faint">
+          {t("source.estimateFrom", { sources: (locale === "zh" ? source.estimate.sourcesZh : source.estimate.sources).join(locale === "zh" ? "；" : "; ") })}
         </p>
       ) : null}
       <details className="group">

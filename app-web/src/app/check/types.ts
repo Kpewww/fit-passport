@@ -49,6 +49,8 @@ export type Source = {
   derived: boolean;
   slug?: string;
   sizesFrom?: "fixture" | "page" | "brand-chart" | "seller" | "estimated";
+  /** What an estimate for a chartless page rests on (Session 103, evidenceEstimate.ts). */
+  estimate?: { sources: string[]; sourcesZh: string[] };
   chart?: { sourceUrl: string; capturedAt: string };
   measurementKind?: "body" | "garment";
   measurementKindFrom?: "page" | "table" | "brand";

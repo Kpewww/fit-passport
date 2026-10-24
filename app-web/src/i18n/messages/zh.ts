@@ -366,6 +366,7 @@ export const zh: Messages = {
       brandGuide: "{brand} 公开的尺码指南",
       brandGuideTitle: "这些数据来自品牌公开的尺码指南。当前商品页未能读取，因此无法确认该商品的可选尺码及修身、宽松等具体版型。",
       estimated: "尺码为估算值，请核对尺码表",
+      estimateFrom: "页面上没有尺码表，尺寸按以下依据估算：{sources}。因此置信度已下调。",
       estimatedTitle: "页面中未找到可用尺码表，当前数据依据品牌与服装类型估算。请与商店尺码表核对，或补充实际数据。",
       sizesRead: "尺码读取自商品页面",
       sizesAiText: "AI 从页面文字中读取的尺码",
