@@ -1,0 +1,54 @@
+{
+  "brand": "Tommy Hilfiger",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://usa.tommy.com/en/size-guide-men.html#MensTopsCS",
+  "kindEvidence": "All body measurements are in inches.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/tommy-hilfiger-mens-dress-shirt.jpg",
+  "variant": "general",
+  "reviewed": false,
+  "note": "REGULAR FIT dress shirts. Slim and Athletic excluded. Large chest/waist values copied exactly despite body wording. Body quote also visible in jeans-tops screenshot; requires human review.",
+  "rows": [
+    {
+      "label": "XS",
+      "chest": 43,
+      "waist": 41
+    },
+    {
+      "label": "S",
+      "chest": 45,
+      "waist": 43
+    },
+    {
+      "label": "M",
+      "chest": 47,
+      "waist": 45
+    },
+    {
+      "label": "L",
+      "chest": 49,
+      "waist": 47
+    },
+    {
+      "label": "XL",
+      "chest": 51,
+      "waist": 49
+    },
+    {
+      "label": "XXL",
+      "chest": 53,
+      "waist": 51
+    },
+    {
+      "label": "XXXL",
+      "chest": 55,
+      "waist": 53
+    }
+  ],
+  "appliesTo": [
+    "shirt"
+  ]
+}

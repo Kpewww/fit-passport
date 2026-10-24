@@ -5,7 +5,7 @@
   "capturedAt": "2026-10-24", "capturedBy": "Codex",
   "screenshot": "screenshots/jcrew-mens-outerwear.jpg",
   "appliesTo": ["jacket"], "variant": "general", "reviewed": false,
-  "note": "Men > Outerwear > regular; Tall excluded. XS–XXL equals the Tops table, but Outerwear omits XXXL. Separate category/label coverage. Product-popup equivalence unverified. Body evidence retained from existing guide at the same source.",
+  "note": "Regular Outerwear; identical chest/waist/alpha rows in Men Suiting verified 2026-10-24, deduplicated. Tops additionally includes XXXL. Tall/Short/Long excluded. Body measuring quote verified on current page.",
   "rows": [
     {"label":"XS","chestMin":32,"chestMax":34,"waistMin":26,"waistMax":28},
     {"label":"S","chestMin":35,"chestMax":37,"waistMin":29,"waistMax":31},

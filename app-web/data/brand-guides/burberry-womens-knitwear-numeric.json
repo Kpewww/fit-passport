@@ -1,0 +1,69 @@
+{
+  "brand": "Burberry",
+  "line": "womens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://us.burberry.com/birkhall-wool-sweater-p81327771",
+  "kindEvidence": "Measure across your back, under your arms and around the fullest part of your bust.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/burberry-womens-knitwear-numeric.jpg",
+  "variant": "product",
+  "appliesTo": [
+    "sweater"
+  ],
+  "reviewed": false,
+  "note": "Women Knitwear numeric table, US column labels retained. Separate alpha table has different measurements even for matching CN labels; no equivalence inferred. Classic fit. Body quote: screenshots/burberry-womens-knitwear-body.jpg.",
+  "rows": [
+    {
+      "label": "00",
+      "chest": 28.3,
+      "waist": 21.7
+    },
+    {
+      "label": "0",
+      "chest": 29.1,
+      "waist": 22.4
+    },
+    {
+      "label": "2",
+      "chest": 29.9,
+      "waist": 23.2
+    },
+    {
+      "label": "4",
+      "chest": 31.5,
+      "waist": 24.8
+    },
+    {
+      "label": "6",
+      "chest": 33.1,
+      "waist": 26.4
+    },
+    {
+      "label": "8",
+      "chest": 34.6,
+      "waist": 28
+    },
+    {
+      "label": "10",
+      "chest": 36.2,
+      "waist": 29.5
+    },
+    {
+      "label": "12",
+      "chest": 38.2,
+      "waist": 31.5
+    },
+    {
+      "label": "14",
+      "chest": 40.2,
+      "waist": 33.5
+    },
+    {
+      "label": "16",
+      "chest": 42.1,
+      "waist": 35.4
+    }
+  ]
+}

@@ -1,13 +1,13 @@
 # Validation, 2026-10-24
 
-Final checks ran sequentially after the four guide additions: `npm run guides`, then `npm test`, then `npm run build`. All returned exit code 0.
+Final checks ran sequentially after all sixteen guide additions: `npm run guides`, then `npm test`, then `npm run build`. All returned exit code 0.
 
 | Check | Result | Evidence |
 |---|---|---|
 | Dependency install | `npm ci` completed; package and lock files unchanged | No dependency edits in diff |
-| Guides | 43 files, 0 invalid, 4 waiting for review, 18 counted reviewed body guides | `validation-guides-2026-10-24.txt` |
-| Unit tests | 92 files, 1531 tests passed | `validation-tests-2026-10-24.txt` |
-| Production build | Passed; 86 static pages generated | `validation-build-2026-10-24.txt` |
+| Guides | 55 files, 0 invalid, 16 waiting for review, 18 counted reviewed body guides | `validation-guides-followup-2026-10-24.txt` |
+| Unit tests | 92 files, 1543 tests passed | `validation-tests-followup-2026-10-24.txt` |
+| Production build | Passed; 86 static pages generated | `validation-build-followup-2026-10-24.txt` |
 | Existing capture packing | 9 packed, 0 refused | Nine compressed fixtures in `app-web/eval/captures/` |
 | Single offline replay | 1 test passed; recommendation 12/15, guardrails 12/12 | `app-web/eval/results/2026-10-24-run2.md` and JSON |
 

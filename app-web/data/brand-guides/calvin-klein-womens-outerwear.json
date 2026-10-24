@@ -1,0 +1,69 @@
+{
+  "brand": "Calvin Klein",
+  "line": "womens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.calvinklein.us/en/women-size-guide.html#wl-t-shirts",
+  "kindEvidence": "With arms relaxed at your side, measure the fullest part of your bust while keeping the measuring tape parallel to the ground.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/calvin-klein-womens-outerwear.jpg",
+  "variant": "general",
+  "appliesTo": [
+    "jacket"
+  ],
+  "reviewed": false,
+  "note": "Regular Outerwear; identical numeric/chest/waist table in Jeans Outerwear, deduplicated. Plus excluded. Body quote: screenshots/calvin-klein-womens-body-evidence.jpg.",
+  "rows": [
+    {
+      "label": "0",
+      "chest": 32,
+      "waist": 24
+    },
+    {
+      "label": "2",
+      "chest": 33,
+      "waist": 25
+    },
+    {
+      "label": "4",
+      "chest": 34,
+      "waist": 26
+    },
+    {
+      "label": "6",
+      "chest": 35,
+      "waist": 27
+    },
+    {
+      "label": "8",
+      "chest": 36,
+      "waist": 28
+    },
+    {
+      "label": "10",
+      "chest": 37,
+      "waist": 29
+    },
+    {
+      "label": "12",
+      "chest": 38.5,
+      "waist": 30.5
+    },
+    {
+      "label": "14",
+      "chest": 40,
+      "waist": 32
+    },
+    {
+      "label": "16",
+      "chest": 41.5,
+      "waist": 33.5
+    },
+    {
+      "label": "18",
+      "chest": 43,
+      "waist": 35
+    }
+  ]
+}

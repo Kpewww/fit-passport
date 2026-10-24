@@ -1,0 +1,40 @@
+{
+  "brand": "Tommy Hilfiger",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://usa.tommy.com/en/size-guide-men.html#MensTopsCS",
+  "kindEvidence": "All body measurements are in inches.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/tommy-hilfiger-mens-jeans-tops.jpg",
+  "variant": "general",
+  "reviewed": false,
+  "note": "Tommy Jeans Tops, not the mainline numeric Tops chart. Page explicitly calls these body measurements; neck/sleeve omitted. Big & Tall excluded.",
+  "rows": [
+    {
+      "label": "XS",
+      "chest": 37
+    },
+    {
+      "label": "S",
+      "chest": 38.5
+    },
+    {
+      "label": "M",
+      "chest": 40
+    },
+    {
+      "label": "L",
+      "chest": 41.75
+    },
+    {
+      "label": "XL",
+      "chest": 43.25
+    },
+    {
+      "label": "XXL",
+      "chest": 45
+    }
+  ]
+}

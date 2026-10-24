@@ -41,4 +41,4 @@ H&M, REI, and the three requested eBay measurement variants require the extensio
 
 ## D and publication
 
-D is partial; see `multi-chart-brands-2026-10-24.md`. Four new unreviewed guides have evidence; remaining catalog uncertainty is explicit. No application fixes were made. PR publication is authorized, but this task must not be described as fully completed or merged.
+D is partial; see `multi-chart-brands-2026-10-24.md`. Sixteen new unreviewed guides have evidence; remaining catalog uncertainty is explicit. No application fixes were made. PR publication is authorized, but this task must not be described as fully completed or merged.
