@@ -1,0 +1,25 @@
+{
+  "brand": "Nike",
+  "line": "mens",
+  "kind": "body",
+  "units": "in",
+  "sourceUrl": "https://www.nike.com/size-fit/mens_tops_alpha",
+  "kindEvidence": "The measurements on the size chart are body measurements.",
+  "capturedAt": "2026-10-24",
+  "capturedBy": "Codex",
+  "screenshot": "screenshots/nike-mens.jpg",
+  "variant": "general",
+  "reviewed": false,
+  "note": "All regular men's tops; Tall excluded. More views: screenshots/nike-mens-middle.jpg and screenshots/nike-mens-right.jpg. Product-popup equivalence unverified. Hip/height omitted from row schema.",
+  "rows": [
+    {"label":"XXS","chestMin":28.1,"chestMax":31.5,"waistMin":22.5,"waistMax":25.5},
+    {"label":"XS","chestMin":31.5,"chestMax":35,"waistMin":25.5,"waistMax":29},
+    {"label":"S","chestMin":35,"chestMax":37.5,"waistMin":29,"waistMax":32},
+    {"label":"M","chestMin":37.5,"chestMax":41,"waistMin":32,"waistMax":35},
+    {"label":"L","chestMin":41,"chestMax":44,"waistMin":35,"waistMax":38},
+    {"label":"XL","chestMin":44,"chestMax":48.5,"waistMin":38,"waistMax":43},
+    {"label":"XXL","chestMin":48.5,"chestMax":53.5,"waistMin":43,"waistMax":47.5},
+    {"label":"3XL","chestMin":53.5,"chestMax":58,"waistMin":47.5,"waistMax":52.5},
+    {"label":"4XL","chestMin":58,"chestMax":63,"waistMin":52.5,"waistMax":57}
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "brand": "Moncler", "line": "womens", "kind": "body", "units": "in",
+  "sourceUrl": "https://www.moncler.com/en-us/client-service/size_guide",
+  "kindEvidence": "Measure around the bust, passing the tape measure under the arms.",
+  "capturedAt": "2026-10-24", "capturedBy": "Codex",
+  "screenshot": "screenshots/moncler-womens-outerwear.jpg",
+  "appliesTo": ["jacket"], "variant": "general", "reviewed": false,
+  "note": "Outerwear, separate from Tops & Bottoms. Native MONCLER numeric labels retained; US conversions remain in screenshot. Printed inch decimal commas represented as decimal points; no conversion. No Tall/Slim/Petite/Big selection offered here. Product-popup equivalence is unverified.",
+  "rows": [
+    {"label":"000","chest":30.70,"waist":23.22},
+    {"label":"00","chest":32.28,"waist":24.80},
+    {"label":"0","chest":33.86,"waist":26.38},
+    {"label":"1","chest":35.43,"waist":27.95},
+    {"label":"2","chest":37.01,"waist":29.53},
+    {"label":"3","chest":38.58,"waist":31.10},
+    {"label":"4","chest":40.16,"waist":32.68},
+    {"label":"5","chest":42.52,"waist":35.04},
+    {"label":"6","chest":44.88,"waist":37.40},
+    {"label":"7","chest":46.46,"waist":38.98}
+  ]
+}
